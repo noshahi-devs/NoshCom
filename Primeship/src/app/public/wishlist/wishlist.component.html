@@ -1,0 +1,54 @@
+<div class="wishlist-page">
+    <div class="container">
+        <!-- Wishlist Header -->
+        <div class="wishlist-header">
+            <div class="title-block">
+                <h1>My Wishlist</h1>
+                <p>{{ wishlistItems.length }} Products Saved</p>
+            </div>
+            <button class="btn-clear" *ngIf="wishlistItems.length > 0" (click)="clearAll()">
+                <i class="pi pi-trash"></i>
+                Clear All
+            </button>
+        </div>
+
+        <!-- Wishlist Grid -->
+        <div class="wishlist-grid" *ngIf="wishlistItems.length > 0">
+            <div class="wishlist-card" *ngFor="let item of wishlistItems">
+                <div class="card-media">
+                    <img [src]="item.image || 'assets/images/placeholder.jpg'" [alt]="item.name">
+                    <button class="remove-btn" (click)="removeFromWishlist(item)" aria-label="Remove">
+                        <i class="pi pi-times"></i>
+                    </button>
+                </div>
+                <div class="card-info">
+                    <span class="category">{{ item.category }}</span>
+                    <h3>{{ item.name }}</h3>
+                    <div class="price-row">
+                        <span class="price">{{ item.price | currency }}</span>
+                        <span class="old-price" *ngIf="item.oldPrice">{{ item.oldPrice | currency }}</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-cart" (click)="moveToCart(item)">
+                            <i class="pi pi-shopping-cart"></i>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-wishlist" *ngIf="wishlistItems.length === 0">
+            <div class="empty-icon">
+                <i class="pi pi-heart"></i>
+            </div>
+            <h2>Your Wishlist is Empty</h2>
+            <p>Looks like you haven't added any premium products to your wishlist yet.</p>
+            <button routerLink="/shop" class="btn-shop">
+                Continue Shopping
+                <i class="pi pi-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,43 @@
+<div class="category-slider">
+
+  <!-- PREV -->
+  <button class="arrow prev" *ngIf="enableCarousel" (click)="prev()">
+    <i class="fa-solid fa-angle-left"></i>
+  </button>
+
+  <!-- TRACK -->
+  <div class="slider-track" [style.transform]="'translateX(-' + (currentSlide * 100) + '%)'">
+
+    <div class="slide" *ngFor="let slide of slides">
+
+      <!-- ROW 1 -->
+      <div class="row-circles">
+        <div class="circle" *ngFor="let cat of slide.slice(0, itemsPerRow)" (click)="onCategoryClick(cat)">
+          <img [src]="getCategoryImage(cat)" [alt]="cat.name" (error)="handleImageError($event, cat)">
+          <p>{{ cat.name }}</p>
+        </div>
+      </div>
+
+      <!-- ROW 2 -->
+      <div class="row-circles">
+        <div class="circle" *ngFor="let cat of slide.slice(itemsPerRow)" (click)="onCategoryClick(cat)">
+          <img [src]="getCategoryImage(cat)" [alt]="cat.name" (error)="handleImageError($event, cat)">
+          <p>{{ cat.name }}</p>
+        </div>
+      </div>
+
+    </div>
+
+
+  </div>
+
+  <!-- NEXT -->
+  <button class="arrow next" *ngIf="enableCarousel" (click)="next()">
+    <i class="fa-solid fa-angle-right"></i>
+  </button>
+
+  <div class="carousel-meta">
+    Slide {{ currentSlide + 1 }} / {{ slides.length }} | Total Categories: {{ categories.length }}
+  </div>
+
+</div>

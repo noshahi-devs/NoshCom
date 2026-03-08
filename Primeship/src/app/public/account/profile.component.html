@@ -1,0 +1,120 @@
+<div class="account-container">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-3">
+        <div class="account-sidebar">
+          <div class="user-info">
+            <div class="user-avatar">
+              <img src="https://via.placeholder.com/100" alt="User Avatar">
+            </div>
+            <h5>{{ user?.firstName }} {{ user?.lastName }}</h5>
+            <p class="user-email">{{ user?.email }}</p>
+          </div>
+          
+          <nav class="account-nav">
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link active" routerLink="/account/profile">
+                  <i class="fas fa-user"></i> Profile
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" routerLink="/account/orders">
+                  <i class="fas fa-shopping-bag"></i> Orders
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" routerLink="/account/settings">
+                  <i class="fas fa-cog"></i> Settings
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  <i class="fas fa-heart"></i> Wishlist
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+      
+      <div class="col-md-9">
+        <div class="account-content">
+          <h3>Profile Information</h3>
+          
+          <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="firstName">First Name</label>
+                  <input type="text" id="firstName" class="form-control" formControlName="firstName">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="lastName">Last Name</label>
+                  <input type="text" id="lastName" class="form-control" formControlName="lastName">
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="email">Email Address</label>
+              <input type="email" id="email" class="form-control" formControlName="email">
+            </div>
+            
+            <div class="form-group">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" class="form-control" formControlName="phone">
+            </div>
+            
+            <div class="form-group">
+              <label for="bio">Bio</label>
+              <textarea id="bio" class="form-control" rows="4" formControlName="bio" placeholder="Tell us about yourself..."></textarea>
+            </div>
+            
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" [disabled]="profileForm.invalid || isLoading">
+                <span *ngIf="!isLoading">Save Changes</span>
+                <span *ngIf="isLoading">Saving...</span>
+              </button>
+              <button type="button" class="btn btn-outline-secondary" (click)="resetForm()">Cancel</button>
+            </div>
+          </form>
+          
+          <hr>
+          
+          <div class="change-password">
+            <h4>Change Password</h4>
+            <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()">
+              <div class="form-group">
+                <label for="currentPassword">Current Password</label>
+                <input type="password" id="currentPassword" class="form-control" formControlName="currentPassword">
+              </div>
+              
+              <div class="form-group">
+                <label for="newPassword">New Password</label>
+                <input type="password" id="newPassword" class="form-control" formControlName="newPassword">
+              </div>
+              
+              <div class="form-group">
+                <label for="confirmPassword">Confirm New Password</label>
+                <input type="password" id="confirmPassword" class="form-control" formControlName="confirmPassword">
+              </div>
+              
+              <button type="submit" class="btn btn-primary" [disabled]="passwordForm.invalid || isChangingPassword">
+                <span *ngIf="!isChangingPassword">Change Password</span>
+                <span *ngIf="isChangingPassword">Changing...</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

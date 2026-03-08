@@ -1,0 +1,230 @@
+/* ══════════════════════════════════════════════════════════════
+   PAYOUT METHOD REDESIGN – PREMIUM 3D WHITE THEME
+   ══════════════════════════════════════════════════════════════ */
+
+.add-payout-page {
+    padding: 30px;
+    background: #f8fafc;
+    min-height: calc(100vh - 100px);
+    perspective: 1500px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* ─────────────── HEADER ─────────────── */
+.payout-header-section {
+    transform-style: preserve-3d;
+    margin-bottom: 20px;
+
+    .title-3d {
+        font-size: 3rem;
+        font-weight: 950;
+        color: #4f46e5;
+        margin-bottom: 5px;
+        text-shadow: 
+            0 1px 0 #ccc, 
+            0 2px 0 #c9c9c9, 
+            0 3px 0 #bbb, 
+            0 4px 0 #b9b9b9, 
+            0 5px 0 #aaa, 
+            0 10px 10px rgba(0,0,0,0.1);
+        transform: translateZ(50px);
+    }
+
+    .sub-heading-3d {
+        font-size: 1.1rem;
+        color: #64748b;
+        font-weight: 700;
+        transform: translateZ(30px);
+    }
+}
+
+/* ─────────────── TAB SWITCHER ─────────────── */
+.tab-switcher-container {
+    display: flex;
+    justify-content: center;
+    transform-style: preserve-3d;
+}
+
+.payout-tabs {
+    background: #ffffff;
+    padding: 10px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    display: flex;
+    gap: 15px;
+    transform: translateZ(20px);
+}
+
+.payout-tab {
+    padding: 14px 28px;
+    border-radius: 14px;
+    border: none;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    background: #f1f5f9;
+    color: #64748b;
+
+    &.active {
+        background: #6366f1;
+        color: #ffffff;
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        transform: scale(1.05) translateZ(10px);
+    }
+
+    &:hover:not(.active) {
+        background: #e2e8f0;
+        transform: translateY(-2px);
+    }
+}
+
+/* ─────────────── CONTENT CARD ─────────────── */
+.payout-content-card {
+    background: #ffffff;
+    border-radius: 30px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.05);
+    border: 1px solid rgba(255,255,255,0.8);
+    transform-style: preserve-3d;
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* ─────────────── LAYOUT GRID ─────────────── */
+.payout-layout-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 40px;
+    align-items: start;
+}
+
+.alert-banner {
+    padding: 16px 24px;
+    border-radius: 14px;
+    font-size: 1.05rem;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+
+    &.info-green {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+}
+
+/* ─────────────── FORM FIELDS ─────────────── */
+.p-label {
+    display: block;
+    font-weight: 800;
+    color: #334155;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    padding-left: 5px;
+}
+
+.p-input {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 15px;
+    border: 2px solid #e2e8f0;
+    background: #f8fafc;
+    font-weight: 650;
+    color: #1e293b;
+    transition: all 0.2s;
+
+    &:focus {
+        outline: none;
+        border-color: #6366f1;
+        background: #ffffff;
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.05);
+        transform: translateY(-2px);
+    }
+}
+
+/* ─────────────── INSTRUCTION BOXES ─────────────── */
+.instruction-box {
+    padding: 24px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    font-weight: 600;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+
+    p { margin: 0; }
+
+    &.yellow-box {
+        background: #fef9c3;
+        color: #854d0e;
+        border: 1px solid #fef08a;
+    }
+
+    &.blue-box {
+        background: #e0f2fe;
+        color: #0369a1;
+        border: 1px solid #bae6fd;
+    }
+}
+
+/* ─────────────── SUBMIT BUTTON ─────────────── */
+.btn-3d-submit {
+    width: 100%;
+    padding: 18px;
+    border-radius: 18px;
+    border: none;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+    font-weight: 900;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 
+        0 8px 0 #3730a3, 
+        0 15px 30px rgba(99, 102, 241, 0.3);
+
+    &:hover:not(:disabled) {
+        transform: translateY(-4px);
+        box-shadow: 
+            0 12px 0 #3730a3, 
+            0 25px 45px rgba(99, 102, 241, 0.4);
+    }
+
+    &:active:not(:disabled) {
+        transform: translateY(4px);
+        box-shadow: 0 4px 0 #3730a3;
+    }
+
+    &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+}
+
+.btn-back-link {
+    display: inline-flex;
+    align-items: center;
+    color: #64748b;
+    font-weight: 800;
+    text-decoration: none;
+    transition: all 0.2s;
+    &:hover {
+        color: #6366f1;
+        transform: translateX(-5px);
+    }
+}
+
+/* ─────────────── RESPONSIVE ─────────────── */
+@media (max-width: 900px) {
+    .payout-layout-grid {
+        grid-template-columns: 1fr;
+    }
+    .instruction-area {
+        order: -1;
+    }
+}

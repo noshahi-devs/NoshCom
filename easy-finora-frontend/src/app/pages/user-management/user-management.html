@@ -1,0 +1,73 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="glow-text">User Management</h1>
+        <div class="header-actions">
+            <div class="search-box">
+                <input type="text" [(ngModel)]="searchKeyword" (keyup.enter)="onSearch()" placeholder="Search users...">
+                <button (click)="onSearch()"><i class="fas fa-search"></i></button>
+            </div>
+            <span class="admin-badge">ADMIN PANEL</span>
+        </div>
+    </div>
+
+    <!-- Premium Loader -->
+    <app-loader *ngIf="isLoading" message="Retrieving global user registry..."></app-loader>
+
+    <div class="user-table-3d" *ngIf="!isLoading">
+        <div class="table-header">
+            <div class="col">User Info</div>
+            <div class="col">Email</div>
+            <div class="col">Status</div>
+            <div class="col">Joined Date</div>
+            <div class="col actions">Actions</div>
+        </div>
+
+        <div *ngFor="let user of users" class="table-row admin-row">
+            <div class="col user-info">
+                <span class="user-name">{{ user.name }} {{ user.surname }}</span>
+                <small class="user-id">@{{ user.userName }}</small>
+            </div>
+            <div class="col email-info">{{ user.emailAddress }}</div>
+            <div class="col">
+                <span class="status-badge" [class.active-user]="user.isActive" [class.inactive-user]="!user.isActive">
+                    {{ user.isActive ? 'Active' : 'Inactive' }}
+                </span>
+            </div>
+            <div class="col">{{ user.creationTime | date: 'MMM d, y' }}</div>
+            <div class="col actions">
+                <button [class]="user.isActive ? 'btn-deactivate' : 'btn-activate'" (click)="toggleStatus(user)">
+                    {{ user.isActive ? 'Deactivate' : 'Activate' }}
+                </button>
+            </div>
+        </div>
+
+        <div *ngIf="users.length === 0" class="table-row">
+            <div class="col" style="width: 100%; text-align: center;">No users found.</div>
+        </div>
+
+        <!-- Pagination Section -->
+        <div class="pagination-container" *ngIf="totalCount > 0">
+            <div class="pagination-info">
+                Showing {{ getStartIndex() }} to {{ getEndIndex() }} of {{ totalCount }} users
+            </div>
+
+            <div class="pagination-controls">
+                <button class="btn-pagination" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+
+                <div class="page-numbers">
+                    <button *ngFor="let page of getPageNumbers()" class="page-btn" [class.active]="page === currentPage"
+                        (click)="changePage(page)">
+                        {{ page }}
+                    </button>
+                </div>
+
+                <button class="btn-pagination" [disabled]="currentPage === totalPages"
+                    (click)="changePage(currentPage + 1)">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

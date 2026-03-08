@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wishlist & Boards (Single File)</title>
+<style>
+    body { font-family: Arial, sans-serif; margin:0; padding:0; text-align:center; background:white; }
+    h1 { font-size:26px; font-weight:bold; margin-top:30px; margin-bottom:10px; }
+
+    /* Tabs */
+    .tabs { display:flex; justify-content:space-between; width:320px; margin:0 auto; margin-top:10px; font-weight:bold; cursor:pointer; }
+    .tab-item { position:relative; padding:5px 0; font-size:16px; }
+    .tab-item.active::after { content:""; position:absolute; bottom:-5px; left:0; width:100%; height:3px; background:black; }
+
+    /* ITEMS PAGE */
+    #itemsPage { display:block; }
+    #boardsPage { display:none; }
+
+    .shop-box button { padding:12px 40px; border:1px solid #000; background:white; cursor:pointer; margin-top:25px; transition:0.3s; }
+    .shop-box button:hover { background:black; color:white; }
+
+    .divider { width:95%; height:1px; background:#ddd; margin:40px auto; }
+
+    .bottom-section { display:flex; justify-content:space-between; width:90%; margin:40px auto; }
+    .left { width:50%; text-align:left; }
+    .heart { color:black; font-size:18px; margin-right:6px; }
+    .right img { width:250px; border:1px solid #ddd; }
+
+    /* BOARDS PAGE */
+    .board-img img { width:260px; margin-top:40px; }
+    .desc { font-size:15px; width:60%; margin:20px auto; }
+    .create-btn button { background:black; color:white; padding:12px 40px; border:none; cursor:pointer; transition:0.3s; }
+    .create-btn button:hover { opacity:0.7; }
+
+    /* You May Also Like Section Styles */
+    .you-may-also-like-section {
+        padding: 20px 0;
+        font-family: Arial, sans-serif;
+        max-width: 100%;
+        overflow: hidden; 
+        box-sizing: border-box;
+        margin-top: 40px;
+        border-top: 1px solid #eee;
+    }
+
+    /* You May Also Like Heading */
+    .you-may-also-like-section h2 {
+        text-align: center;
+        font-size: 1.5em; 
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    /* Category Navigation Container - Main Area */
+    .category-container {
+        position: relative;
+        margin: 0 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    /* Category Navigation Bar Styling - The Scrollable Part */
+    .category-nav-bar {
+        display: flex;
+        overflow-x: auto; /* Changed to auto to show scrollbar */
+        white-space: nowrap; 
+        padding: 0 5px 10px 5px;
+        scroll-behavior: smooth;
+        -ms-overflow-style: none; /* Hide scrollbar in IE/Edge */
+        scrollbar-width: none; /* Hide scrollbar in Firefox */
+    }
+    
+    /* Hide scrollbar in Webkit browsers */
+    .category-nav-bar::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Individual Category Link Styling */
+    .category-nav-bar a {
+        text-decoration: none;
+        color: #555;
+        font-size: 1em;
+        padding: 8px 15px; 
+        margin-right: 5px;
+        cursor: pointer;
+        position: relative;
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+    }
+
+    /* Active Category Styling and Underline */
+    .category-nav-bar a.active {
+        color: black; 
+        font-weight: 600;
+    }
+
+    .category-nav-bar a.active::after {
+        content: '';
+        position: absolute;
+        bottom: -11px; 
+        left: 50%;
+        transform: translateX(-50%);
+        width: 70%; 
+        height: 3px; 
+        background-color: black; 
+    }
+
+    /* Scroll Arrow Styling */
+    .scroll-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: white;
+        cursor: pointer;
+        font-size: 1.2em;
+        color: #555;
+        padding: 5px 10px;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        z-index: 10;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+    .scroll-arrow:hover {
+        background: #f5f5f5;
+    }
+
+    .scroll-arrow.left {
+        left: 0;
+        opacity: 0;
+        pointer-events: none;
+        background: linear-gradient(to right, white, rgba(255,255,255,0.8));
+    }
+
+    .scroll-arrow.right {
+        right: 0;
+        background: linear-gradient(to left, white, rgba(255,255,255,0.8));
+    }
+    
+    /* Pagination Number Styling */
+    .pagination-number {
+        text-align: left;
+        padding: 10px 15px 0;
+        color: black;
+        font-size: 1em;
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+
+<h1>MY WISHLIST</h1>
+
+<div class="tabs">
+    <div id="itemsTab" class="tab-item active">ITEMS(0)</div>
+    <div id="boardsTab" class="tab-item">BOARDS(0)</div>
+</div>
+
+<!-- ITEMS PAGE -->
+<div id="itemsPage">
+    <p style="margin-top:30px;">You currently have nothing saved to your Wishlist.<br>
+       Personalize your shopping experience with your Wishlist.</p>
+
+    <div class="shop-box">
+        <button>SHOP NOW</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="bottom-section">
+        <div class="left">
+            <h2 style="font-size:24px; font-weight:bold;">Heart It.</h2>
+            <p>Store everything you love on one page.</p>
+            <p><span class="heart">❤</span>Think about it before purchasing it.</p>
+            <p><span class="heart">❤</span>Get notification about out-of-stock items.</p>
+        </div>
+
+        <div class="right">
+            <img src="wishlist-guide-fc5c0e8568.gif" alt="item image">
+        </div>
+    </div>
+</div>
+
+<!-- BOARDS PAGE -->
+<div id="boardsPage">
+    <div class="board-img">
+        <img src="sui_img_empty_board-a7bded62a1.png" alt="board layout">
+    </div>
+
+    <h2 style="margin-top:20px; font-weight:bold;">BOARDS</h2>
+
+    <div class="desc">New way to manage your favorite items! You can classify on your own style and share it with friends.</div>
+
+    <div class="create-btn">
+        <button>CREATE BOARD</button>
+    </div>
+</div>
+
+<!-- You May Also Like Section -->
+<div class="you-may-also-like-section">
+    <h2>You May Also Like</h2>
+
+    <div class="category-container">
+        <button class="scroll-arrow left" id="leftArrow" onclick="scrollCategories(-200)">&#139;</button> 
+        
+        <div class="category-nav-bar" id="categoryNavBar">
+            <a href="#" class="active" data-sequence="1" onclick="setActiveCategory(event, 1)">All</a>
+            <a href="#" data-sequence="2" onclick="setActiveCategory(event, 2)">Women Apparel</a>
+            <a href="#" data-sequence="3" onclick="setActiveCategory(event, 3)">Kids</a>
+            <a href="#" data-sequence="4" onclick="setActiveCategory(event, 4)">Men</a>
+            <a href="#" data-sequence="5" onclick="setActiveCategory(event, 5)">Home & Living</a>
+            <a href="#" data-sequence="6" onclick="setActiveCategory(event, 6)">Shoes</a>
+            <a href="#" data-sequence="7" onclick="setActiveCategory(event, 7)">Underwear & Sleepwear</a>
+            <a href="#" data-sequence="8" onclick="setActiveCategory(event, 8)">Beauty & Health</a>
+            <a href="#" data-sequence="9" onclick="setActiveCategory(event, 9)">Sports & Outdoor</a>
+            <a href="#" data-sequence="10" onclick="setActiveCategory(event, 10)">Baby</a>
+            <a href="#" data-sequence="11" onclick="setActiveCategory(event, 11)">Apparel Accessories</a>
+            <a href="#" data-sequence="12" onclick="setActiveCategory(event, 12)">Jewelry & Watches</a>
+            <a href="#" data-sequence="13" onclick="setActiveCategory(event, 13)">Tools & Home Improvement</a>
+            <a href="#" data-sequence="14" onclick="setActiveCategory(event, 14)">Bags & Luggage</a>
+            <a href="#" data-sequence="15" onclick="setActiveCategory(event, 15)">Home Textile</a>
+            <a href="#" data-sequence="16" onclick="setActiveCategory(event, 16)">Toys & Games</a>
+            <a href="#" data-sequence="17" onclick="setActiveCategory(event, 17)">Cell Phone & Accessories</a>
+            <a href="#" data-sequence="18" onclick="setActiveCategory(event, 18)">Office & School Supplies</a>
+            <a href="#" data-sequence="19" onclick="setActiveCategory(event, 19)">Pet Supplies</a>
+            <a href="#" data-sequence="20" onclick="setActiveCategory(event, 20)">Electronics</a>
+            <a href="#" data-sequence="21" onclick="setActiveCategory(event, 21)">Automotive</a>
+        </div>
+        
+        <button class="scroll-arrow right" id="rightArrow" onclick="scrollCategories(200)">&#155;</button>
+    </div>
+
+    <div class="pagination-number" id="currentPageNumber">1</div>
+</div>
+
+<script>
+// Tab Switching
+const itemsTab = document.getElementById("itemsTab");
+const boardsTab = document.getElementById("boardsTab");
+const itemsPage = document.getElementById("itemsPage");
+const boardsPage = document.getElementById("boardsPage");
+
+itemsTab.onclick = () => {
+    itemsTab.classList.add("active");
+    boardsTab.classList.remove("active");
+    itemsPage.style.display = "block";
+    boardsPage.style.display = "none";
+};
+
+boardsTab.onclick = () => {
+    boardsTab.classList.add("active");
+    itemsTab.classList.remove("active");
+    itemsPage.style.display = "none";
+    boardsPage.style.display = "block";
+};
+
+// You May Also Like Section Functionality
+const navBar = document.getElementById('categoryNavBar');
+const pageDisplay = document.getElementById('currentPageNumber');
+const leftArrow = document.getElementById('leftArrow');
+const rightArrow = document.getElementById('rightArrow');
+
+// Function to handle category click and sequence number update
+function setActiveCategory(event, sequenceNumber) {
+    event.preventDefault();
+
+    // 1. Update Active Class
+    const links = document.querySelectorAll('.category-nav-bar a');
+    links.forEach(link => link.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    
+    // 2. Update Sequence Number Display
+    pageDisplay.textContent = sequenceNumber;
+    
+    // 3. Calculate the optimal scroll position - FIXED VERSION
+    const clickedElement = event.currentTarget;
+    const container = navBar;
+    const containerWidth = container.clientWidth;
+    const containerScrollLeft = container.scrollLeft;
+    
+    // Get element position relative to container
+    const elementOffsetLeft = clickedElement.offsetLeft;
+    const elementWidth = clickedElement.offsetWidth;
+    
+    // Calculate ideal scroll position (center the element)
+    const idealScroll = elementOffsetLeft - (containerWidth / 2) + (elementWidth / 2);
+    
+    // Apply boundaries
+    const maxScroll = container.scrollWidth - containerWidth;
+    const boundedScroll = Math.max(0, Math.min(idealScroll, maxScroll));
+    
+    // Smooth scroll to the calculated position
+    container.scrollTo({
+        left: boundedScroll,
+        behavior: 'smooth'
+    });
+    
+    // Update arrows after scroll
+    setTimeout(updateArrowVisibility, 350);
+}
+
+// Function to scroll categories left or right
+function scrollCategories(scrollAmount) {
+    const currentScroll = navBar.scrollLeft;
+    const newScroll = currentScroll + scrollAmount;
+    const maxScroll = navBar.scrollWidth - navBar.clientWidth;
+    
+    // Apply boundaries
+    const boundedScroll = Math.max(0, Math.min(newScroll, maxScroll));
+    
+    navBar.scrollTo({
+        left: boundedScroll,
+        behavior: 'smooth'
+    });
+    
+    setTimeout(updateArrowVisibility, 350);
+}
+
+// Function to check if scrolling is possible and show/hide arrows
+function updateArrowVisibility() {
+    const maxScroll = navBar.scrollWidth - navBar.clientWidth;
+    const currentScroll = navBar.scrollLeft;
+
+    // Check for Left Arrow (Show if not at the very beginning)
+    if (currentScroll > 10) {
+        leftArrow.style.opacity = '1';
+        leftArrow.style.pointerEvents = 'auto';
+    } else {
+        leftArrow.style.opacity = '0';
+        leftArrow.style.pointerEvents = 'none';
+    }
+
+    // Check for Right Arrow (Show if there is still content to scroll)
+    if (currentScroll < maxScroll - 10) {
+        rightArrow.style.opacity = '1';
+        rightArrow.style.pointerEvents = 'auto';
+    } else {
+        rightArrow.style.opacity = '0';
+        rightArrow.style.pointerEvents = 'none';
+    }
+}
+
+// Initialize arrows and add scroll listener
+document.addEventListener('DOMContentLoaded', () => {
+    updateArrowVisibility();
+    navBar.addEventListener('scroll', updateArrowVisibility);
+    
+    // Also update on window resize
+    window.addEventListener('resize', updateArrowVisibility);
+});
+</script>
+
+</body>
+</html>

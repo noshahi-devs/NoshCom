@@ -1,0 +1,274 @@
+<div class="admin-orders-container p-4 animate__animated animate__fadeIn">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Order Management</h2>
+            <p class="text-muted">Verify tracking and confirm deliveries</p>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-container bg-white rounded-4 shadow-sm p-2 d-flex gap-2 mb-4">
+        <button class="btn flex-grow-1 py-2 rounded-3 border-0 transition-all"
+            [class.btn-primary]="currentTab === 'PendingVerification'"
+            [class.btn-light]="currentTab !== 'PendingVerification'" (click)="currentTab = 'PendingVerification'">
+            <i class="fas fa-clock me-2"></i>Pending Verification
+        </button>
+        <button class="btn flex-grow-1 py-2 rounded-3 border-0 transition-all"
+            [class.btn-primary]="currentTab === 'Verified'" [class.btn-light]="currentTab !== 'Verified'"
+            (click)="currentTab = 'Verified'">
+            <i class="fas fa-check-double me-2"></i>Verified Orders
+        </button>
+        <button class="btn flex-grow-1 py-2 rounded-3 border-0 transition-all"
+            [class.btn-primary]="currentTab === 'Delivered'" [class.btn-light]="currentTab !== 'Delivered'"
+            (click)="currentTab = 'Delivered'">
+            <i class="fas fa-check-circle me-2"></i>Delivered Orders
+        </button>
+    </div>
+
+    <!-- Orders List -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-muted small">
+                        <tr>
+                            <th class="ps-4">Order #</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Carrier</th>
+                            <th>Tracking</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container *ngIf="loading">
+                            <tr class="skeleton-row" *ngFor="let _ of [1,2,3,4,5]">
+                                <td class="ps-4">
+                                    <div class="skeleton-line w-60"></div>
+                                    <div class="skeleton-line w-40 mt-2"></div>
+                                </td>
+                                <td><div class="skeleton-line w-50"></div></td>
+                                <td><div class="skeleton-line w-40"></div></td>
+                                <td><div class="skeleton-pill"></div></td>
+                                <td><div class="skeleton-line w-60"></div></td>
+                                <td class="text-end pe-4">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <div class="skeleton-icon"></div>
+                                        <div class="skeleton-icon"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-container>
+                        <tr *ngFor="let order of filteredOrders" class="transition-all" [class.d-none]="loading">
+                            <td class="ps-4">
+                                <span class="fw-bold text-dark">{{ order.orderNumber }}</span>
+                                <div class="text-muted extra-small">Placed on {{ order.creationTime | date }}</div>
+                            </td>
+                            <td>
+                                <div class="fw-semibold">{{ order.customerName || 'User #' + order.userId }}</div>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-primary">${{ order.totalAmount }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info-subtle text-info rounded-pill px-3">{{ order.carrierId ||
+                                    'N/A' }}</span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button *ngIf="order.trackingCode"
+                                        class="btn btn-link p-0 border-0 text-decoration-none"
+                                        title="View Tracking Details">
+                                        <code
+                                            class="text-primary fw-bold bg-primary-subtle px-2 py-1 rounded small hover-underline">
+                                            <i class="fas fa-route me-1 small"></i>{{ order.trackingCode }}
+                                        </code>
+                                    </button>
+                                    <span *ngIf="!order.trackingCode" class="text-muted small">N/A</span>
+                                </div>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="d-flex justify-content-end gap-2 align-items-center">
+                                    <button
+                                        *ngIf="canVerify(order)"
+                                        class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm"
+                                        (click)="verifyOrder(order)">
+                                        <i class="fas fa-certificate me-1"></i>Verify
+                                    </button>
+                                    <button *ngIf="isVerifiedStatus(order?.status)"
+                                        class="btn btn-sm btn-success rounded-pill px-3 fw-bold shadow-sm"
+                                        (click)="deliverOrder(order)">
+                                        <i class="fas fa-truck-loading me-1"></i>Deliver
+                                    </button>
+                                    <a [routerLink]="['/admin/orders/details', resolveOrderId(order) || order.id]"
+                                        class="btn btn-sm btn-light rounded-circle shadow-sm"
+                                        title="View Admin Details">
+                                        <i class="fas fa-eye text-primary"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr *ngIf="!loading && filteredOrders.length === 0">
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="fas fa-box-open fa-3x mb-3 opacity-25"></i>
+                                <p>No orders found in this stage.</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =================== TRACKING MODAL =================== -->
+<div class="tracking-modal-backdrop animate__animated animate__fadeIn" *ngIf="showTrackingModal"
+    (click)="closeTrackingModal()">
+    <div class="tracking-modal animate__animated animate__slideInUp" (click)="$event.stopPropagation()">
+
+        <!-- Header -->
+        <div class="tracking-modal-header">
+            <div>
+                <div class="text-muted small mb-1"><i class="fas fa-route me-1"></i>TRACKING INFORMATION</div>
+                <h5 class="fw-bold mb-0 font-monospace text-primary">{{ selectedOrder?.trackingCode }}</h5>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge rounded-pill px-3 py-2" [ngClass]="{
+                    'bg-warning text-dark': isPendingVerificationStatus(selectedOrder?.status),
+                    'bg-success': isVerifiedStatus(selectedOrder?.status),
+                    'bg-primary': isDeliveredStatus(selectedOrder?.status)
+                }">
+                    <i class="fas fa-circle me-1 small"></i>{{ selectedOrder?.status }}
+                </span>
+                <button class="btn btn-sm btn-light rounded-circle" (click)="closeTrackingModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="tracking-stats-row">
+            <div class="tracking-stat-card">
+                <div class="stat-label"><i class="fas fa-shipping-fast me-1 text-primary"></i>Carrier</div>
+                <div class="stat-value">{{ selectedOrder?.carrierId || 'N/A' }}</div>
+            </div>
+            <div class="tracking-stat-card">
+                <div class="stat-label"><i class="fas fa-dollar-sign me-1 text-success"></i>Total Amount</div>
+                <div class="stat-value text-success fw-bold">${{ selectedOrder?.totalAmount }}</div>
+            </div>
+            <div class="tracking-stat-card">
+                <div class="stat-label"><i class="fas fa-calendar-alt me-1 text-info"></i>Order Date</div>
+                <div class="stat-value">{{ selectedOrder?.creationTime | date:'mediumDate' }}</div>
+            </div>
+            <div class="tracking-stat-card">
+                <div class="stat-label"><i class="fas fa-user me-1 text-warning"></i>Customer</div>
+                <div class="stat-value">{{ selectedOrder?.customerName || 'User #' + selectedOrder?.userId }}</div>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="tracking-timeline px-4 pb-3">
+            <div class="timeline-entry completed">
+                <div class="tl-dot bg-success"><i class="fas fa-box text-white small"></i></div>
+                <div class="tl-content">
+                    <div class="fw-semibold">Order Placed</div>
+                    <div class="text-muted small">{{ selectedOrder?.creationTime | date:'MMM d, y, h:mm a' }}</div>
+                </div>
+            </div>
+            <div class="timeline-entry completed">
+                <div class="tl-dot bg-info"><i class="fas fa-warehouse text-white small"></i></div>
+                <div class="tl-content">
+                    <div class="fw-semibold">Dispatched by Seller</div>
+                    <div class="text-muted small">Package handed to {{ selectedOrder?.carrierId || 'carrier' }}</div>
+                </div>
+            </div>
+            <div class="timeline-entry"
+                [ngClass]="{'completed': isVerifiedStatus(selectedOrder?.status) || isDeliveredStatus(selectedOrder?.status), 'active': isPendingVerificationStatus(selectedOrder?.status)}">
+                <div class="tl-dot"
+                    [ngClass]="{'bg-warning': isPendingVerificationStatus(selectedOrder?.status), 'bg-success': isVerifiedStatus(selectedOrder?.status) || isDeliveredStatus(selectedOrder?.status)}">
+                    <i class="fas fa-shield-alt text-white small"></i>
+                </div>
+                <div class="tl-content">
+                    <div class="fw-semibold">Admin Verification</div>
+                    <div class="text-muted small">
+                        <span *ngIf="isVerifiedStatus(selectedOrder?.status) || isDeliveredStatus(selectedOrder?.status)">Tracking
+                            verified by admin</span>
+                        <span *ngIf="!isVerifiedStatus(selectedOrder?.status) && !isDeliveredStatus(selectedOrder?.status)">Awaiting
+                            admin review</span>
+                    </div>
+                </div>
+            </div>
+            <div class="timeline-entry" [ngClass]="{'completed': isDeliveredStatus(selectedOrder?.status)}">
+                <div class="tl-dot"
+                    [ngClass]="{'bg-success': isDeliveredStatus(selectedOrder?.status), 'bg-light border': !isDeliveredStatus(selectedOrder?.status)}">
+                    <i class="fas fa-home small"
+                        [ngClass]="{'text-white': isDeliveredStatus(selectedOrder?.status), 'text-muted': !isDeliveredStatus(selectedOrder?.status)}"></i>
+                </div>
+                <div class="tl-content">
+                    <div class="fw-semibold" [ngClass]="{'text-muted': !isDeliveredStatus(selectedOrder?.status)}">Delivered
+                    </div>
+                    <div class="text-muted small">Final delivery to customer</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="px-4">
+            <hr class="text-muted opacity-25">
+        </div>
+
+        <!-- Items Section — Hardcoded for now -->
+        <div class="tracking-items-section px-4 pb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0"><i class="fas fa-cube me-2 text-primary"></i>Items in Shipment</h6>
+                <span class="badge bg-primary-subtle text-primary rounded-pill px-3">{{
+                    selectedOrder?.orderItems?.length || 2 }} items</span>
+            </div>
+
+            <!-- Hardcoded sample items -->
+            <div class="tracking-item-row">
+                <div class="ti-img">
+                    <img src="https://picsum.photos/48?random=1" alt="Product" class="rounded-2">
+                </div>
+                <div class="ti-info flex-grow-1">
+                    <div class="fw-semibold">Laptop 15.6" — Intel Core i5 12th Gen</div>
+                    <div class="text-muted small">SKU: TRK-001 &nbsp;|&nbsp; Qty: 1</div>
+                </div>
+                <div class="ti-price fw-bold text-primary">$849.00</div>
+            </div>
+
+            <div class="tracking-item-row">
+                <div class="ti-img">
+                    <img src="https://picsum.photos/48?random=2" alt="Product" class="rounded-2">
+                </div>
+                <div class="ti-info flex-grow-1">
+                    <div class="fw-semibold">Wireless Mouse — Logitech MX Master 3</div>
+                    <div class="text-muted small">SKU: TRK-002 &nbsp;|&nbsp; Qty: 2</div>
+                </div>
+                <div class="ti-price fw-bold text-primary">$198.00</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="tracking-modal-footer">
+            <div class="d-flex gap-3">
+                <button
+                    *ngIf="isPendingVerificationStatus(selectedOrder?.status)"
+                    class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm"
+                    (click)="closeTrackingModal(); verifyOrder(selectedOrder)">
+                    <i class="fas fa-certificate me-2"></i>Verify This Shipment
+                </button>
+                <button *ngIf="isVerifiedStatus(selectedOrder?.status)"
+                    class="btn btn-success rounded-pill px-4 fw-bold shadow-sm"
+                    (click)="closeTrackingModal(); deliverOrder(selectedOrder)">
+                    <i class="fas fa-truck-loading me-2"></i>Confirm Delivery
+                </button>
+                <button class="btn btn-light rounded-pill px-4" (click)="closeTrackingModal()">Close</button>
+            </div>
+            <a [routerLink]="['/admin/orders/details', resolveOrderId(selectedOrder) || selectedOrder?.id]" (click)="closeTrackingModal()"
+                class="btn btn-outline-primary rounded-pill px-4">
+                <i class="fas fa-external-link-alt me-2"></i>Full Details
+            </a>
+        </div>
+    </div>
+</div>

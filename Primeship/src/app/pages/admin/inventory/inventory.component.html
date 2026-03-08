@@ -1,0 +1,283 @@
+<div class="inventory-container">
+  <!-- Toast Notifications -->
+  <div class="toast-host" aria-live="polite" aria-atomic="true">
+    <div class="toast" *ngFor="let toast of toasts" [ngClass]="toast.type" (click)="removeToast(toast.id)">
+      <i class="toast-icon" [ngClass]="getToastIcon(toast.type)"></i>
+      <span class="toast-message">{{ toast.message }}</span>
+      <button type="button" class="toast-close" (click)="$event.stopPropagation(); removeToast(toast.id)">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-title">
+      <h2><i class="pi pi-warehouse"></i> Inventory</h2>
+      <p>Track stock levels across warehouses and keep products available</p>
+    </div>
+    <button type="button" class="btn primary" (click)="openAddItemModal()">
+      <i class="pi pi-plus"></i>
+      Add Item
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <div class="search-box">
+      <i class="pi pi-search"></i>
+      <input type="text" placeholder="Search inventory..." [(ngModel)]="searchTerm" (input)="filterTable()" />
+    </div>
+
+    <select [(ngModel)]="selectedStatusFilter" (change)="filterTable()">
+      <option [ngValue]="null">All Status</option>
+      <option value="in_stock">In Stock</option>
+      <option value="low_stock">Low Stock</option>
+      <option value="out_of_stock">Out of Stock</option>
+    </select>
+
+    <select [(ngModel)]="selectedWarehouseFilter" (change)="filterTable()">
+      <option [ngValue]="null">All Warehouses</option>
+      <option *ngFor="let w of warehouses" [value]="w">{{ w }}</option>
+    </select>
+
+    <button type="button" class="btn" (click)="clearFilters()">
+      <i class="pi pi-filter-slash"></i>
+      Clear Filters
+    </button>
+  </div>
+
+  <!-- Inventory Table -->
+  <div class="table-container">
+    <table class="simple-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Product</th>
+          <th>SKU</th>
+          <th>Warehouse</th>
+          <th>Qty</th>
+          <th>Reorder</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of paginatedItems">
+          <td>{{ item.id }}</td>
+          <td><strong>{{ item.productName }}</strong></td>
+          <td>{{ item.sku }}</td>
+          <td>{{ item.warehouse }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ item.reorderLevel }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="item.status">
+              {{ getStatusLabel(item.status) }}
+            </span>
+          </td>
+          <td class="actions">
+            <button type="button" class="btn icon edit" (click)="openEditItemModal(item)" title="Edit">
+              <i class="pi pi-pencil"></i>
+            </button>
+            <button type="button" class="btn icon danger" (click)="openDeleteConfirmation(item)" title="Delete">
+              <i class="pi pi-trash"></i>
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="filteredItems.length === 0">
+          <td colspan="8" class="no-data">
+            <i class="pi pi-inbox"></i>
+            <p>No inventory items found</p>
+            <button type="button" class="btn secondary" (click)="openAddItemModal()">Add Your First Item</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination">
+    <div class="pagination-info">
+      Showing {{ getStartIndex() }} to {{ getEndIndex() }} of {{ filteredItems.length }} items
+    </div>
+
+    <div class="pagination-controls">
+      <button class="btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+        <i class="pi pi-angle-left"></i> Previous
+      </button>
+
+      <div class="page-numbers">
+        <button *ngFor="let page of getPageNumbers()" class="btn page-btn" [ngClass]="{ 'active': page === currentPage }" (click)="changePage(page)">
+          {{ page }}
+        </button>
+      </div>
+
+      <button class="btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+        Next <i class="pi pi-angle-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Add Item Modal -->
+  <div class="modal-overlay" *ngIf="addItemModalVisible" (click)="closeAddItemModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="pi pi-plus-circle"></i>
+          <h3>Add Inventory Item</h3>
+        </div>
+        <button type="button" class="btn icon close-btn" (click)="closeAddItemModal()" title="Close">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <form [formGroup]="addItemForm" (ngSubmit)="saveItem()" class="item-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="addProductName">Product Name *</label>
+            <input id="addProductName" type="text" formControlName="productName" placeholder="Enter product name" />
+          </div>
+
+          <div class="form-group">
+            <label for="addSku">SKU *</label>
+            <input id="addSku" type="text" formControlName="sku" placeholder="e.g., SKU-001" />
+          </div>
+
+          <div class="form-group">
+            <label for="addWarehouse">Warehouse *</label>
+            <select id="addWarehouse" formControlName="warehouse">
+              <option value="">Select Warehouse</option>
+              <option *ngFor="let w of warehouses" [value]="w">{{ w }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="addQuantity">Quantity *</label>
+            <input id="addQuantity" type="number" formControlName="quantity" min="0" />
+          </div>
+
+          <div class="form-group">
+            <label for="addReorder">Reorder Level *</label>
+            <input id="addReorder" type="number" formControlName="reorderLevel" min="0" />
+          </div>
+
+          <div class="form-group">
+            <label for="addStatus">Status *</label>
+            <select id="addStatus" formControlName="status">
+              <option value="in_stock">In Stock</option>
+              <option value="low_stock">Low Stock</option>
+              <option value="out_of_stock">Out of Stock</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn secondary" (click)="closeAddItemModal()">
+            <i class="pi pi-times"></i>
+            Cancel
+          </button>
+          <button type="submit" class="btn primary" [disabled]="addItemForm.invalid">
+            <i class="pi pi-check"></i>
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Item Modal -->
+  <div class="modal-overlay" *ngIf="editItemModalVisible" (click)="closeEditItemModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="pi pi-pencil"></i>
+          <h3>Edit Inventory Item</h3>
+        </div>
+        <button type="button" class="btn icon close-btn" (click)="closeEditItemModal()" title="Close">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <form [formGroup]="editItemForm" (ngSubmit)="updateItem()" class="item-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="editProductName">Product Name *</label>
+            <input id="editProductName" type="text" formControlName="productName" />
+          </div>
+
+          <div class="form-group">
+            <label for="editSku">SKU *</label>
+            <input id="editSku" type="text" formControlName="sku" />
+          </div>
+
+          <div class="form-group">
+            <label for="editWarehouse">Warehouse *</label>
+            <select id="editWarehouse" formControlName="warehouse">
+              <option value="">Select Warehouse</option>
+              <option *ngFor="let w of warehouses" [value]="w">{{ w }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="editQuantity">Quantity *</label>
+            <input id="editQuantity" type="number" formControlName="quantity" min="0" />
+          </div>
+
+          <div class="form-group">
+            <label for="editReorder">Reorder Level *</label>
+            <input id="editReorder" type="number" formControlName="reorderLevel" min="0" />
+          </div>
+
+          <div class="form-group">
+            <label for="editStatus">Status *</label>
+            <select id="editStatus" formControlName="status">
+              <option value="in_stock">In Stock</option>
+              <option value="low_stock">Low Stock</option>
+              <option value="out_of_stock">Out of Stock</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn secondary" (click)="closeEditItemModal()">
+            <i class="pi pi-times"></i>
+            Cancel
+          </button>
+          <button type="submit" class="btn primary" [disabled]="editItemForm.invalid">
+            <i class="pi pi-check"></i>
+            Update
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="deleteConfirmationVisible" (click)="cancelDelete()">
+    <div class="modal-content delete-confirm" (click)="$event.stopPropagation()">
+      <div class="modal-header danger">
+        <i class="pi pi-exclamation-triangle"></i>
+        <h3>Delete Inventory Item</h3>
+      </div>
+
+      <div class="confirm-body">
+        <p class="warning-text">
+          <i class="pi pi-warning"></i>
+          Are you sure you want to delete <strong>{{ itemToDelete?.productName }}</strong> from inventory? This action cannot be undone.
+        </p>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" (click)="cancelDelete()">
+          <i class="pi pi-times"></i>
+          Cancel
+        </button>
+        <button type="button" class="btn danger" (click)="confirmDelete()">
+          <i class="pi pi-trash"></i>
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

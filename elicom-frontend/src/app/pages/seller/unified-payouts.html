@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Payouts - Smart Cart Seller Dashboard</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-body: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --sidebar-width: 280px;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --brand-primary: #4F46E5;
+            --brand-secondary: #6366F1;
+            --brand-accent: #818CF8;
+            --nav-hover: #f1f5f9;
+            --topbar-height: 70px;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            overflow-x: hidden;
+            margin: 0;
+        }
+
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            padding: 2rem;
+            padding-top: calc(var(--topbar-height) + 1.5rem);
+            transition: all 0.5s ease;
+        }
+
+        /* --- Unified Payouts Components --- */
+        .filter-bar {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid #edf2f7;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-item label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .form-select,
+        .form-control {
+            padding: 10px 15px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            background: #f8fafc;
+            min-width: 160px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .form-select:focus,
+        .form-control:focus {
+            outline: none;
+            border-color: var(--brand-primary);
+            background: white;
+        }
+
+        .payouts-card {
+            background: white;
+            border-radius: 24px;
+            padding: 0 !important;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            border: 1px solid #edf2f7;
+            overflow: hidden;
+        }
+
+        .payouts-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-export {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-export:hover {
+            background: #e2e8f0;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .unified-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .unified-table th {
+            padding: 20px 30px;
+            background: #f8fafc;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .unified-table td {
+            padding: 20px 30px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95rem;
+            vertical-align: middle;
+        }
+
+        .unified-table tr:hover {
+            background: #fcfdfe;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-completed {
+            background: #ecfdf5;
+            color: #059669;
+        }
+
+        .status-pending {
+            background: #fff7ed;
+            color: #d97706;
+        }
+
+        .status-processing {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .status-failed {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .method-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f5f9;
+            color: var(--text-dark);
+            font-size: 1rem;
+        }
+
+        .action-dots {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-dots:hover {
+            background: #f1f5f9;
+        }
+    </style>
+    <link rel="stylesheet" href="layout-styles.css">
+</head>
+
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Sidebar -->
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-logo">SC</div>
+            <div>
+                <h2 style="margin: 0; font-size: 1.5rem;">Smart Cart</h2>
+                <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;">Seller Dashboard</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <!-- User Profile -->
+            <div
+                style="padding: 20px; background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7)); border-radius: 16px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 8px 20px rgba(0,0,0,0.05);">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <div
+                        style="width: 50px; height: 50px; border-radius: 12px; background: linear-gradient(135deg, var(--brand-accent), #a5b4fc); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">
+                        AN
+                    </div>
+                    <div>
+                        <h4 style="color: var(--text-dark); margin-bottom: 5px;">Arslan Noshahi</h4>
+                        <p style="color: var(--brand-primary); font-size: 0.9rem; font-weight: 600;">
+                            <i class="fas fa-crown" style="margin-right: 5px;"></i>
+                            Premium Seller
+                        </p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div
+                        style="flex: 1; text-align: center; padding: 10px; background: rgba(79, 70, 229, 0.1); border-radius: 10px;">
+                        <div style="font-size: 1.2rem; font-weight: 800; color: var(--brand-primary);">24</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Orders</div>
+                    </div>
+                    <div
+                        style="flex: 1; text-align: center; padding: 10px; background: rgba(79, 70, 229, 0.1); border-radius: 10px;">
+                        <div style="font-size: 1.2rem; font-weight: 800; color: var(--brand-primary);">4.9</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Rating</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div style="margin-top: 30px;">
+                <h4
+                    style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
+                    NAVIGATION</h4>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> Dashboard</a>
+                    <a href="add-product2.html" class="nav-link"><i class="fa-solid fa-circle-plus"></i> Add
+                        Products</a>
+
+                    <div class="nav-item">
+                        <a href="javascript:void(0)" class="nav-link dropdown-trigger"><i
+                                class="fa-solid fa-list-check"></i> Listing Center <i
+                                class="fa fa-chevron-right chevron-icon"></i></a>
+                        <div class="submenu">
+                            <a href="product-listing.html" class="nav-link small">Store Listing</a>
+                            <a href="favorite-listing.html" class="nav-link small">Favorite Listing</a>
+                        </div>
+                    </div>
+
+                    <div class="nav-item">
+                        <a href="javascript:void(0)" class="nav-link dropdown-trigger"><i
+                                class="fa-solid fa-cart-flatbed"></i> Order Center <i
+                                class="fa fa-chevron-right chevron-icon"></i></a>
+                        <div class="submenu">
+                            <a href="unshipped-order.html" class="nav-link small">Unshipped Order</a>
+                            <a href="tracking-verification.html" class="nav-link small">Tracking Verification</a>
+                            <a href="shipped-complete.html" class="nav-link small">Shipped Complete</a>
+                            <a href="cancelled-order.html" class="nav-link small">Cancelled Order</a>
+                            <a href="rejected-trackings.html" class="nav-link small">Rejected Trackings</a>
+                            <a href="order-returned.html" class="nav-link small">Order Returned</a>
+                        </div>
+                    </div>
+
+                    <a href="3pl-partner.html" class="nav-link"><i class="fa-solid fa-handshake"></i> 3PL Partner
+                        Service</a>
+                    <a href="warehouse.html" class="nav-link"><i class="fa-solid fa-warehouse"></i> Smart Cart
+                        Warehouses</a>
+                    <a href="wallet-center.html" class="nav-link"><i class="fa-solid fa-wallet"></i> Wallet Center</a>
+
+                    <div class="nav-item">
+                        <a href="javascript:void(0)" class="nav-link dropdown-trigger"><i
+                                class="fa-solid fa-money-bill-transfer"></i> Payout Section <i
+                                class="fa fa-chevron-right chevron-icon"></i></a>
+                        <div class="submenu">
+                            <a href="unified-payouts.html" class="nav-link small">Payout History</a>
+                            <a href="add-payment-method.html" class="nav-link small">Add Payment Method</a>
+                            <a href="pending-payouts.html" class="nav-link small">Pending Payouts</a>
+                            <a href="completed-payouts.html" class="nav-link small">Completed Payouts</a>
+                            <a href="refunded-payouts.html" class="nav-link small">Refunded Payouts</a>
+                        </div>
+                    </div>
+
+                    <a href="profile.html" class="nav-link"><i class="fa-solid fa-user"></i> My Profile</a>
+                    <a href="account-settings.html" class="nav-link"><i class="fa-solid fa-gears"></i> Account
+                        Settings</a>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div
+                style="margin-top: 40px; padding: 20px; background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(99, 102, 241, 0.05)); border-radius: 16px; border: 1px solid rgba(79, 70, 229, 0.2);">
+                <h4 style="color: var(--text-dark); margin-bottom: 15px; font-size: 1rem;">Quick Stats</h4>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">Today's Revenue</span>
+                        <span style="color: var(--brand-primary); font-weight: 700;">$2,450</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">Active Orders</span>
+                        <span style="color: #10b981; font-weight: 700;">8</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">Avg. Rating</span>
+                        <span style="color: #f59e0b; font-weight: 700;">4.9</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Topbar -->
+    <!-- Topbar -->
+    <div class="topbar" id="topbar">
+        <div style="display: flex; align-items: center; gap: 25px;">
+            <div style="position: relative;">
+                <i class="fas fa-search"
+                    style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                <input type="text" id="global-search" placeholder="Search orders, customers..." style="
+                padding: 12px 20px 12px 45px;
+                border: 1px solid rgba(79, 70, 229, 0.2);
+                border-radius: 12px;
+                background: rgba(255, 255, 255, 0.8);
+                color: var(--text-dark);
+                font-size: 0.95rem;
+                width: 300px;
+                transition: all 0.3s ease;
+                backdrop-filter: blur(10px);
+            ">
+            </div>
+
+            <div style="display: flex; gap: 15px;">
+                <button style="
+                padding: 10px 20px;
+                background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+                color: white;
+                border: none;
+                border-radius: 10px;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.3s ease;
+                box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+            ">
+                    <i class="fas fa-plus"></i>
+                    New Order
+                </button>
+                <button style="
+                padding: 10px 20px;
+                background: linear-gradient(135deg, rgba(241, 245, 249, 0.9), rgba(226, 232, 240, 0.9));
+                color: var(--text-dark);
+                border: none;
+                border-radius: 10px;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.3s ease;
+            ">
+                    <i class="fas fa-filter"></i>
+                    Filter
+                </button>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 25px;">
+            <div style="position: relative;">
+                <i class="fas fa-bell" style="font-size: 1.2rem; color: var(--text-muted); cursor: pointer;"></i>
+                <span class="notification-badge" style="top: -5px; right: -5px;">3</span>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="text-align: right;">
+                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-dark);">Arslan Noshahi</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Seller ID: SC-789456</div>
+                </div>
+                <div style="
+                width: 45px;
+                height: 45px;
+                border-radius: 12px;
+                background: linear-gradient(135deg, var(--brand-accent), #a5b4fc);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: bold;
+                font-size: 1.1rem;
+                box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+                cursor: pointer;
+                transition: all 0.3s ease;
+            ">
+                    AN
+                </div>
+            </div>
+        </div>
+    </div>
+    <i class="fas fa-bars"></i>
+    </button>
+    <div style="display: flex; align-items: center; gap: 20px;">
+        <div style="text-align: right;">
+            <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-dark);">Arslan Noshahi</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Seller ID: SC-789456</div>
+        </div>
+        <div
+            style="width: 45px; height: 45px; border-radius: 12px; background: linear-gradient(135deg, var(--brand-accent), #a5b4fc); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.1rem;">
+            AN</div>
+    </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-wrapper" id="main-wrapper" class="main-wrapper">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold m-0" style="color: #0f172a;">Unified Payouts</h2>
+            <div class="d-flex gap-3">
+                <button class="btn-export"><i class="fas fa-download"></i> Export Data</button>
+                <button class="btn-export" style="background: var(--brand-primary); color: white; border: none;"><i
+                        class="fas fa-plus"></i> Request Payout</button>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <div class="filter-group">
+                <div class="filter-item">
+                    <label>Transaction ID</label>
+                    <input type="text" class="form-control" placeholder="Search #PY-000">
+                </div>
+                <div class="filter-item">
+                    <label>Status</label>
+                    <select class="form-select">
+                        <option>All Statuses</option>
+                        <option>Completed</option>
+                        <option>Pending</option>
+                        <option>Processing</option>
+                        <option>Failed</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Method</label>
+                    <select class="form-select">
+                        <option>All Methods</option>
+                        <option>Bank Transfer</option>
+                        <option>PayPal</option>
+                        <option>Stripe</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Date Range</label>
+                    <input type="date" class="form-control">
+                </div>
+            </div>
+            <button class="btn-export" style="border-color: var(--brand-primary); color: var(--brand-primary);"><i
+                    class="fas fa-filter"></i> Apply Filters</button>
+        </div>
+
+        <div class="payouts-card">
+            <div class="payouts-header">
+                <h5 class="m-0 fw-bold">Recent Transactions</h5>
+                <p class="m-0 text-muted small">Showing 10 of 42 payouts</p>
+            </div>
+            <div class="table-responsive">
+                <table class="unified-table">
+                    <thead>
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Date</th>
+                            <th>Method</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>#PY-88902</strong></td>
+                            <td>Oct 24, 2023 | 02:45 PM</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="method-icon"><i class="fas fa-university"></i></div>
+                                    <span>Bank Account (...421)</span>
+                                </div>
+                            </td>
+                            <td><strong style="color: #0f172a;">$1,240.50</strong></td>
+                            <td><span class="status-badge status-completed"><i class="fas fa-check-circle"></i>
+                                    Completed</span></td>
+                            <td>
+                                <div class="action-dots"><i class="fas fa-ellipsis-v"></i></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>#PY-88895</strong></td>
+                            <td>Oct 20, 2023 | 09:12 AM</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="method-icon"><i class="fab fa-paypal"></i></div>
+                                    <span>PayPal (arslan@noshahi.dev)</span>
+                                </div>
+                            </td>
+                            <td><strong style="color: #0f172a;">$450.00</strong></td>
+                            <td><span class="status-badge status-pending"><i class="fas fa-clock"></i> Pending</span>
+                            </td>
+                            <td>
+                                <div class="action-dots"><i class="fas fa-ellipsis-v"></i></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>#PY-88874</strong></td>
+                            <td>Oct 15, 2023 | 04:30 PM</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="method-icon"><i class="fas fa-university"></i></div>
+                                    <span>Bank Account (...421)</span>
+                                </div>
+                            </td>
+                            <td><strong style="color: #0f172a;">$2,100.00</strong></td>
+                            <td><span class="status-badge status-processing"><i class="fas fa-sync fa-spin"></i>
+                                    Processing</span></td>
+                            <td>
+                                <div class="action-dots"><i class="fas fa-ellipsis-v"></i></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>#PY-88862</strong></td>
+                            <td>Oct 10, 2023 | 11:20 AM</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="method-icon"><i class="fab fa-stripe"></i></div>
+                                    <span>Stripe Connect</span>
+                                </div>
+                            </td>
+                            <td><strong style="color: #0f172a;">$85.25</strong></td>
+                            <td><span class="status-badge status-failed"><i class="fas fa-exclamation-circle"></i>
+                                    Failed</span></td>
+                            <td>
+                                <div class="action-dots"><i class="fas fa-ellipsis-v"></i></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="layout-script.js"></script>
+    <script>
+        const toggleBtn = document.getElementById('sidebar-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const mainWrapper = document.getElementById('main-wrapper');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            topbar.classList.toggle('collapsed');
+            mainWrapper.classList.toggle('collapsed');
+            toggleBtn.classList.toggle('active');
+
+            if (sidebar.classList.contains('collapsed')) {
+                mainWrapper.style.marginLeft = '80px';
+                topbar.style.left = '80px';
+            } else {
+                mainWrapper.style.marginLeft = '280px';
+                topbar.style.left = '280px';
+            }
+        });
+    </script>
+</body>
+
+</html>

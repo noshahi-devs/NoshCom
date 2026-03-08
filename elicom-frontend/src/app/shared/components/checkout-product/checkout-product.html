@@ -1,0 +1,50 @@
+<div class="checkout-wrapper">
+  <div class="product-section">
+    <div class="product-card" *ngFor="let product of products">
+      <div class="image-stack">
+        <img class="product-image" [src]="product.image || fallbackImage" (error)="onImageError($event)" alt="Product image">
+        <span class="quantity-pill">x{{ product.quantity }}</span>
+      </div>
+      <div class="product-details">
+        <div class="name-row">
+          <div class="product-name-wrap" tabindex="0" [attr.aria-label]="product.name">
+            <div class="product-name">{{ product.name }}</div>
+            <div class="product-name-tooltip">{{ product.name }}</div>
+          </div>
+          <div class="price-box">
+            <span class="current-price">${{ (product.price * product.quantity) | number:'1.2-2' }}</span>
+            <span class="old-price" *ngIf="product.oldPrice > product.price">${{ (product.oldPrice * product.quantity) | number:'1.2-2' }}</span>
+          </div>
+        </div>
+        <div class="meta-row">
+          <span class="shop-name">{{ product.storeName }}</span>
+          <span class="variant-info">{{ product.color || '-' }} / {{ product.size || '-' }}</span>
+        </div>
+        <div class="quantity-row">
+          <span class="qty-label">Quantity</span>
+          <div class="quantity-selector">
+            <button class="qty-btn" (click)="decrementQty(product)">-</button>
+            <input type="text" class="qty-input" [value]="product.quantity" readonly>
+            <button class="qty-btn" (click)="incrementQty(product)">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="shipping-panel">
+    <div class="panel-heading">
+      <div>
+        <span class="panel-title">Shipping estimates</span>
+        <span class="panel-sub">Based on your address</span>
+      </div>
+      <i class="pi pi-truck"></i>
+    </div>
+
+    <div class="shipping-card standard">
+      <div class="shipping-title">Standard Delivery</div>
+      <p>{{ standardShipping }}</p>
+    </div>
+
+  </div>
+</div>

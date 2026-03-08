@@ -1,0 +1,197 @@
+<div class="upgrade-container">
+    <div class="upgrade-header">
+        <h1>Subscription Plans</h1>
+        <p>Choose the perfect plan for your financial journey</p>
+    </div>
+
+    <div class="card-usage-showcase" *ngIf="activeCard; else noCardBlock">
+        <div class="usage-3d-shell" [class.is-loading]="cardSectionLoading">
+            <div class="usage-shell-header">
+                <div class="title-wrap">
+                    <span class="title-accent"></span>
+                    <h3>{{ activeCard.cardTypeLabel }} Debit Card Details</h3>
+                </div>
+                <span class="active-pill">{{ activeCard.status || 'Active' }}</span>
+            </div>
+
+            <div class="usage-shell-grid" *ngIf="!cardSectionLoading; else usageLoadingTpl">
+                <div class="card-side">
+                    <div class="meta-row">
+                        <span class="meta-label">Card Number</span>
+                        <span class="meta-value">{{ activeCard.cardNumber }}</span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label">Card Holder</span>
+                        <span class="meta-value">{{ activeCard.holderName }}</span>
+                    </div>
+                    <div class="meta-row two-cols">
+                        <div>
+                            <span class="meta-label">Expiry</span>
+                            <span class="meta-value">{{ activeCard.expiryDate }}</span>
+                        </div>
+                        <div>
+                            <span class="meta-label">Active Plan</span>
+                            <span class="meta-value plan">{{ activeCard.activeSubscription }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="usage-side" *ngIf="usageOverview; else usageEmptyTpl">
+                    <div class="usage-mini-grid">
+                        <div class="usage-stat">
+                            <span>Daily Transactions</span>
+                            <strong>{{ usageOverview.dailyTransactionUsed }}/{{ usageOverview.dailyTransactionLimit }}</strong>
+                            <small>Remaining: {{ usageOverview.dailyTransactionRemaining }}</small>
+                        </div>
+                        <div class="usage-stat">
+                            <span>Monthly Transactions</span>
+                            <strong>{{ usageOverview.monthlyTransactionUsed }}/{{ usageOverview.monthlyTransactionLimit }}</strong>
+                            <small>Remaining: {{ usageOverview.monthlyTransactionRemaining }}</small>
+                        </div>
+                        <div class="usage-stat">
+                            <span>Daily Amount</span>
+                            <strong>{{ usageOverview.dailyAmountUsed | currency:'USD':'symbol':'1.0-2' }} / {{
+                                usageOverview.dailyAmountLimit | currency:'USD':'symbol':'1.0-2' }}</strong>
+                            <small>Remaining: {{ usageOverview.dailyAmountRemaining | currency:'USD':'symbol':'1.0-2'
+                                }}</small>
+                        </div>
+                        <div class="usage-stat">
+                            <span>Monthly Amount</span>
+                            <strong>{{ usageOverview.monthlyAmountUsed | currency:'USD':'symbol':'1.0-2' }} / {{
+                                usageOverview.monthlyAmountLimit | currency:'USD':'symbol':'1.0-2' }}</strong>
+                            <small>Remaining: {{ usageOverview.monthlyAmountRemaining | currency:'USD':'symbol':'1.0-2'
+                                }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reset-line" *ngIf="usageOverview && !cardSectionLoading">
+                Next daily reset: {{ usageOverview.nextDailyResetUtc | date:'MMM d, y, h:mm a' }}
+                <span class="sep">|</span>
+                Next monthly reset: {{ usageOverview.nextMonthlyResetUtc | date:'MMM d, y' }}
+            </div>
+        </div>
+    </div>
+
+    <ng-template #usageLoadingTpl>
+        <div class="usage-shell-grid usage-skeleton-grid">
+            <div class="card-side card-side-skeleton">
+                <div class="meta-row">
+                    <span class="meta-label skeleton-line w-45"></span>
+                    <span class="meta-value skeleton-line w-85"></span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label skeleton-line w-35"></span>
+                    <span class="meta-value skeleton-line w-70"></span>
+                </div>
+                <div class="meta-row two-cols">
+                    <div>
+                        <span class="meta-label skeleton-line w-60"></span>
+                        <span class="meta-value skeleton-line w-75"></span>
+                    </div>
+                    <div>
+                        <span class="meta-label skeleton-line w-70"></span>
+                        <span class="meta-value skeleton-line w-80"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="usage-side">
+                <div class="usage-mini-grid">
+                    <div class="usage-stat usage-stat-skeleton" *ngFor="let _ of [1,2,3,4]">
+                        <span class="skeleton-line w-60"></span>
+                        <strong class="skeleton-line w-70"></strong>
+                        <small class="skeleton-line w-55"></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="reset-line reset-line-skeleton">
+            <span class="skeleton-line w-35"></span>
+            <span class="skeleton-line w-8"></span>
+            <span class="skeleton-line w-30"></span>
+        </div>
+    </ng-template>
+
+    <ng-template #usageEmptyTpl>
+        <div class="usage-loading">Card usage details are not available right now.</div>
+    </ng-template>
+
+    <ng-template #noCardBlock>
+        <div class="no-card-block">No active card found. Apply for a card to unlock upgrade analytics.</div>
+    </ng-template>
+
+    <div class="plans-grid">
+        <div *ngFor="let plan of plans" class="plan-card" [ngClass]="plan.colorClass">
+            <div class="card-inner">
+                <div class="plan-content">
+                    <h3 class="plan-name">{{ plan.name }}</h3>
+                    <p class="plan-status">{{ plan.status }}</p>
+
+                    <div class="price-section">
+                        <span class="currency">$</span>
+                        <span class="amount">{{ plan.price }}</span>
+                    </div>
+
+                    <div class="benefits-list">
+                        <div *ngFor="let benefit of plan.benefits" class="benefit-item">
+                            <span class="text">{{ benefit.label }}</span>
+                            <span class="value">{{ benefit.value }}</span>
+                        </div>
+                    </div>
+
+                    <div class="icon-orb">
+                        <span class="icon">{{ plan.icon }}</span>
+                    </div>
+                </div>
+
+                <div
+                    class="plan-label-tab"
+                    role="button"
+                    tabindex="0"
+                    (click)="onPlanAction(plan)"
+                    (keydown.enter)="onPlanAction(plan)"
+                    (keydown.space)="onPlanAction(plan)">
+                    <span>{{ plan.tabText }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        <p>Secure global payments on all levels</p>
+    </div>
+
+    <div class="purchase-modal" *ngIf="showPurchaseModal">
+        <div class="purchase-backdrop" (click)="closePurchaseModal()"></div>
+        <div class="purchase-dialog">
+            <button class="dialog-close" (click)="closePurchaseModal()" [disabled]="isSubmitting" aria-label="Close">x</button>
+            <div class="dialog-top">
+                <p class="dialog-badge">Easy Finora Secure Checkout</p>
+                <h3>Purchase {{ selectedPlan?.name }}</h3>
+                <p class="price-note">Amount: ${{ selectedPlan?.price }}</p>
+            </div>
+            <p class="dialog-tip">Use your Easy Finora card details to complete purchase.</p>
+
+            <label>User Name</label>
+            <input [(ngModel)]="holderName" type="text" placeholder="Enter user name" />
+
+            <label>Card Number</label>
+            <input [(ngModel)]="cardNumber" type="text" placeholder="Enter card number" />
+
+            <label>Expiry Date</label>
+            <input [(ngModel)]="expiryDate" type="text" placeholder="MM/YY" />
+
+            <label>CVV</label>
+            <input [(ngModel)]="cvv" type="password" placeholder="CVV" />
+
+            <div class="modal-actions">
+                <button class="btn cancel" (click)="closePurchaseModal()">Cancel</button>
+                <button class="btn pay" (click)="submitPurchase()" [disabled]="isSubmitting">
+                    {{ isSubmitting ? 'Processing...' : 'Pay & Purchase' }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

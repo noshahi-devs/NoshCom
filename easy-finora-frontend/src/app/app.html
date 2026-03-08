@@ -1,0 +1,22 @@
+<app-header *ngIf="showHeaderFooter"></app-header>
+
+<!-- Mobile Menu Toggle -->
+<button *ngIf="showHeaderFooter" class="mobile-menu-toggle" (click)="toggleMobileMenu()">
+  <span class="hamburger-icon">☰</span>
+</button>
+
+<!-- Mobile Overlay -->
+<div *ngIf="showHeaderFooter && mobileMenuOpen" class="mobile-overlay" (click)="closeMobileMenu()"></div>
+
+<div class="app-layout" *ngIf="showHeaderFooter">
+  <app-sidebar [ngClass]="{'mobile-open': mobileMenuOpen}" (click)="closeMobileMenu()"></app-sidebar>
+
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>
+
+<router-outlet *ngIf="!showHeaderFooter"></router-outlet>
+
+<!-- Toast Notifications -->
+<app-toast></app-toast>

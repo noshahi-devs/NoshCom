@@ -1,0 +1,78 @@
+<div class="search-result-container">
+
+    <!-- Left Sidebar -->
+    <div class="left-pane">
+        <app-search-sidebar (filterChange)="onFilterChange($event)" [isOpen]="isSidebarOpen"
+            [categories]="availableCategories" [colors]="availableColors" [sizes]="availableSizes"
+            [types]="availableTypes" [fits]="availableFits" [lengths]="availableLengths" [priceLimit]="priceRange"
+            [loading]="isSidebarLoading">
+        </app-search-sidebar>
+        <!-- Overlay backdrop -->
+        <div class="sidebar-overlay" *ngIf="isSidebarOpen" (click)="toggleSidebar()"></div>
+    </div>
+
+    <!-- Right Content -->
+    <div class="right-pane">
+
+        <!-- Mobile Filter Toggle -->
+        <div class="mobile-filter-bar" (click)="toggleSidebar()">
+            <i class="fas fa-filter"></i> Filter / Sort
+        </div>
+
+        <!-- Filter/Sort Row -->
+        <div class="filter-row">
+            <h2 *ngIf="categoryTitle" style="margin: 0; font-size: 24px;">{{ categoryTitle }}</h2>
+
+            <!-- Sort Dropdown (Moved from Sidebar) -->
+            <div class="sort-box" id="sortBox" tabindex="0" (click)="toggleSortDropdown()">
+                <div class="sort-label">Sort By</div>
+
+                <div class="sort-select">
+                    <div class="sort-value">{{ getSortLabel(filterData.sort) }}</div>
+                    <div class="arrow"></div>
+                </div>
+
+                <div class="dropdown" [class.show]="showSortDropdown">
+                    <div class="opt" (click)="onSortChange('recommended')">Recommended</div>
+                    <div class="opt" (click)="onSortChange('newest')">Newest</div>
+                    <div class="opt" (click)="onSortChange('price-low')">Price: Low to High</div>
+                    <div class="opt" (click)="onSortChange('price-high')">Price: High to Low</div>
+                </div>
+            </div>
+
+            <!-- Chips are now managed by sidebar logic / dynamic filters -->
+
+            <!-- Chips -->
+            <!-- Chips are now managed by sidebar logic / dynamic filters -->
+            <div class="chips" *ngIf="false">
+                <div class="chip">
+                    <img src="assets/images/blackfriday_bag.png" alt="" onerror="this.style.display='none'">
+                    Black Friday
+                </div>
+                <div class="chip">
+                    <img src="assets/images/quickship.png" alt="" onerror="this.style.display='none'">
+                    QuickShip
+                </div>
+                <div class="chip trend">
+                    <img src="assets/images/trends.png" alt="" onerror="this.style.display='none'">
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="product-area">
+            <app-product-grid-new [filterData]="filterData" (productsLoaded)="onProductsLoaded($event)">
+            </app-product-grid-new>
+        </div>
+
+        <hr style="margin: 40px 0; border: none; border-top: 1px solid #eee;">
+
+        <!-- Smart Suggestions Section -->
+        <div class="suggestions-area">
+            <h3 style="margin-bottom: 20px; font-weight: 600;">Recommended For You</h3>
+            <app-product-grid-new [filterData]="{ sort: 'recommended' }" [visibleCountOverride]="10">
+            </app-product-grid-new>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,58 @@
+<div class="customer-address sui-fade-in">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-4 mb-5">
+        <h2 class="fw-bold mb-0 uppercase">ADDRESS BOOK</h2>
+        <button class="sui-btn sui-btn-primary px-4">
+            <i class="fas fa-plus me-2"></i>ADD NEW ADDRESS
+        </button>
+    </div>
+
+    <div class="row g-4">
+        <div *ngFor="let addr of addresses" class="col-md-6 col-lg-4">
+            <div class="sui-card p-4 transition-hover" [class.border-dark]="addr.isDefault">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <span *ngIf="addr.isDefault"
+                        class="bg-dark text-white x-small fw-bold px-3 py-1 uppercase">Default</span>
+                    <span *ngIf="!addr.isDefault"
+                        class="bg-light text-dark x-small fw-bold px-3 py-1 uppercase cursor-pointer border hover-dark"
+                        (click)="setDefault(addr.id)">Set Default</span>
+
+                    <div class="dropdown">
+                        <i class="fas fa-ellipsis-v text-muted cursor-pointer" data-bs-toggle="dropdown"></i>
+                        <ul class="dropdown-menu rounded-0 border-dark shadow-sm">
+                            <li><a class="dropdown-item x-small fw-bold uppercase" href="#"><i
+                                        class="fas fa-edit me-2"></i>Edit</a></li>
+                            <li><a class="dropdown-item x-small fw-bold uppercase text-danger"
+                                    (click)="deleteAddress(addr.id)" href="#"><i
+                                        class="fas fa-trash-alt me-2"></i>Delete</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold mb-1 uppercase">{{addr.name}}</h6>
+                <p class="x-small text-muted mb-3 fw-bold"><i
+                        class="fas fa-phone-alt me-2 opacity-50"></i>{{addr.phone}}</p>
+
+                <div class="addr-details x-small text-muted fw-bold uppercase">
+                    <p class="mb-1">{{addr.address}}</p>
+                    <p class="mb-0">{{addr.city}}, {{addr.state}} {{addr.zip}}</p>
+                </div>
+
+                <div class="mt-4 border-top pt-3 d-flex gap-2">
+                    <button
+                        class="btn btn-link p-0 text-dark text-decoration-none x-small fw-bold uppercase">EDIT</button>
+                    <span class="text-muted">|</span>
+                    <button (click)="deleteAddress(addr.id)"
+                        class="btn btn-link p-0 text-danger text-decoration-none x-small fw-bold uppercase">DELETE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="addresses.length === 0" class="sui-card border-0 bg-light py-5 text-center mt-4">
+        <i class="fas fa-map-marked-alt fa-4x text-muted opacity-25 mb-4"></i>
+        <h4 class="fw-bold uppercase">NO ADDRESSES FOUND</h4>
+        <p class="x-small text-muted uppercase mb-4">Save your delivery addresses for a faster checkout experience!</p>
+        <button class="sui-btn sui-btn-primary px-5">ADD YOUR FIRST ADDRESS</button>
+    </div>
+</div>

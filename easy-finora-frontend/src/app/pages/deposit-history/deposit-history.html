@@ -1,0 +1,80 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1>Deposit History</h1>
+        <div class="header-actions">
+            <button class="btn-3d" routerLink="/deposit">+ New Deposit</button>
+            <div class="inline-loader" *ngIf="isLoading">
+                <span class="dot"></span>
+                <span>Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="history-table-3d">
+        <div class="table-header">
+            <div class="col">Ref ID</div>
+            <div class="col">Amount</div>
+            <div class="col">Method</div>
+            <div class="col">Country</div>
+            <div class="col">Status</div>
+            <div class="col">Date</div>
+        </div>
+
+        <ng-container *ngIf="isLoading">
+            <div class="table-row ghost-row" *ngFor="let _ of [1,2,3,4]">
+                <div class="col"><span class="ghost-line id"></span></div>
+                <div class="col"><span class="ghost-line amt"></span></div>
+                <div class="col"><span class="ghost-line method"></span></div>
+                <div class="col"><span class="ghost-line country"></span></div>
+                <div class="col"><span class="ghost-pill"></span></div>
+                <div class="col"><span class="ghost-line date"></span></div>
+            </div>
+        </ng-container>
+
+        <ng-container *ngIf="!isLoading">
+            @for (deposit of deposits; track deposit.id) {
+            <div class="table-row">
+                <div class="col" title="{{ deposit.id }}">{{ deposit.id | slice:0:8 }}...</div>
+                <div class="col amount">{{ deposit.amount | currency: (deposit.currency || 'USD') }}</div>
+                <div class="col">{{ deposit.method }}</div>
+                <div class="col">{{ deposit.country }}</div>
+                <div class="col">
+                    <span class="status-badge" [ngClass]="(deposit.status || 'pending').toLowerCase()">
+                        {{ deposit.status }}
+                    </span>
+                </div>
+                <div class="col">{{ deposit.creationTime | date: 'MMM d, y h:mm a' }}</div>
+            </div>
+            } @empty {
+            <div class="table-row">
+                <div class="col" style="width: 100%; text-align: center;">No deposit history found.</div>
+            </div>
+            }
+
+            <!-- Pagination Section -->
+            <div class="pagination-container" *ngIf="totalCount > 0">
+                <div class="pagination-info">
+                    Showing {{ getStartIndex() }} to {{ getEndIndex() }} of {{ totalCount }} deposits
+                </div>
+
+                <div class="pagination-controls">
+                    <button class="btn-pagination" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+
+                    <div class="page-numbers">
+                        <button *ngFor="let page of getPageNumbers()" class="page-btn"
+                            [class.active]="page === currentPage" (click)="changePage(page)">
+                            {{ page }}
+                        </button>
+                    </div>
+
+                    <button class="btn-pagination" [disabled]="currentPage === totalPages"
+                        (click)="changePage(currentPage + 1)">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </ng-container>
+    </div>
+</div>

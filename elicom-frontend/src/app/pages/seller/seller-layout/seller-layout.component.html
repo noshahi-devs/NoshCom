@@ -1,0 +1,319 @@
+<div class="seller-layout" [class.sidebar-collapsed]="isSidebarCollapsed">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar" [class.show-mobile]="!isSidebarCollapsed">
+        <div class="sidebar-brand">
+            <div class="brand-logo"><i class="fa fa-shop"></i></div>
+            <h5 class="fw-bold mb-0">World Cart</h5>
+        </div>
+
+        <a routerLink="/seller/dashboard" routerLinkActive="active" class="nav-link nav-dashboard" data-tooltip="Dashboard">
+            <i class="fa-solid fa-chart-line"></i> <span>Dashboard</span>
+        </a>
+        <a routerLink="/seller/add-product" routerLinkActive="active" class="nav-link nav-add" data-tooltip="Add Products">
+            <i class="fa-solid fa-file-circle-plus"></i> <span>Add Products</span>
+        </a>
+
+        <a routerLink="/seller/listings" routerLinkActive="active" class="nav-link nav-listings" data-tooltip="Store Listing">
+            <i class="fa-solid fa-boxes-stacked"></i> <span>Store Listing</span>
+        </a>
+
+        <button type="button" class="nav-link nav-orders nav-dropdown-btn" data-tooltip="Order Center" [class.active]="isOrderRoute()"
+            (click)="toggleOrderMenu()">
+            <i class="fa-solid fa-shopping-bag"></i>
+            <span>Order Center</span>
+        </button>
+        <div class="sub-nav-list" *ngIf="showOrderMenu">
+            <a routerLink="/seller/orders/unshipped" routerLinkActive="active" class="sub-nav-link">
+                <i class="fa-solid fa-list-check"></i>
+                <span>Unshipped</span>
+            </a>
+            <a routerLink="/seller/orders/tracking-verifications" routerLinkActive="active" class="sub-nav-link">
+                <i class="fa-solid fa-hand"></i>
+                <span>Tracking Verifications</span>
+            </a>
+            <a routerLink="/seller/orders/shipped" routerLinkActive="active" class="sub-nav-link">
+                <i class="fa-solid fa-truck-fast"></i>
+                <span>Shipped</span>
+            </a>
+            <a routerLink="/seller/orders/canceled" routerLinkActive="active" class="sub-nav-link">
+                <i class="fa-solid fa-square-xmark"></i>
+                <span>Canceled</span>
+            </a>
+            <a routerLink="/seller/orders/rejected-trackings" routerLinkActive="active" class="sub-nav-link">
+                <i class="fa-solid fa-circle-xmark"></i>
+                <span>Rejected Trackings</span>
+            </a>
+            <a routerLink="/seller/orders/returned-refunded" routerLinkActive="active" class="sub-nav-link">
+                <i class="fa-solid fa-right-left"></i>
+                <span>Returned & Refunded</span>
+            </a>
+            <a routerLink="/seller/orders/3pl-partners" routerLinkActive="active" class="sub-nav-link">
+                <i class="fa-solid fa-handshake"></i>
+                <span>3PL Partners</span>
+            </a>
+        </div>
+
+        <a routerLink="/seller/logistics" routerLinkActive="active" class="nav-link nav-logistics" data-tooltip="Logistics">
+            <i class="fa-solid fa-truck-fast"></i> <span>Logistics</span>
+        </a>
+        <a routerLink="/seller/warehouse" routerLinkActive="active" class="nav-link nav-warehouse" data-tooltip="Warehouses">
+            <i class="fa-solid fa-city"></i> <span>Warehouses</span>
+        </a>
+
+        <a routerLink="/seller/finances/wallet" routerLinkActive="active" class="nav-link nav-wallet" data-tooltip="My Wallet">
+            <i class="fa-solid fa-credit-card"></i> <span>My Wallet</span>
+        </a>
+        <button type="button" class="nav-link nav-payouts nav-dropdown-btn" data-tooltip="Withdrawals" [class.active]="isWithdrawRoute()"
+            (click)="toggleWithdrawMenu()">
+            <i class="fa-solid fa-receipt"></i>
+            <span>Withdrawals</span>
+        </button>
+        <div class="sub-nav-list" *ngIf="showWithdrawMenu">
+            <a routerLink="/seller/finances/wallet" routerLinkActive="active" class="sub-nav-link">Seller Wallet</a>
+            <a routerLink="/seller/finances/payouts/pending" routerLinkActive="active" class="sub-nav-link">Pending
+                Payouts</a>
+            <a routerLink="/seller/finances/payouts/completed" routerLinkActive="active" class="sub-nav-link">Complete
+                Payouts</a>
+            <a routerLink="/seller/finances/payouts/refunds" routerLinkActive="active" class="sub-nav-link">Refund
+                Payouts</a>
+        </div>
+
+        <!-- Stats Menu -->
+        <button type="button" class="nav-link nav-stats nav-dropdown-btn" data-tooltip="Stats" [class.active]="isStatsRoute()"
+            (click)="toggleStatsMenu()">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Stats</span>
+        </button>
+        <div class="sub-nav-list" *ngIf="showStatsMenu">
+            <a routerLink="/seller/stats/sales-report" routerLinkActive="active" class="sub-nav-link">
+                <i class="fa-solid fa-chart-line small me-2"></i> Sales Report
+            </a>
+            <a routerLink="/seller/stats/revenue-profit" routerLinkActive="active" class="sub-nav-link">
+                <i class="fa-solid fa-sack-dollar small me-2"></i> Revenue & Profit
+            </a>
+        </div>
+        <a routerLink="/seller/finances/add-payment-method" routerLinkActive="active"
+            class="nav-link nav-payment-method" data-tooltip="Payment Methods">
+            <i class="fa-solid fa-credit-card"></i> <span>Payment Methods</span>
+        </a>
+
+
+        <a href="javascript:void(0)" (click)="logout()" class="nav-link logout-link" data-tooltip="Logout">
+            <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+        </a>
+    </aside>
+
+    <!-- Topbar -->
+    <div class="topbar" id="topbar">
+        <div class="d-flex align-items-center topbar-left">
+            <i (click)="toggleSidebar()" class="fa fa-bars me-3 text-muted fs-5 cursor-pointer"></i>
+        </div>
+        <div class="search-container topbar-center d-none d-md-block">
+            <div class="position-relative">
+                <i class="fa fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                <input type="text" class="search-input ps-5" placeholder="Search data...">
+            </div>
+        </div>
+        <div class="d-flex align-items-center topbar-actions topbar-right">
+            <div class="position-relative me-4">
+                <i class="fa fa-bell text-muted fs-5"></i>
+                <span
+                    class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+            </div>
+
+            <div class="country-dropdown me-3">
+                <button type="button" class="country-toggle" (click)="toggleCountryMenu($event)"
+                    [attr.aria-expanded]="showCountryMenu">
+                    <img class="country-flag-img" [src]="selectedCountry.flagUrl"
+                        [alt]="selectedCountry.name + ' flag'" />
+                    <span class="country-name">{{ selectedCountry.name }}</span>
+                    <i class="fa-solid fa-chevron-down" [class.open]="showCountryMenu"></i>
+                </button>
+
+                <div class="country-menu" *ngIf="showCountryMenu">
+                    <button type="button" class="country-option" *ngFor="let country of countryOptions"
+                        [class.active]="country.name === selectedCountry.name" (click)="selectCountry(country, $event)">
+                        <img class="country-flag-img" [src]="country.flagUrl" [alt]="country.name + ' flag'" />
+                        <span class="country-name">{{ country.name }}</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Skeleton Loader (Visible while isStoreLoading is true and currentStore is not yet available) -->
+            <div *ngIf="isStoreLoading && !currentStore" class="d-flex align-items-center profile-section">
+                <div class="text-end me-2 d-none d-sm-block">
+                    <div class="skeleton-shimmer name-skeleton mb-1"></div>
+                    <div class="skeleton-shimmer role-skeleton"></div>
+                </div>
+                <div class="avatar-initials-circle skeleton-shimmer"></div>
+            </div>
+
+            <!-- Real Content (Visible when store data is available OR loading finished) -->
+            <div *ngIf="!isStoreLoading || currentStore"
+                class="d-flex align-items-center cursor-pointer profile-section" (click)="openProfileModal()">
+                <div class="profile-meta me-3 d-none d-sm-flex">
+                    <p class="mb-0 fw-bold text-dark profile-name">{{ getDisplayName() }}</p>
+                </div>
+                <div class="avatar-wrap">
+                    <div class="avatar-initials-circle shadow-sm avatar-3d">
+                        {{ getInitials() }}
+                    </div>
+                    <span class="seller-badge">Seller</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-wrapper" id="main-wrapper">
+        <router-outlet></router-outlet>
+    </div>
+
+    <!-- Mobile Backdrop -->
+    <div *ngIf="!isSidebarCollapsed" (click)="toggleSidebar()" class="sidebar-backdrop d-lg-none"></div>
+
+    <!-- Overlays -->
+    <ng-container *ngIf="currentStore">
+        <!-- Pending Approval Overlay -->
+        <div class="pending-approval-overlay" *ngIf="!currentStore.status">
+            <div class="glass-card text-center">
+                <div class="pulse-icon">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+                <h2 class="fw-bold text-white mb-3">Application Under Review</h2>
+                <p class="text-white opacity-75 mb-4">
+                    Thank you for applying to <strong>World Cart</strong>. <br>
+                    Our team is currently reviewing your store details and identity documents.
+                </p>
+                <div class="status-steps mb-4">
+                    <div class="status-step-item completed">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Submitted</span>
+                    </div>
+                    <div class="status-step-divider"></div>
+                    <div class="status-step-item active">
+                        <i class="fas fa-search"></i>
+                        <span>Reviewing</span>
+                    </div>
+                    <div class="status-step-divider"></div>
+                    <div class="status-step-item">
+                        <i class="fas fa-rocket"></i>
+                        <span>Launch</span>
+                    </div>
+                </div>
+                <p class="small text-white opacity-50 mb-0">
+                    Review usually takes 24-48 hours. <br>
+                    Need help? <a href="mailto:support@worldcart.com"
+                        class="text-white text-decoration-underline">Contact
+                        Support</a>
+                </p>
+                <div class="mt-4">
+                    <button (click)="logout()" class="btn btn-outline-light rounded-pill px-4">
+                        <i class="fas fa-sign-out-alt me-2"></i>Sign Out
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deactivated Account Overlay -->
+        <div class="pending-approval-overlay deactivated-overlay" *ngIf="!currentStore.isAdminActive">
+            <div class="glass-card text-center bg-danger-glass">
+                <div class="pulse-icon bg-danger-soft">
+                    <i class="fas fa-user-slash text-danger"></i>
+                </div>
+                <h2 class="fw-bold text-white mb-3">Account Deactivated</h2>
+                <p class="text-white opacity-75 mb-4">
+                    Your seller account has been deactivated by the administrator. <br>
+                    You currently do not have access to the seller dashboard.
+                </p>
+                <div class="alert alert-danger border-0 bg-white-10 text-white small mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Please contact support or your account manager for clarification.
+                </div>
+                <div class="mt-4">
+                    <button (click)="logout()" class="btn btn-light rounded-pill px-4">
+                        <i class="fas fa-sign-out-alt me-2"></i>Sign Out
+                    </button>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+
+    <!-- Profile Modal -->
+    <div class="profile-modal-overlay" *ngIf="showProfileModal" (click)="closeProfileModal()">
+        <div class="profile-modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h5 class="fw-bold m-0"><i class="fa fa-user-circle me-2"></i>Account & Store Details</h5>
+                <i class="fa fa-times close-btn" (click)="closeProfileModal()"></i>
+            </div>
+
+            <div class="modal-body py-4">
+                <div *ngIf="isProfileLoading && !currentUser" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Fetching fresh profile details...</p>
+                </div>
+
+                <div *ngIf="!isProfileLoading || currentUser">
+                    <div class="text-center mb-4">
+                        <div class="avatar-wrapper mb-3 mx-auto">
+                            <div class="avatar-initials-circle shadow-lg large avatar-3d">
+                                {{ getInitials() }}
+                            </div>
+                            <span class="status-dot"></span>
+                        </div>
+                        <h4 class="fw-bold mb-1">{{ getDisplayName() }}</h4>
+                        <p class="text-muted small mb-0">{{ currentUser?.emailAddress }}</p>
+                    </div>
+
+                    <!-- User Info Section -->
+                    <div class="profile-info-group mb-4">
+                        <h6 class="group-title">User Information</h6>
+                        <div class="info-grid bg-light p-3 rounded-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted small">User ID</span>
+                                <span class="fw-bold small">#{{ currentUser?.id }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted small">Account Type</span>
+                                <span class="badge bg-primary-subtle text-primary x-small">{{
+                                    currentUser?.roleNames?.[0] || 'Seller' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Store Info Section -->
+                    <div class="profile-info-group mb-4" *ngIf="currentStore">
+                        <h6 class="group-title">Store Summary</h6>
+                        <div class="info-grid bg-white border p-3 rounded-3 shadow-sm">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted small">Store Name</span>
+                                <span class="fw-bold small">{{ currentStore.name }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted small">Support Email</span>
+                                <span class="fw-bold small">{{ currentStore.supportEmail || 'N/A' }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted small">Store URL</span>
+                                <span class="fw-bold small text-primary">/{{ currentStore.slug }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted small">Wallet Balance</span>
+                                <span class="fw-bold text-success small">{{ currentStore.walletBalance | currency
+                                    }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 px-3">
+                        <button class="btn btn-danger-soft rounded-pill btn-sm py-2 fw-bold" (click)="logout()">
+                            <i class="fas fa-sign-out-alt me-2"></i>Sign Out
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

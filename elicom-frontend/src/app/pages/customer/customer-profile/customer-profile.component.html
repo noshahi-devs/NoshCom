@@ -1,0 +1,58 @@
+<div class="customer-profile sui-fade-in">
+    <!-- Page Header -->
+    <div class="cust-page-hdr">
+        <div>
+            <div class="cust-page-eyebrow">Personal Settings</div>
+            <h2 class="cust-page-title">My Profile</h2>
+        </div>
+    </div>
+
+    <!-- Profile Content -->
+    <div class="profile-container">
+        <div class="profile-card">
+
+            <!-- Avatar Section -->
+            <div class="avatar-wrapper">
+                <div class="avatar-preview">
+                    <span>{{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}</span>
+                </div>
+            </div>
+
+            <!-- Profile Form -->
+            <div class="profile-form">
+                <div class="form-group-grid">
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        <input type="text" [(ngModel)]="user.firstName" name="firstName" class="form-control" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" [(ngModel)]="user.lastName" name="lastName" class="form-control" disabled>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 24px;">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" [(ngModel)]="user.email" name="email" class="form-control" disabled>
+                    <p style="font-size: 11px; color: #949ab1; margin-top: 6px; font-weight: 500;">Email address linked
+                        to your account.</p>
+                </div>
+
+                <div class="form-group-grid" style="margin-top: 24px;">
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" [(ngModel)]="user.phone" name="phone" class="form-control" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Gender</label>
+                        <select [(ngModel)]="user.gender" name="gender" class="form-select" disabled>
+                            <option>Male</option>
+                            <option>Female</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

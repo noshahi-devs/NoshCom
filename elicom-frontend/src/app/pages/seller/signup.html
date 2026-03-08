@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - World Cart Seller Dashboard</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --brand-primary: #4F46E5;
+            --brand-secondary: #6366F1;
+            --bg-body: #f8fafc;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at bottom right, #fdf2f8 0%, #f8fafc 50%, #eff6ff 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: var(--text-dark);
+        }
+
+        /* --- 3D Background Elements --- */
+        .bg-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .shape {
+            position: absolute;
+            background: linear-gradient(135deg, var(--brand-secondary), #818CF8);
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            animation: move 20s infinite alternate-reverse;
+        }
+
+        .shape-1 {
+            width: 450px;
+            height: 450px;
+            bottom: -150px;
+            right: -100px;
+        }
+
+        .shape-2 {
+            width: 350px;
+            height: 350px;
+            top: -100px;
+            left: -100px;
+            background: #EC4899;
+            opacity: 0.1;
+        }
+
+        @keyframes move {
+            from {
+                transform: translate(0, 0) scale(1.1);
+            }
+
+            to {
+                transform: translate(-50px, -50px) scale(1);
+            }
+        }
+
+        /* --- Signup Card --- */
+        .signup-card {
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 28px;
+            padding: 35px 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.12);
+            transform-style: preserve-3d;
+            perspective: 1200px;
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+            transform: translateZ(35px);
+        }
+
+        .logo-box {
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #EC4899, var(--brand-secondary));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            color: white;
+            font-size: 22px;
+            box-shadow: 0 12px 24px rgba(236, 72, 153, 0.3);
+            transform: rotate(10deg);
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            letter-spacing: -0.6px;
+            background: linear-gradient(135deg, var(--text-dark), var(--brand-primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* --- Form Elements --- */
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .form-group {
+            flex: 1;
+            margin-bottom: 18px;
+            transform: translateZ(25px);
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13.5px;
+            font-weight: 700;
+            margin-bottom: 7px;
+            color: #475569;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 15px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 11px 15px 11px 45px;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1.5px solid #e2e8f0;
+            border-radius: 11px;
+            font-size: 14.5px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #EC4899;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.1);
+        }
+
+        .btn-signup {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #EC4899, var(--brand-secondary));
+            border: none;
+            border-radius: 11px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+            box-shadow: 0 10px 25px rgba(236, 72, 153, 0.3);
+            transform: translateZ(45px);
+        }
+
+        .btn-signup:hover {
+            transform: translateZ(55px) translateY(-3px);
+            box-shadow: 0 15px 35px rgba(236, 72, 153, 0.4);
+        }
+
+        .terms {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 12.5px;
+            color: var(--text-muted);
+            transform: translateZ(10px);
+        }
+
+        .terms a {
+            color: var(--brand-primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-link {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+            color: var(--text-muted);
+            transform: translateZ(15px);
+        }
+
+        .footer-link a {
+            color: #EC4899;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .shine {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(236, 72, 153, 0.1) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+    <link rel="stylesheet" href="layout-styles.css">
+</head>
+
+<body>
+    <div class="particles" id="particles"></div>
+    <!-- Sidebar Toggle for Mobile -->
+    <button class="sidebar-toggle" id="sidebar-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+    </div>
+
+    <div class="signup-card" id="signup-card">
+        <div class="shine"></div>
+        <div class="header">
+            <div class="logo-box">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <h1>Start Your Journey</h1>
+            <p>Join thousands of sellers today.</p>
+        </div>
+
+        <form action="store-creation.html">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <div class="input-wrapper">
+                        <i class="far fa-user"></i>
+                        <input type="text" class="form-control" placeholder="John" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <div class="input-wrapper">
+                        <i class="far fa-user"></i>
+                        <input type="text" class="form-control" placeholder="Doe" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Email Address</label>
+                <div class="input-wrapper">
+                    <i class="far fa-envelope"></i>
+                    <input type="email" class="form-control" placeholder="john@example.com" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" class="form-control" placeholder="Create a strong password" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-signup">Create Account</button>
+
+            <p class="terms">
+                By signing up, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
+            </p>
+        </form>
+
+        <div class="footer-link">
+            Already have a store? <a href="login.html">Sign In</a>
+        </div>
+    </div>
+
+    <script>
+        const card = document.getElementById('signup-card');
+        const shine = card.querySelector('.shine');
+
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
+            const rotateX = ((y - centerY) / centerY) * -8;
+            const rotateY = ((x - centerX) / centerX) * 8;
+
+            card.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+
+            const shineX = (x / rect.width) * 100;
+            const shineY = (y / rect.height) * 100;
+            shine.style.setProperty('--x', `${shineX}%`);
+            shine.style.setProperty('--y', `${shineY}%`);
+        });
+
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'perspective(1200px) rotateX(0deg) rotateY(0deg)';
+        });
+    </script>
+    <script src="layout-script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,140 @@
+<div class="threepl-container">
+  <div class="header">
+    <div class="header-title">
+      <h2><i class="pi pi-truck"></i> 3PL Partners</h2>
+      <p>Manage third-party logistics partners, coverage regions and SLA</p>
+    </div>
+  </div>
+
+  <div class="filters">
+    <div class="search-box">
+      <i class="pi pi-search"></i>
+      <input type="text" placeholder="Search partner, code, contact, phone or email..." [(ngModel)]="searchTerm" (input)="applyFilters()" />
+    </div>
+
+    <select [(ngModel)]="selectedStatus" (change)="applyFilters()">
+      <option value="all">All Status</option>
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+    </select>
+
+    <button type="button" class="btn" (click)="clearFilters()">
+      <i class="pi pi-filter-slash"></i>
+      Clear
+    </button>
+  </div>
+
+  <div class="table-container">
+    <div class="cards-grid">
+      <div class="partner-card" *ngFor="let p of filteredPartners">
+        <div class="partner-card-top">
+          <div class="partner-avatar" aria-hidden="true">
+            <i class="pi pi-truck"></i>
+          </div>
+
+          <div class="partner-head">
+            <div class="partner-name">{{ p.name }}</div>
+            <div class="partner-sub">{{ p.email }}</div>
+          </div>
+
+          <div class="partner-meta">
+            <span class="code">{{ p.code }}</span>
+            <span class="status-badge" [ngClass]="p.status">{{ p.status }}</span>
+          </div>
+        </div>
+
+        <div class="partner-card-body">
+          <div class="partner-row">
+            <div class="muted">Contact</div>
+            <div class="contact">{{ p.contactPerson }}</div>
+            <div class="muted">{{ p.phone }}</div>
+          </div>
+
+          <div class="partner-row">
+            <div class="muted">Regions</div>
+            <div class="regions">
+              <span class="chip" *ngFor="let r of p.regions">{{ r }}</span>
+            </div>
+          </div>
+
+          <div class="partner-row">
+            <div class="muted">SLA</div>
+            <div class="sla">{{ p.slaDays }} day(s)</div>
+          </div>
+        </div>
+
+        <div class="partner-card-actions">
+          <button type="button" class="btn" (click)="$event.stopPropagation(); openView(p)">
+            <i class="pi pi-eye"></i>
+            View
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="filteredPartners.length === 0" class="no-data">
+        <i class="pi pi-inbox"></i>
+        <p>No partners found</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="viewModalVisible" (click)="closeView()">
+    <div class="modal-content" (click)="$event.stopPropagation()" *ngIf="selectedPartner">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="pi pi-truck"></i>
+          <h3>Partner Details</h3>
+        </div>
+        <button type="button" class="btn icon close-btn" (click)="closeView()" title="Close">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="grid">
+          <div>
+            <div class="muted">Partner</div>
+            <div class="value">{{ selectedPartner.name }}</div>
+          </div>
+          <div>
+            <div class="muted">Code</div>
+            <div class="value">{{ selectedPartner.code }}</div>
+          </div>
+          <div>
+            <div class="muted">Contact</div>
+            <div class="value">{{ selectedPartner.contactPerson }}</div>
+          </div>
+          <div>
+            <div class="muted">Phone</div>
+            <div class="value">{{ selectedPartner.phone }}</div>
+          </div>
+          <div>
+            <div class="muted">Email</div>
+            <div class="value">{{ selectedPartner.email }}</div>
+          </div>
+          <div>
+            <div class="muted">SLA</div>
+            <div class="value">{{ selectedPartner.slaDays }} day(s)</div>
+          </div>
+          <div>
+            <div class="muted">Status</div>
+            <div class="value">
+              <span class="status-badge" [ngClass]="selectedPartner.status">{{ selectedPartner.status }}</span>
+            </div>
+          </div>
+          <div>
+            <div class="muted">Regions</div>
+            <div class="value">{{ selectedPartner.regions.join(', ') }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" (click)="closeView()">
+          <i class="pi pi-times"></i>
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

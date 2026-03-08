@@ -1,0 +1,104 @@
+.page-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+
+    h1 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 700;
+    }
+}
+
+.tickets-table-3d {
+    background: var(--bg-surface);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-3d-soft);
+
+    .table-header {
+        display: grid;
+        grid-template-columns: 1fr 2fr 1fr 1fr 1fr 0.8fr;
+        gap: 16px;
+        padding: 16px 24px;
+        background: #f8f9fa;
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .table-row {
+        display: grid;
+        grid-template-columns: 1fr 2fr 1fr 1fr 1fr 0.8fr;
+        gap: 16px;
+        padding: 20px 24px;
+        border-bottom: 1px solid #f0f0f0;
+        transition: all 0.2s ease;
+        cursor: pointer;
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        &:hover {
+            background: #f8fffe;
+            transform: translateX(4px);
+        }
+
+        .col {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+    }
+}
+
+.priority-badge,
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.priority-badge {
+    &.high {
+        background: rgba(255, 107, 107, 0.1);
+        color: #ff6b6b;
+    }
+
+    &.medium {
+        background: rgba(255, 165, 0, 0.1);
+        color: #ffa500;
+    }
+
+    &.low {
+        background: rgba(74, 144, 226, 0.1);
+        color: #4a90e2;
+    }
+}
+
+.status-badge {
+    &.open {
+        background: rgba(255, 165, 0, 0.1);
+        color: #ffa500;
+    }
+
+    &.replied {
+        background: rgba(74, 144, 226, 0.1);
+        color: #4a90e2;
+    }
+
+    &.closed {
+        background: rgba(29, 224, 22, 0.1);
+        color: var(--primary-dark);
+    }
+}

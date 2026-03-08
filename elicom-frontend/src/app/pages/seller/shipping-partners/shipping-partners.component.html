@@ -1,0 +1,70 @@
+<div class="partners-content">
+    <div class="dashboard-header mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="fw-bold mb-2">
+                    <i class="fas fa-handshake me-3 text-primary"></i>
+                    3PL Shipping Partners
+                </h1>
+                <p class="lead mb-0 text-muted">
+                    Please use the provided locations of our third-party logistics partners to fulfill your order shipments.
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="partners-stats-badge">
+                    <i class="fas fa-globe-americas me-2 text-primary"></i>
+                    <span>{{partners.length}} Active Partners</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div *ngFor="let country of countries" class="country-section mb-5">
+        <div class="country-header d-flex align-items-center mb-4">
+            <div class="country-flag-placeholder me-3">
+                <i class="fas fa-map-marker-alt text-primary"></i>
+            </div>
+            <h2 class="fw-bold mb-0">{{country}}</h2>
+            <div class="country-line flex-grow-1 ms-4"></div>
+        </div>
+
+        <div class="row g-4">
+            <div *ngFor="let partner of groupedPartners[country]" class="col-md-6 col-lg-4">
+                <div class="partner-card h-100">
+                    <div class="partner-card-inner">
+                        <div class="partner-brand mb-4">
+                            <div class="partner-logo">
+                                {{partner.name.charAt(0)}}
+                            </div>
+                            <h4 class="partner-name mb-0">{{partner.name}}</h4>
+                        </div>
+
+                        <div class="partner-details">
+                            <div class="detail-row mb-3">
+                                <i class="fas fa-map-pin text-primary me-3"></i>
+                                <span>{{partner.address}}</span>
+                            </div>
+                            <div class="detail-row mb-3">
+                                <i class="fas fa-mail-bulk text-primary me-3"></i>
+                                <span>{{partner.zipCode}}</span>
+                            </div>
+                            <div class="detail-row mb-4">
+                                <i class="fas fa-external-link-alt text-primary me-3"></i>
+                                <a [href]="partner.website" target="_blank" class="partner-link">Visit Website</a>
+                            </div>
+                        </div>
+
+                        <div class="card-footer-actions">
+                            <button class="btn-partner-action">
+                                <i class="fas fa-info-circle me-2"></i> Details
+                            </button>
+                            <button class="btn-partner-action primary">
+                                <i class="fas fa-truck me-2"></i> Use Partner
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

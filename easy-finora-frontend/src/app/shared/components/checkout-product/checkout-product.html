@@ -1,0 +1,37 @@
+<div class="checkout-wrapper">
+
+  <!-- Products Loop -->
+  <div class="checkout-container" *ngFor="let product of products">
+    <div class="product-card">
+      <img class="product-image" [src]="product.imageUrl" alt="product image">
+      <div class="product-details">
+        <div class="shop-name">{{ product.shopName }} ({{ product.quantity }})</div>
+
+        <div class="price-box">
+          <span class="current-price">${{ getTotalPrice(product) }}</span>
+          <span class="old-price">${{ product.oldPrice }}</span>
+          <span class="discount">-{{ product.discount }}%</span>
+        </div>
+
+        <div class="quantity-selector">
+          <button class="qty-btn" (click)="decrementQty(product)">-</button>
+          <input type="text" class="qty-input" [value]="product.quantity" readonly>
+          <button class="qty-btn" (click)="incrementQty(product)">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shipping info (single div for all products) -->
+  <div class="shipping-info">
+    <div class="shipping standard">
+      <strong>STANDARD SHIPPING</strong>
+      <p>{{ standardShipping }}</p>
+    </div>
+
+    <div class="shipping on-time">
+      <p>{{ onTimeDelivery }}</p>
+      <p>500 Points if Late</p>
+    </div>
+  </div>
+</div>

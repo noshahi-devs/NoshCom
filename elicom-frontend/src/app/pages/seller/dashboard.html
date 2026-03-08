@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard with 3D Animated Cards | World Cart</title>
+
+    <!-- Dependencies -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+
+    <style>
+        /* Preserve only dashboard-specific styles, remove layout styles */
+        :root {
+            --bg-body: #0f172a;
+            --sidebar-bg: #1e293b;
+            --sidebar-width: 280px;
+            --text-dark: #f1f5f9;
+            --text-muted: #94a3b8;
+            --brand-primary: #818cf8;
+            --nav-hover: #334155;
+            --topbar-height: 60px;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            overflow-x: hidden;
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        /* 3D Animated Cards Container */
+        .cards-3d-container {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        /* 3D Card Styles */
+        .stat-card-3d {
+            border-radius: 20px;
+            padding: 25px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            height: 180px;
+            margin-bottom: 0;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            cursor: pointer;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-card-3d:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .stat-card-3d.active {
+            transform: translateY(-20px) rotateY(10deg) scale(1.05);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 0 100px rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+
+        .stat-card-3d h5 {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .stat-card-3d h2 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card-3d .badge-soft {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+            position: relative;
+            z-index: 2;
+            backdrop-filter: blur(5px);
+        }
+
+        .icon-3d-bg {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            font-size: 1.5rem;
+            z-index: 2;
+            backdrop-filter: blur(5px);
+        }
+
+        /* Card 1 - NEW ORDERS */
+        .card-3d-1 {
+            background: linear-gradient(135deg, rgba(0, 201, 232, 0.2) 0%, rgba(0, 201, 232, 0.1) 100%);
+            box-shadow: 0 15px 35px rgba(0, 201, 232, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .card-3d-1.active {
+            background: linear-gradient(135deg, rgba(0, 201, 232, 0.4) 0%, rgba(0, 201, 232, 0.2) 100%);
+            box-shadow: 0 25px 50px rgba(0, 201, 232, 0.3), inset 0 0 100px rgba(0, 201, 232, 0.2);
+        }
+
+        /* Card 2 - TOTAL INCOME */
+        .card-3d-2 {
+            background: linear-gradient(135deg, rgba(0, 163, 77, 0.2) 0%, rgba(0, 163, 77, 0.1) 100%);
+            box-shadow: 0 15px 35px rgba(0, 163, 77, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .card-3d-2.active {
+            background: linear-gradient(135deg, rgba(0, 163, 77, 0.4) 0%, rgba(0, 163, 77, 0.2) 100%);
+            box-shadow: 0 25px 50px rgba(0, 163, 77, 0.3), inset 0 0 100px rgba(0, 163, 77, 0.2);
+        }
+
+        /* Card 3 - TOTAL EXPENSE */
+        .card-3d-3 {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.2) 0%, rgba(13, 110, 253, 0.1) 100%);
+            box-shadow: 0 15px 35px rgba(13, 110, 253, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .card-3d-3.active {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.4) 0%, rgba(13, 110, 253, 0.2) 100%);
+            box-shadow: 0 25px 50px rgba(13, 110, 253, 0.3), inset 0 0 100px rgba(13, 110, 253, 0.2);
+        }
+
+        /* Card 4 - NEW USERS */
+        .card-3d-4 {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(255, 193, 7, 0.1) 100%);
+            box-shadow: 0 15px 35px rgba(255, 193, 7, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .card-3d-4.active {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.4) 0%, rgba(255, 193, 7, 0.2) 100%);
+            box-shadow: 0 25px 50px rgba(255, 193, 7, 0.3), inset 0 0 100px rgba(255, 193, 7, 0.2);
+        }
+
+        /* 3D Particle Background */
+        .card-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        /* Chart container */
+        .chart-3d-container {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            width: calc(100% - 30px);
+            height: 60px;
+            z-index: 2;
+        }
+
+        /* Floating particles animation */
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+            }
+        }
+
+        .floating-particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        /* Card expansion animation */
+        .card-expanded-content {
+            display: none;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 15px;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-card-3d.active .card-expanded-content {
+            display: block;
+        }
+
+        /* Enhanced Chart Styles */
+        .chart-mini {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: calc(100% - 20px);
+            height: 50px;
+            opacity: 0.8;
+        }
+
+        /* Animation controls */
+        .animation-controls-panel {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-btn-3d {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn-3d:hover {
+            background: rgba(129, 140, 248, 0.3);
+            transform: scale(1.1);
+        }
+
+        .control-btn-3d.active {
+            background: rgba(129, 140, 248, 0.5);
+            border-color: rgba(129, 140, 248, 0.7);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .stat-card-3d {
+                height: 160px;
+                padding: 20px;
+            }
+
+            .stat-card-3d h2 {
+                font-size: 1.8rem;
+            }
+
+            .icon-3d-bg {
+                width: 50px;
+                height: 50px;
+                top: 20px;
+                right: 20px;
+            }
+        }
+
+        /* Glow effects */
+        .glow-effect {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            border-radius: 20px;
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-card-3d:hover .glow-effect {
+            opacity: 0.3;
+        }
+
+        .stat-card-3d.active .glow-effect {
+            opacity: 0.6;
+        }
+
+        /* Card 1 glow */
+        .card-3d-1 .glow-effect {
+            background: radial-gradient(circle at center, rgba(0, 201, 232, 0.4) 0%, transparent 70%);
+        }
+
+        /* Card 2 glow */
+        .card-3d-2 .glow-effect {
+            background: radial-gradient(circle at center, rgba(0, 163, 77, 0.4) 0%, transparent 70%);
+        }
+
+        /* Card 3 glow */
+        .card-3d-3 .glow-effect {
+            background: radial-gradient(circle at center, rgba(13, 110, 253, 0.4) 0%, transparent 70%);
+        }
+
+        /* Card 4 glow */
+        .card-3d-4 .glow-effect {
+            background: radial-gradient(circle at center, rgba(255, 193, 7, 0.4) 0%, transparent 70%);
+        }
+
+        /* Detailed Statistics Cards */
+        .stat-sub-card {
+            border: none;
+            border-radius: 15px;
+            padding: 20px 16px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            background: rgba(30, 41, 59, 0.8);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-sub-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 8px;
+        }
+
+        .stat-val {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #f1f5f9;
+        }
+
+        /* Sub Card Colors with dark theme */
+        .bg-c-1 {
+            border-left: 5px solid #818cf8;
+            background: linear-gradient(135deg, rgba(129, 140, 248, 0.1), transparent);
+        }
+
+        .bg-c-2 {
+            border-left: 5px solid #f59e0b;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), transparent);
+        }
+
+        .bg-c-3 {
+            border-left: 5px solid #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), transparent);
+        }
+
+        .bg-c-4 {
+            border-left: 5px solid #ec4899;
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), transparent);
+        }
+
+        .bg-c-5 {
+            border-left: 5px solid #8b5cf6;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), transparent);
+        }
+
+        .bg-c-6 {
+            border-left: 5px solid #06b6d4;
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), transparent);
+        }
+
+        .bg-c-7 {
+            border-left: 5px solid #22c55e;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), transparent);
+        }
+
+        .bg-c-8 {
+            border-left: 5px solid #ef4444;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), transparent);
+        }
+
+        /* Enhanced header */
+        .dashboard-header {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Time widget */
+        .time-widget {
+            background: linear-gradient(135deg, rgba(129, 140, 248, 0.3), rgba(99, 102, 241, 0.4));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .time-widget::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(129, 140, 248, 0.1) 0%, transparent 70%);
+        }
+
+        /* Loading animation */
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        .loading-shimmer {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0) 100%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite linear;
+        }
+
+        /* Card flip animation */
+        @keyframes flipCard {
+            0% {
+                transform: rotateY(0);
+            }
+
+            100% {
+                transform: rotateY(180deg);
+            }
+        }
+
+        .stat-card-3d.flipping {
+            animation: flipCard 0.6s ease-in-out;
+        }
+    </style>
+    <link rel="stylesheet" href="layout-styles.css">
+</head>
+
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Sidebar -->
+    <!-- Sidebar -->
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-logo">WC</div>
+            <div>
+                <h2 style="margin: 0; font-size: 1.5rem;">World Cart</h2>
+                <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;">Seller Dashboard</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <!-- User Profile -->
+            <div
+                style="padding: 20px; background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7)); border-radius: 16px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 8px 20px rgba(0,0,0,0.05);">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <div
+                        style="width: 50px; height: 50px; border-radius: 12px; background: linear-gradient(135deg, var(--brand-accent), #a5b4fc); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">
+                        AN
+                    </div>
+                    <div>
+                        <h4 style="color: var(--text-dark); margin-bottom: 5px;">Arslan Noshahi</h4>
+                        <p style="color: var(--brand-primary); font-size: 0.9rem; font-weight: 600;">
+                            <i class="fas fa-crown" style="margin-right: 5px;"></i>
+                            Premium Seller
+                        </p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div
+                        style="flex: 1; text-align: center; padding: 10px; background: rgba(79, 70, 229, 0.1); border-radius: 10px;">
+                        <div style="font-size: 1.2rem; font-weight: 800; color: var(--brand-primary);">24</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Orders</div>
+                    </div>
+                    <div
+                        style="flex: 1; text-align: center; padding: 10px; background: rgba(79, 70, 229, 0.1); border-radius: 10px;">
+                        <div style="font-size: 1.2rem; font-weight: 800; color: var(--brand-primary);">4.9</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Rating</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div style="margin-top: 30px;">
+                <h4
+                    style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
+                    NAVIGATION</h4>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> Dashboard</a>
+                    <a href="add-product2.html" class="nav-link"><i class="fa-solid fa-circle-plus"></i> Add
+                        Products</a>
+
+                    <div class="nav-item">
+                        <a href="javascript:void(0)" class="nav-link dropdown-trigger"><i
+                                class="fa-solid fa-list-check"></i> Listing Center <i
+                                class="fa fa-chevron-right chevron-icon"></i></a>
+                        <div class="submenu">
+                            <a href="product-listing.html" class="nav-link small">Store Listing</a>
+                            <a href="favorite-listing.html" class="nav-link small">Favorite Listing</a>
+                        </div>
+                    </div>
+
+                    <div class="nav-item">
+                        <a href="javascript:void(0)" class="nav-link dropdown-trigger"><i
+                                class="fa-solid fa-cart-flatbed"></i> Order Center <i
+                                class="fa fa-chevron-right chevron-icon"></i></a>
+                        <div class="submenu">
+                            <a href="unshipped-order.html" class="nav-link small">Unshipped Order</a>
+                            <a href="tracking-verification.html" class="nav-link small">Tracking Verification</a>
+                            <a href="shipped-complete.html" class="nav-link small">Shipped Complete</a>
+                            <a href="cancelled-order.html" class="nav-link small">Cancelled Order</a>
+                            <a href="rejected-trackings.html" class="nav-link small">Rejected Trackings</a>
+                            <a href="order-returned.html" class="nav-link small">Order Returned</a>
+                        </div>
+                    </div>
+
+                    <a href="3pl-partner.html" class="nav-link"><i class="fa-solid fa-handshake"></i> 3PL Partner
+                        Service</a>
+                    <a href="warehouse.html" class="nav-link"><i class="fa-solid fa-warehouse"></i> World Cart
+                        Warehouses</a>
+                    <a href="wallet-center.html" class="nav-link"><i class="fa-solid fa-wallet"></i> Wallet Center</a>
+
+                    <div class="nav-item">
+                        <a href="javascript:void(0)" class="nav-link dropdown-trigger"><i
+                                class="fa-solid fa-money-bill-transfer"></i> Payout Section <i
+                                class="fa fa-chevron-right chevron-icon"></i></a>
+                        <div class="submenu">
+                            <a href="unified-payouts.html" class="nav-link small">Payout History</a>
+                            <a href="add-payment-method.html" class="nav-link small">Add Payment Method</a>
+                            <a href="pending-payouts.html" class="nav-link small">Pending Payouts</a>
+                            <a href="completed-payouts.html" class="nav-link small">Completed Payouts</a>
+                            <a href="refunded-payouts.html" class="nav-link small">Refunded Payouts</a>
+                        </div>
+                    </div>
+
+                    <a href="profile.html" class="nav-link"><i class="fa-solid fa-user"></i> My Profile</a>
+                    <a href="account-settings.html" class="nav-link"><i class="fa-solid fa-gears"></i> Account
+                        Settings</a>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div
+                style="margin-top: 40px; padding: 20px; background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(99, 102, 241, 0.05)); border-radius: 16px; border: 1px solid rgba(79, 70, 229, 0.2);">
+                <h4 style="color: var(--text-dark); margin-bottom: 15px; font-size: 1rem;">Quick Stats</h4>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">Today's Revenue</span>
+                        <span style="color: var(--brand-primary); font-weight: 700;">$2,450</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">Active Orders</span>
+                        <span style="color: #10b981; font-weight: 700;">8</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">Avg. Rating</span>
+                        <span style="color: #f59e0b; font-weight: 700;">4.9</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Topbar -->
+    <!-- Topbar -->
+    <div class="topbar" id="topbar">
+        <div style="display: flex; align-items: center; gap: 25px;">
+            <div style="position: relative;">
+                <i class="fas fa-search"
+                    style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                <input type="text" id="global-search" placeholder="Search orders, customers..." style="
+                padding: 12px 20px 12px 45px;
+                border: 1px solid rgba(79, 70, 229, 0.2);
+                border-radius: 12px;
+                background: rgba(255, 255, 255, 0.8);
+                color: var(--text-dark);
+                font-size: 0.95rem;
+                width: 300px;
+                transition: all 0.3s ease;
+                backdrop-filter: blur(10px);
+            ">
+            </div>
+
+            <div style="display: flex; gap: 15px;">
+                <button style="
+                padding: 10px 20px;
+                background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+                color: white;
+                border: none;
+                border-radius: 10px;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.3s ease;
+                box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+            ">
+                    <i class="fas fa-plus"></i>
+                    New Order
+                </button>
+                <button style="
+                padding: 10px 20px;
+                background: linear-gradient(135deg, rgba(241, 245, 249, 0.9), rgba(226, 232, 240, 0.9));
+                color: var(--text-dark);
+                border: none;
+                border-radius: 10px;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.3s ease;
+            ">
+                    <i class="fas fa-filter"></i>
+                    Filter
+                </button>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 25px;">
+            <div style="position: relative;">
+                <i class="fas fa-bell" style="font-size: 1.2rem; color: var(--text-muted); cursor: pointer;"></i>
+                <span class="notification-badge" style="top: -5px; right: -5px;">3</span>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="text-align: right;">
+                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-dark);">Arslan Noshahi</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Seller ID: SC-789456</div>
+                </div>
+                <div style="
+                width: 45px;
+                height: 45px;
+                border-radius: 12px;
+                background: linear-gradient(135deg, var(--brand-accent), #a5b4fc);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: bold;
+                font-size: 1.1rem;
+                box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+                cursor: pointer;
+                transition: all 0.3s ease;
+            ">
+                    AN
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 15px;">
+        <button style="
+                padding: 10px 20px;
+                background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+                color: white;
+                border: none;
+                border-radius: 10px;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.3s ease;
+                box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+            ">
+            <i class="fas fa-plus"></i>
+            New Order
+        </button>
+        <button style="
+                padding: 10px 20px;
+                background: linear-gradient(135deg, rgba(241, 245, 249, 0.9), rgba(226, 232, 240, 0.9));
+                color: var(--text-dark);
+                border: none;
+                border-radius: 10px;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.3s ease;
+            ">
+            <i class="fas fa-filter"></i>
+            Filter
+        </button>
+    </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 25px;">
+        <div style="position: relative;">
+            <i class="fas fa-bell" style="font-size: 1.2rem; color: var(--text-muted); cursor: pointer;"></i>
+            <span class="notification-badge" style="top: -5px; right: -5px;">3</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="text-align: right;">
+                <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-dark);">Arslan Noshahi</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Seller ID: SC-789456</div>
+            </div>
+            <div style="
+                width: 45px;
+                height: 45px;
+                border-radius: 12px;
+                background: linear-gradient(135deg, var(--brand-accent), #a5b4fc);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: bold;
+                font-size: 1.1rem;
+                box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+                cursor: pointer;
+                transition: all 0.3s ease;
+            ">
+                AN
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-wrapper" id="main-wrapper" class="main-wrapper">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="fw-bold mb-2" style="color:#f1f5f9;">
+                        <i class="fas fa-chart-network me-2"></i>Analytics Dashboard
+                        <span style="margin-left:10px; padding:5px 12px; font-size:12px; border-radius:12px; 
+                                background:linear-gradient(135deg,#818cf8,#6366f1); 
+                                color:white; box-shadow:0 4px 15px rgba(129, 140, 248, 0.4);">
+                            LIVE
+                        </span>
+                    </h1>
+                    <p style="color:#94a3b8;">Real-time insights and analytics for your e-commerce business</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="time-widget">
+                        <div class="row align-items-center">
+                            <div class="col-8">
+                                <div class="text-uppercase fw-bold ls-1 mb-1" style="font-size: 12px; opacity: 0.8;">
+                                    Current Time (EST)</div>
+                                <h2 class="fw-bold mb-1" id="digital-clock" style="font-size: 1.8rem;">00:00:00</h2>
+                                <p class="mb-0 opacity-75" id="current-date" style="font-size: 0.9rem;">Loading date...
+                                </p>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="icon-box bg-primary rounded-circle"
+                                    style="width: 50px; height: 50px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1);">
+                                    <i class="fas fa-clock text-white"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3D Animated Cards -->
+        <div class="cards-3d-container">
+            <div class="row g-4">
+                <!-- Card 1 - NEW ORDERS -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="stat-card-3d card-3d-1" id="card1" data-card-index="0">
+                        <div class="glow-effect"></div>
+                        <div class="card-particles" id="particles1"></div>
+                        <h5>NEW ORDERS</h5>
+                        <h2 id="orders-count">35,673</h2>
+                        <span class="badge-soft">
+                            <i class="fas fa-arrow-up me-1"></i>2.00% (30 days)
+                        </span>
+                        <div class="icon-3d-bg">
+                            <i class="fa fa-cart-plus"></i>
+                        </div>
+                        <div class="chart-3d-container">
+                            <canvas id="chart1" class="chart-mini"></canvas>
+                        </div>
+                        <div class="card-expanded-content">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="stat-label">Today</div>
+                                    <div class="stat-val" style="font-size: 1rem;">1,204</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-label">Pending</div>
+                                    <div class="stat-val" style="font-size: 1rem;">423</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 - TOTAL INCOME -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="stat-card-3d card-3d-2" id="card2" data-card-index="1">
+                        <div class="glow-effect"></div>
+                        <div class="card-particles" id="particles2"></div>
+                        <h5>TOTAL INCOME</h5>
+                        <h2 id="income-count">$14,966</h2>
+                        <span class="badge-soft">
+                            <i class="fas fa-arrow-up me-1"></i>7.35% increase
+                        </span>
+                        <div class="icon-3d-bg">
+                            <i class="fa fa-dollar-sign"></i>
+                        </div>
+                        <div class="chart-3d-container">
+                            <canvas id="chart2" class="chart-mini"></canvas>
+                        </div>
+                        <div class="card-expanded-content">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="stat-label">Today</div>
+                                    <div class="stat-val" style="font-size: 1rem;">$846</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-label">Avg/Order</div>
+                                    <div class="stat-val" style="font-size: 1rem;">$42.15</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 - TOTAL EXPENSE -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="stat-card-3d card-3d-3" id="card3" data-card-index="2">
+                        <div class="glow-effect"></div>
+                        <div class="card-particles" id="particles3"></div>
+                        <h5>TOTAL EXPENSE</h5>
+                        <h2 id="expense-count">26,526</h2>
+                        <span class="badge-soft">
+                            <i class="fas fa-arrow-up me-1"></i>7.35% increase
+                        </span>
+                        <div class="icon-3d-bg">
+                            <i class="fa fa-money-bill-wave"></i>
+                        </div>
+                        <div class="chart-3d-container">
+                            <canvas id="chart3" class="chart-mini"></canvas>
+                        </div>
+                        <div class="card-expanded-content">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="stat-label">Today</div>
+                                    <div class="stat-val" style="font-size: 1rem;">$312</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-label">Ads</div>
+                                    <div class="stat-val" style="font-size: 1rem;">$2,150</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4 - NEW USERS -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="stat-card-3d card-3d-4" id="card4" data-card-index="3">
+                        <div class="glow-effect"></div>
+                        <div class="card-particles" id="particles4"></div>
+                        <h5>NEW USERS</h5>
+                        <h2 id="users-count">32,566</h2>
+                        <span class="badge-soft">
+                            <i class="fas fa-arrow-down me-1"></i>54.1% less
+                        </span>
+                        <div class="icon-3d-bg">
+                            <i class="fa fa-users"></i>
+                        </div>
+                        <div class="chart-3d-container">
+                            <canvas id="chart4" class="chart-mini"></canvas>
+                        </div>
+                        <div class="card-expanded-content">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="stat-label">Today</div>
+                                    <div class="stat-val" style="font-size: 1rem;">84</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-label">Active</div>
+                                    <div class="stat-val" style="font-size: 1rem;">24,152</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Animation Controls -->
+        <div class="animation-controls-panel">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h6 class="fw-bold mb-0"><i class="fas fa-cube me-2"></i>3D Card Controls</h6>
+                    <p class="text-muted mb-0 small">Click cards for expanded view</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="d-flex justify-content-end gap-2">
+                        <div class="control-btn-3d" id="toggle-3d" title="Toggle 3D Effects">
+                            <i class="fas fa-cube"></i>
+                        </div>
+                        <div class="control-btn-3d active" id="toggle-animations" title="Toggle Animations">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <div class="control-btn-3d" id="reset-cards" title="Reset Cards">
+                            <i class="fas fa-sync-alt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Statistics -->
+        <div class="card mb-4"
+            style="background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                    <h5 class="fw-bold m-0">Detailed Statistics</h5>
+                    <div class="d-flex gap-3 align-items-center filter-group">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn"
+                                style="background: rgba(255,255,255,0.1); color: #94a3b8; border: 1px solid rgba(255,255,255,0.2);">Day</button>
+                            <button type="button" class="btn active"
+                                style="background: rgba(129, 140, 248, 0.2); color: #818cf8; border: 1px solid rgba(129, 140, 248, 0.5);">Week</button>
+                            <button type="button" class="btn"
+                                style="background: rgba(255,255,255,0.1); color: #94a3b8; border: 1px solid rgba(255,255,255,0.2);">Month</button>
+                            <button type="button" class="btn"
+                                style="background: rgba(255,255,255,0.1); color: #94a3b8; border: 1px solid rgba(255,255,255,0.2);">Annual</button>
+                            <button type="button" class="btn"
+                                style="background: rgba(255,255,255,0.1); color: #94a3b8; border: 1px solid rgba(255,255,255,0.2);">Lifetime</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-3 col-6">
+                        <div class="stat-sub-card bg-c-1">
+                            <div class="stat-label">Current Balance</div>
+                            <div class="stat-val">$5,240.50</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-sub-card bg-c-2">
+                            <div class="stat-label">Payout till now</div>
+                            <div class="stat-val">$28,150</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-sub-card bg-c-3">
+                            <div class="stat-label">Recent payout</div>
+                            <div class="stat-val">$1,840</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-sub-card bg-c-4">
+                            <div class="stat-label">A/C Reserve</div>
+                            <div class="stat-val">$450.00</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-sub-card bg-c-5">
+                            <div class="stat-label">Shipped Orders</div>
+                            <div class="stat-val">342</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-sub-card bg-c-6">
+                            <div class="stat-label">Units Ordered</div>
+                            <div class="stat-val">1,105</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-sub-card bg-c-7">
+                            <div class="stat-label">Avg units/order</div>
+                            <div class="stat-val">3.2</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-sub-card bg-c-8">
+                            <div class="stat-label">Orders > 5 Units</div>
+                            <div class="stat-val">24</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card"
+                    style="background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold m-0"><i class="fas fa-chart-line me-2"></i>Growth Analysis</h5>
+                            <select class="form-select form-select-sm w-auto"
+                                style="background: rgba(255,255,255,0.1); color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); max-width: 150px;">
+                                <option>Today</option>
+                                <option>Yesterday</option>
+                                <option selected>Last Week</option>
+                                <option>Last Month</option>
+                                <option>Select Date</option>
+                            </select>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div style="height: 300px;">
+                                    <canvas id="salesChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div style="height: 300px;">
+                                    <canvas id="orderChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card"
+                    style="background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-4"><i class="fas fa-fire me-2"></i>Top Selling Products</h5>
+                        <div class="product-item">
+                            <div class="d-flex align-items-center">
+                                <div class="product-img"
+                                    style="width: 50px; height: 50px; border-radius: 10px; background: rgba(129, 140, 248, 0.2); display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                    <i class="fas fa-headphones" style="color: #818cf8;"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="m-0 small fw-bold">Wireless Headphones</h6>
+                                    <div class="text-muted" style="font-size: 12px;">Electronics, Audio</div>
+                                    <div class="star-rating">★★★★☆ <span class="text-muted ms-1">(24)</span></div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="fw-bold">$129.00</div>
+                                    <div class="text-muted small" style="font-size: 11px;">245 Sales</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize 3D particles for cards
+        function init3DParticles() {
+            const cards = document.querySelectorAll('.stat-card-3d');
+
+            cards.forEach((card, index) => {
+                const particleContainer = card.querySelector('.card-particles');
+                const colors = [
+                    'rgba(0, 201, 232, 0.6)',
+                    'rgba(0, 163, 77, 0.6)',
+                    'rgba(13, 110, 253, 0.6)',
+                    'rgba(255, 193, 7, 0.6)'
+                ];
+
+                // Create 15 particles for each card
+                for (let i = 0; i < 15; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'floating-particle';
+
+                    // Random properties
+                    const size = Math.random() * 10 + 5;
+                    const posX = Math.random() * 100;
+                    const posY = Math.random() * 100;
+                    const delay = Math.random() * 5;
+                    const duration = Math.random() * 4 + 3;
+
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    particle.style.left = `${posX}%`;
+                    particle.style.top = `${posY}%`;
+                    particle.style.background = colors[index];
+                    particle.style.animationDelay = `${delay}s`;
+                    particle.style.animationDuration = `${duration}s`;
+
+                    particleContainer.appendChild(particle);
+                }
+            });
+        }
+
+        // Initialize charts
+        function initCharts() {
+            // Mini charts for cards
+            const chart1 = new Chart(document.getElementById('chart1'), {
+                type: 'line',
+                data: {
+                    labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+                    datasets: [{
+                        data: [1200, 1900, 1500, 2200, 1800, 2300, 2100],
+                        borderColor: 'rgba(255,255,255,0.8)',
+                        backgroundColor: 'rgba(255,255,255,0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    },
+                    elements: { point: { radius: 0 } }
+                }
+            });
+
+            const chart2 = new Chart(document.getElementById('chart2'), {
+                type: 'bar',
+                data: {
+                    labels: ['J', 'F', 'M', 'A', 'M', 'J', 'J'],
+                    datasets: [{
+                        data: [5000, 7000, 6000, 8000, 7500, 9000, 10000],
+                        backgroundColor: 'rgba(255,255,255,0.7)',
+                        borderRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    }
+                }
+            });
+
+            const chart3 = new Chart(document.getElementById('chart3'), {
+                type: 'line',
+                data: {
+                    labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+                    datasets: [{
+                        data: [1000, 1200, 900, 1300, 1100, 1400, 1250],
+                        borderColor: 'rgba(255,255,255,0.8)',
+                        backgroundColor: 'rgba(255,255,255,0.1)',
+                        tension: 0.3,
+                        fill: true,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    },
+                    elements: { point: { radius: 0 } }
+                }
+            });
+
+            const chart4 = new Chart(document.getElementById('chart4'), {
+                type: 'bar',
+                data: {
+                    labels: ['W1', 'W2', 'W3', 'W4'],
+                    datasets: [{
+                        data: [8000, 9000, 8500, 9500],
+                        backgroundColor: 'rgba(255,255,255,0.7)',
+                        borderRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    }
+                }
+            });
+
+            // Main charts
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            const salesChart = new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: [500, 700, 800, 600, 900, 1200, 1500],
+                        backgroundColor: 'rgba(129, 140, 248, 0.2)',
+                        borderColor: '#818cf8',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: { color: '#94a3b8' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+
+            const orderCtx = document.getElementById('orderChart').getContext('2d');
+            const orderChart = new Chart(orderCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Orders',
+                        data: [35, 50, 45, 60, 70, 55, 90],
+                        backgroundColor: '#00C9E8',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: { color: '#94a3b8' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Animate numbers
+        function animateNumbers() {
+            const counters = [
+                { element: 'orders-count', target: 35673, duration: 2000 },
+                { element: 'income-count', target: 14966, duration: 2000 },
+                { element: 'expense-count', target: 26526, duration: 2000 },
+                { element: 'users-count', target: 32566, duration: 2000 }
+            ];
+
+            counters.forEach(counter => {
+                const element = document.getElementById(counter.element);
+                const start = 0;
+                const increment = counter.target / (counter.duration / 16);
+                let current = start;
+
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= counter.target) {
+                        current = counter.target;
+                        clearInterval(timer);
+                    }
+
+                    if (counter.element === 'income-count' || counter.element === 'expense-count') {
+                        element.textContent = counter.element === 'income-count'
+                            ? `$${Math.floor(current).toLocaleString()}`
+                            : Math.floor(current).toLocaleString();
+                    } else {
+                        element.textContent = Math.floor(current).toLocaleString();
+                    }
+                }, 16);
+            });
+        }
+
+        // Card click animation
+        function setupCardAnimations() {
+            const cards = document.querySelectorAll('.stat-card-3d');
+            let activeCard = null;
+
+            cards.forEach(card => {
+                card.addEventListener('click', function (e) {
+                    e.stopPropagation();
+
+                    // If clicking the same card, toggle it
+                    if (activeCard === this) {
+                        this.classList.toggle('active');
+                        if (!this.classList.contains('active')) {
+                            activeCard = null;
+                        }
+                        return;
+                    }
+
+                    // Remove active class from all cards
+                    cards.forEach(c => {
+                        c.classList.remove('active');
+                        c.classList.remove('flipping');
+                    });
+
+                    // Add active class to clicked card
+                    this.classList.add('active');
+                    this.classList.add('flipping');
+
+                    // Remove flipping class after animation
+                    setTimeout(() => {
+                        this.classList.remove('flipping');
+                    }, 600);
+
+                    activeCard = this;
+
+                    // Animate particle explosion
+                    animateParticleExplosion(this);
+                });
+            });
+
+            // Click outside to close
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.stat-card-3d')) {
+                    cards.forEach(card => {
+                        card.classList.remove('active');
+                    });
+                    activeCard = null;
+                }
+            });
+        }
+
+        // Particle explosion animation
+        function animateParticleExplosion(card) {
+            const particleContainer = card.querySelector('.card-particles');
+            const particles = particleContainer.querySelectorAll('.floating-particle');
+            const cardRect = card.getBoundingClientRect();
+            const centerX = cardRect.width / 2;
+            const centerY = cardRect.height / 2;
+
+            particles.forEach((particle, index) => {
+                const angle = (index / particles.length) * Math.PI * 2;
+                const distance = 150;
+                const targetX = centerX + Math.cos(angle) * distance;
+                const targetY = centerY + Math.sin(angle) * distance;
+
+                // Store original position
+                const originalX = particle.style.left;
+                const originalY = particle.style.top;
+
+                // Animate to explode
+                particle.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                particle.style.transform = `translate(${targetX - parseFloat(originalX)}px, ${targetY - parseFloat(originalY)}px) scale(1.5)`;
+                particle.style.opacity = '0.8';
+
+                // Return to original position
+                setTimeout(() => {
+                    particle.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                    particle.style.transform = 'translate(0, 0) scale(1)';
+                    particle.style.opacity = '0.6';
+
+                    // Remove transition after return
+                    setTimeout(() => {
+                        particle.style.transition = '';
+                    }, 800);
+                }, 600);
+            });
+        }
+
+        // Digital clock
+        function updateClock() {
+            const now = new Date();
+            const timeOpts = {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            };
+            const dateOpts = {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            };
+
+            document.getElementById('digital-clock').textContent = now.toLocaleTimeString('en-US', timeOpts);
+            document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', dateOpts);
+        }
+
+        // Sidebar toggle
+        function setupSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const topbar = document.getElementById('topbar');
+            const mainWrapper = document.getElementById('main-wrapper');
+            const toggleBtn = document.getElementById('sidebar-toggle');
+            const overlay = document.getElementById('overlay');
+
+            function setInitialSidebar() {
+                if (window.innerWidth >= 992) {
+                    sidebar.classList.remove('collapsed');
+                    topbar.classList.remove('collapsed');
+                    mainWrapper.style.marginLeft = '280px';
+                } else {
+                    mainWrapper.style.marginLeft = '0';
+                }
+            }
+
+            function toggleSidebar() {
+                if (window.innerWidth >= 992) {
+                    sidebar.classList.toggle('collapsed');
+                    topbar.classList.toggle('collapsed');
+                    mainWrapper.style.marginLeft = sidebar.classList.contains('collapsed') ? '60px' : '280px';
+                } else {
+                    sidebar.classList.toggle('open');
+                    overlay.classList.toggle('active');
+                }
+            }
+
+            setInitialSidebar();
+            window.addEventListener('resize', setInitialSidebar);
+            toggleBtn.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            });
+        }
+
+        // Control buttons
+        function setupControls() {
+            const toggle3D = document.getElementById('toggle-3d');
+            const toggleAnimations = document.getElementById('toggle-animations');
+            const resetCards = document.getElementById('reset-cards');
+            const cards = document.querySelectorAll('.stat-card-3d');
+
+            let animationsEnabled = true;
+
+            toggleAnimations.addEventListener('click', function () {
+                animationsEnabled = !animationsEnabled;
+                this.classList.toggle('active');
+
+                cards.forEach(card => {
+                    const particles = card.querySelectorAll('.floating-particle');
+                    particles.forEach(particle => {
+                        if (animationsEnabled) {
+                            particle.style.animationPlayState = 'running';
+                        } else {
+                            particle.style.animationPlayState = 'paused';
+                        }
+                    });
+                });
+
+                this.innerHTML = animationsEnabled ? '<i class="fas fa-play"></i>' : '<i class="fas fa-pause"></i>';
+            });
+
+            toggle3D.addEventListener('click', function () {
+                this.classList.toggle('active');
+                cards.forEach(card => {
+                    card.classList.toggle('flipping');
+                });
+            });
+
+            resetCards.addEventListener('click', function () {
+                cards.forEach(card => {
+                    card.classList.remove('active');
+                    const particles = card.querySelectorAll('.floating-particle');
+                    particles.forEach(particle => {
+                        particle.style.transition = 'all 0.5s ease';
+                        particle.style.transform = 'translate(0, 0)';
+                        setTimeout(() => {
+                            particle.style.transition = '';
+                        }, 500);
+                    });
+                });
+            });
+        }
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize particles
+            init3DParticles();
+
+            // Initialize charts
+            initCharts();
+
+            // Animate numbers
+            animateNumbers();
+
+            // Setup card animations
+            setupCardAnimations();
+
+            // Setup controls
+            setupControls();
+
+            // Setup sidebar
+            setupSidebar();
+
+            // Start clock
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            // Submenu toggle
+            document.querySelectorAll('.dropdown-trigger').forEach(trigger => {
+                trigger.addEventListener('click', () => {
+                    trigger.parentElement.classList.toggle('open');
+                });
+            });
+
+            // Auto-expand first card after 2 seconds
+            setTimeout(() => {
+                const firstCard = document.querySelector('.stat-card-3d');
+                if (firstCard) {
+                    firstCard.classList.add('active');
+                    animateParticleExplosion(firstCard);
+                }
+            }, 2000);
+        });
+    </script>
+    <script src="layout-script.js"></script>
+</body>
+
+</html>

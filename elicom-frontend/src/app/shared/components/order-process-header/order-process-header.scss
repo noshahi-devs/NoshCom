@@ -1,0 +1,88 @@
+.order-header {
+  background: #fff;
+  padding: 8px 16px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* LEFT SIDE */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.logo {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  line-height: 1;
+  margin-left: 90px;
+  font-family: "Rubik Wet Paint", system-ui;
+}
+
+/* LOCATION BADGE */
+.location {
+  font-size: 12px;
+  color: #555;
+  background: #f6f6f6; // 🔥 readable
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* RIGHT SIDE */
+.secure-checkout {
+  font-size: 14px;
+  color: #1a7f37;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  margin-right: 90px;
+
+  i {
+    color: #fff;
+    background: #1a7f37;
+    height: 24px;
+    width: 24px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 600px) {
+  .order-header {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .secure-checkout {
+    align-self: flex-end;
+    font-size: 13px;
+  }
+
+  .logo {
+    font-size: 20px;
+  }
+
+  .location {
+    font-size: 11px;
+    padding: 5px 12px;
+  }
+}

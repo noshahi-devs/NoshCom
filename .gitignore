@@ -1,0 +1,36 @@
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+# IDEs and editors
+.vs/
+obj/
+bin/
+aspnet-core/src/Elicom.Web.Host/App_Data/Logs/
+aspnet-core/src/Elicom.Web.Mvc/App_Data/Logs/
+aspnet-core/src/Elicom.Migrator/Logs/Logs.txt
+aspnet-core/build/outputs/
+aspnet-core/docker/mvc/Mvc-Logs/
+_publish_check/
+
+# ================================
+# Angular / Node.js
+# ================================
+node_modules/
+dist/
+out-tsc/
+.angular/
+.angular/cache/
+.dotnet-home/
+*.tsbuildinfo
+
+# Angular environment files (optional – keep if you manage envs separately)
+# src/environments/environment*.ts
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db

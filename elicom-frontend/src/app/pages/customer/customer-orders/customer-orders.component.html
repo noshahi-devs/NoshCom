@@ -1,0 +1,233 @@
+<div class="co-page sui-fade-in">
+
+    <!-- Page Header -->
+    <div class="co-page-header">
+        <div>
+            <div class="co-page-eyebrow">My Account</div>
+            <h2 class="co-page-title">My Orders</h2>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="co-tabs">
+        <a *ngFor="let tab of tabs"
+            [routerLink]="tab === 'All orders' ? ['/customer/orders'] : ['/customer/orders', tab === 'Refund/Return' ? 'Return' : tab]"
+            routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="co-tab">
+            {{ tab }}
+        </a>
+    </div>
+
+    <!-- Content Area -->
+    <div class="co-content-card">
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="co-loading">
+            <div class="co-spinner"></div>
+            <p class="mt-3 co-loading-text">Fetching your orders...</p>
+        </div>
+
+        <!-- Orders Table -->
+        <div *ngIf="!isLoading && orders.length > 0" class="co-table-responsive">
+            <table class="co-table">
+                <thead>
+                    <tr>
+                        <th>Order Details</th>
+                        <th>Created Date</th>
+                        <th>Total Amount</th>
+                        <th>Status</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let order of orders">
+                        <td>
+                            <div class="co-order-id-cell">
+                                <span class="co-id-hash">#</span>
+                                <span class="co-id-val">{{ getOrderNumber(order) }}</span>
+                            </div>
+                            <div class="co-order-meta" *ngIf="getOrderProductName(order) || getOrderStoreName(order)">
+                                <div class="co-order-product" *ngIf="getOrderProductName(order)">
+                                    {{ getOrderProductName(order) }}
+                                </div>
+                                <button *ngIf="getOrderStoreName(order)" type="button" class="co-store-link"
+                                    (click)="openStoreProducts(getOrderStoreName(order), $event)">
+                                    {{ getOrderStoreName(order) }}
+                                </button>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="co-date-cell">
+                                <i class="far fa-calendar-alt me-2 text-muted"></i>
+                                {{ order.creationTime | date:'mediumDate' }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="co-amount-cell">
+                                {{ order.totalAmount | currency }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="co-status-cell">
+                                <span class="co-status-pill"
+                                    [ngClass]="(order.status?.toLowerCase() || '').replace('/', '-')">
+                                    {{ order.status }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <button class="co-action-btn" title="View Details" (click)="openOrderDetails(order.id)">
+                                <span>Details</span>
+                                <i class="fas fa-chevron-right ms-2"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!isLoading && orders.length === 0" class="co-empty-state">
+            <div class="co-empty-icon">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <h5 class="co-empty-title">It's empty here</h5>
+            <p class="co-empty-sub">You haven't placed any orders in this category yet.</p>
+            <button class="co-shop-btn" [routerLink]="['/']">
+                <i class="fas fa-shopping-bag"></i>
+                Continue Shopping
+            </button>
+        </div>
+
+        <div *ngIf="!isLoading && orders.length > 0" class="co-load-more">
+            <button class="co-more-btn" (click)="showMore()" [disabled]="isLoadingMore || orders.length >= totalCount">
+                <span *ngIf="!isLoadingMore && orders.length < totalCount">Show More</span>
+                <span *ngIf="orders.length >= totalCount">All orders loaded</span>
+                <span *ngIf="isLoadingMore">Loading...</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Help Card -->
+    <div class="co-help-card">
+        <div class="co-help-icon">
+            <i class="fas fa-search"></i>
+        </div>
+        <div class="co-help-body">
+            <h6 class="co-help-title">Can't find your order?</h6>
+            <p class="co-help-sub">If you used guest checkout or can't see a recent order, please use our recovery tool.
+            </p>
+        </div>
+        <button class="co-find-btn" [routerLink]="['/customer/support']">
+            Find Order <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+</div>
+
+<!-- Order Details Modal -->
+<div *ngIf="showOrderModal" class="co-modal-backdrop" (click)="closeOrderDetails()"></div>
+<div *ngIf="showOrderModal" class="co-modal">
+    <div class="co-modal-header">
+        <div>
+            <div class="co-modal-eyebrow">Order Summary</div>
+            <h3 class="co-modal-title">Order {{ getOrderNumber(selectedOrder) }}</h3>
+        </div>
+        <button class="co-modal-close" (click)="closeOrderDetails()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <div *ngIf="detailLoading" class="co-modal-loading">
+        <div class="co-spinner"></div>
+        <p class="mt-3 co-loading-text">Loading order details...</p>
+    </div>
+
+    <div *ngIf="!detailLoading && selectedOrder" class="co-modal-body">
+        <div class="co-summary-grid">
+            <div class="co-summary-card">
+                <div class="co-summary-label">Status</div>
+                <div class="co-summary-value">
+                    <span class="co-status-pill"
+                        [ngClass]="(selectedOrder.status?.toLowerCase() || '').replace('/', '-')">
+                        {{ selectedOrder.status }}
+                    </span>
+                </div>
+            </div>
+            <div class="co-summary-card">
+                <div class="co-summary-label">Payment</div>
+                <div class="co-summary-value">{{ selectedOrder.paymentStatus || 'Pending' }}</div>
+                <div class="co-summary-sub">Method: {{ selectedOrder.paymentMethod || 'N/A' }}</div>
+            </div>
+            <div class="co-summary-card">
+                <div class="co-summary-label">Placed On</div>
+                <div class="co-summary-value">{{ selectedOrder.creationTime | date:'medium' }}</div>
+            </div>
+        </div>
+
+        <div class="co-section">
+            <h4 class="co-section-title">Shipping</h4>
+            <div class="co-info-grid">
+                <div>
+                    <div class="co-info-label">Recipient</div>
+                    <div class="co-info-value">{{ selectedOrder.recipientName || 'N/A' }}</div>
+                    <div class="co-info-sub">{{ selectedOrder.recipientPhone || 'N/A' }}</div>
+                    <div class="co-info-sub">{{ selectedOrder.recipientEmail || 'N/A' }}</div>
+                </div>
+                <div>
+                    <div class="co-info-label">Address</div>
+                    <div class="co-info-value">
+                        {{ selectedOrder.shippingAddress || '' }}
+                        <span *ngIf="selectedOrder.city">, {{ selectedOrder.city }}</span>
+                        <span *ngIf="selectedOrder.state">, {{ selectedOrder.state }}</span>
+                        <span *ngIf="selectedOrder.postalCode"> {{ selectedOrder.postalCode }}</span>
+                        <span *ngIf="selectedOrder.country">, {{ selectedOrder.country }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="co-section">
+            <h4 class="co-section-title">Items</h4>
+            <div class="co-items" *ngIf="(selectedOrder.orderItems || []).length > 0">
+                <div class="co-item-row" *ngFor="let item of (selectedOrder.orderItems || [])">
+                    <div class="co-item-media">
+                        <img [src]="resolveImage(item.imageUrl)" alt="item" (error)="handleImgError($event)" />
+                    </div>
+                    <div class="co-item-info">
+                        <div class="co-item-name">{{ getItemProductName(item) }}</div>
+                        <div class="co-item-price-inline">{{ getItemLineTotal(item) | currency }}</div>
+                        <div class="co-item-sub">Qty: {{ item.quantity }}</div>
+                    </div>
+                    <button *ngIf="getItemStoreName(item)" type="button" class="co-store-link co-store-link-tile"
+                        (click)="openStoreProducts(getItemStoreName(item), $event)">
+                        <i class="fas fa-store"></i>
+                        <span>{{ getItemStoreName(item) }}</span>
+                    </button>
+                    <div class="co-item-price" *ngIf="!getItemStoreName(item)">{{ getItemLineTotal(item) | currency }}</div>
+                </div>
+            </div>
+            <div class="co-items-empty" *ngIf="(selectedOrder.orderItems || []).length === 0">
+                No items were found for this order.
+            </div>
+        </div>
+
+        <div class="co-section co-totals">
+            <div class="co-total-row">
+                <span>Subtotal</span>
+                <span>{{ selectedOrder.subTotal | currency }}</span>
+            </div>
+            <div class="co-total-row">
+                <span>Shipping</span>
+                <span>{{ selectedOrder.shippingCost | currency }}</span>
+            </div>
+            <div class="co-total-row" *ngIf="selectedOrder.discount">
+                <span>Discount</span>
+                <span>-{{ selectedOrder.discount | currency }}</span>
+            </div>
+            <div class="co-total-row co-total-grand">
+                <span>Total</span>
+                <span>{{ selectedOrder.totalAmount | currency }}</span>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHEIN Profile - My Orders Page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        /* --- Base Layout (Desktop) --- */
+        .header {
+            padding: 10px 40px;
+            background-color: white;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .profile-container {
+            display: flex;
+            max-width: 1200px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 40px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* --- Sidebar Styling --- */
+        .sidebar {
+            width: 280px;
+            padding-right: 30px;
+            flex-shrink: 0;
+            border-right: 1px solid #eee;
+        }
+
+        .sidebar h2 {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .menu-section h3 {
+            font-size: 14px;
+            color: #333;
+            padding: 10px 0;
+            border-top: 1px solid #eee;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer; 
+        }
+        
+        /* Collapsible Menu Styling */
+        .menu-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+            max-height: 500px; 
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, margin-bottom 0.3s ease-out;
+        }
+
+        /* Class to hide the list initially (or when collapsed) */
+        .menu-section.collapsed ul {
+            max-height: 0;
+            margin-bottom: 0;
+        }
+
+
+        .sidebar ul li a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #555;
+            padding: 5px 0;
+            font-size: 14px;
+        }
+
+        .sidebar ul li a i {
+            margin-right: 10px;
+            color: #888;
+            width: 15px;
+        }
+
+        /* Active Menu Link */
+        .sidebar ul li.active-link a {
+            color: #ea1e63;
+            font-weight: bold;
+        }
+        .sidebar ul li.active-link a i {
+            color: #ea1e63;
+        }
+
+        /* Sign Out Link Styling */
+        .sign-out-section {
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            margin-top: 20px;
+        }
+
+        .sign-out-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .sign-out-link i {
+            margin-right: 10px;
+            color: #333;
+        }
+
+        /* Badges and Points */
+        .badge {
+            font-size: 9px;
+            padding: 2px 5px;
+            border-radius: 2px;
+            margin-left: 5px;
+            line-height: 1;
+        }
+        .club { background-color: #ff9800; color: white; }
+        .saver { background-color: #f50057; color: white; }
+        .points { color: #ea1e63; font-weight: normal; margin-left: auto; font-size: 11px; }
+
+        /* --- Main Content Styling --- */
+        .main-content {
+            flex-grow: 1;
+            padding-left: 40px;
+        }
+
+        .main-content h1 {
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            font-weight: normal;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            display: flex; /* Added for alignment */
+            justify-content: space-between; /* Added for alignment */
+            align-items: center; /* Added for alignment */
+        }
+        
+        .main-content h1 .package-link {
+            font-size: 14px;
+            color: #333;
+            text-transform: none;
+            font-weight: normal;
+        }
+        
+        .main-content h1 .package-link i {
+            margin-right: 5px;
+            color: #333;
+        }
+
+        /* Order Tabs Styling */
+        .order-tabs {
+            display: flex;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #f5f5f5; /* Light separator */
+        }
+        .order-tab {
+            padding: 0 15px 10px 0;
+            margin-right: 15px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: normal;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: color 0.1s, border-bottom-color 0.1s;
+        }
+        .order-tab.active-tab {
+            color: black;
+            font-weight: bold;
+            border-bottom-color: black;
+        }
+        
+        /* Empty State Styling */
+        .empty-state {
+            text-align: center;
+            padding: 50px 0;
+            color: #999;
+            font-size: 14px;
+        }
+        .empty-state i {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* Self-Service Link */
+        .self-service-box {
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+        .self-service-box h3 {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .self-service-link {
+            display: inline-block;
+            text-decoration: none;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 8px 15px;
+            font-size: 14px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        .self-service-link:hover {
+            background-color: #f0f0f0;
+        }
+        .self-service-link i {
+            margin-left: 5px;
+            font-size: 12px;
+        }
+
+
+        /* Content visibility switching (JS controlled) */
+        .content-section {
+            display: none;
+        }
+        .content-section.active-content {
+            display: block;
+        }
+
+        /* =================================================
+          📱 MEDIA QUERIES FOR RESPONSIVENESS (MOBILE)
+          =================================================
+        */
+
+        @media (max-width: 768px) {
+            /* Main Container Adjustments */
+            .header {
+                padding: 10px 20px;
+            }
+            
+            .profile-container {
+                /* Switch to single column */
+                flex-direction: column;
+                padding: 20px 10px;
+                margin: 0;
+                box-shadow: none;
+            }
+
+            /* Sidebar Adjustments (Mobile Menu - Horizontal Scroll) */
+            .sidebar {
+                width: 100%;
+                padding-right: 0;
+                border-right: none;
+                margin-bottom: 0;
+            }
+
+            .sidebar h2, .menu-section h3 {
+                /* On mobile, collapse menu sections entirely for space efficiency */
+                display: none; 
+            }
+            
+            /* Mobile Navigation (Visible Links Only) */
+            .sidebar ul {
+                margin-bottom: 0;
+                display: flex;
+                overflow-x: auto; /* Enable horizontal scrolling */
+                white-space: nowrap;
+                padding-bottom: 10px;
+                border-bottom: 1px solid #eee; 
+                margin-top: 10px;
+                /* Override max-height for mobile to show menu items horizontally */
+                max-height: none !important; 
+                transition: none !important;
+            }
+
+            /* Only show menu items that are not part of collapsed sections */
+            .menu-section {
+                display: contents; /* Allows children (ul) to flex */
+            }
+
+            .sidebar ul li {
+                padding: 0 5px;
+                flex-shrink: 0;
+            }
+            
+            .sidebar ul li a {
+                padding: 5px 0;
+                font-size: 12px;
+                flex-direction: column; /* Stack icon and text */
+                text-align: center;
+                width: 60px;
+            }
+            
+            .sidebar ul li a i {
+                margin-right: 0;
+                margin-bottom: 5px;
+            }
+
+            .badge, .points, .toggle-icon {
+                display: none; /* Hide badges/points/icons on small screens */
+            }
+
+            /* Sign Out Mobile Style */
+            .sign-out-section {
+                border-top: none;
+                padding-top: 10px;
+                margin-top: 5px;
+                text-align: center;
+            }
+            .sign-out-link {
+                justify-content: center; /* Center the link */
+                font-size: 14px;
+                padding: 10px 0;
+            }
+            
+            /* Main Content Adjustments */
+            .main-content {
+                padding-left: 0;
+                padding-top: 10px;
+            }
+
+            .main-content h1 {
+                font-size: 20px;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+            }
+
+            /* Order Tabs on Mobile */
+            .order-tabs {
+                margin-bottom: 20px;
+                overflow-x: auto;
+                white-space: nowrap;
+                padding-bottom: 5px;
+            }
+            .order-tab {
+                flex-shrink: 0;
+                font-size: 13px;
+                padding-bottom: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <p>Home / My Orders</p>
+    </div>
+
+    <div class="profile-container">
+        <div class="sidebar">
+            <h2>Personal Center</h2>
+            
+            <div class="menu-section collapsed" id="account-section">
+                <h3>My Account <span class="toggle-icon"><i class="fas fa-plus"></i></span></h3>
+                <ul>
+                    <li><a href="#"><i class="fas fa-sack-dollar"></i> SHEIN CLUB <span class="badge club">SHEIN CLUB</span></a></li>
+                    <li><a href="#"><i class="fas fa-percent"></i> SHEIN SAVER <span class="badge saver">SHEIN Saver</span></a></li>
+                    <li><a href="#"><i class="fas fa-crown"></i> SHEIN VIP</a></li>
+                    <li><a href="#"><i class="fas fa-user"></i> My Profile <span class="points">+POINTS</span></a></li>
+                    <li><a href="#"><i class="fas fa-book"></i> Address Book</a></li>
+                    <li><a href="#"><i class="fas fa-credit-card"></i> My Payment Options</a></li>
+                    <li><a href="#"><i class="fas fa-ruler-combined"></i> My Measurements</a></li>
+                    <li><a href="#"><i class="fas fa-cog"></i> Manage My Account <span class="points">+POINTS</span></a></li>
+                </ul>
+            </div>
+            
+            <div class="menu-section" id="orders-section">
+                <h3>My Orders <span class="toggle-icon"><i class="fas fa-minus"></i></span></h3>
+                <ul>
+                    <li class="active-link"><a href="#order-list"><i class="fas fa-list-alt"></i> All Orders</a></li> 
+                    <li><a href="#"><i class="fas fa-money-bill-wave"></i> Unpaid</a></li>
+                    <li><a href="#"><i class="fas fa-box"></i> Processing</a></li>
+                    <li><a href="#"><i class="fas fa-truck"></i> Shipped</a></li>
+                    <li><a href="#"><i class="fas fa-star"></i> Review</a></li>
+                    <li><a href="#"><i class="fas fa-undo-alt"></i> Return</a></li>
+                    <li><a href="#"><i class="fas fa-history"></i> Deleted Orders History</a></li>
+                </ul>
+            </div>
+
+            <div class="menu-section collapsed" id="assets-section">
+                <h3>My Assets <span class="toggle-icon"><i class="fas fa-plus"></i></span></h3>
+                <ul>
+                    <li><a href="#"><i class="fas fa-ticket-alt"></i> My Coupons</a></li>
+                    <li><a href="#"><i class="fas fa-star"></i> My Points</a></li>
+                    <li><a href="#"><i class="fas fa-wallet"></i> My Wallet</a></li>
+                    <li><a href="#"><i class="fas fa-gift"></i> Gift Card</a></li>
+                </ul>
+            </div>
+            
+            <div class="menu-section collapsed" id="favorites-section">
+                <h3>My Favorites <span class="toggle-icon"><i class="fas fa-plus"></i></span></h3>
+                <ul>
+                    <li><a href="#"><i class="fas fa-heart"></i> Wish List</a></li>
+                    <li><a href="#"><i class="fas fa-history"></i> Recently Viewed</a></li>
+                    <li><a href="#"><i class="fas fa-user-plus"></i> Follow</a></li>
+                </ul>
+            </div>
+            
+            <div class="menu-section collapsed" id="policy-section">
+                <h3>Policy <span class="toggle-icon"><i class="fas fa-plus"></i></span></h3>
+                <ul>
+                    <li><a href="#"><i class="fas fa-shipping-fast"></i> Shipping Info</a></li>
+                    <li><a href="#"><i class="fas fa-check-circle"></i> Return Policy</a></li>
+                    <li><a href="#"><i class="fas fa-lock"></i> Privacy & Cookie Policy</a></li>
+                    <li><a href="#"><i class="fas fa-receipt"></i> Refund</a></li>
+                    <li><a href="#"><i class="fas fa-credit-card"></i> Payment Method</a></li>
+                    <li><a href="#"><i class="fas fa-wallet"></i> About SHEIN Wallet</a></li>
+                    <li><a href="#"><i class="fas fa-dollar-sign"></i> Bonus Point Policy</a></li>
+                    <li><a href="#"><i class="fas fa-percent"></i> Coupon Policy</a></li>
+                    <li><a href="#"><i class="fas fa-medal"></i> SHEIN VIP Terms & Conditions</a></li>
+                    <li><a href="#"><i class="fas fa-comments"></i> Review Guidance</a></li>
+                    <li><a href="#"><i class="fas fa-gift"></i> Giftcard</a></li>
+                    <li><a href="#"><i class="fas fa-map-marker-alt"></i> How To Track My Order</a></li>
+                    <li><a href="#"><i class="fas fa-book-open"></i> How To Order Page</a></li>
+                </ul>
+            </div>
+            
+            <div class="menu-section collapsed" id="service-section">
+                <h3>Customer Service <span class="toggle-icon"><i class="fas fa-plus"></i></span></h3>
+                <ul>
+                    <li><a href="#"><i class="fas fa-clipboard-list"></i> Service Records</a></li>
+                    <li><a href="#"><i class="fas fa-headset"></i> Contact Us</a></li>
+                </ul>
+            </div>
+
+            <div class="menu-section collapsed" id="other-section">
+                <h3>Other Services <span class="toggle-icon"><i class="fas fa-plus"></i></span></h3>
+                <ul>
+                    <li><a href="#"><i class="fas fa-gift"></i> My Free Trial</a></li>
+                    <li><a href="#"><i class="fas fa-poll"></i> Survey Center</a></li>
+                    <li><a href="#"><i class="fas fa-envelope"></i> Contact Preferences</a></li>
+                    <li><a href="#"><i class="fas fa-exchange-alt"></i> SHEIN Exchange</a></li>
+                    <li><a href="#"><i class="fas fa-newspaper"></i> News</a></li>
+                </ul>
+            </div>
+            
+            <div class="sign-out-section">
+                <a href="#" class="sign-out-link"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <h1>MY ORDERS 
+                <span class="package-link">
+                    <i class="fas fa-box-open"></i> Package > 
+                </span>
+            </h1>
+            
+            <div class="content-section active-content" id="order-list">
+                <div class="order-tabs">
+                    <div class="order-tab active-tab">All orders</div>
+                    <div class="order-tab">Unpaid</div>
+                    <div class="order-tab">Processing</div>
+                    <div class="order-tab">Shipped</div>
+                    <div class="order-tab">Review</div>
+                    <div class="order-tab">Refund/Return</div>
+                    <div class="order-tab">Deleted Orders History</div>
+                </div>
+
+                <div style="position: relative; margin-bottom: 20px;">
+                    <i class="fas fa-search" style="position: absolute; right: 0; top: -75px; font-size: 20px; color: #666;"></i>
+                </div>
+
+
+                <div class="empty-state">
+                    <i class="far fa-file"></i> 
+                    It is empty here :-(
+                </div>
+                
+                <div class="self-service-box">
+                    <h3>Can't find your order?</h3>
+                    <a href="#" class="self-service-link">
+                        Self-service to find order <i class="fas fa-angle-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // ==============================================
+            // 1. Sidebar Navigation Logic (Content Switching)
+            // ==============================================
+            const sidebarLinks = document.querySelectorAll('.sidebar ul li a');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            // Set #order-list as the default active section
+            contentSections.forEach(section => {
+                section.classList.remove('active-content');
+            });
+            const defaultSection = document.querySelector('#order-list');
+            if (defaultSection) {
+                defaultSection.classList.add('active-content');
+            }
+
+            // Remove previous default active link and set the new one
+            document.querySelectorAll('.sidebar ul li').forEach(li => li.classList.remove('active-link'));
+            const newActiveLink = document.querySelector('#orders-section ul li:first-child');
+            if(newActiveLink) {
+                newActiveLink.classList.add('active-link');
+            }
+
+
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const targetId = this.getAttribute('href');
+                    
+                    if (targetId && targetId.startsWith('#')) {
+                        e.preventDefault(); 
+                        
+                        contentSections.forEach(section => {
+                            section.classList.remove('active-content');
+                        });
+                        
+                        const targetSection = document.querySelector(targetId);
+                        if (targetSection) {
+                            targetSection.classList.add('active-content');
+                        }
+                        
+                        // Update active link styling
+                        document.querySelectorAll('.sidebar ul li').forEach(li => li.classList.remove('active-link'));
+                        this.closest('li').classList.add('active-link');
+                    }
+                });
+            });
+
+
+            // ==============================================
+            // 2. Collapsible Menu Logic (Plus/Minus Toggle)
+            // ==============================================
+            const menuSections = document.querySelectorAll('.menu-section h3');
+
+            menuSections.forEach(header => {
+                header.addEventListener('click', function() {
+                    // Get the parent .menu-section element
+                    const section = this.closest('.menu-section');
+                    const icon = this.querySelector('.toggle-icon i');
+
+                    // Toggle the 'collapsed' class
+                    const isCollapsed = section.classList.toggle('collapsed');
+
+                    // Change the icon based on the new state
+                    if (isCollapsed) {
+                        // If it's now collapsed, show plus (+)
+                        icon.classList.remove('fa-minus');
+                        icon.classList.add('fa-plus');
+                    } else {
+                        // If it's now open, show minus (-)
+                        icon.classList.remove('fa-plus');
+                        icon.classList.add('fa-minus');
+                    }
+                });
+            });
+
+
+            
+            
+            // ==============================================
+            // 3. Order Tab Switching Logic
+            // ==============================================
+            const orderTabs = document.querySelectorAll('.order-tab');
+            orderTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    orderTabs.forEach(t => t.classList.remove('active-tab'));
+                    this.classList.add('active-tab');
+                });
+            });
+        });
+        // ==============================================
+// 3. Order Tab Switching Logic (MODIFIED for Synchronization)
+// ==============================================
+const orderTabs = document.querySelectorAll('.order-tab');
+const sidebarOrderLinks = document.querySelectorAll('#orders-section ul li a');
+
+orderTabs.forEach((tab, index) => {
+    tab.addEventListener('click', function() {
+        // 1. Update the active Order Tab in the main content
+        orderTabs.forEach(t => t.classList.remove('active-tab'));
+        this.classList.add('active-tab');
+        
+        // 2. Synchronize with the Sidebar Menu
+        // The index of the clicked tab matches the index of the corresponding sidebar link.
+        
+        // Remove active-link styling from all sidebar links
+        document.querySelectorAll('.sidebar ul li').forEach(li => li.classList.remove('active-link'));
+
+        // Set the corresponding sidebar link as active
+        if (sidebarOrderLinks[index]) {
+            sidebarOrderLinks[index].closest('li').classList.add('active-link');
+        }
+    });
+});
+    </script>
+</body>
+</html>

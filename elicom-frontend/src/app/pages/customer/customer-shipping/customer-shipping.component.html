@@ -1,0 +1,65 @@
+<div class="customer-shipping sui-fade-in">
+    <div class="border-bottom pb-4 mb-5">
+        <h2 class="fw-bold mb-0">SHIPPING INFORMATION</h2>
+    </div>
+
+    <div class="row g-0 border mb-4">
+        <div class="col-md-6 border-end p-3 bg-light">
+            <label class="x-small fw-bold text-muted uppercase mb-1 d-block">Location</label>
+            <div class="fw-bold uppercase">United States</div>
+        </div>
+        <div class="col-md-6 p-3 bg-white">
+            <label class="x-small fw-bold text-muted uppercase mb-1 d-block">State/Province</label>
+            <select class="form-select border-0 fw-bold p-0 x-small rounded-0">
+                <option *ngFor="let state of states">{{state | uppercase}}</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-responsive sui-card p-0">
+        <table class="table table-hover mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th class="p-3 x-small fw-bold uppercase">Shipping Method</th>
+                    <th class="p-3 x-small fw-bold uppercase">Estimated Delivery Window</th>
+                    <th class="p-3 x-small fw-bold uppercase">Fee</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-bottom">
+                    <td class="p-4 fw-bold x-small uppercase">EXPRESS SHIPPING</td>
+                    <td class="p-4 x-small">
+                        <p class="mb-1 fw-bold">11/28/2025 - 12/03/2025</p>
+                        <p class="text-muted mb-0 uppercase">62.5% ARE ≤ 5 BUSINESS DAYS</p>
+                    </td>
+                    <td class="p-4 x-small">
+                        <p class="mb-1">$12.90 – BELOW $139.00</p>
+                        <p class="fw-bold text-dark mb-0">$7.90 – OVER $139.00</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="p-4 fw-bold x-small uppercase">STANDARD SHIPPING</td>
+                    <td class="p-4 x-small">
+                        <p class="mb-1 fw-bold">12/01/2025 - 12/08/2025</p>
+                        <p class="text-muted mb-0 uppercase">72.3% ARE ≤ 7 BUSINESS DAYS</p>
+                    </td>
+                    <td class="p-4 x-small">
+                        <span class="text-decoration-line-through text-muted">$3.99</span>
+                        <p class="text-success fw-bold mb-0">FREE - ORDERS OVER $15.00</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="sui-card bg-light border-0 mt-5 p-4">
+        <div class="d-flex gap-3">
+            <i class="fas fa-info-circle text-muted mt-1"></i>
+            <p class="x-small text-muted mb-0 uppercase fw-bold">
+                Certain sellers shipping from U.S. warehouses offer free shipping when specific thresholds are met.
+                Free shipping is typically available on orders over $29 from a single seller,
+                although this threshold may vary by seller.
+            </p>
+        </div>
+    </div>
+</div>

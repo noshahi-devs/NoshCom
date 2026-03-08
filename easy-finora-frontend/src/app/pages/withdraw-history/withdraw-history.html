@@ -1,0 +1,158 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="glow-text">Withdraw History</h1>
+        <button class="btn-3d" routerLink="/withdraw">+ New Withdrawal</button>
+    </div>
+
+    <div class="history-table-3d">
+        <div class="table-header">
+            <div class="col">Card Info</div>
+            <div class="col">Amount</div>
+            <div class="col">Status</div>
+            <div class="col">Date</div>
+            <div class="col actions">Actions</div>
+        </div>
+
+        <app-loader *ngIf="isLoading" message="Securely retrieving your withdrawal records..."></app-loader>
+
+        @for (w of withdrawals; track w.id) {
+        <div class="table-row admin-row" (click)="viewDetails(w)">
+            <div class="col user-info">
+                <span class="user-email">Withdrawal</span>
+                <small class="ref-id">Card: {{ w.cardId }}</small>
+            </div>
+            <div class="col amount-info">
+                <div class="main-amount debit">-{{ w.amount | currency: 'USD' }}</div>
+            </div>
+            <div class="col">
+                <span class="status-badge" [ngClass]="(w.status || 'pending').toLowerCase()">
+                    {{ w.status }}
+                </span>
+            </div>
+            <div class="col">{{ w.creationTime | date: 'MMM d, h:mm a' }}</div>
+            <div class="col actions">
+                <button class="btn-view-request" (click)="$event.stopPropagation(); viewDetails(w)">
+                    View Request
+                </button>
+            </div>
+        </div>
+        } @empty {
+        @if (!isLoading) {
+        <div class="table-row">
+            <div class="col" style="width: 100%; text-align: center;">No withdrawal history found.</div>
+        </div>
+        }
+        }
+
+        <!-- Pagination Section -->
+        <div class="pagination-container" *ngIf="totalCount > 0 && !isLoading">
+            <div class="pagination-info">
+                Showing {{ getStartIndex() }} to {{ getEndIndex() }} of {{ totalCount }} withdrawals
+            </div>
+
+            <div class="pagination-controls">
+                <button class="btn-pagination" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+
+                <div class="page-numbers">
+                    <button *ngFor="let page of getPageNumbers()" class="page-btn" [class.active]="page === currentPage"
+                        (click)="changePage(page)">
+                        {{ page }}
+                    </button>
+                </div>
+
+                <button class="btn-pagination" [disabled]="currentPage === totalPages"
+                    (click)="changePage(currentPage + 1)">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal-overlay" *ngIf="showModal && selectedWithdraw">
+    <div class="modal-content glassmorphism">
+        <div class="modal-header">
+            <h3>Withdrawal Details</h3>
+            <button class="close-btn" (click)="showModal = false">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="detail-section">
+                <h6>Identification</h6>
+                <p><strong>Withdrawal ID:</strong> #{{ selectedWithdraw.id }}</p>
+                <p><strong>Card ID:</strong> {{ selectedWithdraw.cardId }}</p>
+            </div>
+
+            <div class="detail-section">
+                <h6>Amount Details</h6>
+                <div class="amount-card-3d">
+                    <div class="amount-row">
+                        <span class="label">Total Withdrawal</span>
+                        <span class="value">{{ selectedWithdraw.amount | currency:'USD' }}</span>
+                    </div>
+                    <div class="amount-row fee" *ngIf="selectedWithdraw.serviceFee">
+                        <span class="label">Platform Tax (3%)</span>
+                        <span class="value">-{{ selectedWithdraw.serviceFee | currency:'USD' }}</span>
+                    </div>
+                    <div class="amount-row net" [class.highlight]="selectedWithdraw.serviceFee">
+                        <span class="label">Net Amount to Bank</span>
+                        <span class="value">{{ (selectedWithdraw.netAmount || selectedWithdraw.amount) | currency:'USD'
+                            }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h6>Bank Details</h6>
+                <div class="structured-details" *ngIf="getBankDetails(selectedWithdraw.paymentDetails) as bank">
+                    <div class="detail-item">
+                        <label>Bank Name</label>
+                        <div class="value-row">
+                            <span>{{ bank.bank || 'N/A' }}</span>
+                            <button class="btn-copy" (click)="copyToClipboard(bank.bank)"
+                                title="Copy Bank Name">📋</button>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <label>Account Title</label>
+                        <div class="value-row">
+                            <span>{{ bank.title || 'N/A' }}</span>
+                            <button class="btn-copy" (click)="copyToClipboard(bank.title)"
+                                title="Copy Account Title">📋</button>
+                        </div>
+                    </div>
+                    <div class="detail-item highlighting">
+                        <label>Account Number</label>
+                        <div class="value-row">
+                            <span class="mono">{{ bank.account || 'N/A' }}</span>
+                            <button class="btn-copy-main" (click)="copyToClipboard(bank.account)"
+                                title="Copy Account Number">Copy Account</button>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <label>IBAN</label>
+                        <div class="value-row">
+                            <span class="mono">{{ bank.iban || 'N/A' }}</span>
+                            <button class="btn-copy" *ngIf="bank.iban" (click)="copyToClipboard(bank.iban)"
+                                title="Copy IBAN">📋</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section" *ngIf="selectedWithdraw.adminRemarks">
+                <h6>Remarks</h6>
+                <div class="remarks-box">
+                    {{ selectedWithdraw.adminRemarks }}
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-secondary" (click)="showModal = false">Close</button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,7 @@
+<nav class="breadcrumb">
+  <span *ngFor="let item of items; let last = last">
+    <a *ngIf="!last">{{ item }}</a>
+    <span *ngIf="last">{{ item }}</span>
+    <span *ngIf="!last"> / </span>
+  </span>
+</nav>

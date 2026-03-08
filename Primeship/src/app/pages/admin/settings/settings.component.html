@@ -1,0 +1,98 @@
+<div class="settings-container">
+    <div class="page-header">
+        <h1 class="page-title">Platform Settings</h1>
+        <p class="page-subtitle">Configure your sourcing platform and administrator profile</p>
+    </div>
+
+    <div class="settings-grid">
+        <!-- Platform Configuration -->
+        <div class="card-3d">
+            <div class="card-header">
+                <h3><i class="pi pi-cog"></i> General Configuration</h3>
+            </div>
+            <div class="card-content">
+                <div class="form-group">
+                    <label>Platform Name</label>
+                    <input type="text" [(ngModel)]="platformSettings.name" class="premium-input">
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Support Email</label>
+                        <input type="email" [(ngModel)]="platformSettings.contactEmail" class="premium-input">
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Support Phone</label>
+                        <input type="text" [(ngModel)]="platformSettings.supportPhone" class="premium-input">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="switch-label">
+                        <span>Maintenance Mode</span>
+                        <div class="switch">
+                            <input type="checkbox" [(ngModel)]="platformSettings.maintenanceMode">
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+                </div>
+                <button class="premium-btn primary" (click)="savePlatformSettings()">Update Platform</button>
+            </div>
+        </div>
+
+        <!-- Admin Profile -->
+        <div class="card-3d">
+            <div class="card-header">
+                <h3><i class="pi pi-user"></i> Admin Profile</h3>
+            </div>
+            <div class="card-content">
+                <div class="profile-header">
+                    <div class="avatar-large">
+                        <i class="pi pi-user"></i>
+                    </div>
+                    <div class="profile-info">
+                        <h4>{{ adminProfile.name }}</h4>
+                        <p>{{ adminProfile.role }}</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" [(ngModel)]="adminProfile.name" class="premium-input">
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" [(ngModel)]="adminProfile.email" class="premium-input">
+                </div>
+                <button class="premium-btn outline" (click)="saveProfile()">Save Profile</button>
+            </div>
+        </div>
+
+        <!-- Security & System -->
+        <div class="card-3d full-width">
+            <div class="card-header">
+                <h3><i class="pi pi-shield"></i> Security & System Status</h3>
+            </div>
+            <div class="card-content system-grid">
+                <div class="system-item">
+                    <div class="status-indicator online"></div>
+                    <div class="item-text">
+                        <h5>Environment</h5>
+                        <p>Production (v2.4.0)</p>
+                    </div>
+                </div>
+                <div class="system-item">
+                    <div class="status-indicator warning"></div>
+                    <div class="item-text">
+                        <h5>Last Backup</h5>
+                        <p>12 hours ago</p>
+                    </div>
+                </div>
+                <div class="system-item">
+                    <div class="status-indicator online"></div>
+                    <div class="item-text">
+                        <h5>Database Connection</h5>
+                        <p>Stable (4ms latency)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

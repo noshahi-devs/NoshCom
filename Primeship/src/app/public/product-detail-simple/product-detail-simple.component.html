@@ -1,0 +1,211 @@
+<div class="product-detail-simple">
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="/home">
+        <i class="fas fa-shopping-bag text-primary"></i> NoshahiMart
+      </a>
+      <div class="navbar-nav ms-auto">
+        <a class="nav-link" href="/home">Home</a>
+        <a class="nav-link" href="/category">Shop</a>
+        <a class="nav-link" href="/about">About</a>
+        <a class="nav-link" href="/contact">Contact</a>
+        <a class="nav-link position-relative" href="/cart">
+          <i class="fas fa-shopping-cart"></i> Cart
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Breadcrumb -->
+  <section class="bg-light py-3">
+    <div class="container">
+      <nav>
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="/home">Home</a></li>
+          <li class="breadcrumb-item"><a href="/category">Shop</a></li>
+          <li class="breadcrumb-item active">{{ product?.name }}</li>
+        </ol>
+      </nav>
+    </div>
+  </section>
+
+  <!-- Main Product Section -->
+  <section class="py-5">
+    <div class="container">
+      <div class="row g-5">
+        <!-- Left Side - Product Image -->
+        <div class="col-lg-6">
+          <div class="product-image-container">
+            <img [src]="product?.image" [alt]="product?.name" class="main-product-image">
+            <div class="image-zoom-icon">
+              <i class="fas fa-search-plus"></i>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Right Side - Product Details -->
+        <div class="col-lg-6">
+          <div class="product-details">
+            <!-- Category Badge -->
+            <span class="category-badge">{{ product?.category }}</span>
+            
+            <!-- Product Name -->
+            <h1 class="product-title">{{ product?.name }}</h1>
+            
+            <!-- Rating -->
+            <div class="product-rating">
+              <span class="stars">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star-half"></i>
+              </span>
+              <span class="rating-text">({{ product?.reviewCount }} reviews)</span>
+            </div>
+            
+            <!-- Price -->
+            <div class="product-price">
+              <span class="current-price">{{ product?.price | currency:'USD':'symbol':'1.2-2' }}</span>
+              <span class="original-price">{{ product?.originalPrice | currency:'USD':'symbol':'1.2-2' }}</span>
+              <span class="discount-badge">{{ product?.discount }}% OFF</span>
+            </div>
+            
+            <!-- Description -->
+            <p class="product-description">{{ product?.description }}</p>
+            
+            <!-- Stock Status -->
+            <div class="stock-status">
+              <i class="fas fa-check-circle text-success"></i>
+              <span class="text-success">In Stock - Ready to ship</span>
+            </div>
+            
+            <!-- Quantity Selector -->
+            <div class="quantity-section">
+              <label class="quantity-label">Quantity:</label>
+              <div class="quantity-control">
+                <button class="quantity-btn" (click)="decreaseQuantity()">
+                  <i class="fas fa-minus"></i>
+                </button>
+                <input type="number" class="quantity-input" [(ngModel)]="quantity" min="1" max="10">
+                <button class="quantity-btn" (click)="increaseQuantity()">
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+              <button class="btn btn-add-cart" (click)="addToCart()">
+                <i class="fas fa-cart-plus"></i>
+                Add to Cart
+              </button>
+              <button class="btn btn-wishlist" (click)="addToWishlist()">
+                <i class="fas fa-heart"></i>
+                Wishlist
+              </button>
+            </div>
+            
+            <!-- Product Features -->
+            <div class="product-features">
+              <div class="feature-item">
+                <i class="fas fa-truck"></i>
+                <span>Free Shipping</span>
+              </div>
+              <div class="feature-item">
+                <i class="fas fa-shield-alt"></i>
+                <span>30-Day Guarantee</span>
+              </div>
+              <div class="feature-item">
+                <i class="fas fa-undo"></i>
+                <span>Easy Returns</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Product Information Tabs -->
+  <section class="py-5 bg-light">
+    <div class="container">
+      <div class="product-tabs">
+        <ul class="nav nav-tabs">
+          <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description">Description</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviews">Reviews</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#shipping">Shipping</button>
+          </li>
+        </ul>
+        
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="description">
+            <h4>Product Description</h4>
+            <p>{{ product?.fullDescription }}</p>
+          </div>
+          <div class="tab-pane fade" id="reviews">
+            <h4>Customer Reviews</h4>
+            <div class="review-item">
+              <div class="review-header">
+                <strong>Sarah Johnson</strong>
+                <span class="review-rating">
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                </span>
+                <span class="review-date">2 weeks ago</span>
+              </div>
+              <p class="review-text">Absolutely love this product! Great quality and fast shipping.</p>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="shipping">
+            <h4>Shipping Information</h4>
+            <div class="shipping-info">
+              <div class="shipping-option">
+                <h6>Standard Shipping</h6>
+                <p>5-7 business days - FREE on orders over $50</p>
+              </div>
+              <div class="shipping-option">
+                <h6>Express Shipping</h6>
+                <p>2-3 business days - $15</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Related Products -->
+  <section class="py-5">
+    <div class="container">
+      <h2 class="section-title">Related Products</h2>
+      <div class="row g-4">
+        <div class="col-md-3" *ngFor="let product of relatedProducts">
+          <div class="related-product-card">
+            <img [src]="product.image" [alt]="product.name" class="related-product-image">
+            <div class="related-product-info">
+              <h6>{{ product.name }}</h6>
+              <div class="related-product-price">
+                <span class="current-price">{{ product.price | currency:'USD':'symbol':'1.2-2' }}</span>
+                <span class="original-price">{{ product.originalPrice | currency:'USD':'symbol':'1.2-2' }}</span>
+              </div>
+              <button class="btn btn-view-product" (click)="viewProduct(product.slug)">
+                View Product
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

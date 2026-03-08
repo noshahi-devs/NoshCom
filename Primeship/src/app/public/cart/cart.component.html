@@ -1,0 +1,123 @@
+<div class="cart-container">
+  <div class="container">
+    <h1 class="page-title">Shopping Cart</h1>
+
+    <div class="row">
+      <div class="col-md-8">
+        <div class="cart-items">
+          <div class="cart-item" *ngFor="let item of cartItems; let i = index">
+            <div class="row align-items-center">
+              <div class="col-md-2">
+                <img [src]="item.product.image" [alt]="item.product.name" class="cart-item-image">
+              </div>
+              <div class="col-md-4">
+                <span class="brand-item" *ngIf="item.product.brand"
+                  style="display:block; font-size: 0.8rem; color: #f85606; font-weight: 600;">{{ item.product.brand
+                  }}</span>
+                <h6 class="cart-item-name">{{ item.product.name }}</h6>
+                <p class="cart-item-details">
+                  Size: {{ item.size }} | Color: {{ item.color }}
+                </p>
+              </div>
+              <div class="col-md-2">
+                <div class="quantity-selector">
+                  <button class="btn btn-sm btn-outline-secondary"
+                    (click)="updateQuantity(i, item.quantity - 1)">-</button>
+                  <span class="quantity">{{ item.quantity }}</span>
+                  <button class="btn btn-sm btn-outline-secondary"
+                    (click)="updateQuantity(i, item.quantity + 1)">+</button>
+                </div>
+              </div>
+              <div class="col-md-2">
+                <div class="cart-item-price">
+                  <span class="current-price">{{ (item.product.price * item.quantity) | currency:'USD':'symbol':'1.2-2' }}</span>
+                  <span class="original-price" *ngIf="item.product.originalPrice">
+                    {{ (item.product.originalPrice * item.quantity) | currency:'USD':'symbol':'1.2-2' }}
+                  </span>
+                </div>
+              </div>
+              <div class="col-md-2">
+                <button class="btn btn-sm btn-outline-danger" (click)="removeFromCart(i)">
+                  <i class="fas fa-trash"></i> Remove
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="cart-empty" *ngIf="cartItems.length === 0">
+            <div class="text-center">
+              <i class="fas fa-shopping-cart fa-3x mb-3"></i>
+              <h4>Your cart is empty</h4>
+              <p>Add some products to get started!</p>
+              <button class="btn-continue-shopping" routerLink="/home" routerLinkActive="active">
+                <span>Continue Shopping</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cart-actions" *ngIf="cartItems.length > 0">
+          <button class="btn btn-outline-secondary" routerLink="/home" routerLinkActive="active">Continue
+            Shopping</button>
+          <button class="btn btn-outline-danger" (click)="clearCart()">Clear Cart</button>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="cart-summary">
+          <h5>Order Summary</h5>
+
+          <div class="summary-row">
+            <span>Subtotal:</span>
+            <span>{{ subtotal | currency:'USD':'symbol':'1.2-2' }}</span>
+          </div>
+
+          <div class="summary-row">
+            <span>Shipping:</span>
+            <span>{{ shipping | currency:'USD':'symbol':'1.2-2' }}</span>
+          </div>
+
+          <div class="summary-row">
+            <span>Tax:</span>
+            <span>{{ tax | currency:'USD':'symbol':'1.2-2' }}</span>
+          </div>
+
+          <div class="summary-row discount" *ngIf="discount > 0">
+            <span>Discount:</span>
+            <span>-{{ discount | currency:'USD':'symbol':'1.2-2' }}</span>
+          </div>
+
+          <hr>
+
+          <div class="summary-row total">
+            <span>Total:</span>
+            <span>{{ total | currency:'USD':'symbol':'1.2-2' }}</span>
+          </div>
+
+          <div class="promo-code">
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="Enter promo code" [(ngModel)]="promoCode">
+              <button class="btn-apply" (click)="applyPromoCode()">Apply</button>
+            </div>
+          </div>
+
+          <button class="btn-checkout" (click)="proceedToCheckout()">
+            <span>
+              Proceed to Checkout
+              <i class="pi pi-arrow-right checkout-icon"></i>
+            </span>
+          </button>
+        </div>
+
+        <div class="shipping-info">
+          <h6>Shipping Information</h6>
+          <ul>
+            <li>Free shipping on orders over $100</li>
+            <li>Standard delivery: 5-7 business days</li>
+            <li>Express delivery: 2-3 business days</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

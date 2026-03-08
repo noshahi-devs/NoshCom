@@ -1,0 +1,50 @@
+<div class="info-page wishlist-page">
+    <div class="container">
+        <div class="wishlist-header">
+            <div class="header-left">
+                <h1>My <span>Wishlist</span></h1>
+                <p>Keep track of the products you love. Add them to your cart anytime.</p>
+            </div>
+            <div class="header-right" *ngIf="(wishlistItems$ | async)?.length">
+                <button class="btn-clear" (click)="clearAll()">
+                    <i class="pi pi-trash"></i>
+                    Clear All
+                </button>
+            </div>
+        </div>
+
+        <div class="empty-state" *ngIf="!(wishlistItems$ | async)?.length">
+            <div class="empty-visual">
+                <i class="pi pi-heart"></i>
+            </div>
+            <h2>Your wishlist is empty</h2>
+            <p>Looks like you haven't added anything to your wishlist yet.</p>
+            <button class="btn-primary" routerLink="/shop">Explore Products</button>
+        </div>
+
+        <div class="wishlist-grid" *ngIf="(wishlistItems$ | async) as items">
+            <div class="wishlist-card" *ngFor="let item of items">
+                <div class="card-media">
+                    <img [src]="item.image" [alt]="item.name">
+                    <button class="btn-remove" (click)="removeFromWishlist(item)" aria-label="Remove from Wishlist">
+                        <i class="pi pi-times"></i>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <span class="category">{{ item.category }}</span>
+                    <h3>{{ item.name }}</h3>
+                    <div class="price-row">
+                        <span class="current">{{ item.price | currency }}</span>
+                        <span class="old" *ngIf="item.oldPrice">{{ item.oldPrice | currency }}</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-add-cart" (click)="addToCart(item)">
+                        <i class="pi pi-shopping-cart"></i>
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

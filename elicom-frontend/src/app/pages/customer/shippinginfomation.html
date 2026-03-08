@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shipping Information</title>
+<style>
+    body{
+        font-family: Arial, sans-serif;
+        margin:0;
+        padding:20px;
+        background:#fff;
+    }
+    h1{
+        text-align:center;
+        font-size:32px;
+        margin-bottom:30px;
+    }
+    .container{
+        width:100%;
+        max-width:1200px;
+        margin:auto;
+    }
+
+    /* LOCATION ROW (2 COLUMNS SIDE-BY-SIDE) */
+    .location-row{
+        display:flex;
+        width:100%;
+        border:1px solid #e5e5e5;
+        border-collapse:collapse;
+        margin-bottom:0;
+    }
+    .loc-box{
+        flex:1;
+        border-right:1px solid #e5e5e5;
+        background:#fafafa;
+        padding:15px;
+    }
+    .loc-box:last-child{
+        border-right:none;
+    }
+    .loc-box label{
+        font-size:14px;
+        color:#666;
+        margin-bottom:6px;
+        display:block;
+    }
+    .loc-box select{
+        width:100%;
+        padding:10px;
+        border:1px solid #ccc;
+        font-size:15px;
+    }
+
+    /* SHIPPING TABLE */
+    table{
+        width:100%;
+        border-collapse:collapse;
+        margin-top:0;
+    }
+    table th{
+        background:#fafafa;
+        padding:15px;
+        border:1px solid #e5e5e5;
+        font-size:14px;
+        text-align:left;
+    }
+    table td{
+        padding:15px;
+        border:1px solid #e5e5e5;
+        font-size:15px;
+    }
+
+    .note{
+        margin-top:15px;
+        font-size:14px;
+        color:#555;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Shipping Information</h1>
+
+    <!-- TOP TWO COLUMNS: LOCATION + STATE -->
+    <div class="location-row">
+        <div class="loc-box">
+            <label>Location</label>
+            <div>United States</div>
+        </div>
+
+        <div class="loc-box">
+            <label>State/Province</label>
+            <select id="stateSelect">
+                <option>A</option>
+                <option>AA</option>
+                <option>AE</option>
+                <option>ALABAMA</option>
+                <option>ALASKA</option>
+                <option>AP</option>
+                <option>ARIZONA</option>
+                <option>ARKANSAS</option>
+                <option>C</option>
+                <option>CALIFORNIA</option>
+                <option>COLORADO</option>
+                <option>CONNECTICUT</option>
+                <option>DELAWARE</option>
+                <option>FLORIDA</option>
+                <option>GEORGIA</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- SHIPPING TABLE -->
+    <table>
+        <tr>
+            <th>Shipping Method</th>
+            <th>Estimated Delivery Window</th>
+            <th>Fee</th>
+        </tr>
+
+        <tr>
+            <td>EXPRESS SHIPPING</td>
+            <td>
+                Estimated to be delivered on 11/28/2025 - 12/03/2025.<br>
+                62.5% are ≤ 5 business days
+            </td>
+            <td>
+                $12.90 – spend below $139.00<br>
+                $7.90 – over $139.00
+            </td>
+        </tr>
+
+        <tr>
+            <td>STANDARD SHIPPING</td>
+            <td>
+                Estimated to be delivered on 12/01/2025 - 12/08/2025.<br>
+                72.3% are ≤ 7 business days
+            </td>
+            <td>
+                $3.99<br>
+                <span style="color:#999;text-decoration:line-through;">Free – orders over $29.00</span><br>
+                <span style="color:red;">Free – orders over $15.00</span>
+            </td>
+        </tr>
+    </table>
+
+    <p class="note">
+        Certain sellers shipping from U.S. warehouses offer free shipping when specific thresholds are met.
+        Free shipping is typically available on orders over $29 from a single seller,
+        although this threshold may vary by seller.
+    </p>
+</div>
+
+<script>
+    document.getElementById('stateSelect').addEventListener('change', function(){
+        console.log("Selected State:", this.value);
+    });
+</script>
+
+</body>
+</html>

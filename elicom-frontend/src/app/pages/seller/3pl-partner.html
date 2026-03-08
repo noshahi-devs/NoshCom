@@ -1,0 +1,2480 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3PL Partner Service - Interactive 3D Globe | Smart Cart</title>
+
+    <!-- Dependencies -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+    <style>
+        :root {
+            --bg-body: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --sidebar-width: 280px;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --brand-primary: #4F46E5;
+            --nav-hover: #f1f5f9;
+            --topbar-height: 60px;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            overflow-x: hidden;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: linear-gradient(180deg, #ffffff, #f8fafc);
+            border-right: 1px solid #e2e8f0;
+            z-index: 1000;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            padding: 25px 16px;
+            box-shadow: 8px 0 30px rgba(0, 0, 0, 0.08);
+            transform-style: preserve-3d;
+            perspective: 1200px;
+        }
+
+        .sidebar.collapsed {
+            width: 60px;
+        }
+
+        .sidebar.collapsed .nav-link span {
+            display: none;
+        }
+
+        .sidebar.collapsed .nav-label {
+            display: none;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            margin-bottom: 30px;
+            border-radius: 14px;
+            background: white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            transform: translateZ(8px);
+        }
+
+        .brand-logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            color: #4b5563;
+            text-decoration: none;
+            margin-bottom: 16px;
+            background: linear-gradient(180deg, #f9fafb, #f1f5f9);
+            box-shadow: 0 4px 0 #e5e7eb, 0 6px 12px rgba(0, 0, 0, 0.06);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            transform: translateZ(2px);
+        }
+
+        .nav-link:hover {
+            transform: translateY(-2px) translateZ(8px);
+            color: #4f46e5;
+            box-shadow: 0 8px 0 #e5e7eb, 0 12px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: #ffffff !important;
+            border: none;
+            transform: translateY(-6px) translateZ(12px);
+            z-index: 10;
+            box-shadow: 0 14px 28px rgba(79, 70, 229, 0.55),
+                0 6px 0 #4338ca,
+                0 0 20px rgba(79, 70, 229, 0.45),
+                0 0 40px rgba(79, 70, 229, 0.3),
+                0 0 60px rgba(79, 70, 229, 0.2);
+            animation: spotlightPulse 2s infinite ease-in-out;
+        }
+
+        @keyframes spotlightPulse {
+            0% {
+                box-shadow: 0 14px 28px rgba(79, 70, 229, 0.55), 0 6px 0 #4338ca, 0 0 20px rgba(79, 70, 229, 0.45), 0 0 40px rgba(79, 70, 229, 0.3), 0 0 60px rgba(79, 70, 229, 0.2);
+            }
+
+            50% {
+                box-shadow: 0 16px 32px rgba(79, 70, 229, 0.65), 0 6px 0 #4338ca, 0 0 24px rgba(79, 70, 229, 0.55), 0 0 48px rgba(79, 70, 229, 0.35), 0 0 70px rgba(79, 70, 229, 0.25);
+            }
+
+            100% {
+                box-shadow: 0 14px 28px rgba(79, 70, 229, 0.55), 0 6px 0 #4338ca, 0 0 20px rgba(79, 70, 229, 0.45), 0 0 40px rgba(79, 70, 229, 0.3), 0 0 60px rgba(79, 70, 229, 0.2);
+            }
+        }
+
+        /* Topbar */
+        .topbar {
+            height: var(--topbar-height);
+            background: #fff;
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: var(--sidebar-width);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            border-bottom: 1px solid #eef2f7;
+            transition: left 0.3s ease;
+        }
+
+        .topbar.collapsed {
+            left: 70px;
+        }
+
+        /* Main Content */
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            padding: 2rem;
+            padding-top: calc(var(--topbar-height) + 1rem);
+            transition: margin-left 0.3s ease;
+            background: var(--bg-body);
+        }
+
+        /* Enhanced 3D Globe Container */
+        #globe-container {
+            width: 100%;
+            height: 650px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+            position: relative;
+            background: linear-gradient(180deg, #0a0a1a 0%, #1a1a3a 100%);
+            margin-bottom: 2rem;
+        }
+
+        #globe-canvas {
+            width: 100%;
+            height: 100%;
+            outline: none;
+        }
+
+        /* Enhanced Globe Controls */
+        .globe-controls {
+            position: absolute;
+            bottom: 25px;
+            right: 25px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-btn {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1.1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.15) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-btn.active {
+            background: rgba(79, 70, 229, 0.5);
+            color: white;
+            border-color: rgba(79, 70, 229, 0.7);
+        }
+
+        .globe-info {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 18px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            max-width: 320px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .globe-info h3 {
+            margin: 0 0 12px 0;
+            color: #1e293b;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .globe-info p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Search Panel */
+        .search-panel {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 18px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            width: 320px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            z-index: 100;
+        }
+
+        .search-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .search-header h5 {
+            margin: 0;
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        #search-input:focus {
+            outline: none;
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        #search-results {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .search-result-item {
+            padding: 12px;
+            border-radius: 10px;
+            background: #f8fafc;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .search-result-item:hover {
+            background: #f1f5f9;
+            transform: translateX(5px);
+            border-color: var(--brand-primary);
+        }
+
+        .search-result-item.selected {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(99, 102, 241, 0.1));
+            border-color: var(--brand-primary);
+        }
+
+        .search-result-item .partner-name {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .search-result-item .partner-location {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        /* Enhanced Partner Cards */
+        .partner-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 2px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .partner-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border-color: var(--brand-primary);
+        }
+
+        .partner-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: var(--brand-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .partner-card:hover::before {
+            opacity: 1;
+        }
+
+        .partner-card.usa {
+            border-left: 6px solid #3b82f6;
+        }
+
+        .partner-card.uk {
+            border-left: 6px solid #10b981;
+        }
+
+        .partner-logo {
+            width: 55px;
+            height: 55px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-right: 15px;
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        .partner-logo.usa {
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .partner-logo.uk {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .partner-name {
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 6px;
+            font-size: 1.05rem;
+        }
+
+        .partner-address {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+
+        .partner-website {
+            color: var(--brand-primary);
+            font-size: 0.9rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .partner-website:hover {
+            color: #4338ca;
+        }
+
+        .partner-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: #1e293b;
+            margin-bottom: 2px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        /* Country Highlight */
+        .country-highlight {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .country-highlight.usa {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(96, 165, 250, 0.1));
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .country-highlight.uk {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.1));
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        /* Enhanced Animation Controls */
+        .animation-controls {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 2rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .control-slider {
+            width: 100%;
+            margin: 15px 0;
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right, #e2e8f0, var(--brand-primary));
+            outline: none;
+        }
+
+        .control-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--brand-primary);
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(79, 70, 229, 0.4);
+        }
+
+        .control-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .control-btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-animate {
+            padding: 10px 24px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, var(--brand-primary), #6366f1);
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-animate:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-animate:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-animate.secondary {
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            color: #64748b;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-animate.secondary:hover {
+            background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            #globe-container {
+                height: 450px;
+            }
+
+            .globe-info,
+            .search-panel {
+                max-width: 280px;
+                padding: 15px;
+            }
+
+            .search-panel {
+                top: 20px;
+                right: 20px;
+                width: 280px;
+            }
+        }
+
+        /* Pulse animation for selected partner */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.7);
+            }
+
+            70% {
+                transform: scale(1.03);
+                box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+            }
+        }
+
+        .partner-card.selected {
+            animation: pulse 2s infinite;
+            border-color: var(--brand-primary);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Marker pulse animation */
+        @keyframes markerPulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.8);
+                opacity: 0.8;
+            }
+        }
+
+        /* Connection lines animation */
+        .connection-line {
+            stroke-dasharray: 5;
+            animation: dash 20s linear infinite;
+        }
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: 1000;
+            }
+        }
+
+        /* Info Panel */
+        .info-panel {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background: white;
+            border-radius: 18px;
+            padding: 25px;
+            width: 320px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: none;
+            animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateY(-50%) translateX(100%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(-50%) translateX(0);
+            }
+        }
+
+        .info-panel.show {
+            display: block;
+        }
+
+        .close-panel {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 1.3rem;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .close-panel:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        /* Real-time data section */
+        .real-time-data {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .real-time-data::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.1) 0%, transparent 70%);
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .data-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #fff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .data-label {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Reduced Size Popup */
+        .info-panel {
+            position: fixed;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            width: 280px;
+            /* Reduced from 320px */
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: none;
+            animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+        }
+
+        /* Animated Colorful Cards for First 4 Partners */
+        .partner-card.highlighted {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg,
+                    rgba(255, 255, 255, 0.95) 0%,
+                    rgba(255, 255, 255, 0.9) 50%,
+                    rgba(248, 250, 252, 0.95) 100%);
+            border: none;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+
+        .partner-card.highlighted::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg,
+                    #ff6b6b, #feca57, #48dbfb, #1dd1a1, #ff9ff3, #f368e0);
+            background-size: 400% 100%;
+            animation: gradientSlide 3s ease infinite;
+        }
+
+        @keyframes gradientSlide {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Colorful badges for highlighted cards */
+        .highlight-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            animation: badgePulse 2s infinite;
+            z-index: 2;
+        }
+
+        .highlight-badge.hot {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .highlight-badge.new {
+            background: linear-gradient(135deg, #48dbfb, #0abde3);
+            color: white;
+            box-shadow: 0 4px 15px rgba(72, 219, 251, 0.4);
+        }
+
+        .highlight-badge.popular {
+            background: linear-gradient(135deg, #1dd1a1, #10ac84);
+            color: white;
+            box-shadow: 0 4px 15px rgba(29, 209, 161, 0.4);
+        }
+
+        .highlight-badge.featured {
+            background: linear-gradient(135deg, #ff9ff3, #f368e0);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 159, 243, 0.4);
+        }
+
+        @keyframes badgePulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        /* Animated partner logo for highlighted cards */
+        .partner-logo.highlighted {
+            animation: logoFloat 3s ease-in-out infinite;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        @keyframes logoFloat {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-5px) rotate(5deg);
+            }
+        }
+
+        /* Colorful stats for highlighted cards */
+        .partner-stats.highlighted {
+            background: linear-gradient(135deg,
+                    rgba(248, 250, 252, 0.8),
+                    rgba(241, 245, 249, 0.9));
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item.highlighted {
+            position: relative;
+            padding: 8px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-value.highlighted {
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.4rem;
+            font-weight: 800;
+        }
+
+        /* Smooth card hover effect */
+        .partner-card.highlighted:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12),
+                0 0 30px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .partner-card {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .partner-logo {
+                width: 40px;
+                height: 40px;
+                font-size: 0.9rem;
+            }
+
+            .partner-name {
+                font-size: 0.95rem;
+                font-weight: 700;
+            }
+
+            .partner-address {
+                font-size: 0.8rem;
+                line-height: 1.3;
+            }
+
+            .partner-stats {
+                gap: 10px;
+                margin-top: 10px;
+            }
+
+            .stat-value {
+                font-size: 1rem;
+            }
+
+            .stat-label {
+                font-size: 0.65rem;
+            }
+
+            .card-body {
+                padding: 15px;
+            }
+
+            .card-header {
+                padding: 15px;
+            }
+
+            .card-header h5 {
+                font-size: 1rem;
+            }
+
+            .btn-sm {
+                font-size: 0.75rem;
+                padding: 5px 10px;
+            }
+        }
+
+        /* Full Screen Support */
+        @media (min-width: 1400px) {
+            .partner-card {
+                padding: 25px;
+            }
+
+            .partner-logo {
+                width: 60px;
+                height: 60px;
+                font-size: 1.3rem;
+            }
+
+            .partner-name {
+                font-size: 1.2rem;
+            }
+
+            .partner-address {
+                font-size: 0.95rem;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .stat-label {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Compact info panel content */
+        #partner-details h5 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        #partner-details .partner-logo {
+            width: 50px;
+            height: 50px;
+            font-size: 1rem;
+        }
+
+        #partner-details .badge {
+            padding: 4px 10px;
+            font-size: 0.75rem;
+        }
+
+        #partner-details h6 {
+            font-size: 0.9rem;
+            margin-top: 15px;
+        }
+
+        #partner-details p,
+        #partner-details .partner-address {
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        #partner-details .btn {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+        }
+    </style>
+    <link rel="stylesheet" href="layout-styles.css">
+</head>
+
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Sidebar -->
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-logo">SC</div>
+            <div>
+                <h2 style="margin: 0; font-size: 1.5rem;">Smart Cart</h2>
+                <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;">Seller Dashboard</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <!-- User Profile -->
+            <div
+                style="padding: 20px; background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7)); border-radius: 16px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 8px 20px rgba(0,0,0,0.05);">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <div
+                        style="width: 50px; height: 50px; border-radius: 12px; background: linear-gradient(135deg, var(--brand-accent), #a5b4fc); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">
+                        AN
+                    </div>
+                    <div>
+                        <h4 style="color: var(--text-dark); margin-bottom: 5px;">Arslan Noshahi</h4>
+                        <p style="color: var(--brand-primary); font-size: 0.9rem; font-weight: 600;">
+                            <i class="fas fa-crown" style="margin-right: 5px;"></i>
+                            Premium Seller
+                        </p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div
+                        style="flex: 1; text-align: center; padding: 10px; background: rgba(79, 70, 229, 0.1); border-radius: 10px;">
+                        <div style="font-size: 1.2rem; font-weight: 800; color: var(--brand-primary);">24</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Orders</div>
+                    </div>
+                    <div
+                        style="flex: 1; text-align: center; padding: 10px; background: rgba(79, 70, 229, 0.1); border-radius: 10px;">
+                        <div style="font-size: 1.2rem; font-weight: 800; color: var(--brand-primary);">4.9</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Rating</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div style="margin-top: 30px;">
+                <h4
+                    style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
+                    NAVIGATION</h4>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> Dashboard</a>
+                    <a href="add-product2.html" class="nav-link"><i class="fa-solid fa-circle-plus"></i> Add
+                        Products</a>
+
+                    <div class="nav-item">
+                        <a href="javascript:void(0)" class="nav-link dropdown-trigger"><i
+                                class="fa-solid fa-list-check"></i> Listing Center <i
+                                class="fa fa-chevron-right chevron-icon"></i></a>
+                        <div class="submenu">
+                            <a href="product-listing.html" class="nav-link small">Store Listing</a>
+                            <a href="favorite-listing.html" class="nav-link small">Favorite Listing</a>
+                        </div>
+                    </div>
+
+                    <div class="nav-item">
+                        <a href="javascript:void(0)" class="nav-link dropdown-trigger"><i
+                                class="fa-solid fa-cart-flatbed"></i> Order Center <i
+                                class="fa fa-chevron-right chevron-icon"></i></a>
+                        <div class="submenu">
+                            <a href="unshipped-order.html" class="nav-link small">Unshipped Order</a>
+                            <a href="tracking-verification.html" class="nav-link small">Tracking Verification</a>
+                            <a href="shipped-complete.html" class="nav-link small">Shipped Complete</a>
+                            <a href="cancelled-order.html" class="nav-link small">Cancelled Order</a>
+                            <a href="rejected-trackings.html" class="nav-link small">Rejected Trackings</a>
+                            <a href="order-returned.html" class="nav-link small">Order Returned</a>
+                        </div>
+                    </div>
+
+                    <a href="3pl-partner.html" class="nav-link active"><i class="fa-solid fa-handshake"></i> 3PL Partner
+                        Service</a>
+                    <a href="warehouse.html" class="nav-link"><i class="fa-solid fa-warehouse"></i> Smart Cart
+                        Warehouses</a>
+                    <a href="wallet-center.html" class="nav-link"><i class="fa-solid fa-wallet"></i> Wallet Center</a>
+
+                    <div class="nav-item">
+                        <a href="javascript:void(0)" class="nav-link dropdown-trigger"><i
+                                class="fa-solid fa-money-bill-transfer"></i> Payout Section <i
+                                class="fa fa-chevron-right chevron-icon"></i></a>
+                        <div class="submenu">
+                            <a href="unified-payouts.html" class="nav-link small">Payout History</a>
+                            <a href="add-payment-method.html" class="nav-link small">Add Payment Method</a>
+                            <a href="pending-payouts.html" class="nav-link small">Pending Payouts</a>
+                            <a href="completed-payouts.html" class="nav-link small">Completed Payouts</a>
+                            <a href="refunded-payouts.html" class="nav-link small">Refunded Payouts</a>
+                        </div>
+                    </div>
+
+                    <a href="profile.html" class="nav-link"><i class="fa-solid fa-user"></i> My Profile</a>
+                    <a href="account-settings.html" class="nav-link"><i class="fa-solid fa-gears"></i> Account
+                        Settings</a>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div
+                style="margin-top: 40px; padding: 20px; background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(99, 102, 241, 0.05)); border-radius: 16px; border: 1px solid rgba(79, 70, 229, 0.2);">
+                <h4 style="color: var(--text-dark); margin-bottom: 15px; font-size: 1rem;">Quick Stats</h4>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">Today's Revenue</span>
+                        <span style="color: var(--brand-primary); font-weight: 700;">$2,450</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">Active Orders</span>
+                        <span style="color: #10b981; font-weight: 700;">8</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">Avg. Rating</span>
+                        <span style="color: #f59e0b; font-weight: 700;">4.9</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Topbar -->
+    <div class="topbar" id="topbar">
+        <button id="sidebar-toggle"
+            style="background: none; border: none; font-size: 1.5rem; color: var(--text-dark); cursor: pointer; margin-right: 15px;">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div style="display: flex; align-items: center; gap: 25px;">
+            <div style="position: relative;">
+                <i class="fas fa-search"
+                    style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                <input type="text" id="global-search" placeholder="Search orders, customers..." style="
+                padding: 12px 20px 12px 45px;
+                border: 1px solid rgba(79, 70, 229, 0.2);
+                border-radius: 12px;
+                background: rgba(255, 255, 255, 0.8);
+                color: var(--text-dark);
+                font-size: 0.95rem;
+                width: 300px;
+                transition: all 0.3s ease;
+                backdrop-filter: blur(10px);
+            ">
+            </div>
+
+            <div style="display: flex; gap: 15px;">
+                <button style="
+                padding: 10px 20px;
+                background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+                color: white;
+                border: none;
+                border-radius: 10px;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.3s ease;
+                box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+            ">
+                    <i class="fas fa-plus"></i>
+                    New Order
+                </button>
+                <button style="
+                padding: 10px 20px;
+                background: linear-gradient(135deg, rgba(241, 245, 249, 0.9), rgba(226, 232, 240, 0.9));
+                color: var(--text-dark);
+                border: none;
+                border-radius: 10px;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.3s ease;
+            ">
+                    <i class="fas fa-filter"></i>
+                    Filter
+                </button>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 25px;">
+            <div style="position: relative;">
+                <i class="fas fa-bell" style="font-size: 1.2rem; color: var(--text-muted); cursor: pointer;"></i>
+                <span class="notification-badge" style="top: -5px; right: -5px;">3</span>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="text-align: right;">
+                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-dark);">Arslan Noshahi</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Seller ID: SC-789456</div>
+                </div>
+                <div style="
+                width: 45px;
+                height: 45px;
+                border-radius: 12px;
+                background: linear-gradient(135deg, var(--brand-accent), #a5b4fc);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: bold;
+                font-size: 1.1rem;
+                box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+                cursor: pointer;
+                transition: all 0.3s ease;
+            ">
+                    AN
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-wrapper" id="main-wrapper">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 p-4 rounded-4"
+            style="background:rgba(255,255,255,0.9); backdrop-filter: blur(10px); box-shadow:0 20px 40px rgba(0,0,0,0.12);">
+            <div>
+                <h2 class="fw-bold mb-1" style="color:#0f172a;">
+                    <i class="fas fa-globe-americas me-2"></i>3PL Partner Network
+                    <span style="margin-left:8px; padding:6px 14px; font-size:13px; border-radius:12px;
+                            background:linear-gradient(135deg,#4f46e5,#6366f1);
+                            color:white; box-shadow:0 4px 10px rgba(79,70,229,0.45);">
+                        14 Active Partners
+                    </span>
+                </h2>
+                <p style="color:#64748b;">Interactive 3D globe visualization of your global logistics network</p>
+            </div>
+
+            <div class="position-relative d-flex align-items-center rounded-4 px-4 py-3" style="min-width:320px;
+                    background:linear-gradient(135deg,#4f46e5,#6366f1,#4338ca);
+                    box-shadow:0 18px 35px rgba(0,0,0,0.35), inset 0 2px 4px rgba(255,255,255,0.25);
+                    transform: perspective(900px) rotateX(3deg);">
+                <i class="fas fa-satellite-dish text-white fs-3 me-3"></i>
+                <div class="text-white">
+                    <div style="font-size:14px; opacity:0.85;" id="current-date">January 26, 2026</div>
+                    <div class="fw-bold" style="font-size:18px; text-shadow:0 3px 8px rgba(0,0,0,0.45);">
+                        Real-time Network Monitoring
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Data -->
+        <div class="real-time-data">
+            <div class="data-grid">
+                <div class="data-item">
+                    <div class="data-value">14</div>
+                    <div class="data-label">Total Partners</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-value">2</div>
+                    <div class="data-label">Countries</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-value">6</div>
+                    <div class="data-label">USA Partners</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-value">8</div>
+                    <div class="data-label">UK Partners</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-value">24/7</div>
+                    <div class="data-label">Live Monitoring</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3D Globe Container -->
+        <div class="card p-0 border-0 overflow-hidden mb-4">
+            <div id="globe-container">
+                <canvas id="globe-canvas"></canvas>
+                <div class="globe-info">
+                    <h3><i class="fas fa-satellite me-2"></i>Global Network Map</h3>
+                    <p>Interactive 3D visualization of 14 logistics partners. Click markers for details or use search to
+                        find specific partners.</p>
+                    <div class="mt-3">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <div style="width:12px; height:12px; background:#3b82f6; border-radius:2px;"></div>
+                            <span style="font-size:0.85rem;">USA Partners (6)</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width:12px; height:12px; background:#10b981; border-radius:2px;"></div>
+                            <span style="font-size:0.85rem;">UK Partners (8)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Panel -->
+                <div class="search-panel">
+                    <div class="search-header">
+                        <h5><i class="fas fa-search me-2"></i>Search Partners</h5>
+                        <button class="btn-close" id="close-search"></button>
+                    </div>
+                    <input type="text" id="search-input" placeholder="Type partner name or location...">
+                    <div id="search-results"></div>
+                </div>
+
+                <div class="globe-controls">
+                    <div class="control-btn" id="zoom-in" title="Zoom In"><i class="fas fa-search-plus"></i></div>
+                    <div class="control-btn" id="zoom-out" title="Zoom Out"><i class="fas fa-search-minus"></i></div>
+                    <div class="control-btn" id="reset-view" title="Reset View"><i class="fas fa-sync-alt"></i></div>
+                    <div class="control-btn active" id="toggle-rotate" title="Auto Rotate"><i class="fas fa-play"></i>
+                    </div>
+                    <div class="control-btn" id="toggle-search" title="Search"><i class="fas fa-search"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Animation Controls -->
+        <div class="animation-controls">
+            <h5 class="fw-bold mb-4"><i class="fas fa-sliders-h me-2"></i>Globe Controls</h5>
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <div class="control-group">
+                        <label class="form-label fw-bold">Rotation Speed</label>
+                        <input type="range" class="form-range control-slider" id="rotation-speed" min="0" max="10"
+                            value="4">
+                    </div>
+                    <div class="control-group">
+                        <label class="form-label fw-bold">Marker Size</label>
+                        <input type="range" class="form-range control-slider" id="marker-size" min="0.5" max="3"
+                            step="0.1" value="1.5">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="control-btn-group">
+                        <button class="btn-animate w-100 mb-2" id="play-animation">
+                            <i class="fas fa-play me-2"></i>Play All
+                        </button>
+                        <button class="btn-animate secondary w-100" id="pause-animation">
+                            <i class="fas fa-pause me-2"></i>Pause All
+                        </button>
+                        <button class="btn-animate secondary w-100 mt-2" id="highlight-usa">
+                            <i class="fas fa-flag-usa me-2"></i>Show USA
+                        </button>
+                        <button class="btn-animate secondary w-100 mt-2" id="highlight-uk">
+                            <i class="fas fa-flag-uk me-2"></i>Show UK
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Partners Data Grid -->
+        <div class="row g-4">
+            <!-- USA Partners -->
+            <div class="col-lg-6 col-12 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div
+                        class="card-header bg-white border-bottom-0 pb-3 d-flex justify-content-between align-items-center flex-wrap">
+                        <h5 class="fw-bold mb-2 mb-md-0">
+                            <i class="fas fa-flag-usa text-primary me-2"></i>
+                            USA Logistics Partners
+                            <span class="badge bg-primary ms-2">6 Partners</span>
+                        </h5>
+                        <button class="btn btn-sm btn-outline-primary" id="view-all-usa">View All</button>
+                    </div>
+                    <div class="card-body" id="usa-partners" style="max-height: 600px; overflow-y: auto;">
+                        <!-- USA partners will be populated here by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- UK Partners -->
+            <div class="col-lg-6 col-12 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div
+                        class="card-header bg-white border-bottom-0 pb-3 d-flex justify-content-between align-items-center flex-wrap">
+                        <h5 class="fw-bold mb-2 mb-md-0">
+                            <i class="fas fa-flag-uk text-success me-2"></i>
+                            UK Logistics Partners
+                            <span class="badge bg-success ms-2">8 Partners</span>
+                        </h5>
+                        <button class="btn btn-sm btn-outline-success" id="view-all-uk">View All</button>
+                    </div>
+                    <div class="card-body" id="uk-partners" style="max-height: 600px; overflow-y: auto;">
+                        <!-- UK partners will be populated here by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="fw-bold mb-2">Global Logistics Network Summary</h5>
+                        <p class="text-muted mb-0">
+                            Your 3PL network spans across 2 countries with 14 strategic partners providing comprehensive
+                            logistics coverage.
+                            Last updated: January 26, 2026
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="d-inline-block px-4 py-3 rounded-3"
+                            style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(99, 102, 241, 0.1));">
+                            <div class="fs-4 fw-bold">100%</div>
+                            <div class="text-muted small">Network Coverage</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Panel -->
+    <div class="info-panel" id="info-panel">
+        <button class="close-panel" id="close-panel">&times;</button>
+        <div id="partner-details">
+            <!-- Partner details will be shown here -->
+        </div>
+    </div>
+
+    <script>
+        // Enhanced partners data with more details
+        const partnersData = {
+            usa: [
+                {
+                    name: "Total Quality Logistics (TQL)",
+                    address: "4230 Cincinnati-Dayton Rd, West Chester, OH, USA",
+                    zip: "45069",
+                    website: "https://tql.com",
+                    lat: 39.3295,
+                    lon: -84.4073,
+                    city: "West Chester",
+                    state: "OH",
+                    capacity: "Full Truckload",
+                    coverage: "Nationwide",
+                    established: 1997
+                },
+                {
+                    name: "B-Stock Solutions",
+                    address: "1351 4th St, Suite 400, San Francisco, CA, USA",
+                    zip: "94158",
+                    website: "https://bstock.com",
+                    lat: 37.7749,
+                    lon: -122.4194,
+                    city: "San Francisco",
+                    state: "CA",
+                    capacity: "Liquidation",
+                    coverage: "Global",
+                    established: 2009
+                },
+                {
+                    name: "C.H. Robinson Worldwide",
+                    address: "14701 Charlson Rd, Eden Prairie, MN, USA",
+                    zip: "55347",
+                    website: "https://chrobinson.com",
+                    lat: 44.8548,
+                    lon: -93.4708,
+                    city: "Eden Prairie",
+                    state: "MN",
+                    capacity: "Multimodal",
+                    coverage: "Global",
+                    established: 1905
+                },
+                {
+                    name: "ShipMonk",
+                    address: "1661 W Las Olas Blvd, Fort Lauderdale, FL, USA",
+                    zip: "33312",
+                    website: "https://shipmonk.com",
+                    lat: 26.1224,
+                    lon: -80.1373,
+                    city: "Fort Lauderdale",
+                    state: "FL",
+                    capacity: "E-commerce",
+                    coverage: "US & Canada",
+                    established: 2014
+                },
+                {
+                    name: "Ware2Go",
+                    address: "2400 18th St NW, Suite 200, Atlanta, GA, USA",
+                    zip: "30309",
+                    website: "https://ware2go.com",
+                    lat: 33.7490,
+                    lon: -84.3880,
+                    city: "Atlanta",
+                    state: "GA",
+                    capacity: "On-demand Warehousing",
+                    coverage: "Nationwide",
+                    established: 2017
+                },
+                {
+                    name: "FreightPOP",
+                    address: "2200 E College Ave, Suite 204, Decatur, GA, USA",
+                    zip: "30030",
+                    website: "https://freightpop.com",
+                    lat: 33.7748,
+                    lon: -84.2963,
+                    city: "Decatur",
+                    state: "GA",
+                    capacity: "Freight Management",
+                    coverage: "Nationwide",
+                    established: 2015
+                }
+            ],
+            uk: [
+                {
+                    name: "NHS Supply Chain",
+                    address: "1st Floor, 5 Waltham Close, Leicester, UK",
+                    zip: "LE4 9LG",
+                    website: "https://www.supplychain.nhs.uk",
+                    lat: 52.6369,
+                    lon: -1.1398,
+                    city: "Leicester",
+                    country: "UK",
+                    capacity: "Healthcare Logistics",
+                    coverage: "UK-wide",
+                    established: 2006
+                },
+                {
+                    name: "DHL Express",
+                    address: "2-4 Victoria Way, Burgess Hill, UK",
+                    zip: "RH15 9AZ",
+                    website: "https://dhl.com",
+                    lat: 50.9545,
+                    lon: -0.1337,
+                    city: "Burgess Hill",
+                    country: "UK",
+                    capacity: "Express Shipping",
+                    coverage: "Global",
+                    established: 1969
+                },
+                {
+                    name: "Fortec Distribution Network",
+                    address: "Fortec House, Drayton Manor Business Park, Tamworth, UK",
+                    zip: "B78 3HL",
+                    website: "https://fortec.uk",
+                    lat: 52.6330,
+                    lon: -1.6820,
+                    city: "Tamworth",
+                    country: "UK",
+                    capacity: "Pallet Distribution",
+                    coverage: "UK & Europe",
+                    established: 1981
+                },
+                {
+                    name: "Menzies Distribution",
+                    address: "Menzies House, 6th Floor, 10-12 Union Street, Glasgow, UK",
+                    zip: "G1 3QW",
+                    website: "https://menziesdistribution.co.uk",
+                    lat: 55.8642,
+                    lon: -4.2518,
+                    city: "Glasgow",
+                    country: "UK",
+                    capacity: "Newspaper & Magazine",
+                    coverage: "UK-wide",
+                    established: 1833
+                },
+                {
+                    name: "Wincanton",
+                    address: "Wincanton House, 1 Manning Road, Heywood, UK",
+                    zip: "OL10 3HE",
+                    website: "https://wincanton.co.uk",
+                    lat: 53.5927,
+                    lon: -2.2223,
+                    city: "Heywood",
+                    country: "UK",
+                    capacity: "Supply Chain Solutions",
+                    coverage: "UK & Ireland",
+                    established: 1925
+                },
+                {
+                    name: "M&H Logistics",
+                    address: "2nd Floor, M&H House, 123 High Street, Epsom, Surrey, UK",
+                    zip: "KT19 8AU",
+                    website: "https://mhlogistics.co.uk",
+                    lat: 51.3326,
+                    lon: -0.2693,
+                    city: "Epsom",
+                    country: "UK",
+                    capacity: "Contract Logistics",
+                    coverage: "UK-wide",
+                    established: 1985
+                },
+                {
+                    name: "Allport Cargo Services",
+                    address: "12-16 Swan Street, Manchester, UK",
+                    zip: "M4 5JW",
+                    website: "https://allportcargo.com",
+                    lat: 53.4830,
+                    lon: -2.2444,
+                    city: "Manchester",
+                    country: "UK",
+                    capacity: "Freight Forwarding",
+                    coverage: "Global",
+                    established: 1976
+                },
+                {
+                    name: "Samskip",
+                    address: "3rd Floor, 68-70 Carter Lane, London, UK",
+                    zip: "EC4V 5EL",
+                    website: "https://samskip.com",
+                    lat: 51.5074,
+                    lon: -0.1278,
+                    city: "London",
+                    country: "UK",
+                    capacity: "Multimodal Transport",
+                    coverage: "Europe",
+                    established: 1991
+                }
+            ]
+        };
+
+        // Three.js 3D Globe with realistic Earth
+        let scene, camera, renderer, globe, controls;
+        let markers = [];
+        let isRotating = true;
+        let rotationSpeed = 0.0015;
+        let raycaster, mouse;
+        let selectedMarker = null;
+
+        // Earth textures (using free NASA textures)
+        const EARTH_TEXTURE = 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg';
+        const EARTH_SPECULAR = 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular_2048.jpg';
+        const EARTH_NORMAL = 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg';
+        const CLOUD_TEXTURE = 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png';
+
+        function init3DGlobe() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x000000, 400, 2000);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(60,
+                document.getElementById('globe-container').clientWidth /
+                document.getElementById('globe-container').clientHeight,
+                1, 3000);
+            camera.position.set(0, 0, 800);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.getElementById('globe-canvas'),
+                antialias: true,
+                alpha: true,
+                powerPreference: "high-performance"
+            });
+            renderer.setSize(
+                document.getElementById('globe-container').clientWidth,
+                document.getElementById('globe-container').clientHeight
+            );
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            // Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.1;
+            controls.minDistance = 300;
+            controls.maxDistance = 1500;
+            controls.maxPolarAngle = Math.PI;
+            controls.rotateSpeed = 0.8;
+
+            // Enhanced lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+
+            const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+            mainLight.position.set(5, 3, 5);
+            mainLight.castShadow = true;
+            scene.add(mainLight);
+
+            const backLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            backLight.position.set(-5, -3, -5);
+            scene.add(backLight);
+
+            // Stars background
+            createStars();
+
+            // Create realistic Earth
+            createRealisticEarth();
+
+            // Add country highlights
+            addCountryHighlights();
+
+            // Add markers for partners
+            addPartnerMarkers();
+
+            // Add connection lines
+            addConnectionLines();
+
+            // Raycaster for mouse interactions
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            // Event listeners for mouse interactions
+            renderer.domElement.addEventListener('mousemove', onMouseMove);
+            renderer.domElement.addEventListener('click', onMouseClick);
+
+            // Start animation
+            animate();
+
+            // Window resize handler
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function createStars() {
+            const starGeometry = new THREE.BufferGeometry();
+            const starCount = 5000;
+            const positions = new Float32Array(starCount * 3);
+
+            for (let i = 0; i < starCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 3000;
+                positions[i + 1] = (Math.random() - 0.5) * 3000;
+                positions[i + 2] = (Math.random() - 0.5) * 3000;
+            }
+
+            starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const starMaterial = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 1,
+                transparent: true
+            });
+
+            const stars = new THREE.Points(starGeometry, starMaterial);
+            scene.add(stars);
+        }
+
+        function createRealisticEarth() {
+            // Earth sphere with texture
+            const geometry = new THREE.SphereGeometry(200, 64, 64);
+
+            const textureLoader = new THREE.TextureLoader();
+
+            // Earth material with multiple maps
+            const material = new THREE.MeshPhongMaterial({
+                map: textureLoader.load(EARTH_TEXTURE),
+                specularMap: textureLoader.load(EARTH_SPECULAR),
+                normalMap: textureLoader.load(EARTH_NORMAL),
+                normalScale: new THREE.Vector2(1, 1),
+                shininess: 5,
+                specular: new THREE.Color(0x333333)
+            });
+
+            globe = new THREE.Mesh(geometry, material);
+            globe.castShadow = true;
+            globe.receiveShadow = true;
+            scene.add(globe);
+
+            // Cloud layer
+            const cloudGeometry = new THREE.SphereGeometry(202, 64, 64);
+            const cloudMaterial = new THREE.MeshPhongMaterial({
+                map: textureLoader.load(CLOUD_TEXTURE),
+                transparent: true,
+                opacity: 0.15,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending
+            });
+            const clouds = new THREE.Mesh(cloudGeometry, cloudMaterial);
+            clouds.rotation.y = Math.PI;
+            scene.add(clouds);
+
+            // Store cloud reference for animation
+            globe.clouds = clouds;
+        }
+
+        function addCountryHighlights() {
+            // Create USA highlight (simplified rectangle overlay)
+            const usaGeometry = new THREE.PlaneGeometry(120, 80);
+            const usaMaterial = new THREE.MeshBasicMaterial({
+                color: 0x3b82f6,
+                transparent: true,
+                opacity: 0.1,
+                side: THREE.DoubleSide
+            });
+            const usaHighlight = new THREE.Mesh(usaGeometry, usaMaterial);
+            usaHighlight.position.set(-100, 50, 200);
+            usaHighlight.rotation.x = -Math.PI / 8;
+            usaHighlight.rotation.z = Math.PI / 4;
+            scene.add(usaHighlight);
+
+            // Create UK highlight
+            const ukGeometry = new THREE.PlaneGeometry(40, 30);
+            const ukMaterial = new THREE.MeshBasicMaterial({
+                color: 0x10b981,
+                transparent: true,
+                opacity: 0.1,
+                side: THREE.DoubleSide
+            });
+            const ukHighlight = new THREE.Mesh(ukGeometry, ukMaterial);
+            ukHighlight.position.set(0, 50, 190);
+            ukHighlight.rotation.x = -Math.PI / 10;
+            scene.add(ukHighlight);
+        }
+
+        function addPartnerMarkers() {
+            const textureLoader = new THREE.TextureLoader();
+
+            // Add USA markers
+            partnersData.usa.forEach((partner, index) => {
+                addMarker(partner, 0x3b82f6, 'usa', index);
+            });
+
+            // Add UK markers
+            partnersData.uk.forEach((partner, index) => {
+                addMarker(partner, 0x10b981, 'uk', index + partnersData.usa.length);
+            });
+        }
+
+        function addMarker(partner, color, type, id) {
+            // Convert lat/lon to 3D coordinates
+            const lat = partner.lat * Math.PI / 180;
+            const lon = -partner.lon * Math.PI / 180;
+            const radius = 202;
+
+            const x = radius * Math.cos(lat) * Math.cos(lon);
+            const y = radius * Math.sin(lat);
+            const z = radius * Math.cos(lat) * Math.sin(lon);
+
+            // Create marker group
+            const markerGroup = new THREE.Group();
+
+            // Create main marker
+            const markerGeometry = new THREE.SphereGeometry(4, 16, 16);
+            const markerMaterial = new THREE.MeshBasicMaterial({
+                color: color,
+                emissive: color,
+                emissiveIntensity: 0.5
+            });
+            const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+
+            // Create pulse effect
+            const pulseGeometry = new THREE.SphereGeometry(4, 16, 16);
+            const pulseMaterial = new THREE.MeshBasicMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0.3
+            });
+            const pulse = new THREE.Mesh(pulseGeometry, pulseMaterial);
+
+            // Create connector line to ground
+            const lineGeometry = new THREE.CylinderGeometry(0.5, 0.5, 10, 8);
+            const lineMaterial = new THREE.MeshBasicMaterial({ color: color });
+            const line = new THREE.Mesh(lineGeometry, lineMaterial);
+            line.position.y = -5;
+
+            // Add to group
+            markerGroup.add(marker);
+            markerGroup.add(pulse);
+            markerGroup.add(line);
+
+            // Position group
+            markerGroup.position.set(x, y, z);
+
+            // Rotate to point at Earth center
+            markerGroup.lookAt(0, 0, 0);
+            markerGroup.rotateX(Math.PI / 2);
+
+            // Store partner data
+            markerGroup.userData = {
+                ...partner,
+                id: id,
+                type: type,
+                originalScale: 1,
+                pulseScale: 1,
+                pulseDirection: 1
+            };
+
+            scene.add(markerGroup);
+            markers.push(markerGroup);
+        }
+
+        function addConnectionLines() {
+            // Create connection lines between partners in same country
+            partnersData.usa.forEach((partner, i) => {
+                if (i < partnersData.usa.length - 1) {
+                    const nextPartner = partnersData.usa[i + 1];
+                    createConnectionLine(partner, nextPartner, 0x3b82f6);
+                }
+            });
+
+            partnersData.uk.forEach((partner, i) => {
+                if (i < partnersData.uk.length - 1) {
+                    const nextPartner = partnersData.uk[i + 1];
+                    createConnectionLine(partner, nextPartner, 0x10b981);
+                }
+            });
+        }
+
+        function createConnectionLine(partner1, partner2, color) {
+            const lat1 = partner1.lat * Math.PI / 180;
+            const lon1 = -partner1.lon * Math.PI / 180;
+            const lat2 = partner2.lat * Math.PI / 180;
+            const lon2 = -partner2.lon * Math.PI / 180;
+            const radius = 205;
+
+            const x1 = radius * Math.cos(lat1) * Math.cos(lon1);
+            const y1 = radius * Math.sin(lat1);
+            const z1 = radius * Math.cos(lat1) * Math.sin(lon1);
+
+            const x2 = radius * Math.cos(lat2) * Math.cos(lon2);
+            const y2 = radius * Math.sin(lat2);
+            const z2 = radius * Math.cos(lat2) * Math.sin(lon2);
+
+            const curve = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(x1, y1, z1),
+                new THREE.Vector3((x1 + x2) / 2, (y1 + y2) / 2 + 20, (z1 + z2) / 2),
+                new THREE.Vector3(x2, y2, z2)
+            ]);
+
+            const points = curve.getPoints(50);
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+            const material = new THREE.LineBasicMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0.2,
+                linewidth: 2
+            });
+
+            const line = new THREE.Line(geometry, material);
+            scene.add(line);
+        }
+
+        function onMouseMove(event) {
+            // Calculate mouse position in normalized device coordinates
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            // Update the picking ray
+            raycaster.setFromCamera(mouse, camera);
+
+            // Calculate objects intersecting the picking ray
+            const intersects = raycaster.intersectObjects(markers);
+
+            // Reset all markers
+            markers.forEach(marker => {
+                marker.scale.set(1, 1, 1);
+            });
+
+            // Highlight hovered marker
+            if (intersects.length > 0) {
+                const marker = intersects[0].object.parent;
+                marker.scale.set(1.5, 1.5, 1.5);
+                renderer.domElement.style.cursor = 'pointer';
+            } else {
+                renderer.domElement.style.cursor = 'grab';
+            }
+        }
+
+        function onMouseClick(event) {
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(markers);
+
+            if (intersects.length > 0) {
+                const marker = intersects[0].object.parent;
+                selectPartner(marker.userData.id, marker.userData.type);
+            }
+        }
+
+        function selectPartner(id, type) {
+            const partner = type === 'usa' ? partnersData.usa[id] : partnersData.uk[id - partnersData.usa.length];
+
+            // Remove selected class from all cards
+            document.querySelectorAll('.partner-card').forEach(c => {
+                c.classList.remove('selected');
+            });
+
+            // Add selected class to corresponding card
+            const card = document.querySelector(`.partner-card[data-id="${id}"]`);
+            if (card) card.classList.add('selected');
+
+            // Show partner details
+            showPartnerDetails(id, type);
+
+            // Fly to marker
+            if (markers[id]) {
+                const markerPosition = markers[id].position.clone();
+                const distance = 300;
+                const direction = markerPosition.clone().normalize();
+                const targetPosition = direction.multiplyScalar(distance);
+
+                // Animate camera
+                animateCameraTo(targetPosition, markerPosition);
+            }
+        }
+
+        function animateCameraTo(position, target) {
+            const duration = 1500;
+            const startPosition = camera.position.clone();
+            const startTarget = controls.target.clone();
+            const startTime = Date.now();
+
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // Easing function
+                const ease = (t) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+
+                const easedProgress = ease(progress);
+
+                camera.position.lerpVectors(startPosition, position, easedProgress);
+                controls.target.lerpVectors(startTarget, target, easedProgress);
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            }
+
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (isRotating) {
+                globe.rotation.y += rotationSpeed;
+                if (globe.clouds) {
+                    globe.clouds.rotation.y += rotationSpeed * 0.5;
+                }
+            }
+
+            // Animate marker pulses
+            markers.forEach(marker => {
+                const pulse = marker.children[1];
+                if (pulse) {
+                    marker.userData.pulseScale += 0.02 * marker.userData.pulseDirection;
+                    if (marker.userData.pulseScale > 2) marker.userData.pulseDirection = -1;
+                    if (marker.userData.pulseScale < 1) marker.userData.pulseDirection = 1;
+                    pulse.scale.setScalar(marker.userData.pulseScale);
+                }
+            });
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = document.getElementById('globe-container').clientWidth /
+                document.getElementById('globe-container').clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(
+                document.getElementById('globe-container').clientWidth,
+                document.getElementById('globe-container').clientHeight
+            );
+        }
+
+        function populatePartnerCards() {
+            console.log('Populating partner cards...');
+            const usaContainer = document.getElementById('usa-partners');
+            const ukContainer = document.getElementById('uk-partners');
+
+            console.log('USA Container:', usaContainer);
+            console.log('UK Container:', ukContainer);
+            console.log('USA Partners Data:', partnersData.usa);
+            console.log('UK Partners Data:', partnersData.uk);
+
+            // Clear existing content
+            usaContainer.innerHTML = '';
+            ukContainer.innerHTML = '';
+
+            // USA partners - First 2 get highlighted animations
+            partnersData.usa.forEach((partner, index) => {
+                const isHighlighted = index < 2;
+                const badges = ['hot', 'new', 'popular', 'featured'];
+                const badgeText = ['Hot Deal', 'New', 'Popular', 'Featured'];
+
+                usaContainer.innerHTML += `
+            <div class="partner-card usa ${isHighlighted ? 'highlighted' : ''}" 
+                 data-id="${index}" data-type="usa">
+                ${isHighlighted ? `
+                <div class="highlight-badge ${badges[index % 4]}">
+                    ${badgeText[index % 4]}
+                </div>
+                ` : '<div class="country-highlight usa">USA</div>'}
+                <div class="d-flex align-items-start">
+                    <div class="partner-logo usa ${isHighlighted ? 'highlighted' : ''}">
+                        ${partner.name.substring(0, 2)}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="partner-name">${partner.name}</div>
+                        <div class="partner-address">${partner.address}</div>
+                        <div class="partner-address mb-2">
+                            <i class="fas fa-map-pin me-1"></i>${partner.city}, ${partner.state}
+                        </div>
+                        <a href="${partner.website}" target="_blank" class="partner-website">
+                            <i class="fas fa-external-link-alt me-1"></i>${partner.website.split('//')[1]}
+                        </a>
+                    </div>
+                </div>
+                <div class="partner-stats ${isHighlighted ? 'highlighted' : ''}">
+                    <div class="stat-item ${isHighlighted ? 'highlighted' : ''}">
+                        <div class="stat-value ${isHighlighted ? 'highlighted' : ''}">${partner.established}</div>
+                        <div class="stat-label">Established</div>
+                    </div>
+                    <div class="stat-item ${isHighlighted ? 'highlighted' : ''}">
+                        <div class="stat-value ${isHighlighted ? 'highlighted' : ''}">${partner.capacity.split(' ')[0]}</div>
+                        <div class="stat-label">Specialty</div>
+                    </div>
+                    <div class="stat-item ${isHighlighted ? 'highlighted' : ''}">
+                        <div class="stat-value ${isHighlighted ? 'highlighted' : ''}">${partner.coverage}</div>
+                        <div class="stat-label">Coverage</div>
+                    </div>
+                </div>
+            </div>
+        `;
+            });
+
+            // UK partners - First 2 get highlighted animations
+            partnersData.uk.forEach((partner, index) => {
+                const isHighlighted = index < 2;
+                const badges = ['hot', 'new', 'popular', 'featured'];
+                const badgeText = ['Hot Deal', 'New', 'Popular', 'Featured'];
+
+                ukContainer.innerHTML += `
+            <div class="partner-card uk ${isHighlighted ? 'highlighted' : ''}" 
+                 data-id="${index + partnersData.usa.length}" data-type="uk">
+                ${isHighlighted ? `
+                <div class="highlight-badge ${badges[(index + 2) % 4]}">
+                    ${badgeText[(index + 2) % 4]}
+                </div>
+                ` : '<div class="country-highlight uk">UK</div>'}
+                <div class="d-flex align-items-start">
+                    <div class="partner-logo uk ${isHighlighted ? 'highlighted' : ''}">
+                        ${partner.name.substring(0, 2)}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="partner-name">${partner.name}</div>
+                        <div class="partner-address">${partner.address}</div>
+                        <div class="partner-address mb-2">
+                            <i class="fas fa-map-pin me-1"></i>${partner.city}, UK
+                        </div>
+                        <a href="${partner.website}" target="_blank" class="partner-website">
+                            <i class="fas fa-external-link-alt me-1"></i>${partner.website.split('//')[1]}
+                        </a>
+                    </div>
+                </div>
+                <div class="partner-stats ${isHighlighted ? 'highlighted' : ''}">
+                    <div class="stat-item ${isHighlighted ? 'highlighted' : ''}">
+                        <div class="stat-value ${isHighlighted ? 'highlighted' : ''}">${partner.established}</div>
+                        <div class="stat-label">Established</div>
+                    </div>
+                    <div class="stat-item ${isHighlighted ? 'highlighted' : ''}">
+                        <div class="stat-value ${isHighlighted ? 'highlighted' : ''}">${partner.capacity.split(' ')[0]}</div>
+                        <div class="stat-label">Specialty</div>
+                    </div>
+                    <div class="stat-item ${isHighlighted ? 'highlighted' : ''}">
+                        <div class="stat-value ${isHighlighted ? 'highlighted' : ''}">${partner.coverage}</div>
+                        <div class="stat-label">Coverage</div>
+                    </div>
+                </div>
+            </div>
+        `;
+            });
+        }
+        // Search functionality
+        function setupSearch() {
+            const searchInput = document.getElementById('search-input');
+            const searchResults = document.getElementById('search-results');
+            const allPartners = [...partnersData.usa.map((p, i) => ({ ...p, id: i, type: 'usa' })),
+            ...partnersData.uk.map((p, i) => ({ ...p, id: i + partnersData.usa.length, type: 'uk' }))];
+
+            searchInput.addEventListener('input', function (e) {
+                const query = e.target.value.toLowerCase();
+                searchResults.innerHTML = '';
+
+                if (query.length < 2) return;
+
+                const results = allPartners.filter(partner =>
+                    partner.name.toLowerCase().includes(query) ||
+                    partner.city.toLowerCase().includes(query) ||
+                    (partner.state && partner.state.toLowerCase().includes(query)) ||
+                    partner.capacity.toLowerCase().includes(query)
+                );
+
+                if (results.length === 0) {
+                    searchResults.innerHTML = '<div class="text-center py-3 text-muted">No partners found</div>';
+                    return;
+                }
+
+                results.forEach(partner => {
+                    const div = document.createElement('div');
+                    div.className = 'search-result-item';
+                    div.innerHTML = `
+                <div class="partner-name">${partner.name}</div>
+                <div class="partner-location">
+                    <i class="fas fa-map-marker-alt me-1"></i>
+                    ${partner.city}, ${partner.type === 'usa' ? partner.state : 'UK'}
+                </div>
+                <div class="partner-location">
+                    <i class="fas fa-truck me-1"></i>
+                    ${partner.capacity}
+                </div>
+            `;
+                    div.addEventListener('click', () => {
+                        selectPartner(partner.id, partner.type);
+                        searchInput.value = partner.name;
+                        searchResults.innerHTML = '';
+                    });
+                    searchResults.appendChild(div);
+                });
+            });
+        }
+
+        // Show partner details
+        function showPartnerDetails(id, type) {
+            const partner = type === 'usa' ? partnersData.usa[id] : partnersData.uk[id - partnersData.usa.length];
+            const panel = document.getElementById('info-panel');
+            const details = document.getElementById('partner-details');
+
+            const typeColor = type === 'usa' ? '#3b82f6' : '#10b981';
+            const typeBadge = type === 'usa' ? 'USA' : 'UK';
+
+            details.innerHTML = `
+        <div class="text-center mb-4">
+            <div class="partner-logo ${type}" style="margin: 0 auto 15px; width: 60px; height: 60px; font-size: 1.2rem;">
+                ${partner.name.substring(0, 2)}
+            </div>
+            <h5 class="fw-bold mb-2">${partner.name}</h5>
+            <span class="badge ${type === 'usa' ? 'bg-primary' : 'bg-success'}">${typeBadge}</span>
+        </div>
+        
+        <div class="mb-4">
+            <h6 class="fw-bold mb-3"><i class="fas fa-info-circle me-2" style="color: ${typeColor};"></i>Partner Details</h6>
+            <div class="mb-3">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-map-marker-alt text-muted me-2" style="width: 20px;"></i>
+                    <span class="fw-bold small">Address:</span>
+                </div>
+                <p class="ms-4 mb-1">${partner.address}</p>
+                <p class="ms-4 text-muted small">${partner.zip}</p>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-6">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-city text-muted me-2" style="width: 20px;"></i>
+                        <span class="fw-bold small">Location:</span>
+                    </div>
+                    <p class="ms-4">${partner.city}, ${type === 'usa' ? partner.state : 'UK'}</p>
+                </div>
+                <div class="col-6">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-calendar-alt text-muted me-2" style="width: 20px;"></i>
+                        <span class="fw-bold small">Since:</span>
+                    </div>
+                    <p class="ms-4">${partner.established}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <h6 class="fw-bold mb-3"><i class="fas fa-truck text-muted me-2"></i>Services</h6>
+            <div class="d-flex align-items-center mb-2">
+                <i class="fas fa-boxes text-muted me-2" style="width: 20px;"></i>
+                <span class="fw-bold small">Capacity:</span>
+            </div>
+            <p class="ms-4">${partner.capacity}</p>
+            
+            <div class="d-flex align-items-center mb-2">
+                <i class="fas fa-globe-americas text-muted me-2" style="width: 20px;"></i>
+                <span class="fw-bold small">Coverage:</span>
+            </div>
+            <p class="ms-4">${partner.coverage}</p>
+        </div>
+        
+        <div class="text-center pt-3 border-top">
+            <a href="${partner.website}" target="_blank" class="btn ${type === 'usa' ? 'btn-primary' : 'btn-success'} w-100">
+                <i class="fas fa-external-link-alt me-2"></i>Visit Website
+            </a>
+        </div>
+    `;
+
+            panel.classList.add('show');
+        }
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize 3D globe
+            init3DGlobe();
+
+            // Populate partner cards
+            populatePartnerCards();
+
+            // Setup search
+            setupSearch();
+
+            // Set current date
+            const now = new Date();
+            document.getElementById('current-date').textContent =
+                now.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+            // Sidebar toggle
+            const sidebar = document.getElementById('sidebar');
+            const topbar = document.getElementById('topbar');
+            const mainWrapper = document.getElementById('main-wrapper');
+            const toggleBtn = document.getElementById('sidebar-toggle');
+            const overlay = document.getElementById('overlay');
+
+            function setInitialSidebar() {
+                if (window.innerWidth >= 992) {
+                    sidebar.classList.remove('collapsed');
+                    topbar.classList.remove('collapsed');
+                    mainWrapper.style.marginLeft = '280px';
+                } else {
+                    mainWrapper.style.marginLeft = '0';
+                }
+            }
+
+            function toggleSidebar() {
+                if (window.innerWidth >= 992) {
+                    sidebar.classList.toggle('collapsed');
+                    topbar.classList.toggle('collapsed');
+                    mainWrapper.style.marginLeft = sidebar.classList.contains('collapsed') ? '60px' : '280px';
+                } else {
+                    sidebar.classList.toggle('open');
+                    overlay.classList.toggle('active');
+                }
+            }
+
+            setInitialSidebar();
+            window.addEventListener('resize', setInitialSidebar);
+            toggleBtn.addEventListener('click', toggleSidebar);
+
+            // Partner card interactions
+            document.querySelectorAll('.partner-card').forEach(card => {
+                card.addEventListener('click', function () {
+                    const id = parseInt(this.dataset.id);
+                    const type = this.dataset.type;
+                    selectPartner(id, type);
+                });
+            });
+
+            // Globe controls
+            document.getElementById('zoom-in').addEventListener('click', () => {
+                camera.position.multiplyScalar(0.85);
+            });
+
+            document.getElementById('zoom-out').addEventListener('click', () => {
+                camera.position.multiplyScalar(1.15);
+            });
+
+            document.getElementById('reset-view').addEventListener('click', () => {
+                camera.position.set(0, 0, 800);
+                controls.target.set(0, 0, 0);
+            });
+
+            document.getElementById('toggle-rotate').addEventListener('click', function () {
+                isRotating = !isRotating;
+                this.classList.toggle('active');
+                this.innerHTML = isRotating ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+            });
+
+            // Animation controls
+            document.getElementById('rotation-speed').addEventListener('input', function (e) {
+                rotationSpeed = e.target.value * 0.0003;
+            });
+
+            document.getElementById('play-animation').addEventListener('click', () => {
+                isRotating = true;
+                document.getElementById('toggle-rotate').innerHTML = '<i class="fas fa-pause"></i>';
+                document.getElementById('toggle-rotate').classList.add('active');
+            });
+
+            document.getElementById('pause-animation').addEventListener('click', () => {
+                isRotating = false;
+                document.getElementById('toggle-rotate').innerHTML = '<i class="fas fa-play"></i>';
+                document.getElementById('toggle-rotate').classList.remove('active');
+            });
+
+            // Highlight controls
+            document.getElementById('highlight-usa').addEventListener('click', () => {
+                // Fly to USA region
+                const usaPosition = new THREE.Vector3(-300, 100, 300);
+                animateCameraTo(usaPosition, new THREE.Vector3(-100, 0, 100));
+            });
+
+            document.getElementById('highlight-uk').addEventListener('click', () => {
+                // Fly to UK region
+                const ukPosition = new THREE.Vector3(0, 100, 250);
+                animateCameraTo(ukPosition, new THREE.Vector3(0, 0, 190));
+            });
+
+            // Search panel toggle
+            const searchPanel = document.querySelector('.search-panel');
+            document.getElementById('toggle-search').addEventListener('click', () => {
+                searchPanel.style.display = searchPanel.style.display === 'none' ? 'block' : 'none';
+            });
+
+            document.getElementById('close-search').addEventListener('click', () => {
+                searchPanel.style.display = 'none';
+            });
+
+            // Global search
+            document.getElementById('global-search').addEventListener('input', function (e) {
+                const query = e.target.value.toLowerCase();
+                if (query.length >= 2) {
+                    searchPanel.style.display = 'block';
+                    document.getElementById('search-input').value = query;
+                    document.getElementById('search-input').dispatchEvent(new Event('input'));
+                }
+            });
+
+            // View all buttons
+            document.getElementById('view-all-usa').addEventListener('click', () => {
+                const usaPosition = new THREE.Vector3(-300, 100, 300);
+                animateCameraTo(usaPosition, new THREE.Vector3(-100, 0, 100));
+            });
+
+            document.getElementById('view-all-uk').addEventListener('click', () => {
+                const ukPosition = new THREE.Vector3(0, 100, 250);
+                animateCameraTo(ukPosition, new THREE.Vector3(0, 0, 190));
+            });
+
+            // Info panel close
+            document.getElementById('close-panel').addEventListener('click', () => {
+                document.getElementById('info-panel').classList.remove('show');
+            });
+
+            // Submenu toggle
+            document.querySelectorAll('.dropdown-trigger').forEach(trigger => {
+                trigger.addEventListener('click', () => {
+                    trigger.parentElement.classList.toggle('open');
+                });
+            });
+
+            // Auto-select first partner
+            setTimeout(() => {
+                if (markers.length > 0) {
+                    selectPartner(0, 'usa');
+                }
+            }, 1000);
+        });
+    </script>
+    <script src="layout-script.js"></script>
+</body>
+
+</html>

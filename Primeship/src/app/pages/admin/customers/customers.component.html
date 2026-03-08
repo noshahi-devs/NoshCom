@@ -1,0 +1,253 @@
+<div class="customers-container">
+  <!-- Toast Notifications -->
+  <div class="toast-host" aria-live="polite" aria-atomic="true">
+    <div class="toast" *ngFor="let toast of toasts" [ngClass]="toast.type" (click)="removeToast(toast.id)">
+      <i class="toast-icon" [ngClass]="getToastIcon(toast.type)"></i>
+      <span class="toast-message">{{ toast.message }}</span>
+      <button type="button" class="toast-close" (click)="$event.stopPropagation(); removeToast(toast.id)">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-title">
+      <h2><i class="pi pi-store"></i> Sellers</h2>
+      <p>Manage seller profiles, status, and total platform spendings</p>
+    </div>
+    <button type="button" class="btn primary" (click)="openAddCustomerModal()">
+      <i class="pi pi-plus"></i>
+      Add Customer
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <div class="search-box">
+      <i class="pi pi-search"></i>
+      <input type="text" placeholder="Search customers..." [(ngModel)]="searchTerm" (input)="filterTable()" />
+    </div>
+
+    <select [(ngModel)]="selectedStatusFilter" (change)="filterTable()">
+      <option [ngValue]="null">All Status</option>
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+    </select>
+
+    <button type="button" class="btn" (click)="clearFilters()">
+      <i class="pi pi-filter-slash"></i>
+      Clear Filters
+    </button>
+  </div>
+
+  <app-game-loader *ngIf="isLoading"></app-game-loader>
+
+  <!-- Customers Table -->
+  <div class="table-container" *ngIf="!isLoading">
+    <table class="simple-table">
+      <thead>
+        <tr>
+          <th>Seller ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Volume</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let customer of paginatedCustomers">
+          <td><span class="id-badge">{{ customer.id }}</span></td>
+          <td><strong class="text-nowrap">{{ customer.name }}</strong></td>
+          <td>{{ customer.email }}</td>
+          <td class="spending-cell">{{ formatCurrency(customer.totalSpent) }}</td>
+          <td>
+            <div class="status-control">
+              <span class="status-badge" [ngClass]="customer.status">
+                {{ getStatusLabel(customer.status) }}
+              </span>
+              <button type="button" class="btn-toggle"
+                [title]="customer.status === 'active' ? 'Deactivate' : 'Activate'" (click)="toggleUserStatus(customer)">
+                <i [class]="customer.status === 'active' ? 'pi pi-toggle-on' : 'pi pi-toggle-off'"></i>
+              </button>
+            </div>
+          </td>
+          <td class="actions">
+            <button type="button" class="btn icon edit" (click)="openEditCustomerModal(customer)" title="Edit">
+              <i class="pi pi-pencil"></i>
+            </button>
+            <button type="button" class="btn icon danger" (click)="openDeleteConfirmation(customer)" title="Delete">
+              <i class="pi pi-trash"></i>
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="filteredCustomers.length === 0">
+          <td colspan="9" class="no-data">
+            <i class="pi pi-inbox"></i>
+            <p>No customers found</p>
+            <button type="button" class="btn secondary" (click)="openAddCustomerModal()">Add Your First
+              Customer</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination">
+    <div class="pagination-info">
+      Showing {{ getStartIndex() }} to {{ getEndIndex() }} of {{ filteredCustomers.length }} customers
+    </div>
+
+    <div class="pagination-controls">
+      <button class="btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+        <i class="pi pi-angle-left"></i> Previous
+      </button>
+
+      <div class="page-numbers">
+        <button *ngFor="let page of getPageNumbers()" class="btn page-btn"
+          [ngClass]="{ 'active': page === currentPage }" (click)="changePage(page)">
+          {{ page }}
+        </button>
+      </div>
+
+      <button class="btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+        Next <i class="pi pi-angle-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Add Customer Modal -->
+  <div class="modal-overlay" *ngIf="addCustomerModalVisible" (click)="closeAddCustomerModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="pi pi-plus-circle"></i>
+          <h3>Add Customer</h3>
+        </div>
+        <button type="button" class="btn icon close-btn" (click)="closeAddCustomerModal()" title="Close">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <form [formGroup]="addCustomerForm" (ngSubmit)="saveCustomer()" class="customer-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="addName">Full Name *</label>
+            <input id="addName" type="text" formControlName="name" placeholder="Enter full name" />
+          </div>
+
+          <div class="form-group">
+            <label for="addEmail">Email *</label>
+            <input id="addEmail" type="email" formControlName="email" placeholder="name@example.com" />
+          </div>
+
+          <div class="form-group">
+            <label for="addPhone">Phone *</label>
+            <input id="addPhone" type="text" formControlName="phone" placeholder="+1 (555) 010-0000" />
+          </div>
+
+          <div class="form-group checkbox">
+            <label>
+              <input type="checkbox" formControlName="status" />
+              <span class="checkbox-label">Active Customer</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn secondary" (click)="closeAddCustomerModal()">
+            <i class="pi pi-times"></i>
+            Cancel
+          </button>
+          <button type="submit" class="btn primary" [disabled]="addCustomerForm.invalid">
+            <i class="pi pi-check"></i>
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Customer Modal -->
+  <div class="modal-overlay" *ngIf="editCustomerModalVisible" (click)="closeEditCustomerModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="pi pi-pencil"></i>
+          <h3>Edit Customer</h3>
+        </div>
+        <button type="button" class="btn icon close-btn" (click)="closeEditCustomerModal()" title="Close">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <form [formGroup]="editCustomerForm" (ngSubmit)="updateCustomer()" class="customer-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="editName">Full Name *</label>
+            <input id="editName" type="text" formControlName="name" />
+          </div>
+
+          <div class="form-group">
+            <label for="editEmail">Email *</label>
+            <input id="editEmail" type="email" formControlName="email" />
+          </div>
+
+          <div class="form-group">
+            <label for="editPhone">Phone *</label>
+            <input id="editPhone" type="text" formControlName="phone" />
+          </div>
+
+          <div class="form-group checkbox">
+            <label>
+              <input type="checkbox" formControlName="status" />
+              <span class="checkbox-label">Active Customer</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn secondary" (click)="closeEditCustomerModal()">
+            <i class="pi pi-times"></i>
+            Cancel
+          </button>
+          <button type="submit" class="btn primary" [disabled]="editCustomerForm.invalid">
+            <i class="pi pi-check"></i>
+            Update
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="deleteConfirmationVisible" (click)="cancelDelete()">
+    <div class="modal-content delete-confirm" (click)="$event.stopPropagation()">
+      <div class="modal-header danger">
+        <i class="pi pi-exclamation-triangle"></i>
+        <h3>Delete Customer</h3>
+      </div>
+
+      <div class="confirm-body">
+        <p class="warning-text">
+          <i class="pi pi-warning"></i>
+          Are you sure you want to delete <strong>{{ customerToDelete?.name }}</strong>? This action cannot be undone.
+        </p>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" (click)="cancelDelete()">
+          <i class="pi pi-times"></i>
+          Cancel
+        </button>
+        <button type="button" class="btn danger" (click)="confirmDelete()">
+          <i class="pi pi-trash"></i>
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

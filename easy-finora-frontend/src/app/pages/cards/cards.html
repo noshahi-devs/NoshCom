@@ -1,0 +1,401 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1>My Debit Cards</h1>
+        <button class="btn-3d" (click)="openModal()">
+            <span>+ Apply for New Card</span>
+        </button>
+    </div>
+
+    <!-- Total Balance Summary -->
+    <div class="balance-summary-3d">
+        <div class="summary-item" *ngIf="!isBalanceLoading; else balanceGhost">
+            <span class="label">Total Aggregated Balance</span>
+            <span class="value">{{ totalBalance | currency: 'USD' }}</span>
+        </div>
+        <ng-template #balanceGhost>
+            <div class="ghost-block">
+                <div class="ghost-line sm"></div>
+                <div class="ghost-line lg"></div>
+                <div class="mini-spinner"></div>
+            </div>
+        </ng-template>
+    </div>
+
+    <div class="section">
+        <h3>My Wallet Cards</h3>
+        <ng-container *ngIf="activeCards.length > 0 || cardApplications.length > 0; else noCards">
+            <div class="cards-grid">
+                <ng-container *ngIf="isCardsLoading">
+                    <div class="card-ghost-row">
+                        <div class="card-ghost"></div>
+                        <div class="details-ghost"></div>
+                    </div>
+                    <div class="card-ghost-row">
+                        <div class="card-ghost"></div>
+                        <div class="details-ghost"></div>
+                    </div>
+                </ng-container>
+                <div *ngFor="let app of cardApplications">
+                    <div *ngIf="app.status === 'Pending'" class="card-3d-item pending-card">
+                        <div class="card-visual" [class.visa]="app.cardType === 'Visa' || app.cardType === 0"
+                            [class.master]="app.cardType === 'MasterCard' || app.cardType === 1"
+                            [class.amex]="app.cardType === 'Amex' || app.cardType === 2">
+
+                            <div class="pending-overlay">
+                                <span class="pending-badge-large">Pending Approval</span>
+                            </div>
+
+                            <div class="card-header">
+                                <div class="chip-sim"></div>
+                                <div class="contactless-icon">)))</div>
+                            </div>
+
+                            <div class="card-body">
+                                <div class="card-number">
+                                    <span>XXXX</span>
+                                    <span>XXXX</span>
+                                    <span>XXXX</span>
+                                    <span>XXXX</span>
+                                </div>
+                            </div>
+
+                            <div class="card-footer">
+                                <div class="card-holder">
+                                    <label>Card Holder</label>
+                                    <span>{{ app.fullName }}</span>
+                                </div>
+                                <div class="card-meta">
+                                    <label>Applied On</label>
+                                    <span>{{ app.appliedDate | date:'MM/yy' }}</span>
+                                </div>
+                                <div class="brand-logo">
+                                    {{ (app.cardType === 'Visa' || app.cardType === 0 ? 'VISA' : (app.cardType ===
+                                    'MasterCard' || app.cardType === 1) ? 'MASTERCARD' : 'AMEX') }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-info-panel">
+                            <div class="info-row">
+                                <span class="label">Status</span>
+                                <span class="status-badge pending">Awaiting Verification</span>
+                            </div>
+                            <p class="pending-hint">Usually approved within 5-8 business hours.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Cards -->
+                <div *ngFor="let card of activeCards" class="card-3d-item" [class.inactive-card]="!isCardActive(card)">
+                    <div class="card-visual" [class.visa]="card.type === 'Visa'"
+                        [class.master]="card.type === 'MasterCard'" [class.amex]="card.type === 'Amex'">
+
+                        <div class="card-header">
+                            <div class="chip-sim"></div>
+                            <div class="contactless-icon">)))</div>
+                            <div class="card-brand-label">{{ card.type }}</div>
+                            <button class="reveal-btn" (click)="revealDetails(card)" [class.active]="card.showDetails"
+                                title="Show/Hide Details">
+                                <span *ngIf="!card.isRevealing">
+                                    <i class="fa-solid" [class.fa-eye]="card.showDetails"
+                                        [class.fa-eye-slash]="!card.showDetails"></i>
+                                </span>
+                                <span *ngIf="card.isRevealing" class="mini-loader"></span>
+                            </button>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="card-number"
+                                (click)="card.showDetails && copyToClipboard(card.cardNumber, 'Card number')"
+                                [class.clickable]="card.showDetails">
+                                <span>{{ card.cardNumber | slice:0:4 }}</span>
+                                <span>{{ card.cardNumber | slice:5:9 }}</span>
+                                <span>{{ card.cardNumber | slice:10:14 }}</span>
+                                <span>{{ card.cardNumber | slice:15:19 }}</span>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <div class="card-holder">
+                                <label>Card Holder</label>
+                                <span>{{ card.holderName }}</span>
+                            </div>
+                            <div class="card-meta">
+                                <label>CVV</label>
+                                <span class="cvv-value" (click)="card.showDetails && copyToClipboard(card.cvv, 'CVV')"
+                                    [class.clickable]="card.showDetails">{{ card.cvv }}</span>
+                            </div>
+                            <div class="card-meta">
+                                <label>Valid Thru</label>
+                                <span>{{ card.expiryDate }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-details-3d" *ngIf="isCardActive(card); else inactiveDetails">
+                        <div class="details-header">
+                            <h4>{{ card.type }} Debit Card Details</h4>
+                            <span class="status-badge" [class]="(card.status || 'Active').toLowerCase()">
+                                {{ card.status || 'Active' }}
+                            </span>
+                        </div>
+                        <div class="details-body">
+                            <div class="detail-item balance-item">
+                                <span class="label">Available Balance</span>
+                                <span class="value balance">{{ getActiveCardBalance(card) |
+                                    currency:'USD':'symbol':'1.2-2' }}</span>
+                            </div>
+
+                            <div class="details-row">
+                                <div class="detail-item">
+                                    <span class="label">Card Type</span>
+                                    <span class="value">{{ card.type }} Debit Card</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Expiry Date</span>
+                                    <span class="value date">{{ card.expiryFullDate }}</span>
+                                </div>
+                            </div>
+
+                            <div class="detail-item">
+                                <span class="label">Active Subscription</span>
+                                <span class="value subscription">{{ card.subscriptionType }}</span>
+                            </div>
+                        </div>
+                        <div class="details-footer">
+                            <button class="action-btn" (click)="revealDetails(card)">
+                                {{ card.showDetails ? 'Hide Card Details' : 'Show Card Details' }}
+                            </button>
+                            <button class="action-btn upgrade" routerLink="/upgrade-plan">Upgrade Card</button>
+                        </div>
+                    </div>
+                    <ng-template #inactiveDetails>
+                        <div class="card-details-3d inactive-details">
+                            <div class="details-header">
+                                <h4>{{ card.type }} Debit Card Details</h4>
+                                <span class="status-badge inactive">Inactive</span>
+                            </div>
+                            <div class="details-body">
+                                <div class="detail-item">
+                                    <span class="label">Status</span>
+                                    <span class="value">This card is inactive</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Note</span>
+                                    <span class="value">Details are hidden until the card becomes active.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-template>
+                </div>
+            </div>
+        </ng-container>
+
+        <ng-template #noCards>
+            <div class="empty-state-3d" *ngIf="!isCardsLoading">
+                <p>No card activity found. Apply for one to get started!</p>
+            </div>
+        </ng-template>
+    </div>
+
+    <!-- Card Applications (Optional - for UI completeness) -->
+    <!-- Card Applications (Restored & Simplified) -->
+    <div class="section" *ngIf="cardApplications.length > 0 || isApplicationsLoading">
+        <h3>Card Applications</h3>
+        <div class="table-3d">
+            <div class="table-header">
+                <div class="col">Application ID</div>
+                <div class="col">Type</div>
+                <div class="col">Applied Date</div>
+                <div class="col">Status</div>
+            </div>
+
+            <div class="table-row ghost-row" *ngIf="isApplicationsLoading">
+                <div class="col">
+                    <div class="ghost-line"></div>
+                </div>
+                <div class="col">
+                    <div class="ghost-chip"></div>
+                </div>
+                <div class="col">
+                    <div class="ghost-line"></div>
+                </div>
+                <div class="col">
+                    <div class="ghost-pill"></div>
+                </div>
+            </div>
+
+            <div *ngFor="let app of cardApplications" class="table-row">
+                <div class="col">{{ app.id }}</div>
+                <div class="col filter-col">
+                    <span class="badge card-type">{{ (app.cardType === 'Visa' || app.cardType === 0) ? 'Visa' :
+                        (app.cardType === 'MasterCard' || app.cardType === 1) ? 'MasterCard' : 'Amex' }}</span>
+                </div>
+                <div class="col">{{ app.appliedDate | date: 'MMM d, y' }}</div>
+                <div class="col">
+                    <span class="status-badge" [class]="app.status.toLowerCase()">{{ app.status }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section" *ngIf="inactiveCards.length > 0">
+        <h3>Card Status History</h3>
+        <div class="table-3d">
+            <div class="table-header">
+                <div class="col">Card</div>
+                <div class="col">Status</div>
+                <div class="col">Message</div>
+            </div>
+
+            <div *ngFor="let card of inactiveCards" class="table-row">
+                <div class="col">{{ card.type }}</div>
+                <div class="col"><span class="status-badge inactive">Inactive</span></div>
+                <div class="col">Your previous card has been inactivated.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Apply Card Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="!isLoading && closeModal()">
+    <div class="modal-content-3d premium-modal" (click)="$event.stopPropagation()" [class.loading-overlay]="isLoading">
+        <div class="modal-header">
+            <div class="header-content">
+                <h3>Apply for Debit Card</h3>
+                <button class="close-btn" (click)="closeModal()" [disabled]="isLoading">x</button>
+            </div>
+        </div>
+
+        <div class="modal-body">
+            <div class="modal-top-grid balanced">
+                <div class="benefits-form-header">
+                    <h3>APPLY FOR VIRTUAL DEBIT CARD</h3>
+                    <div class="benefit-point large">
+                        <span class="num">1.</span>
+                        <p><strong>Enhanced Security</strong> Virtual cards protect against fraud by masking your real
+                            bank details, reducing the risk of unauthorized transactions.</p>
+                    </div>
+                    <div class="benefit-point large">
+                        <span class="num">2.</span>
+                        <p><strong>Global Online Acceptance</strong> Works seamlessly for online transactions, supplier
+                            payments, and subscriptions worldwide.</p>
+                    </div>
+                    <div class="benefit-point large">
+                        <span class="num">3.</span>
+                        <p><strong>Cost-Effective & Eco-Friendly</strong> Eliminates the need for plastic cards,
+                            reducing costs and supporting sustainable, paperless transactions.</p>
+                    </div>
+                </div>
+                <div class="modal-card-preview-container">
+                    <div class="card-visual" [class.visa]="cardBrand === 'Visa'"
+                        [class.master]="cardBrand === 'MasterCard'" [class.amex]="cardBrand === 'Amex'">
+                        <div class="card-header">
+                            <div class="chip-sim"></div>
+                            <div class="contactless-icon">)))</div>
+                            <div class="card-brand-label">{{ cardBrand || 'AMEX' }}</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-number prominent">
+                                <span>3722</span>
+                                <span>5678</span>
+                                <span>9012</span>
+                                <span>8434</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="card-holder">
+                                <label>Card Holder</label>
+                                <span>{{ fullName || 'YOUR NAME' }}</span>
+                            </div>
+                            <div class="card-meta">
+                                <label>CVV</label>
+                                <span class="cvv-value">***</span>
+                            </div>
+                            <div class="card-meta">
+                                <label>Valid Thru</label>
+                                <span>02/30</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <form (ngSubmit)="submitApplication()" #applyForm="ngForm">
+                <div class="form-grid col-6-6">
+                    <div class="form-group">
+                        <label for="name">Full Name <span class="required">*</span></label>
+                        <input type="text" name="name" id="name" [(ngModel)]="fullName" class="form-control premium"
+                            placeholder="John Doe" required [disabled]="isLoading">
+                    </div>
+                    <div class="form-group">
+                        <label for="contact">Contact Number <span class="required">*</span></label>
+                        <input type="text" name="contact" id="contact" [(ngModel)]="contact"
+                            class="form-control premium" placeholder="Your Contact Number" required
+                            [disabled]="isLoading">
+                    </div>
+                </div>
+
+                <div class="form-grid col-12">
+                    <div class="form-group">
+                        <label for="address">Full Address <span class="required">*</span></label>
+                        <input type="text" name="address" id="address" [(ngModel)]="address"
+                            class="form-control premium" placeholder="Your Full address" required
+                            [disabled]="isLoading">
+                    </div>
+                </div>
+
+                <div class="form-row-premium">
+                    <div class="form-group brand-selection">
+                        <label>Select Card Brand <span class="required">*</span></label>
+                        <div class="premium-radio-group horizontal">
+                            <label class="brand-chip" [class.selected]="cardBrand === 'Visa'">
+                                <input type="radio" name="cardBrand" value="Visa" [(ngModel)]="cardBrand" required
+                                    [disabled]="isLoading" />
+                                <i class="fa-brands fa-cc-visa"></i>
+                                <span>Visa</span>
+                            </label>
+                            <label class="brand-chip" [class.selected]="cardBrand === 'MasterCard'">
+                                <input type="radio" name="cardBrand" value="MasterCard" [(ngModel)]="cardBrand"
+                                    [disabled]="isLoading" />
+                                <i class="fa-brands fa-cc-mastercard"></i>
+                                <span>MasterCard</span>
+                            </label>
+                            <label class="brand-chip" [class.selected]="cardBrand === 'Amex'">
+                                <input type="radio" name="cardBrand" value="Amex" [(ngModel)]="cardBrand"
+                                    [disabled]="isLoading" />
+                                <i class="fa-brands fa-cc-amex"></i>
+                                <span>Amex</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-grid upload-submit-row" style="margin-top: 24px;">
+                    <div class="form-group">
+                        <label for="document">Govt Issued Document <span class="required">*</span></label>
+                        <div class="file-upload premium">
+                            <input type="file" id="document-modal" (change)="onFileSelected($event)"
+                                accept="image/*,.pdf" class="file-input" required [disabled]="isLoading">
+                            <label for="document-modal" class="file-label-premium">
+                                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                <span *ngIf="!documentFile">Attach Govt Issued Document</span>
+                                <span *ngIf="documentFile" class="file-name">{{ documentFile.name }}</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="premium-submit-btn"
+                            [disabled]="!fullName || !contact || !address || !cardBrand || !documentFile || isLoading"
+                            [class.btn-loading]="isLoading">
+                            <span *ngIf="!isLoading">Submit Application</span>
+                            <span *ngIf="isLoading" class="btn-loading-content">
+                                <span class="btn-spinner"></span>
+                                <span>Submitting...</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

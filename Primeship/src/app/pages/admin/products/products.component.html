@@ -1,0 +1,604 @@
+<div class="products-container">
+  <!-- Toast Notifications -->
+  <div class="toast-host" aria-live="polite" aria-atomic="true">
+    <div class="toast" *ngFor="let toast of toasts" [ngClass]="toast.type" (click)="removeToast(toast.id)">
+      <i class="toast-icon" [ngClass]="getToastIcon(toast.type)"></i>
+      <span class="toast-message">{{ toast.message }}</span>
+      <button type="button" class="toast-close" (click)="$event.stopPropagation(); removeToast(toast.id)">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-title">
+      <h2><i class="pi pi-shopping-bag"></i> Products Management</h2>
+      <p>Manage your product catalog, inventory, and pricing</p>
+    </div>
+    <button type="button" class="btn primary" (click)="openAddProductModal()">
+      <i class="pi pi-plus"></i>
+      Add Product
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <div class="search-box">
+      <i class="pi pi-search"></i>
+      <input type="text" placeholder="Search products..." [(ngModel)]="searchTerm" (input)="filterTable()" />
+    </div>
+
+    <select [(ngModel)]="selectedStatusFilter" (change)="filterTable()">
+      <option [ngValue]="null">All Status</option>
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+    </select>
+
+    <select [(ngModel)]="selectedCategoryFilter" (change)="filterTable()">
+      <option [ngValue]="null">All Categories</option>
+      <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+    </select>
+
+    <button type="button" class="btn" (click)="clearFilters()">
+      <i class="pi pi-filter-slash"></i>
+      Clear Filters
+    </button>
+  </div>
+
+  <!-- Loader -->
+  <app-game-loader *ngIf="isLoading"></app-game-loader>
+
+  <!-- Products Table -->
+  <div class="table-container" *ngIf="!isLoading">
+    <table class="simple-table">
+      <thead>
+        <tr>
+          <th>SKU</th>
+          <th class="product-col">Product</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let product of paginatedProducts">
+          <td><span class="sku-badge">{{ product.sku }}</span></td>
+          <td class="product-info">
+            <img [src]="getFirstImage(product)" [alt]="product.name" class="product-thumb" />
+            <div class="product-details">
+              <strong class="text-truncate" [title]="product.name">{{ product.name }}</strong>
+            </div>
+          </td>
+          <td>{{ product.category }}</td>
+          <td class="price-info">
+            <div class="price-row">
+              <span class="current-price">{{ safeFormatPrice(getProductDiscountPrice(product) ||
+                getProductPrice(product)) }}</span>
+              <span *ngIf="getProductDiscountPrice(product)" class="discount-badge">{{
+                safeGetDiscountPercentage(getProductPrice(product), getProductDiscountPrice(product)) }}</span>
+            </div>
+            <div *ngIf="getProductDiscountPrice(product)" class="original-price">
+              {{ safeFormatPrice(getProductPrice(product)) }}
+            </div>
+          </td>
+          <td>
+            <span class="stock-badge" [ngClass]="{
+              'low': getProductStock(product) <= 10,
+              'medium': getProductStock(product) > 10 && getProductStock(product) <= 50,
+              'high': getProductStock(product) > 50
+            }">
+              {{ getProductStock(product) }}
+            </span>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(product.status)">
+              {{ getStatusLabel(product.status) }}
+            </span>
+          </td>
+
+          <td class="actions">
+            <button type="button" class="btn icon view" (click)="openViewProductModal(product)" title="View">
+              <i class="pi pi-eye"></i>
+            </button>
+            <button type="button" class="btn icon edit" (click)="openEditProductModal(product)" title="Edit">
+              <i class="pi pi-pencil"></i>
+            </button>
+            <button type="button" class="btn icon danger" (click)="openDeleteConfirmation(product)" title="Delete">
+              <i class="pi pi-trash"></i>
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="filteredProducts.length === 0">
+          <td colspan="8" class="no-data">
+            <i class="pi pi-inbox"></i>
+            <p>No products found</p>
+            <button type="button" class="btn secondary" (click)="openAddProductModal()">
+              Add Your First Product
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination">
+    <div class="pagination-info">
+      Showing {{ getStartIndex() }} to
+      {{ getEndIndex() }}
+      of {{ filteredProducts.length }} products
+    </div>
+
+    <div class="pagination-controls">
+      <button class="btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+        <i class="pi pi-angle-left"></i> Previous
+      </button>
+
+      <div class="page-numbers">
+        <button *ngFor="let page of getPageNumbers()" class="btn page-btn"
+          [ngClass]="{ 'active': page === currentPage }" (click)="changePage(page)">
+          {{ page }}
+        </button>
+      </div>
+
+      <button class="btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+        Next <i class="pi pi-angle-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Add Product Modal -->
+  <div class="modal-overlay" *ngIf="addProductModalVisible">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="pi pi-plus-circle"></i>
+          <h3>Add New Product</h3>
+        </div>
+        <button type="button" class="btn icon close-btn" (click)="closeAddProductModal()" title="Close">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <form [formGroup]="addProductForm" (ngSubmit)="saveProduct()" class="product-form">
+        <!-- Basic Information Section -->
+        <div class="form-section">
+          <h4><i class="pi pi-info-circle"></i> Basic Information</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="addName">Product Name *</label>
+              <input id="addName" type="text" formControlName="name" placeholder="Enter product name" />
+              <div class="error" *ngIf="addProductForm.get('name')?.invalid && addProductForm.get('name')?.touched">
+                <span *ngIf="addProductForm.get('name')?.errors?.['required']">Name is required</span>
+                <span *ngIf="addProductForm.get('name')?.errors?.['minlength']">Minimum 3 characters required</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="addCategory">Category *</label>
+              <select id="addCategory" formControlName="categoryId">
+                <option value="">Select Category</option>
+                <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+              </select>
+              <div class="error"
+                *ngIf="addProductForm.get('categoryId')?.invalid && addProductForm.get('categoryId')?.touched">
+                Category is required
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="addBrand">Brand Name *</label>
+              <input id="addBrand" type="text" formControlName="brandName" placeholder="Enter brand name" />
+              <div class="error"
+                *ngIf="addProductForm.get('brandName')?.invalid && addProductForm.get('brandName')?.touched">
+                Brand Name is required
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="addSKU">SKU (Auto-generated)</label>
+              <input id="addSKU" type="text" formControlName="sku" readonly class="readonly-input" />
+            </div>
+
+            <div class="form-group">
+              <label for="addStock">Stock Quantity (Auto-populated)</label>
+              <input id="addStock" type="number" formControlName="stock" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="addDescription">Description *</label>
+            <textarea id="addDescription" formControlName="description" rows="3"
+              placeholder="Enter product description..."></textarea>
+            <div class="error"
+              *ngIf="addProductForm.get('description')?.invalid && addProductForm.get('description')?.touched">
+              <span *ngIf="addProductForm.get('description')?.errors?.['required']">Description is required</span>
+              <span *ngIf="addProductForm.get('description')?.errors?.['minlength']">Minimum 10 characters
+                required</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pricing Section -->
+        <div class="form-section">
+          <h4><i class="pi pi-dollar"></i> Pricing</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="addPrice">Price ($) *</label>
+              <input id="addPrice" type="number" formControlName="price" min="0" step="0.01" placeholder="99.99" />
+            </div>
+
+            <div class="form-group">
+              <label for="addDiscount">Discount (%)</label>
+              <input id="addDiscount" type="number" formControlName="discountPercentage" min="0" max="100" />
+            </div>
+
+            <div class="form-group checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="status" />
+                <span>Active Product</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Image Upload Section -->
+        <div class="form-section">
+          <h4><i class="pi pi-image"></i> Product Images</h4>
+          <div class="image-upload-area" (paste)="onPaste($event)" tabindex="0">
+            <div class="upload-placeholder" *ngIf="imagePreviewUrls.length === 0" (click)="triggerFileInput()">
+              <i class="pi pi-cloud-upload"></i>
+              <p>Click to browse, drag & drop, or <strong>Paste</strong> images here</p>
+              <small>Max 2MB per image</small>
+            </div>
+
+            <div class="image-previews" *ngIf="imagePreviewUrls.length > 0">
+              <div class="image-preview" *ngFor="let image of imagePreviewUrls; let i = index"
+                [ngClass]="{'uploading': uploadingIndexes.has(i)}">
+                <img [src]="image" [alt]="'Product image ' + (i + 1)" />
+
+                <div *ngIf="uploadingIndexes.has(i)" class="upload-loading">
+                  <i class="pi pi-spin pi-spinner"></i>
+                  <span>Uploading...</span>
+                </div>
+
+                <div *ngIf="image && image.startsWith('http')" class="azure-badge">
+                  <i class="pi pi-check-circle"></i> Azure
+                </div>
+
+                <a *ngIf="image && image.startsWith('http')" [href]="image" target="_blank" class="image-view-link"
+                  (click)="$event.stopPropagation()">
+                  View ↗
+                </a>
+
+                <button type="button" class="remove-image" (click)="removeImage(i)"
+                  [disabled]="uploadingIndexes.has(i)">
+                  <i class="pi pi-trash"></i>
+                </button>
+              </div>
+              <div class="add-more" (click)="triggerFileInput()">
+                <i class="pi pi-plus"></i>
+                <span>Add More</span>
+              </div>
+            </div>
+
+            <input #fileInput type="file" accept="image/*" multiple (change)="onImageSelect($event)"
+              style="display: none;" />
+
+            <div class="upload-progress" *ngIf="isUploading">
+              <i class="pi pi-spin pi-spinner"></i>
+              <span>Uploading...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="button" class="btn secondary" (click)="closeAddProductModal()">
+            <i class="pi pi-times"></i> Cancel
+          </button>
+          <button type="submit" class="btn primary" [disabled]="addProductForm.invalid || isUploading">
+            <i class="pi pi-check"></i> Save Product
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Product Modal -->
+  <div class="modal-overlay" *ngIf="editProductModalVisible">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="pi pi-pencil"></i>
+          <h3>Edit Product</h3>
+        </div>
+        <button type="button" class="btn icon close-btn" (click)="closeEditProductModal()" title="Close">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <form [formGroup]="editProductForm" (ngSubmit)="updateProduct()" class="product-form">
+        <!-- Basic Information Section -->
+        <div class="form-section">
+          <h4><i class="pi pi-info-circle"></i> Basic Information</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="editName">Product Name *</label>
+              <input id="editName" type="text" formControlName="name" />
+              <div class="error" *ngIf="editProductForm.get('name')?.invalid && editProductForm.get('name')?.touched">
+                <span *ngIf="editProductForm.get('name')?.errors?.['required']">Name is required</span>
+                <span *ngIf="editProductForm.get('name')?.errors?.['minlength']">Minimum 3 characters required</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="editCategory">Category *</label>
+              <select id="editCategory" formControlName="categoryId">
+                <option value="">Select Category</option>
+                <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="editBrand">Brand Name *</label>
+              <input id="editBrand" type="text" formControlName="brandName" placeholder="Enter brand name" />
+              <div class="error"
+                *ngIf="editProductForm.get('brandName')?.invalid && editProductForm.get('brandName')?.touched">
+                Brand Name is required
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="editSKU">SKU</label>
+              <input id="editSKU" type="text" formControlName="sku" readonly class="readonly-input" />
+            </div>
+
+            <div class="form-group">
+              <label for="editStock">Stock Quantity</label>
+              <input id="editStock" type="number" formControlName="stock" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="editDescription">Description *</label>
+            <textarea id="editDescription" formControlName="description" rows="3"></textarea>
+            <div class="error"
+              *ngIf="editProductForm.get('description')?.invalid && editProductForm.get('description')?.touched">
+              <span *ngIf="editProductForm.get('description')?.errors?.['required']">Description is required</span>
+              <span *ngIf="editProductForm.get('description')?.errors?.['minlength']">Minimum 10 characters
+                required</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pricing Section -->
+        <div class="form-section">
+          <h4><i class="pi pi-dollar"></i> Pricing</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="editPrice">Price ($) *</label>
+              <input id="editPrice" type="number" formControlName="price" min="0" step="0.01" />
+            </div>
+
+            <div class="form-group">
+              <label for="editDiscount">Discount (%)</label>
+              <input id="editDiscount" type="number" formControlName="discountPercentage" min="0" max="100" />
+            </div>
+
+            <div class="form-group checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="status" />
+                <span>Active Product</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Image Upload Section -->
+        <div class="form-section">
+          <h4><i class="pi pi-image"></i> Product Images</h4>
+          <div class="image-upload-area" (paste)="onPaste($event)" tabindex="0">
+            <div class="image-previews">
+              <div class="image-preview" *ngFor="let image of imagePreviewUrls; let i = index"
+                [ngClass]="{'uploading': uploadingIndexes.has(i)}">
+                <img [src]="image" [alt]="'Product image ' + (i + 1)" />
+
+                <div *ngIf="uploadingIndexes.has(i)" class="upload-loading">
+                  <i class="pi pi-spin pi-spinner"></i>
+                  <span>Uploading...</span>
+                </div>
+
+                <div *ngIf="image && image.startsWith('http')" class="azure-badge">
+                  <i class="pi pi-check-circle"></i> Azure
+                </div>
+
+                <a *ngIf="image && image.startsWith('http')" [href]="image" target="_blank" class="image-view-link"
+                  (click)="$event.stopPropagation()">
+                  View ↗
+                </a>
+
+                <button type="button" class="remove-image" (click)="removeImage(i)"
+                  [disabled]="uploadingIndexes.has(i)">
+                  <i class="pi pi-trash"></i>
+                </button>
+              </div>
+              <div class="add-more" (click)="triggerEditFileInput()">
+                <i class="pi pi-plus"></i>
+                <span>Add More</span>
+              </div>
+            </div>
+
+            <input #editFileInput type="file" accept="image/*" multiple (change)="onEditImageSelect($event)"
+              style="display: none;" />
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="button" class="btn secondary" (click)="closeEditProductModal()">
+            <i class="pi pi-times"></i> Cancel
+          </button>
+          <button type="submit" class="btn primary" [disabled]="editProductForm.invalid || isUploading">
+            <i class="pi pi-check"></i> Update Product
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- View Product Modal -->
+  <div class="modal-overlay" *ngIf="viewProductModalVisible" (click)="closeViewProductModal()">
+    <div class="modal-content view-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="pi pi-eye"></i>
+          <h3>Product Details</h3>
+        </div>
+        <button type="button" class="btn icon close-btn" (click)="closeViewProductModal()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="product-details-view" *ngIf="selectedProduct">
+        <div class="product-images">
+          <div class="main-image">
+            <img [src]="getFirstImage(selectedProduct)" [alt]="selectedProduct.name" />
+          </div>
+          <div class="thumbnail-images">
+            <div class="thumbnail" *ngFor="let image of productService.parseImages(selectedProduct.images)">
+              <img [src]="image" [alt]="selectedProduct.name" />
+            </div>
+          </div>
+        </div>
+
+        <div class="product-info">
+          <div class="info-section">
+            <h4>{{ selectedProduct.name }}</h4>
+            <div class="info-grid">
+              <div class="info-item">
+                <label>SKU:</label>
+                <span>{{ selectedProduct.sku }}</span>
+              </div>
+              <div class="info-item">
+                <label>Slug:</label>
+                <span>{{ selectedProduct.slug }}</span>
+              </div>
+              <div class="info-item">
+                <label>Category:</label>
+                <span class="category-badge">{{ selectedProduct.category }}</span>
+              </div>
+              <div class="info-item">
+                <label>Brand:</label>
+                <span>{{ selectedProduct.brandName || getProductBrand(selectedProduct) }}</span>
+              </div>
+              <div class="info-item">
+                <label>Status:</label>
+                <span class="status-badge" [ngClass]="getStatusClass(selectedProduct.status)">
+                  {{ getStatusLabel(selectedProduct.status) }}
+                </span>
+              </div>
+              <div class="info-item">
+                <label>Featured:</label>
+                <i class="pi" [ngClass]="selectedProduct.featured ? 'pi-star-fill featured' : 'pi-star'"></i>
+              </div>
+              <div class="info-item">
+                <label>Created:</label>
+                <span>{{ selectedProduct.createdAt | date: 'mediumDate' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-section">
+            <h4>Pricing & Inventory</h4>
+            <div class="info-grid">
+              <div class="info-item">
+                <label>Price:</label>
+                <span class="price">{{ safeFormatPrice(getProductPrice(selectedProduct)) }}</span>
+              </div>
+              <div class="info-item" *ngIf="getProductDiscountPrice(selectedProduct)">
+                <label>Discount Price:</label>
+                <span class="discount-price">{{ safeFormatPrice(getProductDiscountPrice(selectedProduct)) }}</span>
+                <span class="discount-percentage">
+                  {{ safeGetDiscountPercentage(getProductPrice(selectedProduct),
+                  getProductDiscountPrice(selectedProduct)) }}
+                </span>
+              </div>
+              <div class="info-item">
+                <label>Stock:</label>
+                <span class="stock-badge" [ngClass]="{
+                  'low': getProductStock(selectedProduct) <= 10,
+                  'medium': getProductStock(selectedProduct) > 10 && getProductStock(selectedProduct) <= 50,
+                  'high': getProductStock(selectedProduct) > 50
+                }">
+                  {{ getProductStock(selectedProduct) }} units
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-section">
+            <h4>Description</h4>
+            <p class="description">{{ selectedProduct.description }}</p>
+          </div>
+
+
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" (click)="closeViewProductModal()">
+          <i class="pi pi-times"></i>
+          Close
+        </button>
+        <button type="button" class="btn primary" (click)="openEditProductModal(selectedProduct!)">
+          <i class="pi pi-pencil"></i>
+          Edit Product
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="deleteConfirmationVisible" (click)="cancelDelete()">
+    <div class="modal-content delete-confirm" (click)="$event.stopPropagation()">
+      <div class="modal-header danger">
+        <i class="pi pi-exclamation-triangle"></i>
+        <h3>Delete Product</h3>
+      </div>
+
+      <div class="confirm-body">
+        <div class="product-preview" *ngIf="productToDelete">
+          <img [src]="getFirstImage(productToDelete)" [alt]="productToDelete.name" />
+          <div class="product-info">
+            <h4>{{ productToDelete.name }}</h4>
+            <p>{{ productToDelete.sku }} • {{ productToDelete.category }}</p>
+            <p class="price">{{ safeFormatPrice(getProductPrice(productToDelete)) }}</p>
+          </div>
+        </div>
+
+        <p class="warning-text">
+          <i class="pi pi-warning"></i>
+          Are you sure you want to delete this product? This action cannot be undone and will remove all product data
+          including images and inventory information.
+        </p>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" (click)="cancelDelete()">
+          <i class="pi pi-times"></i>
+          Cancel
+        </button>
+        <button type="button" class="btn danger" (click)="confirmDelete()">
+          <i class="pi pi-trash"></i>
+          Delete Product
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

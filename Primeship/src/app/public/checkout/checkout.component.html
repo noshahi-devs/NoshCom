@@ -1,0 +1,433 @@
+<div class="checkout-container">
+  <div class="container">
+    <h1 class="page-title">Checkout</h1>
+
+    <div class="checkout-progress">
+      <div class="progress-steps">
+        <div class="step" [class.active]="!isAddressSubmitted" [class.completed]="isAddressSubmitted">
+          <span class="step-number">1</span>
+          <span class="step-label">Shipping</span>
+        </div>
+        <div class="step" [class.active]="isAddressSubmitted && !isPaymentSubmitted"
+          [class.completed]="isPaymentSubmitted">
+          <span class="step-number">2</span>
+          <span class="step-label">Payment</span>
+        </div>
+        <div class="step" [class.active]="isPaymentSubmitted && !isSuccess" [class.completed]="isSuccess">
+          <span class="step-number">3</span>
+          <span class="step-label">Review</span>
+        </div>
+      </div>
+    </div>
+
+    <form [formGroup]="checkoutForm">
+      <div class="row">
+        <div class="col-md-8">
+          <!-- Shipping Information -->
+          <div class="checkout-section" *ngIf="!isAddressSubmitted">
+            <h3 class="address-header">Shipping Address</h3>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label for="firstName">First Name</label>
+                  <input type="text" id="firstName" class="form-control" formControlName="firstName"
+                    placeholder="First Name">
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label for="lastName">Last Name</label>
+                  <input type="text" id="lastName" class="form-control" formControlName="lastName"
+                    placeholder="Last Name">
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-12 mb-3">
+                <div class="form-group">
+                  <label for="email">E-mail Address</label>
+                  <input type="email" id="email" class="form-control" formControlName="email"
+                    placeholder="E-mail Address">
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label for="address1">Address 1</label>
+                  <input type="text" id="address1" class="form-control" formControlName="address1"
+                    placeholder="Address 1">
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label for="address2">Address 2 (Optional)</label>
+                  <input type="text" id="address2" class="form-control" formControlName="address2"
+                    placeholder="Address 2">
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label for="zipCode">Zip Code</label>
+                  <input type="text" id="zipCode" class="form-control" formControlName="zipCode" placeholder="Zip Code">
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label for="city">City</label>
+                  <input type="text" id="city" class="form-control" formControlName="city" placeholder="City">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-check mt-3 mb-4">
+              <input class="form-check-input" type="checkbox" id="sameAddress" checked>
+              <label class="form-check-label" for="sameAddress">
+                Same as billing address
+              </label>
+            </div>
+
+            <div class="checkout-footer-actions mt-4">
+              <button type="button" class="btn btn-back" routerLink="/cart">
+                <i class="pi pi-arrow-left"></i> Back To Cart
+              </button>
+              <button type="button" class="btn btn-continue" (click)="saveAddress()">
+                Continue <i class="pi pi-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Address Review Section -->
+          <div class="checkout-section mb-4" *ngIf="isAddressSubmitted">
+            <h3 class="section-title">Shipping Address</h3>
+            <div class="review-box p-3 border rounded">
+              <p class="mb-1">{{ checkoutForm.get('firstName')?.value }} {{ checkoutForm.get('lastName')?.value }}
+              </p>
+              <p class="mb-0 text-muted">{{ checkoutForm.get('email')?.value }}</p>
+              <p class="mb-1">{{ checkoutForm.get('address1')?.value }}</p>
+              <p class="mb-1" *ngIf="checkoutForm.get('address2')?.value">{{ checkoutForm.get('address2')?.value }}</p>
+              <p class="mb-1">{{ checkoutForm.get('city')?.value }}, {{ checkoutForm.get('zipCode')?.value }}</p>
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <button type="button" class="btn btn-sm btn-outline-primary" (click)="editAddress()">Edit</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shipping Method Selection -->
+          <div class="checkout-section mb-4" *ngIf="isAddressSubmitted && !isPaymentSubmitted">
+            <h3 class="section-title">Select Shipping Method</h3>
+            <div class="payment-methods-grid">
+              <div class="payment-option" [class.active]="selectedShippingMethod === 'in_store'"
+                (click)="selectShippingMethod('in_store')">
+                <div class="option-icon"><i class="pi pi-map-marker"></i></div>
+                <div class="option-details">
+                  <span class="option-name">In-Store Pickup</span>
+                  <small class="text-muted d-block">Pick up from store</small>
+                </div>
+                <div class="option-price fw-bold text-success">+$0.00</div>
+              </div>
+
+              <div class="payment-option" [class.active]="selectedShippingMethod === 'warehouse'"
+                (click)="selectShippingMethod('warehouse')">
+                <div class="option-icon"><i class="pi pi-building"></i></div>
+                <div class="option-details">
+                  <span class="option-name">Nearest Warehouse</span>
+                  <small class="text-muted d-block">Ship from warehouse</small>
+                </div>
+                <div class="option-price fw-bold text-danger">+$1.00</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Information -->
+          <div class="checkout-section mt-4" *ngIf="isAddressSubmitted && !isPaymentSubmitted">
+            <h3 class="section-title"><i class="pi pi-wallet"></i> Payment Method</h3>
+            <div class="payment-methods-grid">
+              <div class="payment-option" *ngFor="let method of paymentMethods"
+                [class.active]="checkoutForm.get('paymentMethod')?.value === method.id"
+                (click)="setPaymentMethod(method.id)">
+                <div class="option-icon">
+                  <img *ngIf="method.logoSrc" class="payment-logo" [src]="method.logoSrc" [alt]="method.name">
+                  <i *ngIf="!method.logoSrc" [class]="method.icon"></i>
+                </div>
+                <div class="option-details">
+                  <span class="option-name">{{ method.name }}</span>
+                  <div class="radio-circle"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Details -->
+            <div class="payment-details-form"
+              *ngIf="['finora','mastercard','discover','amex'].includes(checkoutForm.get('paymentMethod')?.value)">
+              <div class="form-group animate-fade-in">
+                <label for="cardNumber">Card Number</label>
+                <div class="input-with-icon">
+                  <i class="pi pi-credit-card"></i>
+                  <input type="text" id="cardNumber" class="form-control" placeholder="0000 0000 0000 0000"
+                    formControlName="cardNumber">
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group animate-fade-in">
+                    <label for="expiryDate">Expiry Date</label>
+                    <input type="text" id="expiryDate" class="form-control" placeholder="MM/YY"
+                      formControlName="expiryDate">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group animate-fade-in">
+                    <label for="cvv">CVV</label>
+                    <input type="text" id="cvv" class="form-control" placeholder="***" formControlName="cvv">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Balance Verification -->
+              <div class="finora-verification" *ngIf="checkoutForm.get('paymentMethod')?.value === 'finora'">
+                <div class="verification-status" *ngIf="isBalanceVerified">
+                  <div class="balance-badge success">
+                    <i class="pi pi-check-circle"></i>
+                    <span>Balance Verified</span>
+                  </div>
+                  <div class="status-msg success" *ngIf="verifiedBalance !== null">
+                    Available Balance: ${{ verifiedBalance | number:'1.2-2' }}
+                  </div>
+                </div>
+
+                <div class="verification-status" *ngIf="verificationError">
+                  <div class="balance-badge error">
+                    <i class="pi pi-times-circle"></i>
+                    <span>Verification Failed</span>
+                  </div>
+                  <div class="status-msg error">{{ verificationError }}</div>
+                </div>
+
+                <button type="button" class="btn btn-info w-100"
+                  [disabled]="isVerifyingBalance || checkoutForm.get('cardNumber')?.invalid || checkoutForm.get('expiryDate')?.invalid || checkoutForm.get('cvv')?.invalid"
+                  (click)="verifyEasyFinoraBalance()">
+                  <span *ngIf="!isVerifyingBalance">
+                    Verify Balance
+                  </span>
+                  <span *ngIf="isVerifyingBalance">
+                    Verifying...
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Review Summary Section -->
+          <div class="checkout-section mt-4 animate-fade-in" *ngIf="isPaymentSubmitted && !isSuccess">
+            <div class="premium-review-card">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="section-title mb-0"><i class="pi pi-check-square"></i> Review Order</h3>
+                <button type="button" class="btn btn-premium-edit" (click)="goBackToPayment()">
+                  <i class="pi pi-pencil"></i> Edit Payment
+                </button>
+              </div>
+
+              <div class="row">
+                <div class="col-md-7">
+                  <p class="text-muted mb-2">Payment Method</p>
+                  <div class="virtual-card-preview">
+                    <div class="card-brand">
+                      <div class="chip chip-gold"></div>
+                      <div class="brand-right">
+                        <i class="pi pi-id-card"></i>
+                        <span class="finora-logo-small">Easy Finora</span>
+                      </div>
+                    </div>
+                    <div class="card-number">
+                      **** **** **** {{ (checkoutForm.get('cardNumber')?.value || '').replace(/\s/g, '').slice(-4) }}
+                    </div>
+                    <div class="card-holder-info">
+                      <div>
+                        <div class="label">Card Holder</div>
+                        <div class="value">{{ displayCardHolderName }}</div>
+                      </div>
+                      <div>
+                        <div class="label">Expires</div>
+                        <div class="value">{{ checkoutForm.get('expiryDate')?.value }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-5 d-flex flex-column justify-content-center">
+                  <div class="order-final-summary p-3 bg-light rounded mt-3 mt-md-0">
+                    <div class="d-flex justify-content-between mb-2">
+                      <span class="text-muted">Status:</span>
+                      <span class="badge bg-success">Ready to Place</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                      <span class="text-muted">Total:</span>
+                      <span class="fw-bold text-dark">${{ total | number:'1.2-2' }}</span>
+                    </div>
+                    <p class="small text-muted mt-3 mb-0">
+                      By clicking "Place Order", you agree to our terms of service and confirm your items.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="checkout-footer-actions mt-4" *ngIf="isAddressSubmitted">
+            <button type="button" class="btn btn-back" (click)="isPaymentSubmitted ? goBackToPayment() : editAddress()">
+              <i class="pi pi-arrow-left"></i> Back
+            </button>
+
+            <!-- Payment Stage Continue Button -->
+            <button type="button" class="btn btn-continue" *ngIf="!isPaymentSubmitted"
+              [disabled]="!selectedShippingMethod || isProcessing || checkoutForm.invalid" (click)="proceedToReview()">
+              Continue <i class="pi pi-arrow-right"></i>
+            </button>
+
+            <!-- Review Stage Final Submission -->
+            <button type="button" class="btn btn-continue" *ngIf="isPaymentSubmitted"
+              [disabled]="isProcessing || checkoutForm.invalid" (click)="onSubmit()">
+              Place Order <i class="pi pi-check"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="sticky-column">
+            <!-- Order Summary -->
+            <div class="order-summary-card mb-4">
+              <h5>Order Summary</h5>
+              <div class="divider"></div>
+
+              <div class="summary-promo-text mt-3 mb-3">
+                Free Shipping After Order $100.00
+              </div>
+
+              <div class="summary-details">
+                <div class="summary-row-new">
+                  <span>Cart subtotal:</span>
+                  <span>${{ subtotal | number:'1.2-2' }}</span>
+                </div>
+                <div class="summary-row-new">
+                  <span>Shipping Charges:</span>
+                  <span>${{ shipping | number:'1.2-2' }}</span>
+                </div>
+                <div class="summary-row-new">
+                  <span>Platform Charges:</span>
+                  <span>${{ platformCharges | number:'1.2-2' }}</span>
+                </div>
+                <div class="summary-row-new" *ngIf="selectedShippingMethod">
+                  <span>{{ shippingMethodLabel }}:</span>
+                  <span>${{ shippingMethodFee | number:'1.2-2' }}</span>
+                </div>
+
+                <div class="summary-row-new total-row mt-3">
+                  <span>Order total</span>
+                  <span>${{ total | number:'1.2-2' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Items In Your Cart -->
+            <div class="items-in-cart-card">
+              <h5>Items In Your Cart</h5>
+              <div class="divider"></div>
+
+              <div class="cart-items-list mt-3">
+                <div class="cart-item-preview mb-3" *ngFor="let item of cartItems">
+                  <div class="item-img-container">
+                    <img [src]="item.product.image" [alt]="item.product.name">
+                  </div>
+                  <div class="item-details">
+                    <span class="item-name">{{ item.product.name }}</span>
+                    <span class="item-meta">{{ item.quantity }} x ${{ item.product.price | number:'1.2-2' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- <div class="checkout-actions mt-4">
+              <button type="submit" class="btn btn-primary btn-lg w-100"
+                [disabled]="checkoutForm.invalid || isProcessing || !selectedShippingMethod || (checkoutForm.get('paymentMethod')?.value === 'finora' && !isBalanceVerified)">
+                Place Order
+              </button>
+            </div> -->
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Celebration & Processing Overlay -->
+  <div class="celebration-overlay" *ngIf="showCelebration">
+    <!-- Confetti ONLY on success -->
+    <div class="confetti-container" *ngIf="isSuccess">
+      <div *ngFor="let p of confettiPieces; let i = index" class="confetti-piece"></div>
+    </div>
+
+    <div class="celebration-content">
+      <!-- Item fly animation always shown during animation phase -->
+      <div class="animation-container">
+        <!-- Emojis flying -->
+        <div class="item-fly">🍎</div>
+        <div class="item-fly">📦</div>
+        <div class="item-fly">👕</div>
+        <div class="item-fly">👟</div>
+
+        <!-- SUCCESS STATE: Tick Icon -->
+        <div class="success-icon-wrapper" *ngIf="isSuccess">
+          <div class="success-tick-circle">
+            <i class="pi pi-check"></i>
+          </div>
+        </div>
+
+        <!-- PROCESSING STATE: Cart Emoji -->
+        <div class="cart-box processing" *ngIf="isProcessing">🛒</div>
+      </div>
+
+      <!-- PROCESSING TEXT -->
+      <div *ngIf="isProcessing" class="status-box processing-text">
+        <h2>Placing Order...</h2>
+        <p>Your items are flying to the checkout counter! Please wait a moment.</p>
+      </div>
+
+      <!-- SUCCESS TEXT -->
+      <div *ngIf="isSuccess" class="status-box success-text">
+        <h2>Order Confirmed!</h2>
+        <p class="mb-3">We have received your order and it is now being processed.</p>
+
+        <div class="success-details-card animate-fade-in shadow-lg">
+          <div class="info-line">
+            Please note your order number: <strong>{{ placedOrderNumber }}</strong>
+          </div>
+
+          <div class="detail-divider"></div>
+
+          <div class="info-line">
+            Your tracking number is <strong>{{ trackingNumber }}</strong>
+          </div>
+        </div>
+
+        <div class="confirmation-info mb-3 animate-fade-in" style="animation-delay: 0.2s">
+          <i class="pi pi-envelope me-2"></i>
+          <span>You will receive a confirmation email shortly.</span>
+        </div>
+
+        <div class="action-buttons mt-3 animate-fade-in" style="animation-delay: 0.4s">
+          <button type="button" class="btn-done me-2" (click)="acknowledgeSuccess()">
+            OK
+          </button>
+          <button type="button" class="btn-done" (click)="viewMyOrders()">
+            View My Orders <i class="pi pi-arrow-right ms-2"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

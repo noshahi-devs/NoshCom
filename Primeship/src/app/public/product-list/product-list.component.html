@@ -1,0 +1,157 @@
+<div class="product-list-container">
+  <div class="container">
+    <!-- Modern Minimal Category Header -->
+    <div class="minimal-cat-header" *ngIf="categoryTitle">
+      <nav class="breadcrumb-nav">
+        <a routerLink="/home">Home</a>
+        <i class="pi pi-angle-right"></i>
+        <span>{{ categoryTitle }}</span>
+      </nav>
+      <div class="title-row">
+        <h1>{{ categoryTitle }}</h1>
+        <div class="product-status-badge" [class.status-green]="filteredProducts.length > 0"
+          [class.status-red]="filteredProducts.length === 0">
+          <i class="status-indicator"></i>
+          <span>{{ filteredProducts.length }} Products found</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Premium Filters Bar -->
+    <div class="filters-section" [formGroup]="filtersForm">
+      <div class="filters-row">
+        <div class="filter-main-controls">
+          <div class="filter-group">
+            <span class="inner-label">Sort</span>
+            <select class="clean-select" formControlName="sortBy">
+              <option value="newest">Newest</option>
+              <option value="price-low">Price: low</option>
+              <option value="price-high">Price: high</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <span class="inner-label">Max Price</span>
+            <div class="price-pill-group">
+              <button *ngFor="let point of pricePoints" class="pill"
+                [class.active]="filtersForm.get('maxPrice')?.value === point" (click)="setPricePoint(point)">
+                ${{ point }}
+              </button>
+              <button class="pill" [class.active]="filtersForm.get('maxPrice')?.value >= 10000000"
+                (click)="setPricePoint(10000000)">
+                All
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button class="minimal-reset-btn" (click)="clearFilters()" title="Reset all filters">
+          <i class="pi pi-refresh"></i>
+          <span>Reset</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content Layout -->
+    <div class="main-content-layout">
+      <!-- Left Sidebar -->
+      <aside class="left-sidebar d-none d-lg-block">
+        <div class="sidebar-filters">
+          <div class="filter-group">
+            <h5 class="filter-title">
+              <i class="pi pi-th-large"></i>
+              <span>Categories</span>
+            </h5>
+            <div class="category-menu">
+              <div *ngFor="let cat of categoriesWithCount" class="category-item"
+                [class.active]="currentCategorySlug === cat.id || currentCategorySlug === cat.slug"
+                (click)="onCategoryToggle(cat)">
+                <span class="category-name">{{ cat.name }}</span>
+                <span class="category-pill" [class.empty]="cat.count === 0">{{ cat.count }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Body -->
+      <section class="main-content">
+        <div class="products-grid-container">
+          <!-- Loading State -->
+          <div class="loading-wrapper interactive-loader" *ngIf="isLoading">
+            <div class="luxury-loader">
+              <div class="loader-ring"></div>
+              <div class="loader-ring"></div>
+              <div class="loader-ring"></div>
+              <i class="pi pi-compass loader-icon"></i>
+            </div>
+            <div class="loader-text-wrap">
+              <p class="loader-msg">{{ loadingMessage }}</p>
+              <div class="loader-progress">
+                <div class="progress-bar"></div>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- Empty State -->
+          <div class="empty-state-card" *ngIf="!isLoading && filteredProducts.length === 0">
+            <div class="empty-icon-box">
+              <i class="pi pi-search"></i>
+            </div>
+            <h3>No Products Found</h3>
+            <p>We couldn't find any items matching your selected filters or search terms.</p>
+            <button class="btn-clear-search" (click)="clearFilters()">Clear All Filters</button>
+          </div>
+
+          <!-- Product Grid -->
+          <div class="grid-layout" *ngIf="!isLoading && filteredProducts.length > 0">
+            <!-- Bulk Action Header -->
+            <div class="bulk-actions">
+              <label class="select-all-box" for="selectAll">
+                <input type="checkbox" id="selectAll" (change)="toggleAllProducts($event)" [checked]="isAllSelected">
+                <span>Select All Products</span>
+              </label>
+
+              <button class="btn-bulk-add" *ngIf="selectedProducts.size > 0" (click)="addSelectedToCart()">
+                <i class="pi pi-shopping-bag"></i>
+                <span>Add {{ selectedProducts.size }} Items to Cart</span>
+              </button>
+            </div>
+
+            <div class="row">
+              <div class="grid-item" *ngFor="let product of filteredProducts">
+                <div class="product-card" [class.selected]="selectedProducts.has(product.id)"
+                  (click)="onProductClick(product)">
+
+                  <div class="product-image">
+                    <img [src]="product.image" [alt]="product.name" (error)="handleImageError($event, product.name)">
+                    <div class="discount-tag" *ngIf="product.discount > 0">-{{ product.discount }}%</div>
+                  </div>
+
+                  <div class="product-info">
+                    <span class="brand-label" *ngIf="product.brand"
+                      style="display:block; color: #f85606; font-size: 0.85rem; font-weight: 600; margin-bottom: 2px;">{{
+                      product.brand }}</span>
+                    <h3 class="product-name" style="margin-top: 0;">{{ product.name }}</h3>
+                    <div class="price-row">
+                      <span class="price">{{ product.price | currency:'USD':'symbol':'1.2-2' }}</span>
+                      <button class="add-cart-mini" (click)="$event.stopPropagation(); addToCart(product)">
+                        <i class="pi pi-plus"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simple Pagination -->
+        <div class="pagination-footer" *ngIf="!isLoading && filteredProducts.length > 0">
+          <p>Showing {{ filteredProducts.length }} products</p>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

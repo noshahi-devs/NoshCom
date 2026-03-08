@@ -1,0 +1,72 @@
+<div class="info-page contact-support">
+    <div class="container">
+        <div class="contact-header">
+            <span class="badge">Support 24/7</span>
+            <h1>How can we <span>help you</span> today?</h1>
+            <p>Our dedicated support team is always ready to assist you. Choose your preferred method of contact below.
+            </p>
+        </div>
+
+        <div class="contact-grid">
+            <div class="contact-methods">
+                <div class="method-card">
+                    <div class="icon-circle"><i class="pi pi-envelope"></i></div>
+                    <div class="method-info">
+                        <h3>Email Support</h3>
+                        <p>For order inquiries and detailed questions.</p>
+                        <a href="mailto:support@primeship.com" class="link">support@primeship.com</a>
+                    </div>
+                </div>
+                <div class="method-card">
+                    <div class="icon-circle whatsapp"><i class="pi pi-whatsapp"></i></div>
+                    <div class="method-info">
+                        <h3>WhatsApp Chat</h3>
+                        <p>Fastest way to get in touch with an agent.</p>
+                        <a href="https://wa.me/441234567890" target="_blank" class="link">+44 123 456 7890</a>
+                    </div>
+                </div>
+                <div class="method-card">
+                    <div class="icon-circle"><i class="pi pi-map-marker"></i></div>
+                    <div class="method-info">
+                        <h3>Global Headquarters</h3>
+                        <p>123 Commerce Way, Tech District, London, UK.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contact-form-card">
+                <h2>Send us a Message</h2>
+                <form class="premium-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" placeholder="John Doe" #fullName>
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" placeholder="john@example.com" #email>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Subject</label>
+                        <select #subject>
+                            <option>Order Status</option>
+                            <option>Returns & Refunds</option>
+                            <option>Technical Issue</option>
+                            <option>Partnership</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea rows="5" placeholder="How can we help?" #message></textarea>
+                    </div>
+                    <button type="button" class="btn-submit"
+                        (click)="submitSupport(fullName.value, email.value, subject.value, message.value)">
+                        Send Message <i class="pi pi-send"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

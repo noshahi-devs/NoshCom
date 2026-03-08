@@ -1,0 +1,81 @@
+<div class="admin-dashboard animate__animated animate__fadeIn">
+    <!-- Welcome Section -->
+    <div class="welcome-section mb-5">
+        <h2 class="fw-bold text-dark mb-1">System Overview</h2>
+        <p class="text-muted">Welcome back, Super Admin. Here's what's happening on the platform today.</p>
+        <div class="date-badge">
+            <i class="far fa-calendar-alt me-2"></i> Jan 30, 2026
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3" *ngFor="let stat of stats">
+            <div class="stat-card">
+                <div class="stat-icon" [style.background-color]="stat.color + '15'" [style.color]="stat.color">
+                    <i class="fas" [ngClass]="stat.icon"></i>
+                </div>
+                <div class="stat-content">
+                    <p class="stat-label">{{ stat.label }}</p>
+                    <h3 class="stat-value">{{ stat.value }}</h3>
+                    <span class="stat-trend" [style.color]="stat.color">{{ stat.trend }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Recent Activity -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Platform Activity</h5>
+                    <button class="btn btn-light btn-sm rounded-pill">View All</button>
+                </div>
+                <div class="card-body p-4">
+                    <div class="activity-timeline">
+                        <div class="activity-item" *ngFor="let activity of recentActivities">
+                            <div class="activity-icon" [style.background-color]="activity.color">
+                                <i class="fas" [ngClass]="activity.icon"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p class="mb-1 text-dark fw-semibold">{{ activity.message }}</p>
+                                <span class="text-muted x-small"><i class="far fa-clock me-1"></i> {{ activity.time
+                                    }}</span>
+                            </div>
+                            <button class="btn btn-action"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links / Secondary Stats -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-primary text-white p-4 mb-4">
+                <h5 class="fw-bold mb-3">Quick Actions</h5>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-white text-primary fw-bold" routerLink="/admin/stores">
+                        <i class="fas fa-check-circle me-2"></i> Review Applications
+                    </button>
+                    <button class="btn btn-outline-white fw-bold" routerLink="/admin/payouts">
+                        <i class="fas fa-wallet me-2"></i> Process Payouts
+                    </button>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 h-auto">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-4">Storage Usage</h6>
+                    <div class="progress mb-2" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: 45%;"></div>
+                    </div>
+                    <div class="d-flex justify-content-between x-small text-muted">
+                        <span>450GB Used</span>
+                        <span>1TB Total</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

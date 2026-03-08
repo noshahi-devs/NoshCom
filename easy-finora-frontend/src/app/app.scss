@@ -1,0 +1,44 @@
+/* RESET */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* HEADER */
+app-header {
+  display: block;
+  height: 80px;
+  background: cyan;
+}
+
+/* FOOTER */
+app-footer {
+  display: block;
+  height: 80px;
+  background: #1e88e5;
+}
+
+/* LAYOUT */
+.layout {
+  display: flex;
+  min-height: calc(100vh - 160px);
+}
+
+/* SIDEBAR — HARD CODED PROOF */
+app-sidebar {
+  display: block;                 /* 🔥 THIS WAS MISSING */
+  width: 280px;                   /* HARD WIDTH */
+  background: yellow;             /* CLEAR COLOR */
+  min-height: calc(100vh - 160px);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* MAIN CONTENT */
+.content {
+  display: block;
+  flex: 1;
+  background: #00ff3b;
+  padding: 30px;
+}

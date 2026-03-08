@@ -1,0 +1,42 @@
+<!-- ProductDetail Page -->
+
+
+<div class="home-wrapper">
+
+  <div *ngIf="isLoading" class="pd-loader-wrap">
+    <div class="pd-loader-card">
+      <div class="pd-loader-orbit">
+        <span class="pd-loader-ring pd-loader-ring-1"></span>
+        <span class="pd-loader-ring pd-loader-ring-2"></span>
+        <span class="pd-loader-core"></span>
+      </div>
+      <h3>Fetching Product Details</h3>
+      <p>Preparing gallery, pricing, and seller insights...</p>
+      <div class="pd-loader-dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && errorHappened" class="pd-error-wrap">
+    <h3>Product Not Found</h3>
+    <p>The product you are looking for is not available or has been moved.</p>
+    <button class="btn btn-outline-primary" routerLink="/">Back to Home</button>
+  </div>
+
+  <div *ngIf="!isLoading && !errorHappened && productData">
+    <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
+    <div class="product-layout">
+      <app-product-gallery id="gallery" #gallery [productData]="productData"></app-product-gallery>
+      <app-product-info [productData]="productData" (colorSelected)="gallery.setMainImage($event)"></app-product-info>
+    </div>
+
+    <div class="about-product-card">
+      <h2>About this Product</h2>
+      <p>{{ productData.description || 'No product description available.' }}</p>
+    </div>
+  </div>
+
+</div>

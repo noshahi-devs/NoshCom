@@ -1,0 +1,189 @@
+<div class="sales-report-page">
+    <div class="page-header-3d mb-5">
+        <div class="header-content text-center w-100">
+            <h2 class="title-3d"><i class="fa-solid fa-chart-line me-2"></i> Sales Report</h2>
+            <p class="sub-heading-3d">Detailed analysis of your sales performance and order metrics.</p>
+        </div>
+        <div class="filter-section-3d">
+            <select class="form-select-3d">
+                <option>Maximum Data</option>
+                <option>Last 30 Days</option>
+                <option>Last 7 Days</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Product Performance Section -->
+    <div class="stats-section">
+        <h5 class="section-title-3d"><i class="fa-solid fa-box-open"></i> Product Performance Metrics</h5>
+        <div class="row g-4">
+            <!-- Total Orders -->
+            <div class="col-md-3">
+                <div class="financial-card variant-blue">
+                    <div class="card-content">
+                        <span class="label">Total orders</span>
+                        <span class="value" *ngIf="stats">{{ stats.totalOrders || 0 }}</span>
+                        <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 80px; height: 3rem;"></div>
+                    </div>
+                    <div class="card-icon"><i class="fa-solid fa-box"></i></div>
+                </div>
+            </div>
+            <!-- Units Ordered -->
+            <div class="col-md-3">
+                <div class="financial-card variant-indigo">
+                    <div class="card-content">
+                        <span class="label">Units ordered</span>
+                        <span class="value" *ngIf="stats">{{ stats.unitsOrdered || 0 }}</span>
+                        <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 80px; height: 3rem;"></div>
+                    </div>
+                    <div class="card-icon"><i class="fa-solid fa-layer-group"></i></div>
+                </div>
+            </div>
+            <!-- Avg Units / Order -->
+            <div class="col-md-3">
+                <div class="financial-card variant-violet">
+                    <div class="card-content">
+                        <span class="label">Avg Units / Order</span>
+                        <span class="value" *ngIf="stats">{{ stats.avgUnitsPerOrder | number:'1.2-2' }}</span>
+                        <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 80px; height: 3rem;"></div>
+                    </div>
+                    <div class="card-icon"><i class="fa-solid fa-calculator"></i></div>
+                </div>
+            </div>
+            <!-- Bulk Orders -->
+            <div class="col-md-3">
+                <div class="financial-card variant-purple">
+                    <div class="card-content">
+                        <span class="label">Bulk Orders (>5)</span>
+                        <span class="value" *ngIf="stats">{{ stats.bulkOrdersCount || 0 }}</span>
+                        <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 80px; height: 3rem;"></div>
+                    </div>
+                    <div class="card-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Metrics Section -->
+    <div class="stats-section">
+        <h5 class="section-title-3d"><i class="fa-solid fa-sack-dollar"></i> Overall Sales Amount Stats</h5>
+        <div class="row g-4">
+            <!-- Sales Revenue -->
+            <div class="col-md-3">
+                <div class="mini-card">
+                    <div class="mini-content">
+                        <span class="label">Sales revenue</span>
+                        <span class="value" *ngIf="stats">{{ stats.totalSales | currency }}</span>
+                        <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 120px; height: 2.5rem;"></div>
+                    </div>
+                    <div class="mini-icon"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+                </div>
+            </div>
+            <!-- Zalando Fees -->
+            <div class="col-md-3">
+                <div class="mini-card">
+                    <div class="mini-content">
+                        <span class="label">Zalando Fees</span>
+                        <span class="value" *ngIf="stats">{{ stats.zalandoFees | currency }}</span>
+                        <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 120px; height: 2.5rem;"></div>
+                    </div>
+                    <div class="mini-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                </div>
+            </div>
+            <!-- Avg Sale / Order -->
+            <div class="col-md-3">
+                <div class="mini-card">
+                    <div class="mini-content">
+                        <span class="label">Avg Sale / Order</span>
+                        <span class="value" *ngIf="stats">{{ stats.avgSalePerOrder | currency }}</span>
+                        <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 120px; height: 2.5rem;"></div>
+                    </div>
+                    <div class="mini-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                </div>
+            </div>
+            <!-- Est Payout -->
+            <div class="col-md-3">
+                <div class="mini-card">
+                    <div class="mini-content">
+                        <span class="label">Est Payout</span>
+                        <span class="value" *ngIf="stats">{{ stats.estPayout | currency }}</span>
+                        <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 120px; height: 2.5rem;"></div>
+                    </div>
+                    <div class="mini-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders Table -->
+    <div class="table-card-3d">
+        <div class="table-header">
+            <h5><i class="fa-solid fa-list-check me-2"></i> Recent Sale Orders</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="orders-table-3d">
+                <thead>
+                    <tr>
+                        <th>Ship date</th>
+                        <th>Order Details</th>
+                        <th>Customer option</th>
+                        <th>Order status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody *ngIf="stats">
+                    <tr *ngFor="let order of stats.recentOrders">
+                        <td class="col-date">
+                            <div class="cell-3d">
+                                <span class="relative-time">{{ getRelativeTime(order.creationTime) }}</span>
+                                <span class="full-date">{{ order.creationTime | date:'yyyy-MM-dd' }}</span>
+                                <span class="full-time">{{ order.creationTime | date:'HH:mm:ss' }}</span>
+                            </div>
+                        </td>
+                        <td class="col-details">
+                            <div class="cell-3d">
+                                <div class="order-id">Order id: {{ order.orderNumber }}</div>
+                                <div class="meta">Buyer Name: <b>{{ order.recipientName || 'N/A' }}</b></div>
+                                <div class="meta">Fulfillment Method: <b>Seller</b></div>
+                                <div class="meta">Sales Channel: <b>{{ order.sourcePlatform || 'SMARTSTORE' }}</b></div>
+                            </div>
+                        </td>
+                        <td class="col-customer">
+                            <div class="cell-3d">
+                                <div class="option-type">Standard Shipping</div>
+                                <div class="deliver-by">By {{ order.creationTime | date:'MMM d, yyyy' }}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="cell-3d text-center">
+                                <span class="status-badge" [ngClass]="'status-' + getStatusClass(order.status)">
+                                    {{ order.status }}
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="cell-3d text-center">
+                                <button class="btn-3d" (click)="goToOrderDetails(order.id)">
+                                    <i class="fa-solid fa-eye me-1"></i> View Details
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+                <!-- Skeleton Table -->
+                <tbody *ngIf="!stats">
+                    <tr *ngFor="let i of [1,2,3,4,5]">
+                        <td><div class="skeleton skeleton-text" style="width: 80px;"></div></td>
+                        <td>
+                            <div class="skeleton skeleton-text" style="width: 150px; margin-bottom: 5px;"></div>
+                            <div class="skeleton skeleton-text" style="width: 100px;"></div>
+                        </td>
+                        <td><div class="skeleton skeleton-text" style="width: 120px;"></div></td>
+                        <td><div class="skeleton skeleton-text" style="width: 100px;"></div></td>
+                        <td><div class="skeleton btn-3d" style="width: 120px; height: 40px; opacity: 0.5;"></div></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

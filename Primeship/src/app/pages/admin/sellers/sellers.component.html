@@ -1,0 +1,197 @@
+<div class="sellers-container">
+  <!-- Toast Notifications -->
+  <div class="toast-host" *ngIf="toast">
+    <div class="toast" [class]="toast.type">
+      <div class="toast-message">
+        {{ toast.message }}
+      </div>
+      <button class="toast-close" (click)="toast = null">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-title">
+      <h2><i class="fas fa-store"></i> Sellers</h2>
+      <p>Manage your sellers and their products</p>
+    </div>
+    <button class="btn primary" (click)="openAddModal()">
+      <i class="fas fa-plus"></i> Add Seller
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Search sellers..." [(ngModel)]="searchTerm" (ngModelChange)="filterSellers()">
+    </div>
+
+    <select [(ngModel)]="statusFilter" (change)="filterSellers()">
+      <option value="all">All Status</option>
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+      <option value="pending">Pending</option>
+    </select>
+  </div>
+
+  <app-game-loader *ngIf="isLoading"></app-game-loader>
+
+  <!-- Table -->
+  <div class="table-container" *ngIf="!isLoading">
+    <table class="simple-table">
+      <thead>
+        <tr>
+          <th>Seller Name</th>
+          <th>Contact</th>
+          <th>Status</th>
+          <th>Join Date</th>
+          <th>Products</th>
+          <th>Total Sales</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let seller of paginatedSellers">
+          <td>
+            <div class="seller-info">
+              <div class="avatar">{{ seller.name.charAt(0) }}</div>
+              <div>
+                <div class="name">{{ seller.name }}</div>
+                <div class="email">{{ seller.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{ seller.phone }}</td>
+          <td>
+            <span class="status-badge" [class.active]="seller.status === 'active'"
+              [class.inactive]="seller.status === 'inactive'">
+              {{ seller.status | titlecase }}
+            </span>
+          </td>
+          <td>{{ seller.joinDate | date:'mediumDate' }}</td>
+          <td>{{ seller.totalProducts }}</td>
+          <td>${{ seller.totalSales | number:'1.2-2' }}</td>
+          <td class="actions">
+            <button class="btn icon edit" (click)="openEditModal(seller)">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn icon danger" (click)="openDeleteModal(seller)">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredSellers.length === 0">
+          <td colspan="7" class="no-data">
+            <i class="fas fa-inbox"></i>
+            <p>No sellers found</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination">
+    <div class="pagination-info">
+      Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
+      {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} entries
+    </div>
+    <div class="pagination-controls">
+      <button class="btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+
+      <div class="page-numbers">
+        <button *ngFor="let page of getPageNumbers()" class="btn page-btn" [class.active]="page === currentPage"
+          (click)="onPageChange(page)">
+          {{ page }}
+        </button>
+      </div>
+
+      <button class="btn" [disabled]="currentPage * itemsPerPage >= totalItems" (click)="onPageChange(currentPage + 1)">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Seller Modal -->
+<div class="modal-overlay" *ngIf="showAddModal || showEditModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">
+        <h3>{{ showAddModal ? 'Add New' : 'Edit' }} Seller</h3>
+      </div>
+      <button class="btn icon" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="sellerForm" (ngSubmit)="saveSeller()">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" formControlName="name" placeholder="Enter full name">
+        </div>
+
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" formControlName="email" placeholder="Enter email address">
+        </div>
+
+        <div class="form-group">
+          <label>Phone *</label>
+          <input type="tel" formControlName="phone" placeholder="Enter phone number">
+        </div>
+
+        <div class="form-group">
+          <label>Status *</label>
+          <select formControlName="status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="pending">Pending</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn secondary" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="btn primary">
+          {{ showAddModal ? 'Add' : 'Update' }} Seller
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" *ngIf="showDeleteModal">
+  <div class="modal-content delete-confirm">
+    <div class="modal-header danger">
+      <div class="modal-title">
+        <h3>Delete Seller</h3>
+      </div>
+      <button class="btn icon" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="confirm-body">
+      <p class="warning-text">
+        <i class="fas fa-exclamation-triangle"></i>
+        Are you sure you want to delete <strong>{{ selectedSeller?.name }}</strong>?
+        This action cannot be undone.
+      </p>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn secondary" (click)="closeModal()">Cancel</button>
+      <button type="button" class="btn danger" (click)="deleteSeller()">
+        <i class="fas fa-trash"></i> Delete
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,218 @@
+<div class="shipping-form-card">
+
+  <!-- ================= FORM ================= -->
+  <form *ngIf="!showSummary" (submit)="submit($event)" novalidate>
+
+    <!-- Section Header -->
+    <div class="form-section-header">
+    <div class="section-icon">
+      <i class="fas fa-map-marker-alt"></i>
+    </div>
+      <div>
+        <h2 class="section-title">Shipping Address</h2>
+        <p class="section-subtitle">Where should we deliver your order?</p>
+      </div>
+    </div>
+
+    <!-- ROW 1: Country (col-4) + First Name (col-4) + Last Name (col-4) -->
+    <div class="form-row row-3col">
+      <!-- Country / Location -->
+      <div class="form-group col-span-4" [class.has-error]="invalid('location')">
+        <label class="field-label" for="location">
+          <i class="fas fa-globe label-icon"></i> Country / Location <span class="required-star">*</span>
+        </label>
+        <div class="input-3d select-wrapper" [class.error-state]="invalid('location')">
+          <select id="location" [value]="fields.location" (change)="set('location',$event)" (blur)="touch('location')">
+            <option value="" disabled>🌍 Select your country...</option>
+            <option *ngFor="let c of countries" [value]="c.name">{{ c.name }}</option>
+          </select>
+          <span class="select-arrow"><i class="pi pi-chevron-down"></i></span>
+        </div>
+        <div class="error-msg" *ngIf="invalid('location')">
+          <i class="pi pi-exclamation-circle"></i> Please select a country
+        </div>
+      </div>
+
+      <!-- First Name -->
+      <div class="form-group col-span-4" [class.has-error]="invalid('firstName')">
+        <label class="field-label" for="firstName">
+          <i class="fas fa-user label-icon"></i> First Name <span class="required-star">*</span>
+        </label>
+        <div class="input-3d" [class.error-state]="invalid('firstName')">
+          <input id="firstName" type="text" placeholder="e.g. John" [value]="fields.firstName"
+            (input)="set('firstName',$event)" (blur)="touch('firstName')" />
+        </div>
+        <div class="error-msg" *ngIf="invalid('firstName')">
+          <i class="pi pi-exclamation-circle"></i> First name is required
+        </div>
+      </div>
+
+      <!-- Last Name -->
+      <div class="form-group col-span-4" [class.has-error]="invalid('lastName')">
+        <label class="field-label" for="lastName">
+          <i class="fas fa-user label-icon"></i> Last Name <span class="required-star">*</span>
+        </label>
+        <div class="input-3d" [class.error-state]="invalid('lastName')">
+          <input id="lastName" type="text" placeholder="e.g. Doe" [value]="fields.lastName"
+            (input)="set('lastName',$event)" (blur)="touch('lastName')" />
+        </div>
+        <div class="error-msg" *ngIf="invalid('lastName')">
+          <i class="pi pi-exclamation-circle"></i> Last name is required
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 2: Phone (col-6) + Email (col-6) — wider fields -->
+    <div class="form-row row-2col">
+      <!-- Phone -->
+      <div class="form-group col-span-6" [class.has-error]="invalid('phone')">
+        <label class="field-label">
+          <i class="fas fa-phone label-icon"></i> Phone Number <span class="required-star">*</span>
+        </label>
+        <div class="input-3d phone-group" [class.error-state]="invalid('phone')">
+          <div class="country-flag-select">
+            <img [src]="selectedCountry.flag" alt="flag" class="flag-img">
+            <span class="dial-code">{{ selectedCountry.dial_code }}</span>
+            <i class="pi pi-chevron-down"></i>
+            <select (change)="onCountryChange($event)" class="flag-select-overlay">
+              <option *ngFor="let c of countries" [value]="c.dial_code" [selected]="c.code === selectedCountry.code">
+                {{ c.name }} ({{ c.dial_code }})
+              </option>
+            </select>
+          </div>
+          <input type="tel" placeholder="300 000 0000" [value]="fields.phone" (input)="set('phone',$event)"
+            (blur)="touch('phone')" />
+        </div>
+        <div class="error-msg" *ngIf="invalid('phone')">
+          <i class="pi pi-exclamation-circle"></i> Phone number is required
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group col-span-6" [class.has-error]="invalid('email')">
+        <label class="field-label" for="email">
+          <i class="fas fa-envelope label-icon"></i> Email Address <span class="required-star">*</span>
+        </label>
+        <div class="input-3d" [class.error-state]="invalid('email')">
+          <input id="email" type="email" placeholder="e.g. john.doe&#64;email.com" [value]="fields.email"
+            (input)="set('email',$event)" (blur)="touch('email')" />
+        </div>
+        <div class="error-msg" *ngIf="invalid('email')">
+          <i class="pi pi-exclamation-circle"></i> Email address is required
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 3: Full Address (col-12) — full width -->
+    <div class="form-row row-1col">
+      <div class="form-group col-span-12" [class.has-error]="invalid('address1')">
+        <label class="field-label" for="address1">
+          <i class="fas fa-home label-icon"></i> Street Address <span class="required-star">*</span>
+        </label>
+        <div class="input-3d textarea-wrapper" [class.error-state]="invalid('address1')">
+          <textarea id="address1" rows="2" placeholder="House No., Street, Building, Apartment..."
+            [value]="fields.address1" (input)="set('address1',$event)" (blur)="touch('address1')"></textarea>
+        </div>
+        <div class="error-msg" *ngIf="invalid('address1')">
+          <i class="pi pi-exclamation-circle"></i> Address is required
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 4: State (col-5) + City (col-4) + Zip (col-3) — MIXED / NOT straight -->
+    <div class="form-row row-mixed">
+      <!-- State -->
+      <div class="form-group col-span-5" [class.has-error]="invalid('state')">
+        <label class="field-label" for="state">
+          <i class="fas fa-building label-icon"></i> State / Province <span class="required-star">*</span>
+        </label>
+        <div class="input-3d" [class.error-state]="invalid('state')">
+          <input id="state" type="text" placeholder="e.g. Punjab, Sindh, California..." [value]="fields.state"
+            (input)="set('state',$event)" (blur)="touch('state')" />
+        </div>
+        <div class="error-msg" *ngIf="invalid('state')">
+          <i class="pi pi-exclamation-circle"></i> State / Province is required
+        </div>
+      </div>
+
+      <!-- City -->
+      <div class="form-group col-span-4" [class.has-error]="invalid('city')">
+        <label class="field-label" for="city">
+          <i class="fas fa-city label-icon"></i> City <span class="required-star">*</span>
+        </label>
+        <div class="input-3d" [class.error-state]="invalid('city')">
+          <input id="city" type="text" placeholder="e.g. Lahore, Karachi..." [value]="fields.city"
+            (input)="set('city',$event)" (blur)="touch('city')" />
+        </div>
+        <div class="error-msg" *ngIf="invalid('city')">
+          <i class="pi pi-exclamation-circle"></i> City is required
+        </div>
+      </div>
+
+      <!-- Zip -->
+      <div class="form-group col-span-3" [class.has-error]="invalid('zip')">
+        <label class="field-label" for="zip">
+          <i class="fas fa-hashtag label-icon"></i> ZIP / Postal <span class="required-star">*</span>
+        </label>
+        <div class="input-3d" [class.error-state]="invalid('zip')">
+          <input id="zip" type="text" placeholder="e.g. 54000" [value]="fields.zip" (focus)="focus('zip')"
+            (input)="set('zip',$event)" (blur)="blur('zip')" />
+        </div>
+        <div class="error-msg" *ngIf="invalid('zip')">
+          <i class="pi pi-exclamation-circle"></i> ZIP code is required
+        </div>
+      </div>
+    </div>
+
+    <!-- Security + Save Button Row -->
+    <div class="form-footer">
+        <div class="security-badge">
+        <i class="fas fa-lock"></i>
+        <div>
+          <strong>SSL Secured</strong>
+          <p>Your data is encrypted & protected</p>
+        </div>
+      </div>
+      <button type="submit" class="save-address-btn">
+        <i class="pi pi-check-circle"></i>
+        Save & Continue
+      </button>
+    </div>
+
+  </form>
+
+  <!-- ================= SAVED ADDRESS SUMMARY ================= -->
+  <div class="address-saved-view" *ngIf="showSummary">
+    <div class="saved-header">
+      <div class="saved-title">
+        <div class="check-badge"><i class="pi pi-check"></i></div>
+        <div>
+          <h2>Shipping Address Confirmed</h2>
+          <p>We'll deliver your order to this address</p>
+        </div>
+      </div>
+      <button class="change-btn" (click)="change()">
+        <i class="pi pi-pencil"></i> Edit
+      </button>
+    </div>
+
+    <div class="saved-address-card">
+      <div class="addr-icon"><i class="pi pi-map-marker"></i></div>
+      <div class="addr-details">
+        <div class="addr-name">{{ savedFields?.firstName }} {{ savedFields?.lastName }}</div>
+        <div class="addr-contact">
+          <span><i class="pi pi-phone"></i> {{ savedFields?.phone }}</span>
+          <span><i class="pi pi-envelope"></i> {{ savedFields?.email }}</span>
+        </div>
+        <div class="addr-line">{{ savedFields?.address1 }}</div>
+        <div class="addr-city">
+          {{ savedFields?.city }}, {{ savedFields?.state }} {{ savedFields?.zip }} — {{ savedFields?.location }}
+        </div>
+      </div>
+      <button class="edit-btn" (click)="edit()">
+        <i class="pi pi-pencil"></i>
+      </button>
+    </div>
+  </div>
+
+</div>

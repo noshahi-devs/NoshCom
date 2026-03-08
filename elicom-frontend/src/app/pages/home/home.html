@@ -1,0 +1,189 @@
+<div class="home-wrapper">
+  <!-- Hero carousel -->
+  <app-hero-carousel></app-hero-carousel>
+
+  <!-- Category carousel -->
+  <div *ngIf="categoryError" class="centered-error">
+    <p>{{ categoryError }}</p>
+    <button (click)="loadCategories()" class="btn-retry">Retry</button>
+  </div>
+  <app-category-carousel *ngIf="!categoryError" [categories]="categories"></app-category-carousel>
+
+  <!-- Deal card (moved up under categories) -->
+  <app-deal-card *ngIf="!productError" [products]="products"></app-deal-card>
+
+  <!-- Category tiles (premium gallery blocks) -->
+  <div class="category-tiles" *ngIf="categories.length">
+    <div class="tile" *ngFor="let c of categories | slice:0:8" [routerLink]="['/search-result']"
+      [queryParams]="{ category: c.name }">
+      <div class="tile-title">{{ c.name }}</div>
+      <div class="tile-grid">
+        <div class="tile-box" *ngFor="let i of [1,2,3,4]">
+          <img [src]="c.imageUrl || 'https://picsum.photos/seed/' + c.name + i + '/200/200'" alt="Category"
+               (error)="onImgError($event, c)">
+        </div>
+      </div>
+      <div class="tile-link">Discover more</div>
+    </div>
+  </div>
+
+  <!-- Errors / Items -->
+  <div *ngIf="productError" class="centered-error">
+    <p>{{ productError }}</p>
+    <button (click)="loadProducts()" class="btn-retry">Retry</button>
+  </div>
+
+  <!-- Loading skeleton -->
+  <div class="skeleton-grid" *ngIf="isLoadingProducts && !productError">
+    <div class="skeleton-card" *ngFor="let _ of [1,2,3,4,5,6]">
+      <div class="skeleton-header">
+        <div class="skeleton avatar"></div>
+        <div class="skeleton-lines">
+          <div class="skeleton line medium"></div>
+          <div class="skeleton line small"></div>
+        </div>
+      </div>
+      <div class="skeleton line large"></div>
+      <div class="skeleton line large"></div>
+      <div class="skeleton line medium"></div>
+      <div class="skeleton image"></div>
+      <div class="skeleton-buttons">
+        <div class="skeleton button"></div>
+        <div class="skeleton button"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product sections -->
+  <div class="home-sections" *ngIf="!productError && !isLoadingProducts">
+    <div class="home-section" *ngFor="let section of sections">
+      <div class="section-header">
+        <div>
+          <div class="section-kicker">
+            <span class="section-badge" [ngClass]="section.tone">{{ section.badge }}</span>
+          </div>
+          <h2>{{ section.title }}</h2>
+          <p>{{ section.subtitle }}</p>
+        </div>
+        <div class="section-action">View all</div>
+      </div>
+
+      <div class="section-body" [ngSwitch]="section.style">
+        <!-- Gallery grid -->
+        <div class="gallery-grid" *ngSwitchCase="'gallery'">
+          <a class="gallery-card" *ngFor="let product of getVisibleProducts(section)"
+             [routerLink]="['/product-detail', product.productId, product.storeProductId || product.id]">
+            <div class="media">
+              <img [src]="getImage(product)" [alt]="getTitle(product)" (error)="onImgError($event, product)">
+              <div class="glow"></div>
+              <span class="chip" *ngIf="getDiscountPercent(product) > 0">
+                -{{ getDiscountPercent(product) }}%
+              </span>
+            </div>
+            <div class="meta">
+              <div class="name">{{ getTitle(product) }}</div>
+              <div class="price">${{ product.price | number:'1.2-2' }}</div>
+              <div class="store">Sold by: {{ product.storeName }}</div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Premium cards -->
+        <div class="premium-grid" *ngSwitchCase="'premium'">
+          <a class="premium-card" *ngFor="let product of getVisibleProducts(section)"
+             [routerLink]="['/product-detail', product.productId, product.storeProductId || product.id]">
+            <div class="media">
+              <span class="pill" *ngIf="product.resellerDiscountPercentage > 0">-{{ product.resellerDiscountPercentage }}%</span>
+              <img [src]="getImage(product)" [alt]="getTitle(product)" (error)="onImgError($event, product)">
+            </div>
+            <div class="meta">
+              <div class="name">{{ getTitle(product) }}</div>
+              <div class="price">${{ product.price | number:'1.2-2' }}</div>
+              <div class="store">Sold by: {{ product.storeName }}</div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Carousel section -->
+        <div class="carousel-wrap" *ngSwitchCase="'carousel'">
+          <button class="carousel-btn left" (click)="scrollCarousel(carousel, -1)">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <div class="carousel" #carousel>
+            <a class="carousel-card" *ngFor="let product of section.products"
+               [routerLink]="['/product-detail', product.productId, product.storeProductId || product.id]">
+              <div class="media">
+                <img [src]="getImage(product)" [alt]="getTitle(product)" (error)="onImgError($event, product)">
+              </div>
+              <div class="meta">
+                <div class="name">{{ getTitle(product) }}</div>
+                <div class="price">${{ product.price | number:'1.2-2' }}</div>
+              </div>
+            </a>
+          </div>
+          <button class="carousel-btn right" (click)="scrollCarousel(carousel, 1)">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+
+        <!-- Just For You style -->
+        <div class="for-you-grid" *ngSwitchCase="'forYou'">
+          <a class="for-you-card" *ngFor="let product of getVisibleProducts(section)"
+             [routerLink]="['/product-detail', product.productId, product.storeProductId || product.id]">
+            <div class="media">
+              <span class="discount" *ngIf="getDiscountPercent(product) > 0">
+                -{{ getDiscountPercent(product) }}%
+              </span>
+              <img [src]="getImage(product)" [alt]="getTitle(product)" (error)="onImgError($event, product)">
+            </div>
+            <div class="meta">
+              <div class="name">{{ getTitle(product) }}</div>
+              <div class="price-row">
+                <div class="price">Rs.{{ product.price | number:'1.0-0' }}</div>
+                <div class="off" *ngIf="getDiscountPercent(product) > 0">-{{ getDiscountPercent(product) }}%</div>
+              </div>
+              <div class="rating-row">
+                <span class="stars">
+                  <i class="fa-solid fa-star" *ngFor="let _ of [1,2,3,4,5]; let i = index"
+                     [class.muted]="i + 1 > getRating(product)"></i>
+                </span>
+                <span class="count">({{ getReviewCount(product) }})</span>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Compact grid -->
+        <div class="compact-grid" *ngSwitchCase="'compact'">
+          <a class="compact-card" *ngFor="let product of getVisibleProducts(section)"
+             [routerLink]="['/product-detail', product.productId, product.storeProductId || product.id]">
+            <div class="thumb">
+              <img [src]="getImage(product)" [alt]="getTitle(product)" (error)="onImgError($event, product)">
+            </div>
+            <div class="meta">
+              <div class="name">{{ getTitle(product) }}</div>
+              <div class="price">${{ product.price | number:'1.2-2' }}</div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Horizontal list -->
+        <div class="h-list" *ngSwitchCase="'horizontal'">
+          <a class="h-card" *ngFor="let product of getVisibleProducts(section)"
+             [routerLink]="['/product-detail', product.productId, product.storeProductId || product.id]">
+            <img class="thumb" [src]="getImage(product)" [alt]="getTitle(product)" (error)="onImgError($event, product)">
+            <div class="meta">
+              <div class="name">{{ getTitle(product) }}</div>
+              <div class="store">Sold by: {{ product.storeName }}</div>
+              <div class="price">${{ product.price | number:'1.2-2' }}</div>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <div class="section-more" *ngIf="section.initialCount && (section.initialCount < section.products.length)">
+        <button class="more-btn" (click)="showMore(section.id, 8)">Show more</button>
+      </div>
+    </div>
+  </div>
+</div>

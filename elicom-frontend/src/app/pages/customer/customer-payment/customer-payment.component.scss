@@ -1,0 +1,26 @@
+.customer-payment {
+    .max-w-800 {
+        max-width: 800px;
+    }
+
+    .payment-card-badge,
+    .bnpl-badge {
+        padding: 10px 20px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+    }
+
+    .notes-box {
+        ul {
+            padding-left: 1.5rem;
+
+            li {
+                margin-bottom: 8px;
+            }
+        }
+    }
+}

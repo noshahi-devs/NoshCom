@@ -1,0 +1,505 @@
+<div class="orders-container">
+  <div class="error-popup" *ngIf="errorPopupVisible">
+    <div class="error-content">
+      <div class="error-icon">
+        <i class="pi pi-exclamation-triangle"></i>
+      </div>
+      <div class="error-message">
+        <h4>Error</h4>
+        <p>{{ errorMessage }}</p>
+      </div>
+      <button type="button" class="error-close" (click)="closeErrorPopup()" aria-label="Close">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="header">
+    <div class="header-title">
+      <h2><i class="pi pi-shopping-cart"></i> My Orders</h2>
+      <p>Track orders you've placed with the admin and monitor your business</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn primary" (click)="openAddOrder()">
+        <i class="pi pi-plus"></i>
+        Place New Order
+      </button>
+    </div>
+  </div>
+
+  <!-- Seller Stats Cards -->
+  <div class="seller-stats">
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="pi pi-shopping-bag"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ sellerStats.totalOrders }}</div>
+        <div class="stat-label">My Orders</div>
+      </div>
+      <div class="stat-trend positive">
+        <i class="pi pi-arrow-up"></i>
+        <span>+12%</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="pi pi-dollar"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ formatPrice(sellerStats.totalEarnings) }}</div>
+        <div class="stat-label">My Revenue</div>
+      </div>
+      <div class="stat-trend positive">
+        <i class="pi pi-arrow-up"></i>
+        <span>+8%</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="pi pi-clock"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ sellerStats.pendingOrders }}</div>
+        <div class="stat-label">Pending</div>
+      </div>
+      <div class="stat-trend neutral">
+        <i class="pi pi-minus"></i>
+        <span>0%</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="pi pi-check-circle"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ sellerStats.deliveredOrders }}</div>
+        <div class="stat-label">Completed</div>
+      </div>
+      <div class="stat-trend positive">
+        <i class="pi pi-arrow-up"></i>
+        <span>+15%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <div class="search-box">
+      <i class="pi pi-search"></i>
+      <input type="text" placeholder="Search my orders by number, customer or phone..." [(ngModel)]="searchTerm"
+        (input)="applyFilters()" />
+    </div>
+
+    <select [(ngModel)]="selectedStatus" (change)="applyFilters()">
+      <option value="all">All Status</option>
+      <option value="pending">Pending</option>
+      <option value="verified">Verified</option>
+      <option value="processing">Processing</option>
+      <option value="shipped">Shipped</option>
+      <option value="delivered">Delivered</option>
+      <option value="cancelled">Cancelled</option>
+    </select>
+
+    <button type="button" class="btn" (click)="clearFilters()">
+      <i class="pi pi-filter-slash"></i>
+      Clear
+    </button>
+  </div>
+
+  <div class="table-container">
+    <table class="simple-table">
+      <thead>
+        <tr>
+          <th>Order #</th>
+          <th>Customer</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Total</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let order of filteredOrders" class="order-row">
+          <td class="order-cell">
+            <div class="order-number">
+              <span class="order-no">{{ order.orderNo || order.referenceCode }}</span>
+              <div class="order-date">{{ (order.creationTime || order.createdAt) | date:'MMM dd, yyyy' }}</div>
+            </div>
+          </td>
+          <td class="customer-cell">
+            <div class="customer-info">
+              <div class="customer-name">{{ order.customerName }}</div>
+              <div class="customer-phone">{{ order.phone }}</div>
+            </div>
+          </td>
+          <td class="date-cell">
+            {{ (order.creationTime || order.createdAt) | date:'MMM dd, yyyy' }}
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="order.status">
+              {{ getStatusLabel(order.status) }}
+            </span>
+          </td>
+          <td class="total-cell">
+            {{ formatPrice(getOrderTotal(order)) }}
+          </td>
+
+          <td class="actions">
+            <button type="button" class="btn small primary icon-only" (click)="openView(order)" title="View Details">
+              <i class="pi pi-eye"></i>
+            </button>
+            <button type="button" class="btn small danger icon-only" *ngIf="order.status === 'pending'"
+              (click)="openDeleteConfirm(order)" title="Delete Order">
+              <i class="pi pi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="filteredOrders.length === 0" class="no-data">
+      <i class="pi pi-inbox"></i>
+      <p>No orders found</p>
+      <small>Start by placing your first order with the admin</small>
+      <div class="no-data-actions">
+        <button type="button" class="btn primary" (click)="openAddOrder()">
+          <i class="pi pi-plus"></i>
+          Place New Order
+        </button>
+        <button type="button" class="btn" (click)="clearFilters()">
+          <i class="pi pi-filter-slash"></i>
+          Clear Filters
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="success-popup" *ngIf="successPopupVisible">
+    <div class="success-content">
+      <div class="success-icon">
+        <i class="pi pi-check"></i>
+      </div>
+      <div class="success-message">
+        <h4>Success</h4>
+        <p>{{ successMessage }}</p>
+      </div>
+      <button type="button" class="success-close" (click)="closeSuccessPopup()" aria-label="Close">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="deleteConfirmVisible" (click)="closeDeleteConfirm()">
+    <div class="modal-content delete-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="pi pi-exclamation-triangle"></i>
+          <h3>Delete Order</h3>
+        </div>
+        <button type="button" class="btn icon close-btn" (click)="closeDeleteConfirm()" title="Close">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="confirm-text">Are you sure you want to delete this order?</p>
+        <div class="confirm-order" *ngIf="orderToDelete">
+          <div class="confirm-row">
+            <span class="label">Order</span>
+            <span class="value">{{ orderToDelete.orderNo || orderToDelete.referenceCode }}</span>
+          </div>
+          <div class="confirm-row">
+            <span class="label">Customer</span>
+            <span class="value">{{ orderToDelete.customerName }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" (click)="closeDeleteConfirm()">
+          <i class="pi pi-times"></i>
+          Cancel
+        </button>
+        <button type="button" class="btn danger" (click)="confirmDelete()">
+          <i class="pi pi-trash"></i>
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="viewModalVisible" (click)="closeView()">
+    <div class="modal-content" (click)="$event.stopPropagation()" *ngIf="selectedOrder">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="pi pi-receipt"></i>
+          <h3>Order Details</h3>
+        </div>
+        <button type="button" class="btn icon close-btn" (click)="closeView()" title="Close">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body custom-scrollbar">
+        <!-- High-End Stepper -->
+        <div class="order-stepper-3d">
+          <div class="stepper-item" [ngClass]="{'active': true, 'completed': selectedOrder.status !== 'pending'}">
+            <div class="step-dot"><i class="pi pi-shopping-cart"></i></div>
+            <div class="step-label">Ordered</div>
+          </div>
+          <div class="step-line"
+            [ngClass]="{'active': ['verified', 'processing', 'shipped', 'delivered'].includes(selectedOrder.status.toLowerCase())}">
+          </div>
+          <div class="stepper-item"
+            [ngClass]="{'active': selectedOrder.status.toLowerCase() === 'verified', 'completed': ['processing', 'shipped', 'delivered'].includes(selectedOrder.status.toLowerCase())}">
+            <div class="step-dot"><i class="pi pi-verified"></i></div>
+            <div class="step-label">Verified</div>
+          </div>
+          <div class="step-line"
+            [ngClass]="{'active': ['processing', 'shipped', 'delivered'].includes(selectedOrder.status.toLowerCase())}">
+          </div>
+          <div class="stepper-item"
+            [ngClass]="{'active': selectedOrder.status.toLowerCase() === 'processing', 'completed': ['shipped', 'delivered'].includes(selectedOrder.status.toLowerCase())}">
+            <div class="step-dot"><i class="pi pi-cog"></i></div>
+            <div class="step-label">Processing</div>
+          </div>
+          <div class="step-line"
+            [ngClass]="{'active': ['shipped', 'delivered'].includes(selectedOrder.status.toLowerCase())}"></div>
+          <div class="stepper-item"
+            [ngClass]="{'active': selectedOrder.status.toLowerCase() === 'shipped', 'completed': selectedOrder.status.toLowerCase() === 'delivered'}">
+            <div class="step-dot"><i class="pi pi-truck"></i></div>
+            <div class="step-label">Shipped</div>
+          </div>
+          <div class="step-line" [ngClass]="{'active': selectedOrder.status.toLowerCase() === 'delivered'}"></div>
+          <div class="stepper-item"
+            [ngClass]="{'active': selectedOrder.status.toLowerCase() === 'delivered', 'completed': selectedOrder.status.toLowerCase() === 'delivered'}">
+            <div class="step-dot"><i class="pi pi-check-circle"></i></div>
+            <div class="step-label">Delivered</div>
+          </div>
+        </div>
+
+        <div class="invoice-container-3d">
+          <div class="invoice-header">
+            <div class="invoice-logo">🛍️ Prime Ship</div>
+            <div class="invoice-meta">
+              <h3>INVOICE</h3>
+              <p>#{{ selectedOrder.orderNo || selectedOrder.referenceCode }}</p>
+              <p>{{ (selectedOrder.creationTime || selectedOrder.createdAt) | date:'mediumDate' }}</p>
+            </div>
+          </div>
+
+          <div class="invoice-billing">
+            <div class="billing-col">
+              <label>Sourced By (Seller)</label>
+              <strong>Verified Partner #{{ selectedOrder.sellerId || '---' }}</strong>
+            </div>
+            <div class="billing-col text-right">
+              <label>Destined For (Hub)</label>
+              <strong>Admin Logistics Hub</strong>
+              <p>{{ selectedOrder.shippingAddress || selectedOrder.address }}</p>
+            </div>
+          </div>
+
+          <div class="invoice-items">
+            <table>
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th class="text-center">Qty</th>
+                  <th class="text-right">Price</th>
+                  <th class="text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let it of selectedOrder.items">
+                  <td>
+                    <div class="brand-small" *ngIf="it.brandName"
+                      style="color: #f85606; font-size: 0.75rem; font-weight: 700; margin-bottom: 2px;">{{ it.brandName
+                      }}</div>
+                    <div class="item-name-3d">{{ it.productName || it.name }}</div>
+                  </td>
+                  <td class="text-center">{{ it.qty }}</td>
+                  <td class="text-right">{{ formatPrice(it.purchasePrice || it.price) }}</td>
+                  <td class="text-right">{{ formatPrice(it.qty * (it.purchasePrice || it.price)) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="invoice-footer">
+            <div class="footer-note">
+              <span class="status-tag pulse" [ngClass]="selectedOrder.status">
+                Current Phase: {{ getStatusLabel(selectedOrder.status) }}
+              </span>
+            </div>
+            <div class="footer-totals">
+              <div class="total-row">
+                <label>Subtotal</label>
+                <span>{{ formatPrice(getOrderTotal(selectedOrder)) }}</span>
+              </div>
+              <div class="total-row grand-total">
+                <label>Grand Total</label>
+                <span>{{ formatPrice(getOrderTotal(selectedOrder)) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" (click)="closeView()">
+          <i class="pi pi-times"></i>
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Order Modal -->
+  <div class="modal-overlay" *ngIf="addOrderModalVisible" (click)="closeAddOrder()">
+    <div class="modal-content add-order-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="pi pi-plus"></i>
+          <h3>Add New Order</h3>
+        </div>
+        <button type="button" class="btn icon close-btn" (click)="closeAddOrder()" title="Close">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-section">
+          <h4>Customer Information</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Customer Name *</label>
+              <input type="text" [(ngModel)]="newOrder.customerName" placeholder="Enter customer name" />
+            </div>
+            <div class="form-group">
+              <label>Phone *</label>
+              <input type="text" [(ngModel)]="newOrder.phone" placeholder="Enter phone number" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Address *</label>
+            <input type="text" [(ngModel)]="newOrder.address" placeholder="Enter delivery address" />
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h4>Order Items</h4>
+
+          <div class="sku-search-box">
+            <label>Add by SKU</label>
+            <div class="search-input-group">
+              <input type="text" [(ngModel)]="skuSearchTerm" placeholder="Enter SKU (e.g. SHO-001)"
+                (keyup.enter)="searchProduct()">
+              <button type="button" class="btn primary" (click)="searchProduct()">
+                <i class="pi pi-search"></i>
+              </button>
+            </div>
+            <div class="found-product-preview" *ngIf="foundProduct">
+              <div class="product-info">
+                <strong>{{ foundProduct.name }}</strong>
+                <span>Price: {{ formatPrice(foundProduct.resellerPrice || foundProduct.price) }}</span>
+              </div>
+              <button type="button" class="btn small primary" (click)="addProductToOrder()">
+                <i class="pi pi-plus"></i> Add to Order
+              </button>
+            </div>
+          </div>
+
+          <div class="items-list">
+            <div class="item-row" *ngFor="let item of newOrder.items; let i = index">
+              <div class="item-inputs">
+                <input type="text" [(ngModel)]="item.name" placeholder="Item name" />
+                <input type="number" [(ngModel)]="item.qty" min="1" placeholder="Qty" />
+                <input type="number" [(ngModel)]="item.price" min="0" step="0.01" placeholder="Price" />
+                <span class="item-total">{{ formatPrice(item.qty * item.price) }}</span>
+              </div>
+              <button type="button" class="btn icon danger" (click)="removeOrderItem(i)"
+                *ngIf="newOrder.items.length > 1" title="Remove item">
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+          </div>
+          <button type="button" class="btn secondary" (click)="addOrderItem()">
+            <i class="pi pi-plus"></i>
+            Add Item
+          </button>
+        </div>
+
+        <div class="order-summary">
+          <div class="summary-row">
+            <span>Total Amount:</span>
+            <span class="total-amount">{{ formatPrice(getNewOrderTotal()) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" (click)="closeAddOrder()">
+          <i class="pi pi-times"></i>
+          Cancel
+        </button>
+        <button type="button" class="btn" (click)="checkoutWithCart()">
+          <i class="pi pi-shopping-cart"></i>
+          Go to Checkout
+        </button>
+        <button type="button" class="btn primary" (click)="openCreateConfirm()">
+          <i class="pi pi-check"></i>
+          Create Order
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="createConfirmVisible" (click)="closeCreateConfirm()">
+    <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="pi pi-question-circle"></i>
+          <h3>Confirm Order</h3>
+        </div>
+        <button type="button" class="btn icon close-btn" (click)="closeCreateConfirm()" title="Close">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="confirm-text">Place this order to admin?</p>
+
+        <div class="confirm-order">
+          <div class="confirm-row">
+            <span class="label">Customer</span>
+            <span class="value">{{ newOrder.customerName }}</span>
+          </div>
+          <div class="confirm-row">
+            <span class="label">Phone</span>
+            <span class="value">{{ newOrder.phone }}</span>
+          </div>
+          <div class="confirm-row">
+            <span class="label">Total</span>
+            <span class="value">{{ formatPrice(getNewOrderTotal()) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" (click)="closeCreateConfirm()">
+          <i class="pi pi-times"></i>
+          Cancel
+        </button>
+        <button type="button" class="btn primary" (click)="confirmCreate()">
+          <i class="pi pi-check"></i>
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

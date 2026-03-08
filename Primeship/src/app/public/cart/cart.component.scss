@@ -1,0 +1,1190 @@
+// Complete Amazon Style Cart Page
+.cart-container {
+  padding: 2rem 0;
+  background: linear-gradient(135deg, #FFFFFF 0%, #F8F9FA 50%, #FFFFFF 100%);
+  min-height: 100vh;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(248, 86, 6, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(255, 139, 82, 0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  >.container {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.page-title {
+  font-family: 'Amazon Ember', Arial, sans-serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  color: #0F1111;
+  position: relative;
+  padding-bottom: 0.5rem;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, #F85606 0%, #FF8B52 100%);
+    border-radius: 2px;
+  }
+}
+
+.cart-content-section {
+  padding: 3rem 0;
+  position: relative;
+}
+
+.cart-items {
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  margin-bottom: 2rem;
+  border: 1px solid #E3E6E6;
+  overflow: hidden;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #F85606 0%, #FF8B52 50%, #F85606 100%);
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+
+    0%,
+    100% {
+      opacity: 0.6;
+    }
+
+    50% {
+      opacity: 1;
+    }
+  }
+}
+
+.cart-item {
+  padding: 2rem;
+  border-bottom: 1px solid rgba(248, 86, 6, 0.1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  background: linear-gradient(135deg, #FFFFFF 0%, #F8F9FA 50%, #FFFFFF 100%);
+  border-radius: 16px;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(248, 86, 6, 0.08), transparent);
+    transition: left 0.8s ease;
+    z-index: 0;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #F85606 0%, #FF8B52 50%, #F85606 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover {
+    background: linear-gradient(135deg, #FFFFFF 0%, rgba(248, 86, 6, 0.03) 50%, #FFFFFF 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(248, 86, 6, 0.15);
+    border-color: rgba(248, 86, 6, 0.2);
+
+    &::before {
+      left: 100%;
+    }
+
+    &::after {
+      opacity: 1;
+    }
+  }
+
+  // Override Bootstrap row to be flex
+  .row.align-items-center {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 2.5rem;
+    margin: 0;
+  }
+
+  // Override Bootstrap columns to be flex items
+  .col-md-2,
+  .col-md-4 {
+    flex: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .col-md-2 {
+    width: 120px;
+    flex-shrink: 0;
+  }
+
+  .col-md-4 {
+    flex: 1;
+    min-width: 0;
+  }
+
+  // Product Image Column
+  .cart-item-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 16px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 3px solid #E3E6E6;
+    cursor: pointer;
+
+    &:hover {
+      transform: scale(1.08) rotate(1deg);
+      box-shadow: 0 8px 25px rgba(248, 86, 6, 0.3);
+      border-color: #F85606;
+    }
+  }
+
+  // Product Details Column
+  .cart-item-name {
+    font-family: 'Amazon Ember', Arial, sans-serif;
+    font-weight: 800;
+    color: #0F1111;
+    margin-bottom: 0.75rem;
+    font-size: 1.2rem;
+    line-height: 1.3;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #F85606 0%, #FF8B52 100%);
+      transition: width 0.3s ease;
+    }
+
+    &:hover {
+      color: #F85606;
+
+      &::after {
+        width: 100%;
+      }
+    }
+  }
+
+  .cart-item-details {
+    color: #565959;
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+
+    .detail-item {
+      background: rgba(248, 86, 6, 0.05);
+      padding: 0.25rem 0.5rem;
+      border-radius: 8px;
+      border: 1px solid rgba(248, 86, 6, 0.1);
+      font-weight: 600;
+
+      strong {
+        color: #F85606;
+        font-weight: 700;
+      }
+    }
+  }
+
+  // Quantity Column
+  .quantity-selector {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, #F7F8FA 0%, #FFFFFF 100%);
+    border-radius: 15px;
+    padding: 0.5rem;
+    border: 2px solid #E3E6E6;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: #F85606;
+      box-shadow: 0 6px 20px rgba(248, 86, 6, 0.15);
+    }
+
+    .btn {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: linear-gradient(135deg, #FFFFFF 0%, #F8F9FA 100%);
+      border-radius: 10px;
+      color: #0F1111;
+      font-weight: 700;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+
+      &:hover {
+        background: linear-gradient(135deg, #F85606 0%, #FF8B52 100%);
+        color: #FFFFFF;
+        transform: scale(1.15) rotate(5deg);
+        box-shadow: 0 6px 20px rgba(248, 86, 6, 0.4);
+      }
+
+      &:active {
+        transform: scale(0.95) rotate(-2deg);
+      }
+    }
+
+    .quantity {
+      min-width: 50px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: #0F1111;
+      background: #FFFFFF;
+      border-radius: 10px;
+      padding: 0.75rem 0.5rem;
+      border: 1px solid #E3E6E6;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  // Price Column
+  .cart-item-price {
+    text-align: center;
+
+    .current-price {
+      font-family: 'Amazon Ember', Arial, sans-serif;
+      font-weight: 900;
+      color: #B12704;
+      font-size: 1.5rem;
+      display: block;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 1px 2px rgba(177, 39, 4, 0.2);
+    }
+
+    .original-price {
+      text-decoration: line-through;
+      color: #565959;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+  }
+
+  // Remove Button Column
+  .btn-outline-danger {
+    background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
+    color: #FFFFFF;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    &:hover {
+      background: linear-gradient(135deg, #C0392B 0%, #A93226 100%);
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+
+      &::before {
+        opacity: 1;
+      }
+    }
+
+    &:active {
+      transform: translateY(-1px) scale(1.02);
+    }
+
+    i {
+      margin-right: 0.5rem;
+    }
+  }
+
+  &:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+}
+
+// Empty Cart State
+.cart-empty {
+  padding: 4rem 2rem;
+  text-align: center;
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid #E3E6E6;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #F85606 0%, #FF8B52 50%, #F85606 100%);
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  .empty-cart-icon {
+    font-size: 4rem;
+    color: #565959;
+    margin-bottom: 1.5rem;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  h4 {
+    font-family: 'Amazon Ember', Arial, sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #0F1111;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: #565959;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+
+  .btn-continue-shopping {
+    background: linear-gradient(135deg, #F85606 0%, #FF8B52 100%);
+    color: #FFFFFF;
+    padding: 1rem 2rem;
+    border: 3px solid #F85606;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(248, 86, 6, 0.3);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.6s ease;
+      z-index: 0;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(255, 255, 255, 0.1) 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 1;
+    }
+
+    span {
+      position: relative;
+      z-index: 2;
+    }
+
+    &:hover {
+      background: linear-gradient(135deg, #E64A00 0%, #F85606 100%);
+      border-color: #E64A00;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(248, 86, 6, 0.4);
+
+      &::before {
+        left: 100%;
+      }
+
+      &::after {
+        opacity: 1;
+      }
+    }
+
+    &:active {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(248, 86, 6, 0.2);
+    }
+  }
+}
+
+// Cart Actions - Enhanced Amazon Style
+.cart-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Amazon Ember', Arial, sans-serif;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.6s ease;
+      z-index: 0;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(255, 255, 255, 0.1) 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 1;
+    }
+
+    span {
+      position: relative;
+      z-index: 2;
+    }
+
+    &.btn-outline {
+      background: #FFFFFF;
+      border-color: #D5D9D9;
+      color: #0F1111;
+
+      &:hover {
+        border-color: #F85606;
+        color: #F85606;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(248, 86, 6, 0.2);
+
+        &::before {
+          left: 100%;
+        }
+
+        &::after {
+          opacity: 1;
+        }
+      }
+
+      &:active {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(248, 86, 6, 0.15);
+      }
+    }
+
+    &.btn-primary {
+      background: linear-gradient(135deg, #F85606 0%, #FF8B52 100%);
+      color: #FFFFFF;
+
+      &:hover {
+        background: linear-gradient(135deg, #E64A00 0%, #F85606 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(248, 86, 6, 0.3);
+
+        &::before {
+          left: 100%;
+        }
+
+        &::after {
+          opacity: 1;
+        }
+      }
+
+      &:active {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(248, 86, 6, 0.2);
+      }
+    }
+
+    &.btn-outline-primary {
+      background: #FFFFFF;
+      border-color: #F85606;
+      color: #F85606;
+
+      &:hover {
+        background: linear-gradient(135deg, #F85606 0%, #FF8B52 100%);
+        color: #FFFFFF;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(248, 86, 6, 0.3);
+
+        &::before {
+          left: 100%;
+        }
+
+        &::after {
+          opacity: 1;
+        }
+      }
+
+      &:active {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(248, 86, 6, 0.2);
+      }
+    }
+
+    &.btn-lg {
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 800;
+      border-radius: 15px;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(248, 86, 6, 0.4);
+      }
+    }
+
+    &.btn-sm {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      border-radius: 10px;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(248, 86, 6, 0.3);
+      }
+    }
+
+    &.w-100 {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+
+// Cart Summary Section - Amazon Style
+.cart-summary {
+  background: #FFFFFF;
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid #E3E6E6;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #F85606 0%, #FF8B52 50%, #F85606 100%);
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  h5 {
+    font-family: 'Amazon Ember', Arial, sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #0F1111;
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding-bottom: 0.75rem;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #F85606 0%, #FF8B52 100%);
+      border-radius: 2px;
+    }
+  }
+
+  hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, #E3E6E6 0%, #F8F9FA 50%, #E3E6E6 100%);
+    margin: 1.5rem 0;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 1rem 0;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(248, 86, 6, 0.05);
+      padding-left: 1rem;
+      padding-right: 1rem;
+      margin-left: -1rem;
+      margin-right: -1rem;
+      border-radius: 10px;
+    }
+
+    span:first-child {
+      font-weight: 600;
+      color: #565959;
+      font-size: 1rem;
+    }
+
+    span:last-child {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    &.subtotal {
+      span:last-child {
+        color: #0F1111;
+        font-weight: 700;
+      }
+    }
+
+    &.shipping {
+      span:last-child {
+        color: #27AE60;
+        font-weight: 700;
+        background: rgba(39, 174, 96, 0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        display: inline-block;
+      }
+    }
+
+    &.tax {
+      span:last-child {
+        color: #565959;
+        font-weight: 500;
+      }
+    }
+
+    &.total {
+      padding: 1.5rem 1rem;
+      margin: 1.5rem -1rem 0 -1rem;
+      background: linear-gradient(135deg, rgba(248, 86, 6, 0.05) 0%, rgba(248, 86, 6, 0.02) 100%);
+      border-radius: 10px;
+
+      strong:first-child {
+        font-size: 1.3rem;
+        color: #0F1111;
+      }
+
+      strong:last-child {
+        font-family: 'Amazon Ember', Arial, sans-serif;
+        font-size: 1.8rem;
+        color: #B12704;
+        text-shadow: 0 1px 2px rgba(177, 39, 4, 0.2);
+      }
+    }
+  }
+
+  .promo-code {
+    margin: 2rem 0;
+
+    .input-group {
+      display: flex;
+      gap: 0.5rem;
+
+      .form-control {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 2px solid #E3E6E6;
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+
+        &:focus {
+          border-color: #F85606;
+          box-shadow: 0 0 0 3px rgba(248, 86, 6, 0.15);
+          outline: none;
+        }
+
+        &::placeholder {
+          color: #565959;
+          font-weight: 500;
+        }
+      }
+
+      .btn-apply {
+        background: linear-gradient(135deg, #F85606 0%, #FF8B52 100%);
+        color: #FFFFFF;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &:hover {
+          background: linear-gradient(135deg, #E64A00 0%, #F85606 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px rgba(248, 86, 6, 0.3);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+      }
+    }
+  }
+
+  .btn-checkout {
+    background: linear-gradient(135deg, #F85606 0%, #FF8B52 100%);
+    color: #FFFFFF;
+    padding: 1.5rem 2.5rem;
+    border: none;
+    border-radius: 18px;
+    font-weight: 900;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 25px rgba(248, 86, 6, 0.4);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Amazon Ember', Arial, sans-serif;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.6s ease;
+      z-index: 0;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(255, 255, 255, 0.1) 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 1;
+    }
+
+    span {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .checkout-icon {
+      font-size: 1.3rem;
+      transition: transform 0.3s ease;
+      animation: checkoutPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes checkoutPulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.1);
+      }
+    }
+
+    &:hover {
+      background: linear-gradient(135deg, #E64A00 0%, #F85606 100%);
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 12px 35px rgba(248, 86, 6, 0.5);
+
+      &::before {
+        left: 100%;
+      }
+
+      &::after {
+        opacity: 1;
+      }
+
+      .checkout-icon {
+        transform: translateX(5px) scale(1.2);
+        animation: none;
+      }
+    }
+
+    &:active {
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: 0 6px 20px rgba(248, 86, 6, 0.4);
+
+      &::before {
+        left: 50%;
+      }
+    }
+
+    // Loading state
+    &.loading {
+      pointer-events: none;
+
+      .checkout-icon {
+        animation: checkoutSpin 1s linear infinite;
+      }
+
+      @keyframes checkoutSpin {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    }
+
+    // Success state
+    &.success {
+      background: linear-gradient(135deg, #27AE60 0%, #2ECC71 100%);
+
+      .checkout-icon {
+        animation: checkoutSuccess 0.5s ease;
+      }
+
+      @keyframes checkoutSuccess {
+        0% {
+          transform: scale(1);
+        }
+
+        50% {
+          transform: scale(1.3);
+        }
+
+        100% {
+          transform: scale(1);
+        }
+      }
+    }
+  }
+}
+
+
+// Shipping Information
+.shipping-info {
+  background: linear-gradient(135deg, rgba(248, 86, 6, 0.05) 0%, rgba(248, 86, 6, 0.02) 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid rgba(248, 86, 6, 0.15);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #F85606 0%, #FF8B52 50%, #F85606 100%);
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  h6 {
+    font-family: 'Amazon Ember', Arial, sans-serif;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #0F1111;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    i {
+      color: #F85606;
+    }
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1.5rem;
+
+    li {
+      color: #565959;
+      margin-bottom: 0.75rem;
+      position: relative;
+      transition: all 0.3s ease;
+
+      &::before {
+        content: '✓';
+        position: absolute;
+        left: -1.5rem;
+        color: #F85606;
+        font-weight: bold;
+      }
+
+      &:hover {
+        color: #0F1111;
+        transform: translateX(5px);
+      }
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+// Checkout Button
+.checkout-section {
+  margin-top: 2rem;
+
+  .btn-checkout {
+    width: 100%;
+    background: linear-gradient(135deg, #F85606 0%, #FF8B52 100%);
+    color: #FFFFFF;
+    padding: 1.25rem 2rem;
+    border: none;
+    border-radius: 15px;
+    font-weight: 800;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 6px 20px rgba(248, 86, 6, 0.3);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    &:hover {
+      background: linear-gradient(135deg, #E64A00 0%, #F85606 100%);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(248, 86, 6, 0.4);
+
+      &::before {
+        opacity: 1;
+      }
+    }
+
+    &:active {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(248, 86, 6, 0.3);
+    }
+  }
+}
+
+// Responsive Design
+// Responsive Design
+@media (max-width: 768px) {
+  .cart-container {
+    padding: 1rem 0;
+  }
+
+  .page-title {
+    font-size: 1.8rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .cart-item {
+    padding: 1.25rem;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+
+    .row.align-items-center {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .col-md-2,
+    .col-md-4 {
+      width: 100% !important;
+      flex: none;
+    }
+
+    .cart-item-image {
+      width: 150px;
+      height: 150px;
+      margin: 0 auto;
+    }
+
+    .cart-item-details {
+      justify-content: center;
+    }
+
+    .quantity-selector {
+      margin: 0 auto;
+    }
+
+    .cart-item-price {
+      text-align: center;
+
+      .current-price {
+        font-size: 1.3rem;
+      }
+    }
+
+    .btn-outline-danger {
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+  }
+
+  .cart-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+
+    .btn {
+      width: 100%;
+    }
+  }
+
+  .cart-summary {
+    padding: 1.5rem;
+    margin-top: 2rem;
+
+    h5 {
+      font-size: 1.2rem;
+    }
+
+    .btn-checkout {
+      padding: 1.25rem;
+      font-size: 1.1rem;
+    }
+  }
+
+  .shipping-info {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .cart-item {
+    padding: 1rem;
+
+    .cart-item-image {
+      width: 120px;
+      height: 120px;
+    }
+
+    .cart-item-name {
+      font-size: 1rem;
+    }
+
+    .cart-item-price .current-price {
+      font-size: 1.2rem;
+    }
+  }
+}

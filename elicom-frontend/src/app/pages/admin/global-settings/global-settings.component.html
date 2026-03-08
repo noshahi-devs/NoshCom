@@ -1,0 +1,171 @@
+<div class="admin-content">
+    <div class="header-section mb-5">
+        <h1 class="fw-bold mb-2">
+            <i class="fas fa-truck-fast text-primary me-3"></i> Global Logistics & Warehouses
+        </h1>
+        <p class="text-muted lead mb-0">Manage 3PL partnerships and global storage facilities.</p>
+    </div>
+
+    <!-- 3PL Partners Section -->
+    <div class="section-card mb-5">
+        <div class="section-header d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0 text-primary">3PL Logistics Partners</h4>
+            <button class="btn btn-primary btn-sm" (click)="openPartnerModal()"><i class="fas fa-plus me-2"></i> Add
+                Partner</button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th class="ps-0">Partner Name</th>
+                        <th>Coverage</th>
+                        <th>Contact Email</th>
+                        <th>Status</th>
+                        <th class="text-end pe-0">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let p of partners">
+                        <td class="ps-0">
+                            <div class="fw-bold">{{p.name}}</div>
+                        </td>
+                        <td>{{p.country}}</td>
+                        <td>{{p.contact}}</td>
+                        <td>
+                            <span class="badge" [ngClass]="p.isActive ? 'bg-success' : 'bg-secondary'">
+                                {{p.isActive ? 'Active' : 'Inactive'}}
+                            </span>
+                        </td>
+                        <td class="text-end pe-0">
+                            <button (click)="togglePartner(p)" class="btn btn-sm btn-light border me-2">
+                                <i class="fas" [ngClass]="p.isActive ? 'fa-pause' : 'fa-play'"></i>
+                            </button>
+                            <button class="btn btn-sm btn-light border"><i class="fas fa-edit"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Warehouses Section -->
+    <div class="section-card">
+        <div class="section-header d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0 text-primary">Global Warehouses</h4>
+            <button class="btn btn-primary btn-sm" (click)="openWarehouseModal()"><i class="fas fa-plus me-2"></i>
+                Register
+                Warehouse</button>
+        </div>
+        <div class="row g-4">
+            <div *ngFor="let w of warehouses" class="col-md-6">
+                <div class="warehouse-card" [class.inactive]="!w.isActive">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="wh-icon me-3"><i class="fas fa-warehouse"></i></div>
+                            <div>
+                                <h5 class="mb-0 fw-bold">{{w.location}}</h5>
+                                <small class="text-muted">Manager: {{w.manager}}</small>
+                            </div>
+                        </div>
+                        <div class="form-check form-switch-custom">
+                            <input class="form-check-input" type="checkbox" [checked]="w.isActive"
+                                (change)="toggleWarehouse(w)">
+                        </div>
+                    </div>
+                    <div class="wh-details p-3 bg-light rounded-3 mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small text-muted">Total Capacity</span>
+                            <span class="small fw-bold">{{w.capacity}}</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 65%;"></div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary flex-grow-1">Edit Layout</button>
+                        <button class="btn btn-sm btn-light border"><i class="fas fa-cog"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Partner Modal -->
+    <div class="modal fade" [class.show]="showPartnerModal" [style.display]="showPartnerModal ? 'block' : 'none'"
+        tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-primary text-white p-4">
+                    <h5 class="modal-title fw-bold">Add Logistics Partner</h5>
+                    <button type="button" class="btn-close btn-close-white" (click)="closePartnerModal()"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Partner Name</label>
+                        <input type="text" class="form-control rounded-3" [(ngModel)]="newPartner.name"
+                            placeholder="e.g. DHL, FedEx...">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold text-muted">Coverage Area</label>
+                            <input type="text" class="form-control rounded-3" [(ngModel)]="newPartner.country"
+                                placeholder="e.g. Global, US, UK...">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold text-muted">Contact Email</label>
+                            <input type="email" class="form-control rounded-3" [(ngModel)]="newPartner.contact"
+                                placeholder="support@brand.com">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4"
+                        (click)="closePartnerModal()">Cancel</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" (click)="addPartner()">Save
+                        Partner</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warehouse Modal -->
+    <div class="modal fade" [class.show]="showWarehouseModal" [style.display]="showWarehouseModal ? 'block' : 'none'"
+        tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-indigo text-white p-4">
+                    <h5 class="modal-title fw-bold">Register Global Warehouse</h5>
+                    <button type="button" class="btn-close btn-close-white" (click)="closeWarehouseModal()"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Warehouse Location</label>
+                        <input type="text" class="form-control rounded-3" [(ngModel)]="newWarehouse.location"
+                            placeholder="e.g. Dubai South, Tokyo East...">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold text-muted">SKU Capacity</label>
+                            <input type="text" class="form-control rounded-3" [(ngModel)]="newWarehouse.capacity"
+                                placeholder="e.g. 50,000 SKUs">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold text-muted">Acting Manager</label>
+                            <input type="text" class="form-control rounded-3" [(ngModel)]="newWarehouse.manager"
+                                placeholder="Name of overseer">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4"
+                        (click)="closeWarehouseModal()">Cancel</button>
+                    <button type="button" class="btn btn-indigo rounded-pill px-4 text-white"
+                        (click)="addWarehouse()">Complete Registration</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop fade" [class.show]="showPartnerModal || showWarehouseModal"
+        *ngIf="showPartnerModal || showWarehouseModal"></div>
+</div>

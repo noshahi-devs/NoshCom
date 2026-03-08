@@ -1,0 +1,173 @@
+@import "../../../styles.scss";
+
+.page-container {
+    padding: 30px;
+    background: var(--bg-body);
+    min-height: calc(100vh - 80px);
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+
+    .glow-text {
+        font-size: 28px;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+
+        .search-box {
+            display: flex;
+            background: var(--bg-surface);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            padding: 5px 15px;
+            box-shadow: var(--shadow-3d-soft);
+
+            input {
+                background: transparent;
+                border: none;
+                color: var(--text-main);
+                padding: 8px;
+                outline: none;
+                width: 200px;
+            }
+
+            button {
+                background: transparent;
+                border: none;
+                color: var(--primary);
+                cursor: pointer;
+            }
+        }
+
+        .admin-badge {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(29, 224, 22, 0.3);
+        }
+    }
+}
+
+.user-table-3d {
+    background: var(--bg-surface);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-3d-soft);
+
+    .table-header {
+        display: flex;
+        background: rgba(29, 224, 22, 0.05);
+        padding: 15px 25px;
+        font-weight: 700;
+        color: var(--primary-dark);
+        border-bottom: 2px solid rgba(0, 0, 0, 0.02);
+
+        .col {
+            flex: 1;
+        }
+
+        .actions {
+            width: 150px;
+            flex: none;
+            display: flex;
+            justify-content: flex-end;
+        }
+    }
+
+    .table-row {
+        display: flex;
+        align-items: center;
+        padding: 20px 25px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.02);
+        transition: all 0.3s ease;
+
+        &:hover {
+            background: rgba(29, 224, 22, 0.02);
+            transform: translateX(5px);
+        }
+
+        .col {
+            flex: 1;
+            color: var(--text-main);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+
+            .user-name {
+                color: var(--text-main);
+                font-weight: 600;
+                font-size: 15px;
+            }
+
+            .user-id {
+                color: var(--text-muted);
+                font-size: 12px;
+            }
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+
+            &.active-user {
+                background: rgba(0, 200, 0, 0.1);
+                color: #008000;
+            }
+
+            &.inactive-user {
+                background: rgba(255, 0, 0, 0.1);
+                color: #dc3545;
+            }
+        }
+
+        .actions {
+            width: 150px;
+            flex: none;
+            display: flex;
+            justify-content: flex-end;
+
+            button {
+                @extend .btn-3d;
+                padding: 8px 16px;
+                font-size: 12px;
+                width: 100px;
+
+                &.btn-activate {
+                    background: var(--primary);
+                    box-shadow: 0 4px 0 var(--primary-dark);
+                }
+
+                &.btn-deactivate {
+                    background: #dc3545;
+                    box-shadow: 0 4px 0 #b02a37;
+
+                    &:active {
+                        box-shadow: 0 2px 0 #b02a37;
+                    }
+                }
+            }
+        }
+    }
+}

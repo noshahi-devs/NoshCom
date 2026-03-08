@@ -1,0 +1,623 @@
+/* ============================================================
+   SHIPPING ADDRESS — Premium 3D Redesign
+   Color scheme: Orange (#f85606) + Deep Dark (#1a1a2e)
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+/* ---- Card Wrapper ---- */
+.shipping-form-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px 24px 20px;
+  box-shadow:
+    0 6px 14px rgba(0, 0, 0, 0.06),
+    0 16px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid #ebeef3;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.35s ease, transform 0.35s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #111 0%, #2b2b2b 50%, #111 100%);
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+  }
+
+  &:hover {
+    box-shadow:
+      0 8px 16px rgba(0, 0, 0, 0.08),
+      0 20px 40px rgba(0, 0, 0, 0.1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* ---- Section Header ---- */
+.form-section-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+
+  .section-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #111 0%, #2b2b2b 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+    flex-shrink: 0;
+
+    i {
+      color: #fff;
+      font-size: 20px;
+    }
+  }
+
+  .section-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #111;
+    margin: 0 0 2px;
+    letter-spacing: -0.3px;
+  }
+
+  .section-subtitle {
+    font-size: 13px;
+    color: #5c6476;
+    margin: 0;
+  }
+}
+
+/* ---- Form Row Layouts (Grid-based, NOT equal columns) ---- */
+.form-row {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.row-3col {
+  /* 4/12 + 4/12 + 4/12 */
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.row-2col {
+  /* 6/12 + 6/12 */
+  grid-template-columns: 1fr 1fr;
+}
+
+.row-1col {
+  grid-template-columns: 1fr;
+}
+
+/* MIXED: State(5) + City(4) + Zip(3) — Asymmetric! */
+.row-mixed {
+  grid-template-columns: 5fr 4fr 3fr;
+}
+
+/* Column span helpers */
+.col-span-3 {
+  /* inherits from grid */
+}
+
+.col-span-4 {
+  /* inherits from grid */
+}
+
+.col-span-5 {
+  /* inherits from grid */
+}
+
+.col-span-6 {
+  /* inherits from grid */
+}
+
+.col-span-12 {
+  /* inherits from grid */
+}
+
+/* ---- Form Group ---- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ---- Field Label ---- */
+.field-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #444;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  .label-icon {
+    color: #111;
+    font-size: 11px;
+  }
+}
+
+.required-star {
+  color: #111;
+  font-size: 14px;
+  line-height: 1;
+  margin-left: 1px;
+}
+
+/* ---- 3D Input Wrapper ---- */
+.input-3d {
+  position: relative;
+  background: linear-gradient(180deg, #ffffff 0%, #f9f9fb 100%);
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 9px 14px;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.2s ease;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.05),
+    0 1px 0 rgba(255, 255, 255, 0.95) inset;
+
+  &:hover {
+    border-color: #ccc;
+    transform: translateY(-1px);
+    box-shadow:
+      0 5px 12px rgba(0, 0, 0, 0.07),
+      0 1px 0 rgba(255, 255, 255, 0.95) inset;
+  }
+
+  &:focus-within {
+    border-color: #111;
+    box-shadow:
+      0 0 0 3px rgba(17, 17, 17, 0.12),
+      0 5px 12px rgba(17, 17, 17, 0.08);
+    transform: translateY(-1px);
+  }
+
+  &.error-state {
+    border-color: #ef4444;
+    background: linear-gradient(180deg, #fff5f5 0%, #fef2f2 100%);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  }
+
+  input,
+  textarea,
+  select {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 14px;
+    color: #1a1a2e;
+    font-family: inherit;
+
+    &::placeholder {
+      color: #b0b8c8;
+      font-size: 13px;
+    }
+  }
+
+  textarea {
+    resize: none;
+    line-height: 1.5;
+  }
+}
+
+/* ---- Select Wrapper (custom arrow) ---- */
+.select-wrapper {
+  padding-right: 36px;
+
+  select {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+.select-arrow {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #111;
+    font-size: 11px;
+  }
+}
+
+/* ---- Phone Group ---- */
+.phone-group {
+  padding: 0;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+
+  &:focus-within {
+    border-color: #111;
+    box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.1);
+  }
+
+  .country-flag-select {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 9px 10px;
+    border-right: 1.5px solid #e2e8f0;
+    background: #f4f6fa;
+    cursor: pointer;
+    position: relative;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: #eef0f5;
+    }
+
+    .flag-img {
+      width: 20px;
+      height: 14px;
+      object-fit: cover;
+      border-radius: 2px;
+    }
+
+    .dial-code {
+      font-size: 12px;
+      font-weight: 700;
+      color: #444;
+    }
+
+    i {
+      font-size: 9px;
+      color: #888;
+    }
+
+    .flag-select-overlay {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+    }
+  }
+
+  input {
+    flex: 1;
+    padding: 9px 14px;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 14px;
+    color: #1a1a2e;
+
+    &::placeholder {
+      color: #b0b8c8;
+      font-size: 13px;
+    }
+  }
+}
+
+/* ---- Error Message ---- */
+.error-msg {
+  font-size: 11px;
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  animation: fadeUp 0.2s ease;
+
+  i {
+    font-size: 11px;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---- Form Footer ---- */
+.form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #f0f0f0;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.security-badge {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+
+  i {
+    color: #22c55e;
+    font-size: 20px;
+    margin-top: 2px;
+  }
+
+  strong {
+    display: block;
+    font-size: 13px;
+    color: #22c55e;
+    font-weight: 700;
+  }
+
+  p {
+    font-size: 11px;
+    color: #aaa;
+    margin: 2px 0 0;
+  }
+}
+
+.save-address-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #f85606 0%, #e04e05 100%);
+  color: #fff;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(248, 86, 6, 0.35);
+  transition: all 0.25s ease;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(248, 86, 6, 0.45);
+    background: linear-gradient(135deg, #e04e05 0%, #c04004 100%);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 10px rgba(248, 86, 6, 0.3);
+  }
+
+  i {
+    font-size: 15px;
+  }
+}
+
+/* ---- Saved Address View ---- */
+.address-saved-view {
+  padding: 4px 0;
+}
+
+.saved-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.saved-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .check-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    flex-shrink: 0;
+
+    i {
+      color: #fff;
+      font-size: 17px;
+    }
+  }
+
+  h2 {
+    font-size: 17px;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin: 0 0 2px;
+  }
+
+  p {
+    font-size: 12px;
+    color: #888;
+    margin: 0;
+  }
+}
+
+.change-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: #f85606;
+    color: #f85606;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(248, 86, 6, 0.12);
+  }
+}
+
+.saved-address-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: linear-gradient(135deg, #fff8f5 0%, #fff 100%);
+  border: 1.5px solid rgba(248, 86, 6, 0.15);
+  border-radius: 14px;
+  padding: 16px 18px;
+  position: relative;
+  box-shadow:
+    0 4px 12px rgba(248, 86, 6, 0.06),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
+
+  .addr-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f85606, #ff8c42);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(248, 86, 6, 0.25);
+
+    i {
+      color: #fff;
+      font-size: 16px;
+    }
+  }
+
+  .addr-details {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .addr-name {
+    font-size: 15px;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin-bottom: 4px;
+  }
+
+  .addr-contact {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+
+    span {
+      font-size: 12px;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      i {
+        color: #f85606;
+        font-size: 11px;
+      }
+    }
+  }
+
+  .addr-line {
+    font-size: 13px;
+    color: #444;
+    margin-bottom: 3px;
+    line-height: 1.4;
+  }
+
+  .addr-city {
+    font-size: 12px;
+    color: #666;
+  }
+
+  .edit-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1.5px solid #e2e8f0;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #555;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    margin-left: auto;
+
+    &:hover {
+      border-color: #f85606;
+      color: #f85606;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(248, 86, 6, 0.12);
+    }
+  }
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 768px) {
+
+  .row-3col,
+  .row-mixed {
+    grid-template-columns: 1fr 1fr;
+
+    .form-group:last-child {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .shipping-form-card {
+    padding: 18px 14px 16px;
+  }
+
+  .row-3col,
+  .row-2col,
+  .row-mixed {
+    grid-template-columns: 1fr;
+  }
+
+  .form-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+
+    .save-address-btn {
+      justify-content: center;
+    }
+  }
+}

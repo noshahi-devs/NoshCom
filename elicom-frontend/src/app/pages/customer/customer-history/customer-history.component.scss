@@ -1,0 +1,18 @@
+.customer-history {
+    .transition-hover {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+        }
+    }
+
+    .scale-75 {
+        transform: scale(0.9);
+    }
+
+    .x-small {
+        font-size: 0.75rem;
+    }
+}

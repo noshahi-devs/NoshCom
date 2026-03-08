@@ -1,0 +1,130 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="glow-text">Admin Command Center</h1>
+        <div class="header-actions">
+            <span class="pulse-icon"></span>
+            <span class="live-tag">{{ isLoading ? 'SYNCING...' : 'LIVE OVERVIEW' }}</span>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card gold">
+            <div class="icon-box"><i class="fas fa-users"></i></div>
+            <div class="info">
+                <span class="label">Total Users</span>
+                <h2 class="value">
+                    <ng-container *ngIf="!isLoading; else metricLoading">
+                        {{ stats.totalUsers }}
+                    </ng-container>
+                </h2>
+            </div>
+            <div class="bg-glow"></div>
+        </div>
+
+        <div class="stat-card green">
+            <div class="icon-box"><i class="fas fa-arrow-circle-down"></i></div>
+            <div class="info">
+                <span class="label">Pending Deposits</span>
+                <h2 class="value">
+                    <ng-container *ngIf="!isLoading; else metricLoading">
+                        {{ stats.pendingDeposits }}
+                    </ng-container>
+                </h2>
+            </div>
+            <div class="bg-glow"></div>
+        </div>
+
+        <div class="stat-card red">
+            <div class="icon-box"><i class="fas fa-arrow-circle-up"></i></div>
+            <div class="info">
+                <span class="label">Pending Withdrawals</span>
+                <h2 class="value">
+                    <ng-container *ngIf="!isLoading; else metricLoading">
+                        {{ stats.pendingWithdrawals }}
+                    </ng-container>
+                </h2>
+            </div>
+            <div class="bg-glow"></div>
+        </div>
+
+        <div class="stat-card blue">
+            <div class="icon-box"><i class="fas fa-ticket-alt"></i></div>
+            <div class="info">
+                <span class="label">Open Tickets</span>
+                <h2 class="value">
+                    <ng-container *ngIf="!isLoading; else metricLoading">
+                        {{ stats.openTickets }}
+                    </ng-container>
+                </h2>
+            </div>
+            <div class="bg-glow"></div>
+        </div>
+    </div>
+
+    <div class="main-content-row">
+        <!-- Big Volume Card -->
+        <div class="volume-card">
+            <div class="card-header">
+                <h3>Total Transaction Volume</h3>
+                <span class="period">All Time</span>
+            </div>
+            <div class="volume-display">
+                <ng-container *ngIf="!isLoading; else volumeLoading">
+                    <span class="currency">$</span>
+                    <h1 class="amount">{{ stats.totalTransactionVolume | number: '1.2-2' }}</h1>
+                </ng-container>
+            </div>
+            <div class="volume-footer">
+                <div class="detail-item">
+                    <span>Platform Integrity</span>
+                    <strong class="green-text">99.9%</strong>
+                </div>
+                <div class="detail-item">
+                    <span>Active Sessions</span>
+                    <strong>
+                        <ng-container *ngIf="!isLoading; else metricLoading">
+                            {{ stats.totalUsers > 0 ? (stats.totalUsers * 0.1 | number: '1.0-0') : 0 }}
+                        </ng-container>
+                    </strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="admin-quick-links">
+            <h3>Quick Governance</h3>
+            <div class="link-grid">
+                <button class="q-link" routerLink="/approve-deposits">
+                    <i class="fas fa-check-double"></i>
+                    <span>Approve Deposit</span>
+                </button>
+                <button class="q-link" routerLink="/approve-withdrawals">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Approve Withdraw</span>
+                </button>
+                <button class="q-link" routerLink="/user-management">
+                    <i class="fas fa-users-cog"></i>
+                    <span>User Management</span>
+                </button>
+                <button class="q-link" routerLink="/approve-support">
+                    <i class="fas fa-headset"></i>
+                    <span>Support Management</span>
+                </button>
+                <button class="q-link" routerLink="/approve-cards">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Approve Cards</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-template #metricLoading>
+    <i class="fas fa-spinner fa-spin inline-loader" aria-hidden="true"></i>
+</ng-template>
+
+<ng-template #volumeLoading>
+    <i class="fas fa-spinner fa-spin inline-loader large" aria-hidden="true"></i>
+</ng-template>
+

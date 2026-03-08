@@ -1,0 +1,296 @@
+<div class="admin-content">
+    <div class="row align-items-center mb-5">
+        <div class="col-md-8">
+            <h1 class="fw-bold mb-2">
+                <i class="fas fa-store text-primary me-3"></i> Store Approvals & KYC
+            </h1>
+            <p class="text-muted lead mb-0">Review store applications and verify seller identity documents.</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="stats-mini-badge">
+                <span class="dot pulse warning"></span>
+                <span>{{pendingStores}} Pending Actions</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="admin-stat-card shadow-sm">
+                <div class="stat-icon bg-warning-subtle text-warning"><i class="fas fa-hourglass-half"></i></div>
+                <div class="stat-info">
+                    <h3>{{pendingStores}}</h3>
+                    <p>Pending Stores</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="admin-stat-card shadow-sm">
+                <div class="stat-icon bg-info-subtle text-info"><i class="fas fa-id-card"></i></div>
+                <div class="stat-info">
+                    <h3>{{pendingKyc}}</h3>
+                    <p>Pending KYC</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="admin-stat-card shadow-sm">
+                <div class="stat-icon bg-success-subtle text-success"><i class="fas fa-check-double"></i></div>
+                <div class="stat-info">
+                    <h3>{{verifiedSellers}}</h3>
+                    <p>Verified Sellers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Applications Table -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white border-bottom py-3">
+            <h5 class="fw-bold mb-0">Store Applications</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Seller & Store</th>
+                        <th>Email</th>
+                        <th>Applied Date</th>
+                        <th>KYC Status</th>
+                        <th>Store Status</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+
+                <ng-container *ngIf="!isLoading; else skeletonRowsTpl">
+                    <tbody>
+                        <tr *ngFor="let app of applications; trackBy: trackById">
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm me-3 border">{{(app.name || '?').charAt(0)}}</div>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">{{app.name || 'Unknown Store'}}</h6>
+                                        <small class="text-muted">{{app.kyc?.fullName || 'No KYC Info'}}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{app.supportEmail || 'N/A'}}</td>
+                            <td>{{app.createdAt | date:'mediumDate'}}</td>
+                            <td>
+                                <span class="badge rounded-pill status-pill-custom" [ngClass]="{
+                                    'status-verified': app.kyc?.status,
+                                    'status-pending': !app.kyc?.status
+                                }">
+                                    <i class="fas" [class.fa-check-double]="app.kyc?.status"
+                                        [class.fa-id-card]="!app.kyc?.status"></i>
+                                    {{app.kyc?.status ? 'Verified' : 'Pending'}}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill status-pill-custom"
+                                    [ngClass]="app.status ? 'status-approved' : 'status-pending'">
+                                    {{app.status ? 'APPROVED' : 'PENDING'}}
+                                </span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="button" *ngIf="app.kyc && !app.kyc.status" (click)="verifyKYC(app)"
+                                        class="btn-action btn-kyc" title="Verify KYC">
+                                        <i class="fas fa-check-square"></i>
+                                    </button>
+                                    <button type="button" *ngIf="!app.status" (click)="approveStore(app)"
+                                        class="btn-action btn-approve" title="Approve Store">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button type="button" *ngIf="!app.status" (click)="rejectStore(app)"
+                                        class="btn-action btn-reject" title="Reject Store">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <button type="button" (click)="viewStore(app)" class="btn-action btn-view">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </ng-container>
+
+                <ng-template #skeletonRowsTpl>
+                    <tbody>
+                        <tr *ngFor="let _ of skeletonRows">
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm skeleton-block me-3"></div>
+                                    <div class="w-100">
+                                        <div class="skeleton-line w-75 mb-2"></div>
+                                        <div class="skeleton-line w-50"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="skeleton-line w-75"></div>
+                            </td>
+                            <td>
+                                <div class="skeleton-line w-50"></div>
+                            </td>
+                            <td>
+                                <div class="skeleton-pill"></div>
+                            </td>
+                            <td>
+                                <div class="skeleton-pill"></div>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="skeleton-pill sm ms-auto"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </ng-template>
+            </table>
+        </div>
+    </div>
+
+    <!-- Store View Modal -->
+    <div class="store-modal-backdrop" *ngIf="selectedStore" (click)="closeModal()">
+        <div class="store-modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header-custom">
+                <h4>Store Application Details</h4>
+                <button class="close-btn" (click)="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body-custom">
+                <div class="d-flex align-items-center mb-3" *ngIf="isDetailsLoading">
+                    <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
+                    <span class="text-muted small">Loading full KYC details...</span>
+                </div>
+                <div class="compact-doc-grid">
+                    <!-- Store Profile -->
+                    <div class="compact-card accent-indigo">
+                        <div class="card-header">
+                            <h6>Store Profile</h6>
+                            <div class="header-icon-wrap"><i class="fas fa-store"></i></div>
+                        </div>
+                        <div class="info-item"><strong>Name</strong> <span>{{selectedStore.name}}</span></div>
+                        <div class="info-item"><strong>Email</strong> <span>{{selectedStore.supportEmail}}</span></div>
+                        <div class="info-item"><strong>Instagram</strong> <span>{{selectedStore.instagram ||
+                                'N/A'}}</span></div>
+                        <div class="info-item"><strong>WhatsApp</strong> <span>{{selectedStore.whatsapp ||
+                                'N/A'}}</span></div>
+                    </div>
+
+                    <!-- Business Story -->
+                    <div class="compact-card accent-violet">
+                        <div class="card-header">
+                            <h6>Business Story</h6>
+                            <div class="header-icon-wrap"><i class="fas fa-feather-alt"></i></div>
+                        </div>
+                        <div class="info-item"><strong>Tagline</strong> <span>{{selectedStore.shortDescription ||
+                                'N/A'}}</span></div>
+                        <div class="story-text-box">
+                            {{selectedStore.longDescription || 'N/A'}}
+                        </div>
+                    </div>
+
+                    <!-- Owner Details -->
+                    <div class="compact-card accent-emerald">
+                        <div class="card-header">
+                            <h6>Owner Details</h6>
+                            <div class="header-icon-wrap"><i class="fas fa-user-tie"></i></div>
+                        </div>
+                        <div class="info-item"><strong>Name</strong> <span>{{selectedStore.kyc?.fullName ||
+                                'N/A'}}</span></div>
+                        <div class="info-item"><strong>DOB</strong> <span>{{(selectedStore.kyc?.dob |
+                                date:'mediumDate')
+                                || 'N/A'}}</span></div>
+                        <div class="info-item"><strong>Phone</strong> <span>{{selectedStore.kyc?.phone ||
+                                'N/A'}}</span>
+                        </div>
+                    </div>
+
+                    <!-- Operating From -->
+                    <div class="compact-card accent-amber">
+                        <div class="card-header">
+                            <h6>Operating From</h6>
+                            <div class="header-icon-wrap"><i class="fas fa-map-marked-alt"></i></div>
+                        </div>
+                        <div class="info-item"><strong>Country</strong> <span>{{selectedStore.kyc?.issueCountry ||
+                                'N/A'}}</span></div>
+                        <div class="info-item"><strong>Zip</strong> <span>{{selectedStore.kyc?.zipCode ||
+                                'N/A'}}</span>
+                        </div>
+                        <div class="info-item"><strong>Address</strong> <span
+                                class="text-truncate">{{selectedStore.kyc?.address || 'N/A'}}</span></div>
+                    </div>
+
+                    <!-- ID Documents -->
+                    <div class="compact-card accent-rose">
+                        <div class="card-header">
+                            <h6>ID Documents</h6>
+                            <div class="header-icon-wrap"><i class="fas fa-fingerprint"></i></div>
+                        </div>
+                        <div class="info-item"><strong>ID Number</strong> <span>{{selectedStore.kyc?.cnic ||
+                                'N/A'}}</span></div>
+                        <div class="doc-photo-row">
+                            <div class="mini-doc">
+                                <div class="image-loader"
+                                    *ngIf="(selectedStore.kyc?.frontImage || isDetailsLoading) && !imageLoading[selectedStore.id + '_front']">
+                                    <div class="spinner-border text-light" role="status"></div>
+                                </div>
+                                <img *ngIf="selectedStore.kyc?.frontImage"
+                                    [src]="getImageUrl(selectedStore.kyc?.frontImage)"
+                                    (load)="imageLoading[selectedStore.id + '_front'] = true"
+                                    (error)="imageLoading[selectedStore.id + '_front'] = true"
+                                    [style.display]="imageLoading[selectedStore.id + '_front'] ? 'block' : 'none'">
+                                <div *ngIf="!selectedStore.kyc?.frontImage && !isDetailsLoading" class="no-doc">Front
+                                </div>
+                            </div>
+                            <div class="mini-doc">
+                                <div class="image-loader"
+                                    *ngIf="(selectedStore.kyc?.backImage || isDetailsLoading) && !imageLoading[selectedStore.id + '_back']">
+                                    <div class="spinner-border text-light" role="status"></div>
+                                </div>
+                                <img *ngIf="selectedStore.kyc?.backImage"
+                                    [src]="getImageUrl(selectedStore.kyc?.backImage)"
+                                    (load)="imageLoading[selectedStore.id + '_back'] = true"
+                                    (error)="imageLoading[selectedStore.id + '_back'] = true"
+                                    [style.display]="imageLoading[selectedStore.id + '_back'] ? 'block' : 'none'">
+                                <div *ngIf="!selectedStore.kyc?.backImage && !isDetailsLoading" class="no-doc">Back
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Status -->
+                    <div class="compact-card status-card">
+                        <div class="card-header">
+                            <h6>System Health</h6>
+                            <div class="header-icon-wrap"><i class="fas fa-server"></i></div>
+                        </div>
+                        <div class="status-content">
+                            <div class="status-pill" [class.verified]="selectedStore.status"
+                                [class.pending]="!selectedStore.status">
+                                <i class="fas" [class.fa-check-double]="selectedStore.status"
+                                    [class.fa-hourglass-half]="!selectedStore.status"></i>
+                                Store: {{selectedStore.status ? 'Approved' : 'Pending Review'}}
+                            </div>
+                            <div class="status-pill mt-3" [class.verified]="selectedStore.kyc?.status"
+                                [class.pending]="!selectedStore.kyc?.status">
+                                <i class="fas" [class.fa-id-card]="selectedStore.kyc?.status"
+                                    [class.fa-clock]="!selectedStore.kyc?.status"></i>
+                                KYC: {{selectedStore.kyc?.status ? 'Verified' : 'Pending Review'}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" *ngIf="!selectedStore.status" (click)="approveStore(selectedStore)"
+                    class="btn btn-success px-4 me-2">Approve</button>
+                <button type="button" *ngIf="selectedStore.kyc && !selectedStore.kyc.status"
+                    (click)="verifyKYC(selectedStore)" class="btn btn-outline-info px-4 me-2" title="Verify KYC">
+                    <i class="fas fa-check-square"></i> Verify KYC
+                </button>
+                <button class="btn btn-secondary px-4" (click)="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

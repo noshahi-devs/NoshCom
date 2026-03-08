@@ -1,0 +1,27 @@
+.customer-wishlist {
+    .x-small {
+        font-size: 11px;
+    }
+
+    .uppercase {
+        text-transform: uppercase;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .feature-list {
+        i {
+            color: #000;
+        }
+    }
+
+    .sui-card {
+        transition: transform 0.2s;
+
+        &:hover {
+            transform: translateY(-2px);
+        }
+    }
+}

@@ -1,0 +1,154 @@
+<div class="auth-container">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-10 col-lg-8">
+        <div class="auth-card">
+          <div class="auth-header">
+            <h2>Create Account</h2>
+            <p>Join us today! Create your account to get started.</p>
+          </div>
+
+          <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+            <div class="form-grid">
+              <div class="form-group">
+              <label for="name">Full Name</label>
+              <input type="text" id="name" class="form-control" formControlName="name"
+                placeholder="Enter your full name">
+              <div class="error-message" *ngIf="registerForm.get('name')?.invalid && registerForm.get('name')?.touched">
+                Name is required (minimum 2 characters)
+              </div>
+            </div>
+
+              <div class="form-group">
+              <label for="email">Email Address</label>
+              <input type="email" id="email" class="form-control" formControlName="email"
+                placeholder="Enter your email">
+              <div class="error-message"
+                *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+                Valid email is required
+              </div>
+            </div>
+
+              <div class="form-group">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" class="form-control" formControlName="phone"
+                placeholder="Enter your phone number">
+              <div class="error-message"
+                *ngIf="registerForm.get('phone')?.invalid && registerForm.get('phone')?.touched">
+                Phone number is required
+              </div>
+            </div>
+
+              <div class="form-group">
+              <label for="country">Country</label>
+              <select id="country" class="form-control" formControlName="country">
+                <option value="" disabled selected>Select your country</option>
+                <option *ngFor="let country of countries" [value]="country">{{ country }}</option>
+              </select>
+              <div class="error-message"
+                *ngIf="registerForm.get('country')?.invalid && registerForm.get('country')?.touched">
+                Please select your country
+              </div>
+            </div>
+
+              <div class="form-group">
+              <label for="password">Password</label>
+              <div class="input-with-icon">
+                <input [type]="showPassword ? 'text' : 'password'" id="password" class="form-control"
+                  formControlName="password" placeholder="Create a password">
+                <button type="button" class="toggle-visibility" (click)="togglePasswordVisibility()"
+                  [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+                  <i class="pi" [ngClass]="showPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
+                </button>
+              </div>
+              <div class="error-message"
+                *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+                Password must be at least 6 characters
+              </div>
+            </div>
+
+              <div class="form-group">
+              <label for="confirmPassword">Confirm Password</label>
+              <div class="input-with-icon">
+                <input [type]="showConfirmPassword ? 'text' : 'password'" id="confirmPassword" class="form-control"
+                  formControlName="confirmPassword" placeholder="Confirm your password">
+                <button type="button" class="toggle-visibility" (click)="toggleConfirmPasswordVisibility()"
+                  [attr.aria-label]="showConfirmPassword ? 'Hide password' : 'Show password'">
+                  <i class="pi" [ngClass]="showConfirmPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
+                </button>
+              </div>
+              <div class="error-message"
+                *ngIf="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched">
+                Passwords must match
+              </div>
+            </div>
+            </div>
+
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="agreeTerms" formControlName="agreeTerms">
+              <label class="form-check-label" for="agreeTerms">
+                I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+              </label>
+            </div>
+
+            <div class="button-wrapper">
+              <button type="submit" class="btn btn-primary btn-lg w-100"
+                [disabled]="registerForm.invalid || isProcessing">
+                <span *ngIf="!isProcessing">Create Account</span>
+                <span *ngIf="isProcessing">Creating Account...</span>
+              </button>
+            </div>
+          </form>
+
+          <div class="auth-footer">
+            <p>Already have an account?</p>
+            <a routerLink="/auth/login" class="login-link">Login here</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Registration Celebration & Processing Overlay -->
+  <div class="celebration-overlay" *ngIf="showCelebration">
+    <div class="confetti-container" *ngIf="isSuccess">
+      <div *ngFor="let p of confettiPieces" class="confetti-piece"></div>
+    </div>
+
+    <div class="celebration-content">
+      <div class="animation-container">
+        <div class="item-fly">📧</div>
+        <div class="item-fly">🔐</div>
+        <div class="item-fly">📝</div>
+        <div class="item-fly">🚀</div>
+
+        <div class="success-icon-wrapper" *ngIf="isSuccess">
+          <div class="success-tick-circle">
+            <i class="pi pi-check"></i>
+          </div>
+        </div>
+
+        <div class="cart-box processing" *ngIf="isProcessing">👤</div>
+      </div>
+
+      <div *ngIf="isProcessing" class="status-box processing-text">
+        <h2>Registration in progress</h2>
+        <p>We are setting up your secure account. Please wait a moment.</p>
+      </div>
+
+      <div *ngIf="isSuccess" class="status-box success-text">
+        <h2>Account Created!</h2>
+        <p>Your registration was successful. Please check your email to verify your account.</p>
+
+        <div class="action-buttons-grid">
+          <a href="https://mail.google.com" target="_blank" class="btn-gmail">
+            <i class="pi pi-google"></i> Open Gmail
+          </a>
+          <button class="btn-done-modal" (click)="closeModal()">
+            Ok, Got it
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

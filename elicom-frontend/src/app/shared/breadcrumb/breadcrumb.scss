@@ -1,0 +1,32 @@
+.breadcrumb {
+    margin-left: 10.5rem;
+    display: flex;
+    flex-direction: row;
+
+    a {
+        color: #767575 !important;
+        font-size: 13px;
+    }
+
+    span:last-child {
+        color: #000 !important;
+        font-size: 13px;
+        margin-top: 5px;
+        margin-left: 1px;
+    }
+}
+
+
+/* Mobile fine tuning */
+@media (max-width: 600px) {
+    .breadcrumb {
+        font-size: 12px;
+        margin-left: 3rem;
+    }
+    span:last-child {
+        color: #000;
+        font-size: 13px;
+        margin-top: 0px !important;
+        margin-left: 5px;
+    }
+}

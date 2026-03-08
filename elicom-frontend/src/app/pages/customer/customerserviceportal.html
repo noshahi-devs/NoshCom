@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Service Portal - Complete</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* General Reset and Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Basic Reset and Variables (from your FAQ style) */
+        :root {
+            --primary-color: #f44336; /* A reddish color for "Hot" */
+            --text-color: #333;
+            --border-color: #eee;
+            --background-color: #fff;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f7f7f7;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .main-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Breadcrumb Styling */
+        .breadcrumb {
+            font-size: 0.9em;
+            margin-bottom: 40px;
+            color: #999;
+        }
+
+        .breadcrumb a {
+            color: #666;
+        }
+
+        /* --- Self-Service Section --- */
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 30px 10px; 
+            padding-bottom: 40px;
+        }
+
+        .service-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 10px;
+            color: #333;
+            transition: background-color 0.2s;
+        }
+
+        .service-item:hover {
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 24px;
+        }
+
+        .icon-box i {
+            color: #333;
+        }
+
+        .service-points .icon-box {
+            background-color: #f7b731;
+            color: #fff;
+            font-weight: bold;
+            font-size: 1.5em;
+            line-height: 1; 
+        }
+
+        .service-item span {
+            font-size: 0.85em;
+        }
+
+        /* Horizontal Rule for separation */
+        .section-divider {
+            border: 0;
+            height: 1px;
+            background-color: #eee;
+            margin: 20px 0;
+        }
+
+        /* --- New FAQ Styles (Copied from your provided code) --- */
+        .faq-header {
+            background-color: var(--background-color);
+            padding: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-header h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px 12px;
+        }
+
+        .search-bar i {
+            color: #999;
+            margin-right: 10px;
+        }
+
+        .search-bar input {
+            border: none;
+            outline: none;
+            font-size: 14px;
+            width: 200px; 
+        }
+
+        .faq-container-content {
+            display: flex;
+            background-color: var(--background-color);
+            box-shadow: 0 4px 12px var(--shadow-color);
+            margin-bottom: 40px; /* Space before contact section */
+        }
+        
+        /* Sidebar Styling */
+        .sidebar {
+            width: 250px;
+            border-right: 1px solid var(--border-color);
+            padding: 20px 0;
+            flex-shrink: 0; /* Prevents shrinking on smaller screens */
+        }
+
+        .category-item {
+            padding: 12px 20px;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .category-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .category-item.active {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .category-item.hot {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        /* Main Content (Questions) Styling */
+        .main-content {
+            flex-grow: 1;
+            padding: 20px 30px;
+        }
+
+        .faq-item {
+            margin-bottom: 1px; 
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .faq-question {
+            padding: 15px 0;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-color);
+        }
+
+        .faq-question i {
+            font-size: 12px;
+            color: #999;
+            transition: transform 0.3s;
+        }
+
+        /* Answer/Accordion Content */
+        .faq-answer {
+            padding: 0 0 15px 0;
+            font-size: 14px;
+            color: #666;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+        }
+
+        /* JavaScript Class Toggles */
+        .faq-item.open .faq-answer {
+            max-height: 100px; 
+            padding: 0 0 20px 0;
+        }
+
+        .faq-item.open .faq-question i {
+            transform: rotate(90deg);
+        }
+
+        .view-more {
+            text-align: right;
+            padding-top: 15px;
+            color: #007bff; 
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .view-more i {
+            margin-left: 5px;
+            font-size: 12px;
+        }
+
+        /* --- Contact Section --- */
+        .contact-section {
+            text-align: center;
+            padding: 40px 0;
+            background-color: #f8f8f8;
+        }
+
+        .contact-section p {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 25px;
+        }
+        
+        .contact-options {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .contact-button {
+            background-color: #000;
+            color: #fff;
+            padding: 15px 30px;
+            font-weight: bold;
+            border-radius: 4px;
+            display: inline-block;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .contact-button:hover {
+            background-color: #444;
+        }
+        
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .social-media-img {
+            border-radius: 50%;
+            height: 50px;
+            width: 50px;
+            background-color: #ccc; 
+            display: inline-block;
+            line-height: 50px;
+            text-align: center;
+            font-size: 20px;
+        }
+        
+        .social-media {
+            padding-top: 20px;
+        }
+        
+        .social-media-note {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 25px;
+        }
+
+        .social-media-queue {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /* --- Mobile Responsiveness --- */
+
+        @media (max-width: 1024px) {
+            .service-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            .faq-container-content {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                padding: 10px 0;
+                display: flex;
+                overflow-x: auto;
+            }
+            .category-item {
+                flex-shrink: 0;
+                padding: 12px 15px;
+                border-right: 1px solid var(--border-color);
+            }
+            .category-item i {
+                display: none; /* Hide chevron down in mobile sidebar */
+            }
+            .main-content {
+                padding: 20px;
+            }
+            .contact-options {
+                flex-direction: column;
+                gap: 20px;
+            }
+            .contact-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .service-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px 5px;
+            }
+            .service-item span {
+                font-size: 0.75em;
+            }
+            .icon-box {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+            .contact-section p, .social-media-note {
+                font-size: 1.2em;
+            }
+            .search-bar input {
+                width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <header class="breadcrumb">
+            <a href="#">Home</a> / <a href="#">Customer Service</a>
+        </header>
+
+        <section class="self-service">
+            <h2>Self-Service</h2>
+            <div class="service-grid">
+                <a href="#" class="service-item">
+                    <div class="icon-box"><i class="fas fa-box"></i></div>
+                    <span>Return & Refund Orders</span>
+                </a>
+                <a href="#" class="service-item">
+                    <div class="icon-box"><i class="fas fa-truck"></i></div>
+                    <span>Track</span>
+                </a>
+                <a href="#" class="service-item">
+                    <div class="icon-box"><i class="fas fa-chart-line"></i></div>
+                    <span>Service Progress</span>
+                </a>
+                <a href="#" class="service-item">
+                    <div class="icon-box"><i class="fas fa-file-invoice"></i></div>
+                    <span>View Invoice</span>
+                </a>
+                <a href="#" class="service-item">
+                    <div class="icon-box"><i class="fas fa-undo-alt"></i></div>
+                    <span>Modify Refund Account</span>
+                </a>
+
+                <a href="#" class="service-item">
+                    <div class="icon-box"><i class="fas fa-shipping-fast"></i></div>
+                    <span>Shipping Info</span>
+                </a>
+                <a href="#" class="service-item">
+                    <div class="icon-box"><i class="fas fa-wallet"></i></div>
+                    <span>My Wallet</span>
+                </a>
+                <a href="#" class="service-item service-points">
+                    <div class="icon-box">S</div>
+                    <span>My Points</span>
+                </a>
+                <a href="#" class="service-item">
+                    <div class="icon-box"><img src="giftcard.webp" alt=""></div>
+                    <span>Gift Card</span>
+                </a>
+            </div>
+        </section>
+
+        <hr class="section-divider">
+
+        <section class="faq-section">
+            <header class="faq-header">
+                <h1>FAQ</h1>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search for your solution">
+                </div>
+            </header>
+
+            <div class="faq-container-content">
+                <aside class="sidebar">
+                    <div class="category-item hot">Hot</div>
+                    <div class="category-item active">Tracking & Delivery <i class="fas fa-chevron-down"></i></div>
+                    <div class="category-item">Return & Refund <i class="fas fa-chevron-down"></i></div>
+                    <div class="category-item">Processing <i class="fas fa-chevron-down"></i></div>
+                    <div class="category-item">Payment <i class="fas fa-chevron-down"></i></div>
+                    <div class="category-item">Account Issues <i class="fas fa-chevron-down"></i></div>
+                    <div class="category-item">Pre-sale <i class="fas fa-chevron-down"></i></div>
+                    <div class="category-item">Legal/Security&Privacy <i class="fas fa-chevron-down"></i></div>
+                    <div class="category-item">Media/CSR <i class="fas fa-chevron-down"></i></div>
+                    <div class="category-item">Suggestion/Dispute <i class="fas fa-chevron-down"></i></div>
+                </aside>
+
+                <main class="main-content">
+                    <div class="faq-list">
+
+                        <div class="faq-item">
+                            <div class="faq-question">1. Delivered but not received <i class="fas fa-chevron-right"></i></div>
+                            <div class="faq-answer">Please check with your neighbors or apartment office. If you still can't find it, contact customer support with your tracking number.</div>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <div class="faq-question">2. Where is my order? <i class="fas fa-chevron-right"></i></div>
+                            <div class="faq-answer">You can track your order using the tracking number provided in your shipping confirmation email on the courier's website.</div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question">3. Why are some items from my order missing? <i class="fas fa-chevron-right"></i></div>
+                            <div class="faq-answer">Your items may have been shipped separately. Check your shipping confirmation for multiple tracking numbers. If the tracking shows delivery for all items, please contact support.</div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question">4. What if I received a wrong item? <i class="fas fa-chevron-right"></i></div>
+                            <div class="faq-answer">Contact our support team immediately with your order number and a photo of the incorrect item received. We will arrange a return and send the correct item.</div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question">5. How long will it take for my refund to be processed? <i class="fas fa-chevron-right"></i></div>
+                            <div class="faq-answer">Refunds are typically processed within 3-5 business days after the returned items are received and inspected. The funds may take longer to appear in your account depending on your bank.</div>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <div class="faq-question">How long will the order take to arrive? <i class="fas fa-chevron-right"></i></div>
+                            <div class="faq-answer">Standard shipping usually takes 7-10 business days. Expedited options are available at checkout.</div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question">Why is there no tracking update? <i class="fas fa-chevron-right"></i></div>
+                            <div class="faq-answer">Tracking updates can sometimes take 24-48 hours to appear after the initial shipment email. If it persists, please contact us.</div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question">What if I received a defective item? <i class="fas fa-chevron-right"></i></div>
+                            <div class="faq-answer">We apologize! Please provide photos or a video of the defect to our support team for a swift resolution (replacement or refund).</div>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <div class="faq-question">How do I return items? <i class="fas fa-chevron-right"></i></div>
+                            <div class="faq-answer">Please visit our Returns Center and enter your order number and email address to start the automated return process.</div>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <div class="faq-question">How do I cancel my order? <i class="fas fa-chevron-right"></i></div>
+                            <div class="faq-answer">Orders can only be canceled within 2 hours of placing them. Please contact support immediately if you need to cancel.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="view-more">View More <i class="fas fa-chevron-down"></i></div>
+                </main>
+            </div>
+        </section>
+
+        <section class="contact-section">
+            <p>Can't find the answer you are looking for?</p>
+            
+            <div class="contact-options">
+                <a href="#" class="contact-button">Customer Service</a>
+            </div>
+            
+            <div class="contact-info">
+                <span>Ticket within 24 hours</span>
+                <span>Live Chat 04am-08pm (PST Time)</span>
+            </div>
+            
+            <div class="social-media">
+                <hr class="section-divider" style="margin: 40px auto;">
+                <p class="social-media-note">We are also available on social media.</p>
+                <div class="social-media-queue">The service may need to be lined up</div>
+                
+                <a href="#" title="Facebook Messenger">
+                    <div class="social-media-img"><i class="fab fa-facebook"></i></div>
+                </a>
+                
+                <div>Facebook Message</div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // JAVASCRIPT LOGIC for Accordion functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const faqItems = document.querySelectorAll('.faq-item');
+
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+
+                question.addEventListener('click', () => {
+                    const isOpen = item.classList.contains('open');
+
+                    // Close all other open FAQ items (single-open accordion)
+                    faqItems.forEach(otherItem => {
+                        if (otherItem !== item) {
+                            otherItem.classList.remove('open');
+                        }
+                    });
+
+                    // Toggle the 'open' class on the clicked item
+                    if (!isOpen) {
+                        item.classList.add('open');
+                    } else {
+                        item.classList.remove('open');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

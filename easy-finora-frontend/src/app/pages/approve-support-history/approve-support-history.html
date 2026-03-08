@@ -1,0 +1,53 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="glow-text">Support & Tickets Management</h1>
+        <div class="header-actions">
+            <span class="admin-badge">ADMIN PANEL</span>
+        </div>
+    </div>
+
+    <div class="history-table-3d">
+        <div class="table-header">
+            <div class="col">User / Contact</div>
+            <div class="col">Subject</div>
+            <div class="col">Priority</div>
+            <div class="col">Status</div>
+            <div class="col">Date</div>
+            <div class="col actions">Actions</div>
+        </div>
+
+        <div *ngFor="let ticket of tickets" class="table-row admin-row">
+            <div class="col user-info">
+                <span class="user-email">{{ ticket.userName || ticket.contactEmail }}</span>
+                <small class="ref-id">{{ ticket.id.substring(0,8) }}</small>
+            </div>
+            <div class="col subject-col" title="{{ ticket.message }}">
+                <strong>{{ ticket.title }}</strong>
+                <small class="msg-preview">{{ ticket.message | slice:0:50 }}...</small>
+            </div>
+            <div class="col">
+                <span class="priority-badge" [class]="ticket.priority.toLowerCase()">{{ ticket.priority }}</span>
+            </div>
+            <div class="col">
+                <span class="status-badge" [class]="ticket.status.toLowerCase()">{{ ticket.status }}</span>
+            </div>
+            <div class="col">{{ ticket.creationTime | date: 'MMM d, y' }}</div>
+            <div class="col actions">
+                <button class="btn-reply" (click)="reply(ticket)">
+                    {{ ticket.status === 'Open' ? 'Reply' : 'Update' }}
+                </button>
+                <div *ngIf="ticket.adminRemarks" class="remarks-tooltip">
+                    <small>Last Reply: {{ ticket.adminRemarks | slice:0:30 }}...</small>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="tickets.length === 0 && !isLoading" class="table-row">
+            <div class="col" style="width: 100%; text-align: center;">No support tickets found.</div>
+        </div>
+
+        <div *ngIf="isLoading" class="table-row">
+            <div class="col" style="width: 100%; text-align: center;">Loading tickets...</div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,286 @@
+<div class="categories-container">
+  <!-- Custom Toast Notifications -->
+  <div class="toast-host" aria-live="polite" aria-atomic="true">
+    <div class="toast" *ngFor="let toast of toasts" [ngClass]="toast.type" (click)="removeToast(toast.id)">
+      <i class="toast-icon" [ngClass]="getToastIcon(toast.type)"></i>
+      <span class="toast-message">{{ toast.message }}</span>
+      <button type="button" class="toast-close" (click)="$event.stopPropagation(); removeToast(toast.id)">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <h2>Add Categories</h2>
+    <button type="button" class="btn primary" (click)="openAddCategoryModal()">
+      <i class="pi pi-plus"></i>
+      Add Category
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <div class="search-box">
+      <i class="pi pi-search"></i>
+      <input type="text" placeholder="Search category..." [(ngModel)]="searchTerm" (input)="filterTable()" />
+    </div>
+
+    <select [(ngModel)]="selectedStatusFilter" (change)="filterTable()">
+      <option [ngValue]="null">All</option>
+      <option [ngValue]="true">Active</option>
+      <option [ngValue]="false">Inactive</option>
+    </select>
+
+    <button type="button" class="btn" (click)="clearFilters()">
+      <i class="pi pi-filter-slash"></i>
+      Clear
+    </button>
+  </div>
+
+
+
+  <!-- Loader -->
+  <app-game-loader *ngIf="isLoading"></app-game-loader>
+
+  <!-- Table -->
+  <div class="table-container" *ngIf="!isLoading">
+    <table class="simple-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Image</th>
+          <th>Name</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+
+        <tr *ngFor="let category of paginatedCategories">
+          <td>{{ category.id }}</td>
+          <td>
+            <div class="category-image-wrapper">
+              <img *ngIf="category.imageUrl" [src]="category.imageUrl" alt="{{ category.name }}"
+                class="category-thumb" />
+              <div *ngIf="!category.imageUrl" class="no-image">No Image</div>
+              <a *ngIf="category.imageUrl && category.imageUrl.startsWith('http')" [href]="category.imageUrl"
+                target="_blank" class="view-image-link" title="View Full Image">
+                <i class="pi pi-external-link"></i>
+              </a>
+            </div>
+          </td>
+          <td>{{ category.name }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(category.status)">
+              {{ getStatusLabel(category.status) }}
+            </span>
+          </td>
+          <td class="actions">
+            <button type="button" class="btn icon" (click)="openEditCategoryModal(category)" title="Edit">
+              <i class="pi pi-pencil"></i>
+            </button>
+
+          </td>
+        </tr>
+
+        <tr *ngIf="filteredCategories.length === 0">
+          <td colspan="5" class="no-data">No categories found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination">
+    <button class="btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+      <i class="pi pi-angle-left"></i>
+    </button>
+    <span>Page {{ currentPage }} of {{ totalPages }}</span>
+    <button class="btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+      <i class="pi pi-angle-right"></i>
+    </button>
+  </div>
+
+  <!-- Add Category Modal -->
+  <div class="modal-overlay" *ngIf="addCategoryModalVisible" (click)="closeAddCategoryModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <i class="pi pi-folder-open"></i>
+        <h3>Add Category</h3>
+      </div>
+
+      <form [formGroup]="addCategoryForm" (ngSubmit)="saveCategory()">
+        <!-- UPLOAD_UI_VERSION_2 -->
+        <div class="form-group">
+          <label for="addName">Name *</label>
+          <input id="addName" type="text" formControlName="name" placeholder="Enter category name" />
+          <div class="error" *ngIf="addCategoryForm.get('name')?.invalid && addCategoryForm.get('name')?.touched">
+            <span *ngIf="addCategoryForm.get('name')?.errors?.['required']">Name is required</span>
+            <span *ngIf="addCategoryForm.get('name')?.errors?.['minlength']">Minimum 2 characters required</span>
+          </div>
+        </div>
+
+        <div class="form-group image-upload">
+          <label>Category Image</label>
+          <div class="upload-container" (click)="triggerFileInput()" [ngClass]="{'has-image': imagePreviewUrl}">
+            <input #fileInput type="file" (change)="onImageSelect($event)" accept="image/*" style="display: none" />
+
+            <div *ngIf="!imagePreviewUrl" class="upload-placeholder">
+              <i class="pi pi-cloud-upload"></i>
+              <span>Click to upload image</span>
+              <small>JPG, PNG or GIF (Max 2MB)</small>
+            </div>
+
+            <div *ngIf="imagePreviewUrl" class="image-preview">
+              <img [src]="imagePreviewUrl" alt="Category preview" />
+              <button type="button" class="remove-btn" (click)="$event.stopPropagation(); removeImage()">
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+
+            <div *ngIf="isUploading" class="upload-overlay">
+              <i class="pi pi-spin pi-spinner"></i>
+              <span>Uploading...</span>
+            </div>
+          </div>
+          <div *ngIf="imagePreviewUrl && imagePreviewUrl.startsWith('http')" class="azure-status">
+            <span class="status-success"><i class="pi pi-check-circle"></i> Hosted on Azure</span>
+            <a [href]="imagePreviewUrl" target="_blank" class="view-link">View Full Image ↗</a>
+          </div>
+        </div>
+
+        <div class="form-group checkbox">
+          <label>
+            <input type="checkbox" formControlName="status" />
+            <span class="checkbox-label">Active</span>
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn secondary" (click)="closeAddCategoryModal()">
+            Cancel
+          </button>
+          <button type="submit" class="btn primary" [disabled]="addCategoryForm.invalid">
+            Save Category
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Category Modal -->
+  <div class="modal-overlay" *ngIf="editCategoryModalVisible" (click)="closeEditCategoryModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <i class="pi pi-pencil"></i>
+        <h3>Edit Category</h3>
+      </div>
+
+      <form [formGroup]="editCategoryForm" (ngSubmit)="updateCategory()">
+        <div class="form-group">
+          <label for="editName">Name *</label>
+          <input id="editName" type="text" formControlName="name" />
+          <div class="error" *ngIf="editCategoryForm.get('name')?.invalid && editCategoryForm.get('name')?.touched">
+            <span *ngIf="editCategoryForm.get('name')?.errors?.['required']">Name is required</span>
+            <span *ngIf="editCategoryForm.get('name')?.errors?.['minlength']">Minimum 2 characters required</span>
+          </div>
+        </div>
+
+        <div class="form-group image-upload">
+          <label>Category Image</label>
+          <div class="upload-container" (click)="triggerEditFileInput()" [ngClass]="{'has-image': editImagePreviewUrl}">
+            <input #editFileInput type="file" (change)="onEditImageSelect($event)" accept="image/*"
+              style="display: none" />
+
+            <div *ngIf="!editImagePreviewUrl" class="upload-placeholder">
+              <i class="pi pi-cloud-upload"></i>
+              <span>Click to upload image</span>
+              <small>JPG, PNG or GIF (Max 2MB)</small>
+            </div>
+
+            <div *ngIf="editImagePreviewUrl" class="image-preview">
+              <img [src]="editImagePreviewUrl" alt="Category preview" />
+              <button type="button" class="remove-btn" (click)="$event.stopPropagation(); removeEditImage()">
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+
+            <div *ngIf="isUploading" class="upload-overlay">
+              <i class="pi pi-spin pi-spinner"></i>
+              <span>Uploading...</span>
+            </div>
+          </div>
+          <div *ngIf="editImagePreviewUrl && editImagePreviewUrl.startsWith('http')" class="azure-status">
+            <span class="status-success"><i class="pi pi-check-circle"></i> Hosted on Azure</span>
+            <a [href]="editImagePreviewUrl" target="_blank" class="view-link">View Full Image ↗</a>
+          </div>
+        </div>
+
+        <div class="form-group checkbox">
+          <label>
+            <input type="checkbox" formControlName="status" />
+            <span class="checkbox-label">Active</span>
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn secondary" (click)="closeEditCategoryModal()">
+            Cancel
+          </button>
+          <button type="submit" class="btn primary" [disabled]="editCategoryForm.invalid">
+            Update Category
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="deleteConfirmationVisible" (click)="cancelDelete()">
+    <div class="modal-content delete-confirm" (click)="$event.stopPropagation()">
+      <div class="modal-header danger">
+        <i class="pi pi-exclamation-triangle"></i>
+        <h3>Confirm Delete</h3>
+      </div>
+
+      <div class="confirm-body">
+        <p>Are you sure you want to delete <strong>"{{ categoryToDelete?.name }}"</strong>?</p>
+
+        <div *ngIf="productsCount > 0" class="force-delete-warning">
+          <p class="warning-text">
+            <i class="pi pi-exclamation-triangle"></i>
+            This category has <strong>{{ productsCount }} product(s)</strong> associated with it.
+          </p>
+          <p class="info-text">
+            To delete this category <strong>and all its products</strong>, type the category name below:
+          </p>
+          <div class="form-group">
+            <input type="text" [(ngModel)]="deleteConfirmationInput" [placeholder]="'Type: ' + categoryToDelete?.name"
+              class="confirmation-input" />
+          </div>
+          <p class="danger-text">
+            ⚠️ <strong>Warning:</strong> This will permanently delete the category and all {{ productsCount }}
+            product(s). This action cannot be undone!
+          </p>
+        </div>
+
+        <p *ngIf="productsCount === 0" class="warning-text">
+          This action cannot be undone.
+        </p>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" (click)="cancelDelete()">
+          Cancel
+        </button>
+        <button type="button" class="btn danger" (click)="confirmDelete()"
+          [disabled]="productsCount > 0 && deleteConfirmationInput !== categoryToDelete?.name">
+          {{ productsCount > 0 ? 'Delete Category & Products' : 'Delete Category' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

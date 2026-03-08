@@ -1,0 +1,78 @@
+.deal-section {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 85%;
+  margin: 40px auto;
+}
+
+.deal-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  width: 32%; /* default 3 cards per row */
+  padding: 10px;
+  transition: transform 0.3s ease;
+
+  &:hover { transform: translateY(-5px); }
+
+  .deal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+
+    h5 { font-weight: 600; margin: 0; }
+    i { font-size: 1.2rem; color: #555; }
+  }
+
+  .image-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+
+    .deal-product-img {
+      width: 48%; /* default 2 products per row */
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+
+      img { width: 100%; height: auto; border-radius: 8px; transition: opacity 0.4s ease; }
+
+      img.hover-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0;
+      }
+
+      &:hover img.hover-img { opacity: 1; }
+
+      .product-price { font-weight: 600; font-size: 1.1rem; margin-top: 5px; color: #ff4d00; }
+      .product-price-text { margin-top: -10px; color: #ee662c; font-size: 15px; }
+      .product-tag { color: #7aabdc; font-size: 1rem; margin-top: -10px; }
+    }
+  }
+
+  /* ----------------- Responsive ----------------- */
+  @media (max-width: 1200px) {
+    width: 48%; /* 2 cards per row */
+    .image-row .deal-product-img { width: 48%; } 
+  }
+
+  @media (max-width: 768px) {
+    width: 100%; /* 1 card per row */
+    .image-row {
+      flex-direction: column;
+      gap: 10px;
+      .deal-product-img { width: 100%; } /* 1 product per row */
+    }
+  }
+
+  @media (max-width: 480px) {
+    .deal-header h5 { font-size: 14px; }
+    .product-price { font-size: 1rem; }
+    .product-price-text, .product-tag { font-size: 13px; }
+  }
+}

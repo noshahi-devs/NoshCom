@@ -1,0 +1,77 @@
+<div class="customer-dashboard sui-fade-in">
+
+    <!-- Consistent Page Header -->
+    <div class="cust-page-hdr">
+        <div>
+            <div class="cust-page-eyebrow">My Account</div>
+            <h2 class="cust-page-title">Welcome, {{ userName }}</h2>
+        </div>
+        <button class="cust-page-cta" (click)="goShopping()">Shop Now <i class="fas fa-arrow-right"></i></button>
+    </div>
+
+
+    <div class="dashboard-shell">
+
+        <div class="insight-grid">
+            <!-- My Shopping - Clickable to All Orders -->
+            <section class="card highlight" [routerLink]="['/customer/orders']">
+                <div class="card-title">
+                    <span>My Shopping</span>
+                    <span class="badge">All time</span>
+                </div>
+                <div class="card-value">
+                    <span class="currency">$</span>
+                    <span>{{ totalSpend | number:'1.0-0' }}</span>
+                </div>
+                <p>Total spend across all orders</p>
+            </section>
+
+            <!-- Order Tracking - Clickable to Pending/Shipped -->
+            <section class="card tracking-card" [routerLink]="['/customer/orders/Pending']">
+                <div class="card-title">
+                    <span>Order Tracking</span>
+                    <span class="status">{{ orderStatus }}</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress" [style.width.%]="orderProgress"></div>
+                </div>
+                <ul class="steps">
+                    <li *ngFor="let step of trackingSteps; let i = index">
+                        <span class="step-dot" [class.active]="i <= currentStep">{{ i + 1 }}</span>
+                        {{ step }}
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Recent Orders - Clickable to All Orders -->
+            <section class="card compact" [routerLink]="['/customer/orders']">
+                <div class="card-title">
+                    <span>Quick Info</span>
+                    <i class="fas fa-circle-info"></i>
+                </div>
+                <h5 style="font-weight: 800; margin-bottom: 8px;">Recent Activity</h5>
+                <p style="font-size: 13px; color: #6a7085;">Latest updates appear here as soon as you place an order.
+                </p>
+            </section>
+        </div>
+
+        <!-- Interactive Order Statuses -->
+        <section class="orders-card">
+            <div class="orders-header">
+                <h3>My Orders</h3>
+                <a [routerLink]="['/customer/orders']">View All <i class="fas fa-chevron-right"
+                        style="font-size: 10px;"></i></a>
+            </div>
+            <div class="orders-grid">
+                <div class="order-status" *ngFor="let status of orderStatuses"
+                    [routerLink]="['/customer/orders', status.label === 'All' ? '' : status.label]">
+                    <div class="status-icon">
+                        <i class="fas {{status.icon}}"></i>
+                    </div>
+                    <div class="status-label">{{status.label}}</div>
+                    <div class="status-count-outside">{{ status.count }}</div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

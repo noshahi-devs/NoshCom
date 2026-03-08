@@ -1,0 +1,124 @@
+.page-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 48px;
+
+    h1 {
+        margin: 0 0 8px 0;
+        font-size: 36px;
+        font-weight: 700;
+    }
+
+    .subtitle {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 18px;
+    }
+}
+
+.plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.plan-card-3d {
+    background: var(--bg-surface);
+    border-radius: 20px;
+    padding: 32px 24px;
+    box-shadow: var(--shadow-3d-soft);
+    transition: all 0.3s ease;
+    position: relative;
+    border: 2px solid transparent;
+
+    &:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-3d-deep);
+    }
+
+    &.popular {
+        border-color: var(--primary);
+
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            box-shadow: 0 4px 8px rgba(29, 224, 22, 0.3);
+        }
+    }
+
+    h3 {
+        margin: 0 0 16px 0;
+        font-size: 24px;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .price {
+        text-align: center;
+        margin-bottom: 16px;
+
+        .amount {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .period {
+            font-size: 16px;
+            color: var(--text-muted);
+        }
+    }
+
+    .limit {
+        text-align: center;
+        padding: 12px;
+        background: rgba(29, 224, 22, 0.05);
+        border-radius: 12px;
+        margin-bottom: 24px;
+        font-size: 14px;
+        color: var(--text-muted);
+
+        strong {
+            color: var(--primary);
+            font-size: 16px;
+        }
+    }
+
+    .features {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 24px 0;
+
+        li {
+            padding: 10px 0;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            .check {
+                color: var(--primary);
+                font-weight: bold;
+                font-size: 16px;
+            }
+        }
+    }
+
+    .btn-plan {
+        width: 100%;
+        padding: 14px;
+        font-size: 15px;
+    }
+}

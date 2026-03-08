@@ -1,0 +1,156 @@
+.product-3d-viewer {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid rgba(248, 86, 6, 0.1);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .viewer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: var(--grad-glass);
+    border-bottom: 1px solid rgba(248, 86, 6, 0.1);
+
+    .viewer-title {
+      margin: 0;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: var(--text-main);
+    }
+
+    .viewer-controls {
+      display: flex;
+      gap: 8px;
+
+      .control-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        background: var(--bg-card);
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+
+        &:hover {
+          background: var(--primary);
+          color: white;
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-md);
+        }
+
+        &.active {
+          background: var(--primary);
+          color: white;
+        }
+
+        i {
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+
+  .canvas-container {
+    flex: 1;
+    position: relative;
+    min-height: 400px;
+    background: linear-gradient(135deg, #F4F7F9 0%, #E8F0F7 100%);
+    
+    canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
+      border-radius: 0;
+    }
+  }
+
+  .viewer-instructions {
+    display: flex;
+    justify-content: space-around;
+    padding: 16px 20px;
+    background: rgba(248, 86, 6, 0.03);
+    border-top: 1px solid rgba(248, 86, 6, 0.1);
+
+    .instruction-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      transition: all 0.3s ease;
+
+      &:hover {
+        color: var(--primary);
+        transform: translateY(-1px);
+      }
+
+      i {
+        font-size: 1rem;
+        color: var(--primary);
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .product-3d-viewer {
+    .viewer-header {
+      padding: 12px 16px;
+
+      .viewer-title {
+        font-size: 1rem;
+      }
+
+      .viewer-controls {
+        .control-btn {
+          width: 32px;
+          height: 32px;
+          font-size: 0.8rem;
+        }
+      }
+    }
+
+    .canvas-container {
+      min-height: 300px;
+    }
+
+    .viewer-instructions {
+      padding: 12px 16px;
+
+      .instruction-item {
+        font-size: 0.75rem;
+        gap: 6px;
+
+        i {
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .product-3d-viewer {
+    .viewer-instructions {
+      flex-direction: column;
+      gap: 8px;
+      text-align: center;
+
+      .instruction-item {
+        justify-content: center;
+      }
+    }
+  }
+}

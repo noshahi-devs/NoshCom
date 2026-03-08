@@ -1,0 +1,67 @@
+<div class="admin-layout" [class.sidebar-collapsed]="isSidebarCollapsed">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar" [class.show-mobile]="!isSidebarCollapsed">
+        <div class="sidebar-brand">
+            <div class="brand-logo"><i class="fa fa-shield-halved"></i></div>
+            <h5 class="fw-bold mb-0">Admin Panel</h5>
+        </div>
+
+        <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-link nav-dashboard">
+            <i class="fa-solid fa-chart-line"></i> <span>Dashboard</span>
+        </a>
+
+        <div class="nav-header">Marketplace</div>
+        <a routerLink="/admin/stores" routerLinkActive="active" class="nav-link nav-reviews">
+            <i class="fa-solid fa-file-shield"></i> <span>Review Applications</span>
+        </a>
+        <a routerLink="/admin/manage-sellers" routerLinkActive="active" class="nav-link nav-sellers">
+            <i class="fa-solid fa-users-gear"></i> <span>Manage Sellers</span>
+        </a>
+
+        <div class="nav-header">Operations</div>
+        <a routerLink="/admin/settings" routerLinkActive="active" class="nav-link nav-logistics">
+            <i class="fa-solid fa-truck-fast"></i> <span>Global Logistics</span>
+        </a>
+        <a routerLink="/admin/payouts" routerLinkActive="active" class="nav-link nav-financial">
+            <i class="fa-solid fa-money-bill-transfer"></i> <span>Financial Oversight</span>
+        </a>
+        <a routerLink="/admin/orders" routerLinkActive="active" class="nav-link">
+            <i class="fa-solid fa-cart-shopping"></i> <span>Manage Orders</span>
+        </a>
+
+        <div class="nav-header">System</div>
+        <a routerLink="/admin/users" routerLinkActive="active" class="nav-link nav-users">
+            <i class="fa-solid fa-users"></i> <span>User Management</span>
+        </a>
+        <a href="javascript:void(0)" (click)="logout()" class="nav-link logout-link">
+            <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+        </a>
+    </aside>
+
+    <!-- Topbar -->
+    <div class="topbar" id="topbar">
+        <div class="d-flex align-items-center">
+            <i (click)="toggleSidebar()" class="fa fa-bars me-3 text-muted fs-5 cursor-pointer"></i>
+        </div>
+
+        <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center">
+                <div class="text-end me-2 d-none d-sm-block">
+                    <p class="mb-0 x-small text-primary fw-bold" style="font-size: 10px; letter-spacing: 1px;">
+                        ADMINISTRATOR</p>
+                </div>
+                <div class="admin-avatar">
+                    <i class="fa fa-user-tie"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-wrapper" id="main-wrapper">
+        <router-outlet></router-outlet>
+    </div>
+
+    <!-- Mobile Backdrop -->
+    <div *ngIf="!isSidebarCollapsed" (click)="toggleSidebar()" class="sidebar-backdrop d-lg-none"></div>
+</div>

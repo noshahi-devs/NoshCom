@@ -1,0 +1,18 @@
+.customer-shipping {
+    .x-small {
+        font-size: 11px;
+    }
+
+    .uppercase {
+        text-transform: uppercase;
+    }
+
+    .form-select:focus {
+        box-shadow: none;
+        border-color: #000;
+    }
+
+    table {
+        border-collapse: collapse;
+    }
+}

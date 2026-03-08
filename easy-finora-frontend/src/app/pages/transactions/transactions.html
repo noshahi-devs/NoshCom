@@ -1,0 +1,95 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1>Transaction History</h1>
+        <div class="filter-buttons">
+            <button class="filter-btn" [class.active]="filterType === 'all'" (click)="setFilter('all')">All</button>
+            <button class="filter-btn" [class.active]="filterType === 'deposit'"
+                (click)="setFilter('deposit')">Deposits</button>
+            <button class="filter-btn" [class.active]="filterType === 'withdrawal'"
+                (click)="setFilter('withdrawal')">Withdrawals</button>
+            <button class="filter-btn" [class.active]="filterType === 'transfer'"
+                (click)="setFilter('transfer')">Transfers</button>
+            <button class="filter-btn" [class.active]="filterType === 'card'" (click)="setFilter('card')">Card
+                Transactions</button>
+            <div class="inline-loader" *ngIf="isLoading">
+                <span class="dot"></span>
+                <span>Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="transactions-table-3d">
+        <div class="table-header">
+            <div class="col">Transaction ID</div>
+            <div class="col">Type</div>
+            <div class="col">Description</div>
+            <div class="col">Amount</div>
+            <div class="col">Status</div>
+            <div class="col">Date</div>
+        </div>
+
+        @if (isLoading) {
+            <div class="table-row ghost-row" *ngFor="let _ of skeletonRows">
+                <div class="col"><span class="ghost-line id"></span></div>
+                <div class="col"><span class="ghost-pill"></span></div>
+                <div class="col"><span class="ghost-line desc"></span></div>
+                <div class="col"><span class="ghost-line amt"></span></div>
+                <div class="col"><span class="ghost-pill muted"></span></div>
+                <div class="col"><span class="ghost-line date"></span></div>
+            </div>
+        } @else {
+            @for (txn of filteredTransactions; track txn.id) {
+            <div class="table-row">
+                <div class="col id-col">
+                    <span class="transaction-id-chip" [attr.title]="getTransactionIdTooltip(txn)">
+                        {{ getDisplayTransactionId(txn) }}
+                    </span>
+                </div>
+                <div class="col">
+                    <span class="type-badge" [ngClass]="(txn.type || 'unknown').toLowerCase()">{{ txn.type }}</span>
+                </div>
+                <div class="col">{{ txn.description }}</div>
+                <div class="col amount-col" [class.negative]="txn.amount < 0" [class.positive]="txn.amount > 0">
+                    <span class="amount-pill">
+                        {{ txn.amount | currency: 'USD' }}
+                    </span>
+                </div>
+                <div class="col">
+                    <span class="status-badge"
+                        [ngClass]="(txn.status || 'completed').toLowerCase()">{{ txn.status }}</span>
+                </div>
+                <div class="col">{{ txn.date | date: 'MMM d, y h:mm a' }}</div>
+            </div>
+            } @empty {
+            <div class="empty-state">
+                <p>No transactions found for this filter.</p>
+            </div>
+            }
+        }
+
+        <!-- Pagination Section -->
+        <div class="pagination-container" *ngIf="totalCount > 0 && !isLoading">
+            <div class="pagination-info">
+                Showing {{ getStartIndex() }} to {{ getEndIndex() }} of {{ totalCount }} transactions
+            </div>
+
+            <div class="pagination-controls">
+                <button class="btn-pagination" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+
+                <div class="page-numbers">
+                    <button *ngFor="let page of getPageNumbers()" class="page-btn" [class.active]="page === currentPage"
+                        (click)="changePage(page)">
+                        {{ page }}
+                    </button>
+                </div>
+
+                <button class="btn-pagination" [disabled]="currentPage === totalPages"
+                    (click)="changePage(currentPage + 1)">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

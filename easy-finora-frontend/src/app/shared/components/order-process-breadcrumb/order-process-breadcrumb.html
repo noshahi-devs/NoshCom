@@ -1,0 +1,17 @@
+<div class="breadcrumb-container">
+  <div class="breadcrumb">
+    <ng-container *ngFor="let step of steps; let i = index">
+      <span
+        class="breadcrumb-step"
+        [class.active-step]="i === activeStep"
+      >
+        {{ step }}
+      </span>
+
+      <!-- separator ONLY between items -->
+      <span class="separator" *ngIf="i < steps.length - 1">
+        &gt;
+      </span>
+    </ng-container>
+  </div>
+</div>

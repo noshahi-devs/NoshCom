@@ -1,0 +1,91 @@
+<div class="customer-wishlist sui-fade-in">
+    <div class="cust-page-hdr">
+        <div>
+            <div class="cust-page-eyebrow">My Account</div>
+            <h2 class="cust-page-title">My Wishlist</h2>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="sui-tabs mb-5 justify-content-center">
+        <div (click)="setTab('items')" [class.active]="activeTab === 'items'" class="sui-tab-item uppercase">ITEMS (0)
+        </div>
+        <div (click)="setTab('boards')" [class.active]="activeTab === 'boards'" class="sui-tab-item uppercase">BOARDS
+            (0)</div>
+    </div>
+
+    <!-- ITEMS PAGE -->
+    <div *ngIf="activeTab === 'items'" class="items-page">
+        <div class="sui-card border-0 bg-light py-5 text-center mb-5">
+            <p class="x-small text-muted uppercase fw-bold mb-4">You currently have nothing saved to your wishlist.</p>
+            <button class="sui-btn sui-btn-primary px-5">SHOP NOW</button>
+        </div>
+
+        <div class="row g-5 align-items-center mb-5">
+            <div class="col-md-6 border-end">
+                <h4 class="fw-bold mb-3">HEART IT.</h4>
+                <p class="x-small text-muted mb-4">PERSONALIZED YOUR SHOPPING EXPERIENCE WITH YOUR WISHLIST.</p>
+                <div class="feature-list">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <i class="fas fa-check-circle x-small"></i>
+                        <span class="x-small fw-bold">TRACK PRICE DROPS</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <i class="fas fa-check-circle x-small"></i>
+                        <span class="x-small fw-bold">STOCK UPDATES</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <i class="fas fa-check-circle x-small"></i>
+                        <span class="x-small fw-bold">SHARE BOARDS WITH FRIENDS</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 text-center">
+                <div class="bg-light p-5 border">
+                    <i class="fas fa-heart fa-4x text-muted opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOARDS PAGE -->
+    <div *ngIf="activeTab === 'boards'" class="boards-page text-center py-5">
+        <div class="sui-card bg-light border-0 py-5">
+            <div class="mb-4">
+                <i class="fas fa-th-large fa-4x text-muted opacity-25"></i>
+            </div>
+            <h4 class="fw-bold mb-2">BOARDS</h4>
+            <p class="x-small text-muted mb-4 uppercase">New way to manage your favorite items! You can classify on your
+                own style and share it with friends.</p>
+            <button class="sui-btn sui-btn-primary">CREATE BOARD</button>
+        </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="recommendations mt-5 pt-5 border-top">
+        <h4 class="fw-bold text-center mb-4 uppercase">You May Also Like</h4>
+
+        <div class="category-filters d-flex gap-2 justify-content-center overflow-auto pb-3 no-scrollbar mb-4">
+            <div *ngFor="let cat of categories" (click)="setCategory(cat)" [class.active]="activeCategory === cat"
+                class="sui-tag-pill">
+                {{cat | uppercase}}
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div *ngFor="let i of [1,2,3,4]" class="col-6 col-md-3">
+                <div class="sui-card p-0 overflow-hidden">
+                    <div class="bg-light aspect-parent" style="height: 200px;">
+                        <div class="d-flex align-items-center justify-content-center h-100 opacity-25">
+                            <i class="fas fa-image fa-2x"></i>
+                        </div>
+                    </div>
+                    <div class="p-2 border-top">
+                        <div class="fw-bold x-small">PRODUCT NAME</div>
+                        <div class="fw-bold">$19.99</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

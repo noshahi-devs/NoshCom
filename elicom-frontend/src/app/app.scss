@@ -1,0 +1,44 @@
+.app-shell {
+    --wc-header-height: 170px;
+    --wc-sticky-top: 186px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-top: var(--wc-header-height);
+    transition: padding-top 0.28s ease;
+
+    &.header-hidden {
+        --wc-sticky-top: 16px;
+        padding-top: 0;
+    }
+}
+
+.app-header-wrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1300;
+    transition: transform 0.28s ease;
+    will-change: transform;
+
+    &.is-hidden {
+        transform: translateY(calc(-1 * var(--wc-header-height)));
+    }
+}
+
+.app-main {
+    flex: 1 0 auto;
+    min-width: 0;
+}
+
+.app-footer {
+    margin-top: auto;
+}
+
+@media (max-width: 768px) {
+    .app-shell {
+        --wc-header-height: 148px;
+        --wc-sticky-top: 164px;
+    }
+}

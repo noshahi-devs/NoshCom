@@ -1,0 +1,357 @@
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { HeroCarouselComponent } from '../../shared/components/hero-carousel/hero-carousel';
+import { CategoryCarouselComponent } from '../../shared/components/category-carousel/category-carousel';
+import { DealCardComponent } from '../../shared/components/deal-card/deal-card';
+import { ProductService, ProductCardDto } from '../../services/product';
+import { environment } from '../../../environments/environment';
+import { CategoryService, Category } from '../../services/category';
+import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
+
+@Component({
+  selector: 'app-home',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    HeroCarouselComponent,
+    CategoryCarouselComponent,
+    DealCardComponent
+  ],
+  templateUrl: './home.html',
+  styleUrls: ['./home.scss']
+})
+export class HomeComponent implements OnInit {
+
+  products: ProductCardDto[] = [];
+  sections: {
+    id: string;
+    title: string;
+    subtitle: string;
+    badge: string;
+    tone: 'warm' | 'cool' | 'deal' | 'neutral';
+    style: 'premium' | 'compact' | 'horizontal' | 'carousel' | 'forYou' | 'gallery';
+    products: ProductCardDto[];
+    initialCount?: number;
+  }[] = [];
+  sectionVisible: Record<string, number> = {};
+
+  bestSellers: ProductCardDto[] = [];
+  popularApparel: ProductCardDto[] = [];
+  deals: ProductCardDto[] = [];
+  bestBooks: ProductCardDto[] = [];
+  categories: Category[] = [];
+  productError: string = '';
+  categoryError: string = '';
+  isLoadingCategories: boolean = false;
+  isLoadingProducts: boolean = false;
+
+  constructor(
+    private productService: ProductService,
+    private categoryService: CategoryService,
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    if (this.authService.isAuthenticated) {
+      if (this.authService.isAdmin() || this.authService.isSeller()) {
+        this.authService.navigateToDashboard();
+        return;
+      }
+    }
+    this.loadProducts();
+    this.loadCategories();
+  }
+
+  loadProducts() {
+    this.isLoadingProducts = true;
+    this.productError = '';
+
+    console.log('HomeComponent: Loading products...');
+    this.productService.getProductsForCards(0, 200).subscribe({
+      next: (res: any) => {
+        this.isLoadingProducts = false;
+        let items: any[] = [];
+        if (Array.isArray(res)) items = res;
+        else if (res && Array.isArray(res.items)) items = res.items;
+        else if (res && Array.isArray(res.result)) items = res.result;
+
+        console.log('HomeComponent: Products received:', items.length);
+        this.products = items;
+        this.buildSections(items);
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.isLoadingProducts = false;
+        console.error('HomeComponent: Products error:', err);
+        this.productError = this.extractErrorMessage(err, 'Failed to load products');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  loadCategories() {
+    this.isLoadingCategories = true;
+    this.categoryError = '';
+    console.log('HomeComponent: Triggering robust category load...');
+    this.categoryService.getAllCategories(8).subscribe({
+      next: (res: any[]) => {
+        this.isLoadingCategories = false;
+        console.log('HomeComponent: Categories arrived reliably. Count:', res.length);
+        this.categories = res;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isLoadingCategories = false;
+        console.error('HomeComponent: Critical category load failure', err);
+        this.categoryError = this.extractErrorMessage(err, 'Failed to load categories');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private extractErrorMessage(err: any, defaultMsg: string): string {
+    if (err.error?.error?.message) {
+      return err.error.error.message;
+    }
+    if (err.error?.message) {
+      return err.error.message;
+    }
+    if (err.statusText) {
+      return `Server Error: ${err.statusText} (${err.status})`;
+    }
+    return defaultMsg;
+  }
+
+  private buildSections(items: ProductCardDto[]) {
+    const baseItems = this.expandItems(items, 80);
+    const pool = [...baseItems];
+
+    const take = (source: ProductCardDto[], count: number) => {
+      const picked = source.slice(0, count);
+      const pickedIds = new Set(picked.map(p => this.getKey(p)));
+      // remove picked from pool
+      for (let i = pool.length - 1; i >= 0; i--) {
+        if (pickedIds.has(this.getKey(pool[i]))) {
+          pool.splice(i, 1);
+        }
+      }
+      return picked;
+    };
+
+    const shuffle = (arr: ProductCardDto[]) => {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    };
+
+    const discountedSource = baseItems.filter(p =>
+      (p as any).resellerDiscountPercentage > 0 ||
+      ((p as any).originalPrice && (p as any).originalPrice > (p as any).price)
+    );
+
+    const discounted = take(discountedSource, 36);
+    const topProducts = take(pool.slice().sort((a, b) => (b.price || 0) - (a.price || 0)), 24);
+    const forYou = take(shuffle(pool), 32);
+    const trending = take(shuffle(pool), 24);
+    const freshFinds = take(shuffle(pool), 24);
+
+    const fallbackFromBase = (count: number) => shuffle(baseItems).slice(0, count);
+
+    const ensure = (list: ProductCardDto[], fallbackCount: number) => {
+      if (list.length > 0) return list;
+      const fallback = take(shuffle(pool), fallbackCount);
+      return fallback.length ? fallback : fallbackFromBase(fallbackCount);
+    };
+
+    this.bestSellers = topProducts.slice(0, 8);
+    this.popularApparel = this.pickByCategory(baseItems, ['fashion', 'apparel', 'clothing', 'men', 'women'], 8);
+    this.deals = discounted.slice(0, 8);
+    this.bestBooks = this.pickByCategory(baseItems, ['book', 'books'], 8);
+
+    if (this.bestBooks.length === 0) {
+      this.bestBooks = take(shuffle(pool), 8);
+    }
+
+    this.sections = [
+      {
+        id: 'gallery-top',
+        title: 'Top Picks Gallery',
+        subtitle: 'Curated highlights with a premium showcase feel',
+        badge: 'Top Picks',
+        tone: 'warm',
+        style: 'gallery',
+        products: ensure(topProducts, 24),
+        initialCount: 16
+      },
+      {
+        id: 'for-you',
+        title: 'Just For You',
+        subtitle: 'Personalized picks with standout value',
+        badge: 'For You',
+        tone: 'cool',
+        style: 'forYou',
+        products: ensure(forYou, 24),
+        initialCount: 24
+      },
+      {
+        id: 'hot-drops',
+        title: 'Hot Drops Carousel',
+        subtitle: 'Fast-moving deals and new arrivals',
+        badge: 'Hot Drops',
+        tone: 'deal',
+        style: 'carousel',
+        products: discounted.length ? discounted : ensure(trending, 24),
+        initialCount: 0
+      },
+      {
+        id: 'premium-spotlight',
+        title: 'Premium Spotlight',
+        subtitle: 'Elevated looks, new favorites, and standout brands',
+        badge: 'Spotlight',
+        tone: 'neutral',
+        style: 'premium',
+        products: ensure(freshFinds, 24),
+        initialCount: 16
+      }
+    ];
+
+    this.sectionVisible = {};
+    this.sections.forEach(s => {
+      if (s.initialCount && s.initialCount > 0) {
+        this.sectionVisible[s.id] = s.initialCount;
+      }
+    });
+  }
+
+  private getKey(p: ProductCardDto): string {
+    return ((p as any).__cloneId || p.storeProductId || p.id || p.productId || '') as string;
+  }
+
+  private pickByCategory(items: ProductCardDto[], keywords: string[], count: number): ProductCardDto[] {
+    const hits = items.filter(p => {
+      const name = (p.categoryName || p.title || '').toLowerCase();
+      return keywords.some(k => name.includes(k));
+    });
+    if (hits.length === 0) return [];
+    return hits.slice(0, count);
+  }
+
+  getTitle(product: any): string {
+    return (product.title || product.productName || product.name || 'Untitled Product').toString().trim();
+  }
+
+  getImage(product: any): string {
+    let val = product.image1 || product.productImage || product.imageUrl || product.image2;
+
+    if (!val || val === 'string' || val.trim() === '') {
+      const seed = product.__cloneId || product.id || product.productId || 'p';
+      return `https://picsum.photos/seed/${seed}/400/520`;
+    }
+
+    if (typeof val === 'string') {
+      const urls = val.match(/https?:\/\/[^\s"'\\]+/g);
+      if (urls && urls.length) {
+        val = urls.find((u) => u.includes('picsum.photos')) || urls[0];
+      }
+      val = val.replace(/^\["/, '').replace(/"\]$/, '').replace(/^"/, '').replace(/"$/, '').replace(/\\"/g, '');
+      if (val.includes('","')) {
+        val = val.split('","')[0];
+      } else if (val.includes(',')) {
+        val = val.split(',')[0];
+      }
+    }
+
+    val = val ? val.trim() : '';
+    if (!val) {
+      const seed = product.__cloneId || product.id || product.productId || 'p';
+      return `https://picsum.photos/seed/${seed}/400/520`;
+    }
+
+    if (val.includes('cdn.elicom.com') || val.includes('hair.png')) {
+      const seed = val.split('/').pop() || this.getTitle(product);
+      return `https://picsum.photos/seed/${seed}/400/520`;
+    }
+
+    if (val.startsWith('http')) return val;
+
+    return `${(environment as any).apiUrl}/${val.startsWith('/') ? val.substring(1) : val}`;
+  }
+
+  onImgError(event: Event, product: any) {
+    const target = event.target as HTMLImageElement;
+    if (!target || (target.dataset && target.dataset['fallback'] === '1')) return;
+    if (target.dataset) {
+      target.dataset['fallback'] = '1';
+    }
+    const seed = product?.__cloneId || product?.id || product?.productId || 'fallback';
+    target.src = `https://picsum.photos/seed/${seed}/400/520`;
+  }
+
+  private expandItems(items: ProductCardDto[], minCount: number): ProductCardDto[] {
+    if (!items || items.length === 0) return items;
+    if (items.length >= minCount) return items;
+    const expanded: ProductCardDto[] = [];
+    let idx = 0;
+    while (expanded.length < minCount) {
+      for (const item of items) {
+        const clone: any = { ...item, __cloneId: `${this.getKey(item)}_${idx++}` };
+        expanded.push(clone);
+        if (expanded.length >= minCount) break;
+      }
+    }
+    return expanded;
+  }
+
+  scrollCarousel(container: HTMLElement, dir: number) {
+    if (!container) return;
+    container.scrollBy({ left: dir * 700, behavior: 'smooth' });
+  }
+
+  showMore(sectionId: string, step: number = 8) {
+    const current = this.sectionVisible[sectionId] || 0;
+    this.sectionVisible[sectionId] = current + step;
+  }
+
+  getVisibleProducts(section: { id: string; products: ProductCardDto[]; initialCount?: number }) {
+    const count = this.sectionVisible[section.id] || section.initialCount || section.products.length;
+    return section.products.slice(0, count);
+  }
+
+  getDiscountPercent(product: any): number {
+    const direct = Number(product.resellerDiscountPercentage || 0);
+    if (direct > 0) return Math.round(direct);
+    const original = Number(product.originalPrice || 0);
+    const price = Number(product.price || 0);
+    if (original > price && original > 0) {
+      return Math.round(((original - price) / original) * 100);
+    }
+    return 0;
+  }
+
+  getRating(product: any): number {
+    const seed = this.hashSeed(this.getKey(product) || this.getTitle(product));
+    return 3.8 + (seed % 12) / 10; // 3.8 - 5.0
+  }
+
+  getReviewCount(product: any): number {
+    const seed = this.hashSeed(this.getKey(product) || this.getTitle(product));
+    return 120 + (seed % 4800);
+  }
+
+  private hashSeed(value: string): number {
+    let hash = 0;
+    for (let i = 0; i < value.length; i++) {
+      hash = (hash << 5) - hash + value.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash);
+  }
+}

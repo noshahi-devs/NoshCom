@@ -1,0 +1,15 @@
+<div class="sidebar-inner" style="overflow-y: auto; height: 100vh; padding-bottom: 2rem;">
+
+
+  <div class="menu-list">
+    <ng-container *ngFor="let section of filteredMenuSections">
+      <div *ngFor="let item of section.items" class="menu-item" routerLinkActive="active"
+        [routerLink]="item.label === 'Logout' ? null : item.route" (click)="item.label === 'Logout' ? logout() : null"
+        [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}">
+        <!-- Exact match for dashboard usually needed to avoid always active -->
+        <span class="icon">{{ item.icon }}</span>
+        <span class="label">{{ item.label }}</span>
+      </div>
+    </ng-container>
+  </div>
+</div>

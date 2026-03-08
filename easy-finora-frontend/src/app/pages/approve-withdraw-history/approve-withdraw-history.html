@@ -1,0 +1,201 @@
+<div class="page-container">
+    <div class="page-header">
+        <div class="page-header-left">
+            <h1 class="glow-text">Approve Withdraw Requests</h1>
+            <p class="subtitle">{{ totalCount }} total requests</p>
+        </div>
+        <div class="header-actions">
+            <div class="filter-buttons">
+                <button class="filter-btn" [class.active]="statusFilter === 'all'" (click)="setStatusFilter('all')">All</button>
+                <button class="filter-btn" [class.active]="statusFilter === 'pending'" (click)="setStatusFilter('pending')">Pending</button>
+                <button class="filter-btn" [class.active]="statusFilter === 'approved'" (click)="setStatusFilter('approved')">Approved</button>
+                <button class="filter-btn" [class.active]="statusFilter === 'rejected'" (click)="setStatusFilter('rejected')">Reject</button>
+            </div>
+            <span class="admin-badge">ADMIN PANEL</span>
+            <div class="inline-loader" *ngIf="isLoading">
+                <span class="dot"></span>
+                <span>Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="history-table-3d">
+        <div class="table-header">
+            <div class="col">User / Card</div>
+            <div class="col">Amount</div>
+            <div class="col">Status</div>
+            <div class="col">Proof</div>
+            <div class="col">Date</div>
+            <div class="col actions">Actions</div>
+        </div>
+
+        <div *ngFor="let withdraw of withdrawals" class="table-row admin-row" (click)="viewDetails(withdraw)">
+            <div class="col user-info">
+                <span class="user-email">{{ withdraw.userName ? withdraw.userName.replace('GP_', '') : 'Unknown'
+                    }}</span>
+                <small class="ref-id">Card: {{ withdraw.cardId }}</small>
+            </div>
+            <div class="col amount-info">
+                <div class="main-amount debit">-{{ withdraw.amount | currency: 'USD' }}</div>
+                <small class="local-amount" *ngIf="withdraw.localAmount">{{ withdraw.localAmount | number }} {{
+                    withdraw.localCurrency }}</small>
+            </div>
+            <div class="col">
+                <span class="status-badge" [class]="withdraw.status.toLowerCase()">{{ withdraw.status }}</span>
+            </div>
+            <div class="col proof-col">
+                <button *ngIf="withdraw.hasProof || withdraw.paymentProof" class="btn-view-proof"
+                    (click)="$event.stopPropagation(); viewProof(withdraw)" title="View Payment Proof">
+                    🖼️
+                </button>
+            </div>
+            <div class="col">{{ withdraw.creationTime | date: 'MMM d, h:mm a' }}</div>
+            <div class="col actions">
+                <button class="btn-view-request" (click)="$event.stopPropagation(); viewDetails(withdraw)">
+                    View Request
+                </button>
+            </div>
+        </div>
+
+        <div *ngIf="withdrawals.length === 0 && !isLoading" class="table-row">
+            <div class="col" style="width: 100%; text-align: center;">No withdraw requests found.</div>
+        </div>
+
+        <!-- Pagination Section -->
+        <div class="pagination-container" *ngIf="totalCount > 0 && !isLoading">
+            <div class="pagination-info">
+                Showing {{ getStartIndex() }} to {{ getEndIndex() }} of {{ totalCount }} withdrawals
+            </div>
+
+            <div class="pagination-controls">
+                <button class="btn-pagination" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+
+                <div class="page-numbers">
+                    <button *ngFor="let page of getPageNumbers()" class="page-btn" [class.active]="page === currentPage"
+                        (click)="changePage(page)">
+                        {{ page }}
+                    </button>
+                </div>
+
+                <button class="btn-pagination" [disabled]="currentPage === totalPages"
+                    (click)="changePage(currentPage + 1)">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <app-loader *ngIf="isLoading" message="Processing global withdrawal requests..."></app-loader>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal-overlay" *ngIf="showModal && selectedWithdraw">
+    <div class="modal-content glassmorphism">
+        <div class="modal-header">
+            <h3>Withdrawal Details</h3>
+            <button class="close-btn" (click)="showModal = false">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="detail-section">
+                <h6>User Information</h6>
+                <p><strong>Username:</strong> {{ selectedWithdraw.userName ? selectedWithdraw.userName.replace('GP_',
+                    '') : 'N/A' }}</p>
+                <p><strong>Card ID:</strong> {{ selectedWithdraw.cardId }}</p>
+            </div>
+
+            <div class="detail-section">
+                <h6>Amount Details</h6>
+                <div class="amount-grid">
+                    <div class="amount-card captured">
+                        <div class="card-label">Captured Value</div>
+                        <div class="usd-amount">{{ selectedWithdraw.amount | currency:'USD' }}</div>
+                        <div class="local-amount-large" *ngIf="selectedWithdraw.localAmount">
+                            ≈ {{ selectedWithdraw.localAmount | number }} {{ selectedWithdraw.localCurrency }}
+                        </div>
+                    </div>
+                    <div class="amount-card live" *ngIf="exchangeRates['PKR']">
+                        <div class="card-label">Live Market Value</div>
+                        <div class="pkr-amount">{{ calculateCurrentPkr(selectedWithdraw.amount) | number }} PKR</div>
+                        <div class="rate-info">Rate: 1 USD = {{ exchangeRates['PKR'] | number:'1.2-2' }} PKR</div>
+                        <button class="btn-copy-pkr"
+                            (click)="copyToClipboard(calculateCurrentPkr(selectedWithdraw.amount).toString())">
+                            Copy PKR Amount
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h6>Bank Details</h6>
+                <div class="structured-details" *ngIf="getBankDetails(selectedWithdraw.paymentDetails) as bank">
+                    <div class="detail-item">
+                        <label>Bank Name</label>
+                        <div class="value-row">
+                            <span>{{ bank.bank || 'N/A' }}</span>
+                            <button class="btn-copy" (click)="copyToClipboard(bank.bank)"
+                                title="Copy Bank Name">📋</button>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <label>Account Title</label>
+                        <div class="value-row">
+                            <span>{{ bank.title || 'N/A' }}</span>
+                            <button class="btn-copy" (click)="copyToClipboard(bank.title)"
+                                title="Copy Account Title">📋</button>
+                        </div>
+                    </div>
+                    <div class="detail-item highlighting">
+                        <label>Account Number</label>
+                        <div class="value-row">
+                            <span class="mono">{{ bank.account || 'N/A' }}</span>
+                            <button class="btn-copy-main" (click)="copyToClipboard(bank.account)"
+                                title="Copy Account Number">Copy Account</button>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <label>IBAN</label>
+                        <div class="value-row">
+                            <span class="mono">{{ bank.iban || 'N/A' }}</span>
+                            <button class="btn-copy" *ngIf="bank.iban" (click)="copyToClipboard(bank.iban)"
+                                title="Copy IBAN">📋</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section" *ngIf="selectedWithdraw.status === 'Pending'">
+                <h6>Administrative Action</h6>
+                <div class="form-group">
+                    <label>Admin Remarks</label>
+                    <input type="text" [(ngModel)]="adminRemarks" class="form-control" placeholder="Enter remarks...">
+                </div>
+                <div class="form-group">
+                    <label>Payment Proof (Image)</label>
+                    <input type="file" (change)="onFileSelected($event)" accept="image/*" class="form-control">
+                </div>
+            </div>
+
+            <div class="detail-section" *ngIf="selectedWithdraw.status === 'Approved' && selectedWithdraw.paymentProof">
+                <h6>Payment Proof</h6>
+                <img [src]="selectedWithdraw.paymentProof" class="proof-preview-large">
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-secondary" (click)="showModal = false">Close</button>
+            <button class="btn-approve" *ngIf="selectedWithdraw.status === 'Pending'"
+                (click)="approve(selectedWithdraw)" [disabled]="isApproving || isRejecting">
+                <span *ngIf="!isApproving">Confirm & Approve</span>
+                <span *ngIf="isApproving" class="btn-spinner"></span>
+            </button>
+            <button class="btn-reject" *ngIf="selectedWithdraw.status === 'Pending'" (click)="reject(selectedWithdraw)"
+                [disabled]="isApproving || isRejecting">
+                <span *ngIf="!isRejecting">Reject Request</span>
+                <span *ngIf="isRejecting" class="btn-spinner"></span>
+            </button>
+        </div>
+    </div>
+</div>

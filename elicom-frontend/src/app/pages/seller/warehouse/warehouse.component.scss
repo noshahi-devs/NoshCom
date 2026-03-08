@@ -1,0 +1,250 @@
+.warehouse-content {
+    padding: 20px;
+
+    .dashboard-header {
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.05), rgba(99, 102, 241, 0.1));
+        border-radius: 20px;
+        padding: 30px;
+        border: 1px solid rgba(79, 70, 229, 0.1);
+    }
+
+    .btn-primary-custom {
+        background: #4f46e5;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s;
+
+        &:hover {
+            background: #4338ca;
+            box-shadow: 0 8px 16px rgba(79, 70, 229, 0.25);
+            transform: translateY(-2px);
+        }
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+
+            .stat-icon {
+                width: 50px;
+                height: 50px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5rem;
+                background: rgba(79, 70, 229, 0.1);
+                color: #4f46e5;
+
+                &.success {
+                    background: rgba(16, 185, 129, 0.1);
+                    color: #10b981;
+                }
+
+                &.warning {
+                    background: rgba(245, 158, 11, 0.1);
+                    color: #f59e0b;
+                }
+            }
+
+            .stat-info {
+                h3 {
+                    margin: 0;
+                    font-weight: 800;
+                    color: #1e293b;
+                }
+
+                p {
+                    margin: 0;
+                    color: #64748b;
+                    font-size: 0.9rem;
+                }
+            }
+        }
+    }
+
+    .store-card {
+        background: white;
+        padding: 25px;
+        border-radius: 20px;
+        border: 1px solid #f1f5f9;
+        transition: all 0.3s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+
+        &:hover {
+            border-color: #4f46e5;
+            box-shadow: 0 15px 40px rgba(79, 70, 229, 0.1);
+        }
+
+        &.inactive {
+            background: #f8fafc;
+            opacity: 0.8;
+        }
+
+        .store-icon {
+            width: 46px;
+            height: 46px;
+            background: rgba(79, 70, 229, 0.1);
+            color: #4f46e5;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: #f1f5f9;
+            color: #64748b;
+
+            &.active {
+                background: rgba(16, 185, 129, 0.1);
+                color: #10b981;
+            }
+        }
+
+        .store-short-desc {
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .store-meta {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .btn-outline-custom {
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.2s;
+
+            &:hover {
+                background: #f1f5f9;
+                color: #1e293b;
+            }
+        }
+
+        .btn-publish-custom {
+            background: #10b981;
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: 600;
+            border: none;
+
+            &:hover {
+                background: #059669;
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+            }
+        }
+
+        .btn-status-custom {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &.active {
+                background: rgba(239, 68, 68, 0.1);
+                color: #ef4444;
+                border-color: rgba(239, 68, 68, 0.2);
+
+                &:hover {
+                    background: #ef4444;
+                    color: white;
+                }
+            }
+
+            &:not(.active):hover {
+                background: #10b981;
+                color: white;
+                border-color: #10b981;
+            }
+        }
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 1100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .modal-content-custom {
+        background: white;
+        width: 100%;
+        max-width: 700px;
+        border-radius: 24px;
+        padding: 35px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        animation: modalFadeUp 0.3s ease-out;
+    }
+
+    @keyframes modalFadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-label-custom {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+    }
+
+    .form-control-custom {
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        transition: border-color 0.2s;
+
+        &:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+            outline: none;
+        }
+    }
+}

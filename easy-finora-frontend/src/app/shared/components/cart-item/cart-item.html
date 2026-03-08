@@ -1,0 +1,204 @@
+<div class="cart-wrapper">
+
+    <!-- LEFT SIDE -->
+    <div class="lhs">
+
+        <!-- COUPON LINE -->
+        <div class="top-line">
+            <span><i class="fa-solid fa-check"></i> Use coupon now to save</span>
+            <span class="red-text">$10.11</span>
+        </div>
+
+        <!-- ALL ITEMS --> 
+        <div class="all-items white-box">
+            <input type="checkbox" [checked]="allSelected" (change)="toggleAll($event.target.checked)"
+                class="form-check-input me-2" />
+            <span><b>ALL ITEMS ({{ products.length }})</b></span>
+        </div>
+        <div class="shop-product">
+            <!-- SHOP HEADER -->
+            <div class="d-flex align-items-center brand-name">
+                <input type="checkbox" class="form-check-input" [checked]="allSelected"
+                    (change)="toggleAll($event.target.checked)">
+
+                <svg style="width:20px;height:20px;" width="20" height="20" viewBox="0 0 20 20" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M4.02392 2.16675C3.66381 2.16675 3.33301 2.36523 3.16354 2.68298L2.0101 4.84568C1.25754 6.25672 1.5275 7.99524 2.67251 9.11163C2.8211 9.2565 2.97729 9.38258 3.1391 9.49069V16.6667C3.1391 17.311 3.66144 17.8333 4.30577 17.8333H15.6947C16.339 17.8333 16.8613 17.311 16.8613 16.6667V9.49041C17.023 9.38236 17.179 9.25637 17.3275 9.11163C18.4725 7.99524 18.7425 6.25672 17.9899 4.84568L16.8365 2.68298C16.6709 2.37258 16.3466 2.16675 15.9783 2.16675H10V3.66675H15.6611L16.6664 5.55156C17.1049 6.37388 16.9476 7.38703 16.2803 8.03763C15.2531 9.03914 13.5278 8.31146 13.5278 6.87761V6.30961L12.0276 6.30957V6.38895C12.0276 7.50886 11.1197 8.41673 9.99982 8.41673C8.88821 8.41673 7.98551 7.52226 7.9722 6.41381V6.30961L6.47205 6.30957V6.38895C6.47205 6.39989 6.4721 6.41082 6.4722 6.42174V6.87761C6.4722 8.31146 4.74686 9.03914 3.71966 8.03763C3.05238 7.38703 2.89506 6.37388 3.33363 5.55156L4.33886 3.66675H10V2.16675H4.02392ZM7.36784 8.73802C6.73516 9.58606 5.68929 10.0636 4.6391 9.99841V16.3333H15.3613V9.99838C14.3109 10.0637 13.2647 9.5861 12.632 8.7378C11.986 9.46127 11.0461 9.91673 9.99982 9.91673C8.95367 9.91673 8.01388 9.46136 7.36784 8.73802Z"
+                        fill="currentColor"></path>
+                </svg>
+                <span class="fw-bold shop-name">{{ shop.name }}</span>
+            </div>
+
+            <!-- FREE SHIPPING -->
+            <div class="free-ship">
+                <svg style="width:16px;height:16px;" width="18" height="18" viewBox="0 0 18 18" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M13.0565 2.25V5.94L16.9274 7.20551V14.5887H14.9347C14.7713 15.2688 14.1592 15.7742 13.429 15.7742C12.6989 15.7742 12.0867 15.2688 11.9234 14.5887H6.76691C6.60359 15.2688 5.99146 15.7742 5.26129 15.7742C4.53112 15.7742 3.91899 15.2688 3.75567 14.5887H1.49194V11.4701H2.99194L2.9915 13.0885H11.556V3.75H2.9915V5.7335L6.1129 5.73387V7.23387H1.49194V2.25H13.0565ZM13.0565 7.51815V13.0885H15.427V8.293L13.0565 7.51815Z"
+                        fill="#222"></path>
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M3.98387 9.94355V8.44355H0.5V9.94355H3.98387Z"
+                        fill="#222"></path>
+                </svg>
+                Buy <span>${{ remainingForFreeShipping }}</span> more to enjoy
+                <span>FREE STANDARD SHIPPING!</span>
+
+                <b>Add <i class="fa-solid fa-angle-right"></i></b>
+            </div>
+
+            <!-- PRODUCTS -->
+            <div class="vc-product-card p-2 position-relative" *ngFor="let p of products">
+                <input type="checkbox" class="form-check-input me-1 mt-5" [checked]="p.selected"
+                    (change)="toggleProduct(p, $event.target.checked)">
+                <img [src]="p.image">
+                <!-- Ribbon -->
+                <div class="vc-ribbon" *ngIf="p.soldOut">
+                    <b>Almost Sold Out</b>
+                </div>
+                <div class="vc-prod-details flex-grow-1">
+
+                    <div class="vc-prod-title">{{ p.title }}</div>
+
+                    <div class="vc-sold-by">
+                        <svg style="width:20px;height:20px;" width="10" height="10" viewBox="0 0 20 20" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M4.02392 2.16675C3.66381 2.16675 3.33301 2.36523 3.16354 2.68298L2.0101 4.84568C1.25754 6.25672 1.5275 7.99524 2.67251 9.11163C2.8211 9.2565 2.97729 9.38258 3.1391 9.49069V16.6667C3.1391 17.311 3.66144 17.8333 4.30577 17.8333H15.6947C16.339 17.8333 16.8613 17.311 16.8613 16.6667V9.49041C17.023 9.38236 17.179 9.25637 17.3275 9.11163C18.4725 7.99524 18.7425 6.25672 17.9899 4.84568L16.8365 2.68298C16.6709 2.37258 16.3466 2.16675 15.9783 2.16675H10V3.66675H15.6611L16.6664 5.55156C17.1049 6.37388 16.9476 7.38703 16.2803 8.03763C15.2531 9.03914 13.5278 8.31146 13.5278 6.87761V6.30961L12.0276 6.30957V6.38895C12.0276 7.50886 11.1197 8.41673 9.99982 8.41673C8.88821 8.41673 7.98551 7.52226 7.9722 6.41381V6.30961L6.47205 6.30957V6.38895C6.47205 6.39989 6.4721 6.41082 6.4722 6.42174V6.87761C6.4722 8.31146 4.74686 9.03914 3.71966 8.03763C3.05238 7.38703 2.89506 6.37388 3.33363 5.55156L4.33886 3.66675H10V2.16675H4.02392ZM7.36784 8.73802C6.73516 9.58606 5.68929 10.0636 4.6391 9.99841V16.3333H15.3613V9.99838C14.3109 10.0637 13.2647 9.5861 12.632 8.7378C11.986 9.46127 11.0461 9.91673 9.99982 9.91673C8.95367 9.91673 8.01388 9.46136 7.36784 8.73802Z"
+                                fill="currentColor"></path>
+                        </svg>
+                        Sold by {{ p.brand }}
+                    </div>
+
+                    <div class="vc-size">
+                        <span class="color-dot" [ngStyle]="{ 'background-color': p.color.toLowerCase() }">
+                        </span>
+                        {{ p.color }} / {{ p.size }}
+                    </div>
+
+
+                    <div class="d-flex justify-content-between mt-3">
+
+                        <div>
+                            <span class="vc-new-price">${{ p.price }}</span>
+                            <span class="vc-old-price" *ngIf="p.oldPrice">
+                                ${{ p.oldPrice }}
+                            </span>
+                        </div>
+
+                        <div class="d-flex gap-3 align-items-center">
+                            <div class="vc-qty-box">Qty: {{ p.qty }}</div>
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <i class="fa-heart" [class.fa-solid]="p.fav" [class.fa-regular]="!p.fav"
+                                (click)="toggleFav(p)">
+                            </i>
+                            <i class="fa-solid fa-trash" (click)="openDelete(p)"></i>
+                        </div>
+                    </div>
+                    <div *ngIf="p.showDeleteConfirm" class="delete-pop">
+                        <span class="msg">Remove this item?</span>
+                        <div class="actions">
+                            <button class="yes" (click)="confirmDelete(p.id)">Yes</button>
+                            <button class="no" (click)="cancelDelete(p)">No</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="rhs">
+        <div class="order-summary-lhs">
+            <div class="order-card">
+                <h2 class="title">Order Summary</h2>
+                <p class="subtitle"> 
+                    Proceed to apply discounts and account confirm the final price.
+                </p>
+                <!-- PRODUCT THUMBNAILS -->
+                <div class="summary-products">
+                    <div class="summary-thumb" *ngFor="let p of products" [class.disabled]="!p.selected">
+                        <div class="img-wrapper">
+                            <img [src]="p.image" alt="product">
+                            <!-- CHECK BADGE -->
+                            <div class="check-badge" *ngIf="p.selected">✓</div>
+                            <!-- SOLD OUT -->
+                            <div class="sold-out-overlay" *ngIf="p.soldOut">
+                                Almost Sold Out
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- PRICE SUMMARY -->
+            <div class="price-summary">
+                <div class="row">
+                    <span class="label-bold">Retail Price:</span>
+                    <span class="value-bold price">${{ retailPrice | number:'1.2-2' }}</span>
+                </div>
+                <div class="row promo">
+                    <span>Promotions:</span>
+                    <span class="red-text price">
+                        -${{ promotionDiscount | number:'1.2-2' }}
+                    </span>
+                </div>
+                <div class="row coupon-single-line">
+                    <span class="coupon-text">
+                        Coupon:
+                        <span class="timer-box" *ngIf="couponValue > 0"></span>
+                    </span>
+                    <span class="red-text price">-${{ couponValue | number:'1.2-2' }}</span>
+                </div>
+
+                <p class="disclaimer">
+                    This is an estimated price, the actual price after discount will be calculated at checkout.
+                </p>
+                <hr class="divider">
+                <div class="row estimated">
+                    <span class="label-bold">Estimated Price:</span>
+                    <span class="total-price price">
+                        ${{ estimatedPrice | number:'1.2-2' }}
+                    </span>
+                </div>
+                <div class="saved-amount">
+                    Saved ${{ totalSaved | number:'1.2-2' }}
+                </div>
+                <div class="reward-points">
+                    Reward <span class="orange-text">{{ rewardPoints }}</span> SMARTCART Points
+                    <span class="info-icon">?</span>
+                </div>
+                <button class="checkout-btn">
+                    <span class="btn-main-text">
+                        Checkout Now ({{ selectedItemCount }})
+                    </span>
+                </button>
+                <p class="footer-note">
+                    Apply a Coupon Code, SMARTCART Points on the next step.
+                </p>
+            </div>
+
+        </div>
+        <div class="payment-card">
+            <h3 class="payment-title">We Accept</h3>
+            <div class="payment-grid">
+                <div class="pay-logo"><img src="assets/images/Visa.png" alt="Visa"></div>
+                <div class="pay-logo"><img src="assets/images/mastercard.png" alt="Mastercard"></div>
+                <div class="pay-logo"><img src="assets/images/gcash.jpeg" alt="gcash"></div>
+                <div class="pay-logo"><img src="assets/images/american express.png" alt="Amex"></div>
+                <div class="pay-logo"><img src="assets/images/hbl.png" alt="HBL"></div>
+                <div class="pay-logo"><img src="assets/images/Applepay.png" alt="Applepay"></div>
+
+                <div class="pay-logo"><img src="assets/images/paypal.png" alt="Paypal"></div>
+                <div class="pay-logo"><img src="assets/images/bankAlfalah.png" alt="Bank Alfalah"></div>
+                <div class="pay-logo"><img src="assets/images/bankislami.png" alt="Bank Islami"></div>
+                <div class="pay-logo"><img src="assets/images/jazzcash.png" alt="Jazzcash"></div>
+                <div class="pay-logo"><img src="assets/images/easipaisa.png" alt="Easipaisa"></div>
+                <div class="pay-logo"><img src="assets/images/cabal.png" alt="Cabal"></div>
+
+                <div class="pay-logo"><img src="assets/images/chase.png" alt="Chase"></div>
+                <div class="pay-logo"><img src="assets/images/bankofamerica.png" alt="Bank of America"></div>
+                <div class="pay-logo"><img src="assets/images/citibank.png" alt="Citibank"></div>
+            </div>
+        </div>
+
+    </div>
+</div> 

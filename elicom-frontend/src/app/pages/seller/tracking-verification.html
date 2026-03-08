@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tracking Verification | Noshahi Store</title>
+
+<!-- Dependencies -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+:root {
+    --bg-body: #f8fafc;
+    --sidebar-bg: #ffffff;
+    --sidebar-width: 280px;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --brand-primary: #4F46E5;
+    --nav-hover: #f1f5f9;
+    --topbar-height: 60px;
+}
+
+body { background-color: var(--bg-body); font-family: 'Inter', sans-serif; color: var(--text-dark); overflow-x: hidden; margin:0; }
+
+/* Sidebar */
+.sidebar { width: var(--sidebar-width); height: 100vh; position: fixed; left: 0; top: 0; background: var(--sidebar-bg); border-right: 1px solid #e2e8f0; z-index: 1000; overflow-y: auto; transition: all 0.3s ease; }
+.sidebar.collapsed { width: 60px; }
+.sidebar.collapsed .nav-link span { display: none; }
+.sidebar.collapsed .nav-label { display: none; }
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 3px; }
+.sidebar-brand { padding: 1.5rem; display: flex; align-items: center; border-bottom: 1px solid #f1f5f9; }
+.brand-logo { width: 32px; height: 32px; background: var(--brand-primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; margin-right: 12px; }
+.nav-label { padding: 1.5rem 1.5rem 0.5rem; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: var(--text-muted); }
+.nav-link { padding: 0.8rem 1.5rem; display: flex; align-items: center; color: var(--text-dark); font-weight: 500; font-size: 14px; transition: all 0.2s; border-radius: 0; text-decoration: none; }
+.nav-link i { width: 20px; margin-right: 12px; font-size: 16px; color: var(--text-muted); }
+.nav-link:hover { background-color: var(--nav-hover); color: var(--brand-primary); }
+.nav-link.active { color: var(--brand-primary); background: #eef2ff; border-right: 3px solid var(--brand-primary); }
+.submenu { background: #fcfcfd; padding-left: 1rem; display: none; }
+.nav-item.open .submenu { display: block; }
+.chevron-icon { margin-left: auto; font-size: 10px; transition: transform 0.2s; }
+.nav-item.open .chevron-icon { transform: rotate(90deg); }
+.search-container { flex: 1; max-width: 500px; margin: 0 auto; }
+.search-input {
+    background: #f3f6f9; border: none; border-radius: 10px;
+    padding: 10px 20px; width: 100%;
+}
+/* Topbar */
+.topbar { height: var(--topbar-height); background: #fff; position: fixed; top: 0; right: 0; left: var(--sidebar-width); z-index: 999; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border-bottom: 1px solid #eef2f7; }
+.topbar.collapsed { left: 70px; }
+#sidebar-toggle { cursor: pointer; padding: 8px; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
+#sidebar-toggle:hover { background-color: var(--nav-hover); color: var(--brand-primary); }
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1040; }
+.overlay.active { display: block; }
+
+/* Main wrapper */
+.main-wrapper { margin-left: var(--sidebar-width); min-height: 100vh; padding: 2rem; padding-top: calc(var(--topbar-height) + 1rem); transition: margin-left 0.3s ease; }
+
+/* Tracking Cards */
+.tracking-card {
+    border: none;
+    border-radius: 15px;
+    padding: 24px;
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.tracking-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+.tracking-count {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.tracking-label {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Tracking Table */
+.tracking-table {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.tracking-table .table {
+    margin-bottom: 0;
+}
+
+.tracking-table .table th {
+    border: none;
+    padding: 16px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    background: #f8fafc;
+}
+
+.tracking-table .table td {
+    border: none;
+    padding: 16px;
+    vertical-align: middle;
+}
+
+.tracking-table .table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: all 0.2s ease;
+}
+
+.tracking-table .table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-pending {
+    background: #fff7ed;
+    color: #ea580c;
+}
+
+.status-verified {
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+.status-failed {
+    background: #fff1f2;
+    color: #dc2626;
+}
+
+.status-processing {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+/* Sidebar 3D Effects */
+.sidebar {
+    background: linear-gradient(180deg, #ffffff, #f8fafc);
+    padding: 25px 16px;
+    box-shadow: 8px 0 30px rgba(0, 0, 0, 0.08);
+    transform-style: preserve-3d;
+    perspective: 1200px;
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    margin-bottom: 30px;
+    border-radius: 14px;
+    background: white;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transform: translateZ(8px);
+}
+
+.brand-logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    color: #4b5563;
+    margin-bottom: 16px;
+    background: linear-gradient(180deg, #f9fafb, #f1f5f9);
+    box-shadow: 0 4px 0 #e5e7eb, 0 6px 12px rgba(0,0,0,0.06);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.8);
+    transform: translateZ(2px);
+}
+
+.nav-link:hover {
+    transform: translateY(-2px) translateZ(8px);
+    color: #4f46e5;
+    box-shadow: 0 8px 0 #e5e7eb, 0 12px 20px rgba(0,0,0,0.12);
+}
+
+.nav-link.active {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: #ffffff !important;
+    border: none;
+    transform: translateY(-6px) translateZ(12px);
+    z-index: 10;
+    box-shadow:
+        0 14px 28px rgba(79,70,229,0.55),
+        0 6px 0 #4338ca,
+        0 0 20px rgba(79,70,229,0.45),
+        0 0 40px rgba(79,70,229,0.3),
+        0 0 60px rgba(79,70,229,0.2);
+    animation: spotlightPulse 2s infinite ease-in-out;
+}
+
+@keyframes spotlightPulse {
+    0% { box-shadow: 0 14px 28px rgba(79,70,229,0.55),0 6px 0 #4338ca,0 0 20px rgba(79,70,229,0.45),0 0 40px rgba(79,70,229,0.3),0 0 60px rgba(79,70,229,0.2);}
+    50% { box-shadow: 0 16px 32px rgba(79,70,229,0.65),0 6px 0 #4338ca,0 0 24px rgba(79,70,229,0.55),0 0 48px rgba(79,70,229,0.35),0 0 70px rgba(79,70,229,0.25);}
+    100% { box-shadow: 0 14px 28px rgba(79,70,229,0.55),0 6px 0 #4338ca,0 0 20px rgba(79,70,229,0.45),0 0 40px rgba(79,70,229,0.3),0 0 60px rgba(79,70,229,0.2);}
+}
+
+.nav-item {
+    margin-bottom: 16px;
+}
+
+.nav-item .nav-link {
+    margin-bottom: 0;
+}
+
+.submenu {
+    margin-left: 20px;
+    padding-left: 10px;
+    border-left: 2px solid #f1f5f9;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.submenu .nav-link.small {
+    margin-top: 10px;
+    font-size: 13px;
+    padding: 10px 14px;
+    background: #ffffff;
+    box-shadow: 0 2px 0 #f1f5f9, 0 5px 10px rgba(0,0,0,0.05);
+}
+
+.chevron-icon {
+    font-size: 10px;
+    transition: transform 0.3s ease;
+}
+
+.nav-item.open .chevron-icon {
+    transform: rotate(90deg);
+}
+
+/* Mobile sidebar */
+@media (max-width: 991.98px) {
+    .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        height: 100%;
+        z-index: 1050;
+        transition: left 0.3s ease;
+    }
+    .sidebar.open {
+        left: 0;
+    }
+    .topbar {
+        left: 0 !important;
+    }
+    .main-wrapper {
+        margin-left: 0;
+        margin-right: -100px;
+        transition: none;
+    }
+    .overlay {
+        display: none;
+    }
+    .overlay.active {
+        display: block;
+    }
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+
+
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-logo"><i class="fa fa-shop"></i></div>
+        <h5 class="fw-bold mb-0">Smart Cart</h5>
+    </div>
+
+    <a href="adeel-final.html" class="nav-link active"><i class="fa-solid fa-house"></i> Dashboard</a>
+    <a href="add-product2.html" class="nav-link"><i class="fa-solid fa-circle-plus"></i> Add Products</a>
+
+    <div class="nav-item">
+        <a href="javascript:void(0)" class="nav-link dropdown-trigger"><i class="fa-solid fa-list-check"></i> Listing Center <i class="fa fa-chevron-right chevron-icon"></i></a>
+        <div class="submenu">
+            <a href="product-listing.html" class="nav-link small">Store Listing</a>
+            <a href="favorite-listing.html" class="nav-link small">Favorite Listing</a>
+        </div>
+    </div>
+
+    <div class="nav-item">
+        <a href="javascript:void(0)" class="nav-link dropdown-trigger"><i class="fa-solid fa-cart-flatbed"></i> Order Center <i class="fa fa-chevron-right chevron-icon"></i></a>
+        <div class="submenu">
+            <a href="unshipped-order.html" class="nav-link small">Unshipped Order</a>
+            <a href="tracking-verification.html" class="nav-link small">Tracking Verification</a>
+            <a href="shipped-complete.html" class="nav-link small">Shipped Complete</a>
+            <a href="cancelled-order.html" class="nav-link small">Cancelled Order</a>
+            <a href="rejected-trackings.html" class="nav-link small">Rejected Trackings</a>
+            <a href="order-returned.html" class="nav-link small">Order Returned</a>
+        </div>
+    </div>
+
+    <a href="3pl-partner.html" class="nav-link"><i class="fa-solid fa-handshake"></i> 3PL Partner Service</a>
+    <a href="warehouse.html" class="nav-link"><i class="fa-solid fa-warehouse"></i> Smart Cart Warehouses</a>
+
+    <div class="nav-item">
+        <a href="javascript:void(0)" class="nav-link dropdown-trigger"><i class="fa-solid fa-money-bill-transfer"></i> Withdrawal Section <i class="fa fa-chevron-right chevron-icon"></i></a>
+        <div class="submenu">
+            <a href="add-payment-method.html" class="nav-link small">Add Payment Method</a>
+            <a href="seller-wallet-center.html" class="nav-link small">Seller Wallet Center</a>
+            <a href="pending-payouts.html" class="nav-link small">Pending Payouts</a>
+            <a href="completed-payouts.html" class="nav-link small">Completed Payouts</a>
+            <a href="refunded-payouts.html" class="nav-link small">Refunded Payouts</a>
+        </div>
+    </div>
+
+    <a href="account-settings.html" class="nav-link"><i class="fa-solid fa-gears"></i> Account Settings</a>
+    <!-- <a href="#" class="nav-link"><i class="fa-solid fa-headset"></i> Customer Support</a>
+    <a href="#" class="nav-link"><i class="fa-solid fa-download"></i> Download App</a> -->
+</aside>
+
+<!-- Topbar -->
+<div class="topbar" id="topbar">
+    <div class="d-flex align-items-center">
+        <i id="sidebar-toggle" class="fa fa-bars me-3 text-muted fs-5 cursor-pointer"></i>
+    </div>
+    <div class="search-container d-none d-md-block">
+        <div class="position-relative">
+            <i class="fa fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+            <input type="text" class="search-input ps-5" placeholder="Search tracking numbers...">
+        </div>
+    </div>
+    <div class="d-flex align-items-center">
+        <div class="position-relative me-4">
+            <i class="fa fa-bell text-muted fs-5"></i>
+            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+        </div>
+        <div class="d-flex align-items-center">
+            <div class="text-end me-2 d-none d-sm-block">
+                <p class="mb-0 fw-bold small">Arslan Noshahi</p>
+                <p class="mb-0 x-small text-muted" style="font-size: 10px;">Admin</p>
+            </div>
+            <img src="https://ui-avatars.com/api/?name=Arslan+Noshahi&background=4F46E5&color=fff" class="rounded-circle" width="40" height="40" alt="DP">
+        </div>
+    </div>
+</div> 
+
+<!-- Main Content -->
+<div class="main-wrapper" id="main-wrapper">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 p-4 rounded-4" 
+        style="background:rgba(255,255,255,0.9); backdrop-filter: blur(10px); box-shadow:0 20px 40px rgba(0,0,0,0.12);">
+
+        <div>
+            <h2 class="fw-bold mb-1" style="color:#0f172a;">
+                Tracking Verification
+                <span style="margin-left:8px; padding:4px 10px; font-size:12px; border-radius:12px; 
+                            background:linear-gradient(135deg,#0284c7,#0369a1); 
+                            color:white; box-shadow:0 4px 10px rgba(2,132,199,0.45);">
+                    Active
+                </span>
+            </h2>
+            <p style="color:#64748b;">Verify and track order shipments with carriers.</p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary px-4 py-2 rounded-3" onclick="bulkVerify()">
+                <i class="fa fa-check-double me-2"></i>Bulk Verify
+            </button>
+            <button class="btn btn-primary px-4 py-2 rounded-3" onclick="addTracking()">
+                <i class="fa fa-plus me-2"></i>Add Tracking
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3">
+            <div class="tracking-card">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <div class="tracking-label">Pending Verification</div>
+                        <div class="tracking-count">8</div>
+                        <div class="text-muted small">Awaiting verification</div>
+                    </div>
+                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa fa-clock text-white" style="font-size: 20px;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="tracking-card">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <div class="tracking-label">Verified Today</div>
+                        <div class="tracking-count">12</div>
+                        <div class="text-muted small">Successfully verified</div>
+                    </div>
+                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa fa-check-circle text-white" style="font-size: 20px;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="tracking-card">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <div class="tracking-label">Failed Verification</div>
+                        <div class="tracking-count">3</div>
+                        <div class="text-muted small">Invalid tracking</div>
+                    </div>
+                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #dc2626, #b91c1c); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa fa-times-circle text-white" style="font-size: 20px;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="tracking-card">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <div class="tracking-label">Processing</div>
+                        <div class="tracking-count">5</div>
+                        <div class="text-muted small">In verification</div>
+                    </div>
+                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #0284c7, #0369a1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa fa-sync text-white" style="font-size: 20px;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tracking Verification Table -->
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold mb-0">Tracking Verification Queue</h5>
+                <div class="d-flex gap-2">
+                    <select class="form-select form-select-sm" style="width: auto;" onchange="filterTracking(this.value)">
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="verified">Verified</option>
+                        <option value="failed">Failed</option>
+                        <option value="processing">Processing</option>
+                    </select>
+                    <select class="form-select form-select-sm" style="width: auto;" onchange="sortTracking(this.value)">
+                        <option value="date">Sort by Date</option>
+                        <option value="status">Sort by Status</option>
+                        <option value="carrier">Sort by Carrier</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="tracking-table">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Tracking Number</th>
+                            <th>Carrier</th>
+                            <th>Customer</th>
+                            <th>Added Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div>
+                                    <div class="fw-semibold">#ORD2024001</div>
+                                    <div class="text-muted small">Electronics</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-semibold">1Z999AA1012345678</div>
+                                <div class="text-muted small">FedEx</div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-fedex text-orange-600 me-2"></i>
+                                    <span>FedEx Express</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=4F46E5&color=fff" class="rounded-circle me-2" width="24" height="24" alt="">
+                                    <span>John Doe</span>
+                                </div>
+                            </td>
+                            <td>Jan 25, 2024</td>
+                            <td><span class="status-badge status-pending">Pending</span></td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-primary" onclick="verifyTracking('1Z999AA1012345678')">
+                                        <i class="fa fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info" onclick="trackPackage('1Z999AA1012345678')">
+                                        <i class="fa fa-map-marker-alt"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="editTracking('1Z999AA1012345678')">
+                                        <i class="fa fa-edit"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div>
+                                    <div class="fw-semibold">#ORD2024002</div>
+                                    <div class="text-muted small">Clothing</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-semibold">9400111101234567</div>
+                                <div class="text-muted small">UPS</div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-ups text-brown-600 me-2"></i>
+                                    <span>UPS Ground</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=EC4899&color=fff" class="rounded-circle me-2" width="24" height="24" alt="">
+                                    <span>Jane Smith</span>
+                                </div>
+                            </td>
+                            <td>Jan 25, 2024</td>
+                            <td><span class="status-badge status-verified">Verified</span></td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-success" onclick="viewTracking('9400111101234567')">
+                                        <i class="fa fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info" onclick="trackPackage('9400111101234567')">
+                                        <i class="fa fa-map-marker-alt"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="notifyCustomer('9400111101234567')">
+                                        <i class="fa fa-envelope"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div>
+                                    <div class="fw-semibold">#ORD2024003</div>
+                                    <div class="text-muted small">Books</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-semibold">4201234567890</div>
+                                <div class="text-muted small">USPS</div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-usps text-blue-600 me-2"></i>
+                                    <span>USPS Priority</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="https://ui-avatars.com/api/?name=Bob+Johnson&background=10B981&color=fff" class="rounded-circle me-2" width="24" height="24" alt="">
+                                    <span>Bob Johnson</span>
+                                </div>
+                            </td>
+                            <td>Jan 24, 2024</td>
+                            <td><span class="status-badge status-failed">Failed</span></td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-warning" onclick="retryVerification('4201234567890')">
+                                        <i class="fa fa-redo"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="removeTracking('4201234567890')">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info" onclick="viewDetails('4201234567890')">
+                                        <i class="fa fa-info-circle"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// Sidebar toggle
+const sidebar = document.getElementById('sidebar');
+const topbar = document.getElementById('topbar');
+const mainWrapper = document.getElementById('main-wrapper');
+const toggleBtn = document.getElementById('sidebar-toggle');
+const overlay = document.getElementById('overlay');
+
+function setInitialSidebar() {
+    if(window.innerWidth >= 992) {
+        sidebar.classList.remove('collapsed');
+        topbar.classList.remove('collapsed');
+        mainWrapper.style.marginLeft = '280px';
+    } else {
+        sidebar.classList.remove('collapsed');
+        topbar.classList.remove('collapsed');
+        mainWrapper.style.marginLeft = '0';
+    }
+}
+
+function toggleSidebar() {
+    if(window.innerWidth >= 992) {
+        sidebar.classList.toggle('collapsed');
+        topbar.classList.toggle('collapsed');
+        mainWrapper.style.marginLeft = sidebar.classList.contains('collapsed') ? '60px' : '280px';
+    } else {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+    }
+}
+
+// Initialize
+window.addEventListener('load', setInitialSidebar);
+window.addEventListener('resize', setInitialSidebar);
+
+// Button & overlay events
+toggleBtn.addEventListener('click', toggleSidebar);
+overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+});
+
+// Submenu toggle
+document.querySelectorAll('.dropdown-trigger').forEach(trigger => {
+    trigger.addEventListener('click', () => {
+        const parent = trigger.closest('.nav-item');
+        document.querySelectorAll('.nav-item.open').forEach(item => {
+            if (item !== parent) item.classList.remove('open');
+        });
+        parent.classList.toggle('open');
+    });
+});
+
+// Tracking Functions
+function verifyTracking(trackingNumber) {
+    if (confirm(`Verify tracking number: ${trackingNumber}? This will check the validity and status with the carrier.`)) {
+        alert(`Tracking verification initiated for ${trackingNumber}\n\nThis would:\n• Validate tracking number format\n• Check with carrier API\n• Update order status\n• Notify customer of verification result`);
+        // In a real app, this would call carrier APIs
+    }
+}
+
+function trackPackage(trackingNumber) {
+    alert(`Tracking package: ${trackingNumber}\n\nThis would open a detailed tracking view showing:\n• Real-time location updates\n• Delivery timeline\n• Package status history\n• Expected delivery date\n• Delivery confirmation options`);
+}
+
+function editTracking(trackingNumber) {
+    const newTracking = prompt(`Edit tracking number for ${trackingNumber}:`, trackingNumber);
+    if (newTracking && newTracking !== trackingNumber) {
+        alert(`Tracking number updated from ${trackingNumber} to ${newTracking}\n\nThis would update the tracking information and re-verify with the new carrier.`);
+    }
+}
+
+function viewTracking(trackingNumber) {
+    alert(`Viewing tracking details for ${trackingNumber}\n\nThis would show:\n• Complete tracking history\n• Package details and contents\n• Delivery milestones\n• Customer notifications\n• Proof of delivery`);
+}
+
+function notifyCustomer(trackingNumber) {
+    alert(`Notifying customer about tracking: ${trackingNumber}\n\nThis would send an email/SMS notification containing:\n• Tracking number and carrier link\n• Current delivery status\n• Expected delivery date\n• Delivery instructions`);
+}
+
+function retryVerification(trackingNumber) {
+    alert(`Retrying verification for: ${trackingNumber}\n\nThis would:\n• Re-validate tracking number\n• Check with carrier API again\n• Update verification status\n• Log retry attempts`);
+}
+
+function removeTracking(trackingNumber) {
+    if (confirm(`Are you sure you want to remove tracking ${trackingNumber}? This action cannot be undone.`)) {
+        alert(`Tracking ${trackingNumber} has been removed.\n\nThe order will be marked as requiring manual tracking verification.`);
+    }
+}
+
+function viewDetails(trackingNumber) {
+    alert(`Viewing details for failed tracking: ${trackingNumber}\n\nThis would show:\n• Verification attempt history\n• Error messages from carrier\n• Suggested corrective actions\n• Manual verification options`);
+}
+
+function bulkVerify() {
+    const trackingNumbers = prompt('Enter tracking numbers to verify (comma-separated):');
+    if (trackingNumbers) {
+        alert(`Bulk verification initiated for: ${trackingNumbers}\n\nThis would process multiple tracking numbers simultaneously and update their verification status.`);
+    }
+}
+
+function addTracking() {
+    const orderId = prompt('Enter Order ID:');
+    const trackingNumber = prompt('Enter Tracking Number:');
+    const carrier = prompt('Enter Carrier (FedEx, UPS, USPS, etc.):');
+    
+    if (orderId && trackingNumber && carrier) {
+        alert(`Adding tracking information:\nOrder ID: ${orderId}\nTracking Number: ${trackingNumber}\nCarrier: ${carrier}\n\nThis would add the tracking to the order and initiate verification.`);
+    }
+}
+
+function filterTracking(status) {
+    console.log('Filtering tracking by status:', status);
+    // In a real app, this would filter the table
+    alert(`Filtering tracking by status: ${status}`);
+}
+
+function sortTracking(sortBy) {
+    console.log('Sorting tracking by:', sortBy);
+    // In a real app, this would sort the table
+    alert(`Sorting tracking by: ${sortBy}`);
+}
+</script>
+
+</body>
+</html>

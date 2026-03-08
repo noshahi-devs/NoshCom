@@ -1,0 +1,147 @@
+<div class="account-container">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-3">
+        <div class="account-sidebar">
+          <div class="user-info">
+            <div class="user-avatar">
+              <img src="https://via.placeholder.com/100" alt="User Avatar">
+            </div>
+            <h5>{{ user?.firstName }} {{ user?.lastName }}</h5>
+            <p class="user-email">{{ user?.email }}</p>
+          </div>
+          
+          <nav class="account-nav">
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link" routerLink="/account/profile">
+                  <i class="fas fa-user"></i> Profile
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" routerLink="/account/orders">
+                  <i class="fas fa-shopping-bag"></i> Orders
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" routerLink="/account/settings">
+                  <i class="fas fa-cog"></i> Settings
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  <i class="fas fa-heart"></i> Wishlist
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+      
+      <div class="col-md-9">
+        <div class="account-content">
+          <h3>Account Settings</h3>
+          
+          <!-- Notification Settings -->
+          <div class="settings-section">
+            <h4>Notification Preferences</h4>
+            <form [formGroup]="notificationForm" (ngSubmit)="saveNotificationSettings()">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="emailNotifications" formControlName="emailNotifications">
+                <label class="form-check-label" for="emailNotifications">
+                  Email notifications for order updates
+                </label>
+              </div>
+              
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="promotionalEmails" formControlName="promotionalEmails">
+                <label class="form-check-label" for="promotionalEmails">
+                  Promotional emails and offers
+                </label>
+              </div>
+              
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="smsNotifications" formControlName="smsNotifications">
+                <label class="form-check-label" for="smsNotifications">
+                  SMS notifications for important updates
+                </label>
+              </div>
+              
+              <button type="submit" class="btn btn-primary" [disabled]="notificationForm.invalid || isSaving">
+                <span *ngIf="!isSaving">Save Notification Settings</span>
+                <span *ngIf="isSaving">Saving...</span>
+              </button>
+            </form>
+          </div>
+          
+          <!-- Privacy Settings -->
+          <div class="settings-section">
+            <h4>Privacy Settings</h4>
+            <form [formGroup]="privacyForm" (ngSubmit)="savePrivacySettings()">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="profileVisibility" formControlName="profileVisibility">
+                <label class="form-check-label" for="profileVisibility">
+                  Make profile visible to other users
+                </label>
+              </div>
+              
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="showOrderHistory" formControlName="showOrderHistory">
+                <label class="form-check-label" for="showOrderHistory">
+                  Show order history in public profile
+                </label>
+              </div>
+              
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="allowRecommendations" formControlName="allowRecommendations">
+                <label class="form-check-label" for="allowRecommendations">
+                  Allow personalized recommendations
+                </label>
+              </div>
+              
+              <button type="submit" class="btn btn-primary" [disabled]="privacyForm.invalid || isSaving">
+                <span *ngIf="!isSaving">Save Privacy Settings</span>
+                <span *ngIf="isSaving">Saving...</span>
+              </button>
+            </form>
+          </div>
+          
+          <!-- Account Actions -->
+          <div class="settings-section">
+            <h4>Account Actions</h4>
+            <div class="account-actions">
+              <div class="action-item">
+                <h6>Export Data</h6>
+                <p>Download all your account data including orders, profile information, and preferences.</p>
+                <button class="btn btn-outline-primary" (click)="exportData()">
+                  <i class="fas fa-download"></i> Export Data
+                </button>
+              </div>
+              
+              <div class="action-item">
+                <h6>Clear Cache</h6>
+                <p>Clear cached data and temporary files to improve performance.</p>
+                <button class="btn btn-outline-secondary" (click)="clearCache()">
+                  <i class="fas fa-broom"></i> Clear Cache
+                </button>
+              </div>
+              
+              <div class="action-item danger">
+                <h6>Delete Account</h6>
+                <p>Permanently delete your account and all associated data. This action cannot be undone.</p>
+                <button class="btn btn-outline-danger" (click)="confirmDeleteAccount()">
+                  <i class="fas fa-trash"></i> Delete Account
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

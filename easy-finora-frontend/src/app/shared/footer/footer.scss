@@ -1,0 +1,267 @@
+/* GLOBAL FIX */
+* {
+    box-sizing: border-box;
+}
+
+.footer {
+    background-color: #f9f9f9;
+    color: #000;
+    padding: 50px 0;
+    font-family: 'Arial', sans-serif;
+    font-size: 13px;
+    overflow-x: hidden; // 🔥 no horizontal scroll
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0;
+    }
+
+    .col-md-2,
+    .col-md-4,
+    .col-sm-6 {
+        padding: 0 15px;
+        margin-bottom: 30px;
+    }
+
+    h6 {
+        font-weight: bold;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        font-size: 12px;
+    }
+
+    a {
+        text-decoration: none;
+        color: #000;
+        display: block;
+        margin-bottom: 5px;
+        font-size: 13px;
+
+        &:hover {
+            text-decoration: underline;
+            color: #0073e6;
+        }
+    }
+
+    .social-icons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+
+        a {
+            font-size: 22px;
+            color: #000;
+        }
+    }
+
+    /* =========================
+     SUBSCRIBE SECTION
+     ========================= */
+
+    .subscribe-container {
+        margin-top: 10px;
+        width: 100%;
+        max-width: 1100px;
+
+        h3 {
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .subscribe-group {
+            display: flex;
+            width: 100%;
+            margin-bottom: 10px;
+            align-items: stretch;
+
+            input,
+            select {
+                font-size: 14px;
+                outline: none;
+                min-width: 0;
+            }
+
+            button {
+                padding: 10px 32px; // 🔥 button wider
+                border: none;
+                background: #000;
+                color: #fff;
+                font-weight: bold;
+                font-size: 15px;
+                white-space: nowrap;
+                cursor: pointer;
+            }
+
+            /* ===== EMAIL ===== */
+            &.subscribe-email {
+                input {
+                    flex: 1; // 🔥 max horizontal space
+                    padding: 9px; // visual width increase
+                    border: 1px solid #ccc;
+                    border-right: none;
+                }
+            }
+
+            /* ===== PHONE & WHATSAPP ===== */
+            &.phone-sms,
+            &.phone-whatsapp {
+
+                select {
+                    width: 90px; // 🔥 MUST be >= text width
+                    min-width: 90px;
+                    padding: 10px 5px 10px 12px;
+                    border: 1px solid #ccc;
+                    background: #fff;
+
+                   
+                }
+
+                input {
+                    flex: 1;
+                    padding: 9px;
+                    border: 1px solid #ccc;
+                    border-left: none;
+                }
+            }
+        }
+
+
+
+        .terms {
+            width: 100%;
+            max-width: 520px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #555;
+
+            span {
+                display: flex;
+                flex-wrap: wrap; // 🔥 mobile safe
+                gap: 4px;
+            }
+
+            a {
+                color: #0073e6;
+                text-decoration: none;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+        }
+    }
+
+    /* =========================
+     FOOTER BOTTOM
+     ========================= */
+
+    .footer-bottom {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+
+        .terms-conditions-policy {
+            width: 50%;
+            margin-top: 140px;
+
+            p {
+                color: #989696;
+                font-size: 13px;
+                margin-bottom: 5px;
+            }
+
+            .footer-links {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+
+                li {
+                    display: inline;
+                }
+
+                a {
+                    color: #7e7f7f;
+                    text-decoration: underline;
+                    font-size: 13px;
+
+                    &:hover {
+                        color: #0073e6;
+                    }
+                }
+            }
+        }
+
+        .banks {
+            width: 50%;
+            margin-top: 50px;
+
+            .payments {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+
+                img {
+                    height: 32px;
+                    object-fit: contain;
+                }
+            }
+        }
+    }
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+@media (min-width: 1200px) {
+    .subscribe-container {
+        max-width: 1000px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    /* Email stacked */
+    .subscribe-email {
+        flex-direction: column;
+
+        input,
+        button {
+            width: 100%;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            margin-top: 6px;
+        }
+    }
+
+    /* Phone & WhatsApp stay inline */
+    .phone-sms,
+    .phone-whatsapp {
+        flex-direction: row;
+
+        select {
+            width: 70px; // 🔥 mobile par aur chota
+            min-width: 70px;
+        }
+
+        input {
+            flex: 1;
+        }
+
+        button {
+            padding: 8px 14px;
+        }
+    }
+}

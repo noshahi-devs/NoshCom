@@ -1,0 +1,160 @@
+<header class="header">
+  <!-- TOP NOTICE BAR -->
+  <div class="header-notice">
+    <div class="notice-item">
+      <i class="fa-solid fa-truck-fast"></i>
+      <strong>Free Shipping</strong>
+      <span>*T&Cs apply</span>
+    </div>
+    <span class="notice-sep">|</span>
+    <div class="notice-item">
+      <i class="fa-solid fa-box"></i>
+      <strong>Free Returns</strong>
+      <span>On all orders *T&Cs apply</span>
+    </div>
+    <span class="notice-sep">|</span>
+    <div class="notice-item">
+      <i class="fa-solid fa-receipt"></i>
+      <strong>No Hidden Fees</strong>
+      <span>Pricing & Tariff FAQ</span>
+    </div>
+  </div>
+
+  <!-- TOP BAR -->
+  <div class="header-top">
+    <div class="logo">
+      <a routerLink="/" style="text-decoration: none; color: inherit;">World Cart</a>
+    </div>
+
+    <!-- SEARCH (Responsive Toggle) -->
+    <div class="search-bar" *ngIf="isSearchVisible()">
+      <input type="text" placeholder="Search..." [(ngModel)]="searchTerm" (keyup.enter)="onSearch()">
+      <button class="search-inside-btn" (click)="onSearch()"><i class="fas fa-search"></i></button>
+    </div>
+
+    <!-- ICONS (Responsive Toggle) -->
+    <div class="header-icons" [class.mobile-hidden]="isSearchVisible()" [class.show-on-mobile]="cartDropdown()">
+
+      <!-- USER -->
+      <div class="user-menu-wrapper" (mouseenter)="onMouseEnterUser()" (mouseleave)="onMouseLeaveUser()">
+        <span class="user-icon" (click)="toggleUserMenu()" style="cursor: pointer;">
+          <i class="far" [ngClass]="(isAuthenticated | async) ? 'fa-user-circle' : 'fa-user'"></i>
+          <span *ngIf="isAuthenticated | async" class="user-greeting">
+            Hi, {{ (currentUser | async)?.name || 'User' }}
+          </span>
+        </span>
+        <!-- User Dropdown Content... (assuming it was there or using a simplified version if I can't find it) -->
+      </div>
+
+      <!-- CART -->
+      <div class="cart-wrapper" (mouseenter)="onMouseEnterCart()" (mouseleave)="onMouseLeaveCart()">
+        <a class="cart-icon-link" (click)="cartDropdown.set(!cartDropdown())" style="cursor: pointer;">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-badge" id="iconCartQty" *ngIf="cartService.totalItems > 0">{{ cartService.totalItems
+            }}</span>
+        </a>
+
+        <!-- Cart Dropdown Modal -->
+        <div class="hover-cart-modal" *ngIf="cartDropdown()">
+          <div class="hover-cart-content">
+            <div class="hover-close" (click)="closeModal()">&times;</div>
+
+            <div class="top-line">
+              <span class="black-text">Total Items:</span>
+              <span class="red-text">{{ cartService.totalItems }}</span>
+            </div>
+
+            <div class="product-card-scroll">
+              <div class="product-card" *ngFor="let item of cartService.items()">
+                <img [src]="item.image" alt="Product">
+                <div class="prod-details">
+                  <div class="prod-title" [title]="item.name">{{ item.name }}</div>
+                  <div class="sold-by">Sold By: {{ item.storeName }}</div>
+                  <div class="color-qty">
+                    <span class="variant" *ngIf="item.size || item.color">
+                      <ng-container *ngIf="item.size">{{ item.size }}</ng-container>
+                      <ng-container *ngIf="item.size && item.color"> | </ng-container>
+                      <ng-container *ngIf="item.color">{{ item.color }}</ng-container>
+                    </span>
+                    <div class="qty-controls">
+                      <button class="qty-btn" (click)="decrementQty(item)">-</button>
+                      <span class="qty-value">{{ item.quantity }}</span>
+                      <button class="qty-btn" (click)="incrementQty(item)">+</button>
+                    </div>
+                  </div>
+                  <div class="price-del">
+                    <span class="price">${{ item.price * item.quantity | number:'1.2-2' }}</span>
+                    <span class="del-icon" (click)="removeItem(item)"><i class="fas fa-trash-alt"></i></span>
+                    <button type="button" class="btn btn-link p-0 ms-2" (click)="removeItem(item)">Remove</button>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="cartService.items().length === 0" style="text-align:center; padding:20px;">
+                Your cart is empty
+              </div>
+            </div>
+
+            <div class="total-area" *ngIf="cartService.items().length > 0">
+              <div class="hover-all-checkbox-total-price">
+                <div class="top-line-all">
+                  <span>Subtotal:</span>
+                </div>
+                <div class="del">${{ cartService.totalPrice | number:'1.2-2' }}</div>
+              </div>
+            </div>
+
+            <div class="view-cart" *ngIf="cartService.items().length > 0">
+              <a [routerLink]="['/add-to-cart']" (click)="closeModal()">View Cart & Checkout</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WISHLIST / MESSAGE / GLOBE -->
+      <a href="javascript:void(0)"><i class="far fa-heart"></i></a>
+      <a href="javascript:void(0)"><i class="far fa-comment-dots"></i></a>
+
+      <div class="currency-menu-wrapper">
+        <a href="javascript:void(0)" (click)="globeDropdown.set(!globeDropdown())"><i class="fas fa-globe"></i></a>
+      </div>
+    </div>
+
+    <!-- MOBILE MENU TOGGLE (Permanent on Right for Mobile) -->
+    <button class="mobile-menu-toggle" (click)="toggleSearch()">
+      <i class="fas fa-bars"></i>
+    </button>
+  </div>
+
+  <!-- NAVBAR -->
+  <div class="navbar-wrapper">
+    <nav class="navbar" #navbar>
+      <ul class="navbar-nav flex-row">
+        <li class="nav-item"><a class="nav-link" href="#">Categories <i class="fa-solid fa-angle-down"></i></a></li>
+        <li class="nav-item"><a class="nav-link active" [routerLink]="['/search-result']"
+            [queryParams]="{sort: 'newest'}">New In</a></li>
+        <li class="nav-item"><a class="nav-link" [routerLink]="['/search-result']"
+            [queryParams]="{sort: 'price-low'}">Sale</a></li>
+
+        <li class="nav-item" *ngFor="let cat of categories()">
+          <a class="nav-link" [routerLink]="['/search-result']" [queryParams]="{category: cat.name}">
+            {{ cat.name }}
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Scroll Buttons (Now Outside nav to stay fixed) -->
+    <div class="scroll-btns">
+      <button class="scroll-btn left" (click)="scrollLeft()">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <button class="scroll-btn right" (click)="scrollRight()">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+</header>
+<app-auth-modal *ngIf="authModalOpen()" (close)="authModalOpen.set(false)"
+  (authenticated)="authService.navigateToDashboard()"></app-auth-modal>

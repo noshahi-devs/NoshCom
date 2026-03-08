@@ -1,0 +1,48 @@
+<div class="toast-wrapper">
+    <!-- Traditional Toasts (Top Right) -->
+    <div class="toast-container" *ngIf="hasToasts()">
+        <div *ngFor="let toast of getToasts()" class="toast-3d" [ngClass]="'toast-' + toast.type"
+            (click)="removeToast(toast)">
+            <div class="toast-icon">
+                <span *ngIf="toast.type === 'success'">✓</span>
+                <span *ngIf="toast.type === 'error'">✕</span>
+                <span *ngIf="toast.type === 'info'">ℹ</span>
+                <span *ngIf="toast.type === 'warning'">⚠️</span>
+            </div>
+            <div class="toast-content">
+                <h5 *ngIf="toast.title">{{ toast.title }}</h5>
+                <p class="toast-message">{{ toast.message }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Alerts (Centered) -->
+    <div class="modal-alert-overlay" *ngIf="hasModalAlerts()">
+        <div *ngFor="let modal of getModalAlerts()" class="modal-alert-3d" [ngClass]="'modal-' + modal.type">
+            <button class="close-btn" (click)="removeToast(modal)">×</button>
+            <div class="modal-icon-3d">
+                <div class="icon-pulse"></div>
+                <span *ngIf="modal.type === 'success'">✓</span>
+                <span *ngIf="modal.type === 'error'">✕</span>
+                <span *ngIf="modal.type === 'info'">ℹ</span>
+                <span *ngIf="modal.type === 'warning'">⚠️</span>
+            </div>
+            <div class="modal-text">
+                <h3 *ngIf="modal.title">{{ modal.title }}</h3>
+                <p>{{ modal.message }}</p>
+            </div>
+
+            <div class="modal-input" *ngIf="modal.showInput">
+                <textarea [(ngModel)]="adminRemarks" placeholder="Enter remarks (optional)..."
+                    class="form-control-3d"></textarea>
+            </div>
+
+            <div class="modal-actions-3d">
+                <button *ngIf="modal.onConfirm" class="btn-confirm-3d" (click)="confirmWithReset(modal)">{{
+                    modal.confirmText || 'OK' }}</button>
+                <button *ngIf="modal.onCancel" class="btn-cancel-3d" (click)="cancel(modal)">Cancel</button>
+                <button *ngIf="!modal.onConfirm" class="btn-confirm-3d" (click)="removeToast(modal)">OK</button>
+            </div>
+        </div>
+    </div>
+</div>

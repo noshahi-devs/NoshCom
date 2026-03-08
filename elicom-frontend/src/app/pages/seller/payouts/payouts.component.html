@@ -1,0 +1,173 @@
+<div class="payout-content">
+    <div class="dashboard-header mb-4">
+        <h1 class="fw-bold mb-2">
+            <i class="fas fa-money-bill-transfer me-3 text-primary"></i>
+            Payouts & Withdrawals
+        </h1>
+        <p class="lead mb-0 text-muted">
+            Configure your payment methods and request funds from your available balance.
+        </p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Withdrawal Request Card -->
+        <div class="col-lg-5">
+            <div class="payout-card primary h-100">
+                <div class="card-header-inner mb-4">
+                    <h3 class="fw-bold mb-0">Request Payout</h3>
+                    <p class="text-muted small">Withdraw your earnings to your linked account.</p>
+                </div>
+
+                <div class="balance-display mb-4">
+                    <span class="label">Available for Withdrawal</span>
+                    <h2 class="amount">{{availableBalance | currency}}</h2>
+                </div>
+
+                <div class="withdrawal-form">
+                    <div class="mb-3">
+                        <label class="form-label-custom">Amount to Withdraw</label>
+                        <div class="input-group-custom">
+                            <span class="currency-symbol">$</span>
+                            <input type="number" [(ngModel)]="withdrawAmount" class="form-control-custom"
+                                placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <div class="payment-method-preview p-3 mb-4 rounded-3 border">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small fw-bold">Sending to:</span>
+                            <span
+                                class="badge bg-primary-subtle text-primary border border-primary-subtle">Primary</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-university fa-2x text-primary me-3"></i>
+                            <div>
+                                <h6 class="mb-0 fw-bold">{{payoutMethod.bankName}}</h6>
+                                <small class="text-muted">{{payoutMethod.accountNumber}}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button (click)="requestWithdrawal()" class="btn btn-primary-custom w-100 py-3">
+                        <i class="fas fa-paper-plane me-2"></i> Submit Request
+                    </button>
+                    <p class="text-center mt-3 small text-muted">Typical processing time: 1-3 business days.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payout Method Setup Card -->
+        <div class="col-lg-7">
+            <div class="payout-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-bold mb-0">Payout Method</h3>
+                    <div class="d-flex gap-2">
+                        <button routerLink="/seller/finances/add-payment-method" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-plus me-2"></i> Add/Change Method
+                        </button>
+                    </div>
+                </div>
+
+                <div *ngIf="!isSettingUpMethod" class="method-details">
+                    <div class="row g-4">
+                        <div class="col-md-6" *ngIf="payoutMethod.type === 'bank'">
+                            <div class="detail-group">
+                                <label>Bank Name</label>
+                                <p>{{payoutMethod.bankName}}</p>
+                            </div>
+                            <div class="detail-group">
+                                <label>Account Holder</label>
+                                <p>{{payoutMethod.accountName}}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6" *ngIf="payoutMethod.type === 'bank'">
+                            <div class="detail-group">
+                                <label>Routing Number</label>
+                                <p>{{payoutMethod.routingNumber}}</p>
+                            </div>
+                            <div class="detail-group">
+                                <label>Account Number</label>
+                                <p>{{payoutMethod.accountNumber}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="isSettingUpMethod" class="method-form">
+                    <div class="row g-3">
+                        <div class="col-12 mb-3">
+                            <div class="btn-group w-100">
+                                <input type="radio" class="btn-check" name="payType" id="typeBank"
+                                    [(ngModel)]="payoutMethod.type" value="bank">
+                                <label class="btn btn-outline-primary" for="typeBank">Bank Transfer</label>
+                                <input type="radio" class="btn-check" name="payType" id="typeThird"
+                                    [(ngModel)]="payoutMethod.type" value="third_party">
+                                <label class="btn btn-outline-primary" for="typeThird">Third Party (PayPal)</label>
+                            </div>
+                        </div>
+
+                        <ng-container *ngIf="payoutMethod.type === 'bank'">
+                            <div class="col-md-6">
+                                <label class="form-label-custom">Bank Name</label>
+                                <input type="text" [(ngModel)]="payoutMethod.bankName" class="form-control-custom">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label-custom">Account Name</label>
+                                <input type="text" [(ngModel)]="payoutMethod.accountName" class="form-control-custom">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label-custom">Routing Number</label>
+                                <input type="text" [(ngModel)]="payoutMethod.routingNumber" class="form-control-custom">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label-custom">Account Number</label>
+                                <input type="text" [(ngModel)]="payoutMethod.accountNumber" class="form-control-custom">
+                            </div>
+                        </ng-container>
+
+                        <div class="col-12" *ngIf="payoutMethod.type === 'third_party'">
+                            <label class="form-label-custom">Wallet ID / Email (e.g. PayPal)</label>
+                            <input type="email" [(ngModel)]="payoutMethod.walletId" class="form-control-custom"
+                                placeholder="email@example.com">
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <button (click)="savePayoutMethod()" class="btn btn-primary-custom">Update Method</button>
+                            <button (click)="isSettingUpMethod = false"
+                                class="btn btn-secondary-custom ms-2">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-5">
+
+                <h4 class="fw-bold mb-4">Recent Withdrawals</h4>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Ref ID</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let w of withdrawalHistory">
+                                <td class="fw-bold">{{w.id}}</td>
+                                <td>{{w.date | date:'mediumDate'}}</td>
+                                <td class="fw-bold">{{w.amount | currency}}</td>
+                                <td>
+                                    <span class="badge"
+                                        [ngClass]="{'bg-success': w.status === 'approved', 'bg-warning text-dark': w.status === 'pending'}">
+                                        {{w.status}}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

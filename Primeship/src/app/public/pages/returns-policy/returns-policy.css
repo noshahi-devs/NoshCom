@@ -1,0 +1,206 @@
+.returns-policy {
+    background: #f8fafc;
+    padding-bottom: 100px;
+}
+
+.header-banner {
+    background: #fff;
+    padding: 100px 0 80px;
+    text-align: center;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 80px;
+
+    h1 {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 20px;
+
+        span {
+            color: var(--primary);
+        }
+    }
+
+    p {
+        max-width: 650px;
+        margin: 0 auto;
+        color: #64748b;
+        font-size: 1.2rem;
+        line-height: 1.6;
+    }
+}
+
+.policy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 60px;
+    align-items: start;
+    margin-bottom: 100px;
+}
+
+.policy-card.main-highlight {
+    background: white;
+    padding: 50px;
+    border-radius: 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f1f5f9;
+    text-align: center;
+
+    .icon-wrap {
+        width: 80px;
+        height: 80px;
+        background: #fff8f1;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 30px;
+
+        i {
+            font-size: 2.5rem;
+            color: var(--primary);
+        }
+    }
+
+    h2 {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+        color: #0f172a;
+    }
+
+    p {
+        color: #475569;
+        line-height: 1.7;
+        font-size: 1.1rem;
+    }
+}
+
+.steps-section {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+
+    .step-item {
+        display: flex;
+        gap: 30px;
+        background: white;
+        padding: 30px;
+        border-radius: 20px;
+        transition: all 0.3s;
+        border: 1px solid #f1f5f9;
+
+        &:hover {
+            transform: translateX(10px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.04);
+            border-color: var(--primary);
+        }
+
+        .step-num {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #cbd5e1;
+            line-height: 1;
+        }
+
+        .step-text {
+            h3 {
+                font-size: 1.3rem;
+                font-weight: 700;
+                margin-bottom: 5px;
+                color: #0f172a;
+            }
+
+            p {
+                color: #64748b;
+                line-height: 1.5;
+                font-size: 0.95rem;
+            }
+        }
+    }
+}
+
+.faq-simple {
+    margin-bottom: 100px;
+
+    h2 {
+        font-size: 2.2rem;
+        font-weight: 800;
+        margin-bottom: 40px;
+        text-align: center;
+    }
+
+    .faq-item {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        border-left: 5px solid var(--primary);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+
+        h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #1e293b;
+        }
+
+        p {
+            color: #64748b;
+            margin: 0;
+            line-height: 1.6;
+        }
+    }
+}
+
+.support-cta {
+    .cta-inner {
+        background: #1e293b;
+        color: white;
+        padding: 40px;
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        flex-wrap: wrap;
+
+        i {
+            font-size: 2.4rem;
+            color: var(--primary);
+        }
+
+        p {
+            flex: 1;
+            font-size: 1.1rem;
+            margin: 0;
+            min-width: 300px;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+
+            &:hover {
+                background: white;
+                color: #1e293b;
+            }
+        }
+    }
+}
+
+@media (max-width: 900px) {
+    .policy-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .header-banner h1 {
+        font-size: 2.5rem;
+    }
+}

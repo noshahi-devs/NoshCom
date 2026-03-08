@@ -1,0 +1,68 @@
+<div class="page-container">
+    <div class="header-card-3d">
+        <div class="header-content">
+            <h3>Add Withdraw Method</h3>
+            <div class="header-image">
+                <span class="icon">💳</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-card-3d">
+        <form (ngSubmit)="submitMethod()">
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <label for="payment_method">Select Type</label>
+                    <select name="payment_method" id="payment_method" [(ngModel)]="paymentMethod" class="form-select"
+                        required>
+                        <option value="" disabled selected>Select Card Type</option>
+                        <option value="credit">Credit</option>
+                        <option value="debit">Debit</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <label for="provider">Card Provider</label>
+                    <select name="provider" id="provider" [(ngModel)]="provider" class="form-select" required>
+                        <option value="" disabled selected>Your Card Provider</option>
+                        <option value="visa">Visa</option>
+                        <option value="mastercard">MasterCard</option>
+                        <option value="amex">American Express</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="card_number">Card Number</label>
+                    <input type="text" name="card_number" id="card_number" [(ngModel)]="cardNumber" class="form-control"
+                        placeholder="Enter Your Card Number" required>
+                </div>
+                <div class="form-group">
+                    <label for="expiry_date">Expiry Date (MM/YY)</label>
+                    <input type="text" name="expiry_date" id="expiry_date" [(ngModel)]="expiryDate" class="form-control"
+                        placeholder="MM/YY" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="cvv">CVV (3 digits)</label>
+                    <input type="text" name="cvv" id="cvv" [(ngModel)]="cvv" class="form-control" placeholder="CVV"
+                        maxlength="3" required>
+                </div>
+                <div class="form-group">
+                    <label for="card_holder_name">Card Holder Name</label>
+                    <input type="text" name="card_holder_name" id="card_holder_name" [(ngModel)]="cardHolderName"
+                        class="form-control" placeholder="Card Holder Name">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <button type="submit" class="btn-3d btn-submit">Submit for Review</button>
+            </div>
+        </form>
+    </div>
+</div>

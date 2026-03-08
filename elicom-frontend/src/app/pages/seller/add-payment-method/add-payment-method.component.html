@@ -1,0 +1,137 @@
+<div class="add-payout-page">
+    <!-- Centered Header -->
+    <section class="payout-header-section text-center">
+        <h2 class="title-3d">Update Payout Method</h2>
+        <p class="sub-heading-3d">Securely configure how you receive your earnings</p>
+    </section>
+
+    <!-- 3D Tab Switcher -->
+    <div class="tab-switcher-container">
+        <div class="payout-tabs">
+            <button type="button" class="payout-tab" [class.active]="activeTab === 'bank'" (click)="setTab('bank')">
+                <i class="fas fa-university me-2"></i> Via Bank Account
+            </button>
+            <button type="button" class="payout-tab" [class.active]="activeTab === 'thirdparty'" (click)="setTab('thirdparty')">
+                <i class="fas fa-wallet me-2"></i> Via Third Party Services
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content Card -->
+    <section class="payout-content-card">
+        
+        <!-- BANK ACCOUNT TAB -->
+        <ng-container *ngIf="activeTab === 'bank'">
+            <div class="alert-banner info-green mb-4">
+                <i class="fas fa-info-circle me-2"></i>
+                <b>USA Residents Only:</b> Required Bank Account for Payment Transactions
+            </div>
+
+            <div class="payout-layout-grid">
+                <div class="form-area">
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label class="p-label">Choose Bank *</label>
+                            <select class="p-input" [(ngModel)]="bankName">
+                                <option value="" disabled selected>--Choose--</option>
+                                <option *ngFor="let opt of bankOptions" [value]="opt.value">{{ opt.label }}</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="p-label">Routing (ABA) *</label>
+                            <input type="text" class="p-input" [(ngModel)]="routingNumber" placeholder="9-digit routing number">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="p-label">Account number *</label>
+                            <input type="text" class="p-input" [(ngModel)]="bankAccountNumber" placeholder="Full account number">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="p-label">Account type *</label>
+                            <select class="p-input" [(ngModel)]="bankAccountType">
+                                <option value="" disabled selected>--Choose--</option>
+                                <option value="checking">Checking</option>
+                                <option value="savings">Savings</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="p-label">Beneficiary name *</label>
+                            <input type="text" class="p-input" [(ngModel)]="bankAccountTitle" placeholder="Name as it appears on account">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="p-label">Reference number (Optional)</label>
+                            <input type="text" class="p-input" [(ngModel)]="referenceNumber" placeholder="Any internal reference">
+                        </div>
+                    </div>
+
+                    <div class="action-footer mt-5">
+                        <button class="btn-3d-submit" (click)="savePaymentMethod()" [disabled]="isSaving">
+                            <i class="fas fa-plus-circle me-2"></i>
+                            {{ isSaving ? 'Saving...' : 'Add account as withdraw method' }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Side Instruction Panel -->
+                <div class="instruction-area">
+                    <div class="instruction-box yellow-box">
+                        <p>To start receiving your payments, please add your USA bank account details. Ensure all information is accurate to avoid delays in processing withdrawals. This will allow you to seamlessly transfer your earnings from Elicom USA directly to your bank account. Your details are securely encrypted to maintain your privacy and security.</p>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+
+        <!-- THIRD PARTY TAB -->
+        <ng-container *ngIf="activeTab === 'thirdparty'">
+            <div class="alert-banner info-green mb-4">
+                <i class="fas fa-info-circle me-2"></i>
+                <b>Payment Solutions for Non-USA Residents</b>
+            </div>
+
+            <div class="payout-layout-grid">
+                <div class="form-area">
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label class="p-label">Choose Third Party</label>
+                            <select class="p-input" [(ngModel)]="selectedThirdParty">
+                                <option value="" disabled selected>--Choose--</option>
+                                <option *ngFor="let opt of thirdPartyOptions" [value]="opt.value">{{ opt.label }}</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="p-label">Add Wallet ID</label>
+                            <input type="text" class="p-input" [(ngModel)]="walletId" placeholder="Enter your wallet identifier">
+                        </div>
+                    </div>
+
+                    <div class="action-footer mt-5">
+                        <button class="btn-3d-submit" (click)="savePaymentMethod()" [disabled]="isSaving">
+                            <i class="fas fa-sync-alt me-2"></i>
+                            {{ isSaving ? 'Saving...' : 'Update account details' }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Side Instruction Panel -->
+                <div class="instruction-area">
+                    <div class="instruction-box blue-box">
+                        <p>If you're not a USA resident or don't have a USA bank account, you can still receive payments by using third-party services. These platforms allow you to withdraw your earnings in your local currency, providing a convenient solution for international sellers. Simply connect your preferred third-party account, and start transferring your funds with ease.</p>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+
+    </section>
+
+    <!-- Back Button -->
+    <div class="page-footer-actions text-center mt-4">
+        <a routerLink="/seller/finances/wallet" class="btn-back-link">
+            <i class="fas fa-chevron-left me-1"></i> Back to Wallet Center
+        </a>
+    </div>
+</div>

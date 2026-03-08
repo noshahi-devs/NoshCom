@@ -1,0 +1,173 @@
+<div class="users-container">
+  <div class="header">
+    <div class="header-title">
+      <h2><i class="pi pi-users"></i> User Management</h2>
+      <p>Manage user accounts and control access permissions</p>
+    </div>
+  </div>
+
+  <div class="filters">
+    <div class="search-box">
+      <i class="pi pi-search"></i>
+      <input 
+        type="text" 
+        placeholder="Search by name or email..." 
+        [(ngModel)]="searchTerm" 
+        (input)="applyFilters()"
+      >
+    </div>
+    <select [(ngModel)]="selectedStatus" (change)="applyFilters()">
+      <option value="all">All Status</option>
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+    </select>
+    <select [(ngModel)]="selectedRole" (change)="applyFilters()">
+      <option value="all">All Roles</option>
+      <option value="admin">Admin</option>
+      <option value="seller">Seller</option>
+      <option value="customer">Customer</option>
+    </select>
+  </div>
+
+  <div class="table-container">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th>Last Login</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of filteredUsers">
+          <td class="user-cell">
+            <div class="user-info">
+              <div class="user-avatar">
+                <i class="pi pi-user"></i>
+              </div>
+              <div class="user-details">
+                <div class="user-name">{{ user.name }}</div>
+                <div class="user-email">{{ user.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="role-badge" [ngClass]="getRoleBadgeClass(user.role)">
+              {{ user.role }}
+            </span>
+          </td>
+          <td>
+            <span class="status-badge" [style.color]="getStatusColor(user.status)">
+              <i class="pi" [ngClass]="user.status === 'active' ? 'pi-check-circle' : 'pi-times-circle'"></i>
+              {{ user.status }}
+            </span>
+          </td>
+          <td>{{ formatDate(user.createdAt) }}</td>
+          <td>{{ formatDate(user.lastLogin) }}</td>
+          <td class="actions">
+            <button 
+              type="button" 
+              class="btn small"
+              [ngClass]="user.status === 'active' ? 'secondary' : 'primary'"
+              (click)="openStatusConfirm(user)"
+            >
+              <i class="pi" [ngClass]="user.status === 'active' ? 'pi-ban' : 'pi-check'"></i>
+              {{ user.status === 'active' ? 'Deactivate' : 'Activate' }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="filteredUsers.length === 0" class="no-data">
+      <i class="pi pi-search"></i>
+      <p>No users found</p>
+      <small>Try adjusting your search or filters</small>
+    </div>
+  </div>
+</div>
+
+<!-- Status Confirmation Modal -->
+<div class="modal-overlay" *ngIf="statusConfirmVisible" (click)="closeStatusConfirm()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="pi pi-exclamation-triangle"></i>
+        <h3>Confirm Status Change</h3>
+      </div>
+      <button type="button" class="btn icon close-btn" (click)="closeStatusConfirm()" title="Close">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <p class="confirm-text">
+        Are you sure you want to {{ newStatus }} this user?
+      </p>
+      <div class="confirm-user" *ngIf="userToToggle">
+        <div class="confirm-row">
+          <span class="label">Name</span>
+          <span class="value">{{ userToToggle.name }}</span>
+        </div>
+        <div class="confirm-row">
+          <span class="label">Email</span>
+          <span class="value">{{ userToToggle.email }}</span>
+        </div>
+        <div class="confirm-row">
+          <span class="label">Current Status</span>
+          <span class="value">{{ userToToggle.status }}</span>
+        </div>
+        <div class="confirm-row">
+          <span class="label">New Status</span>
+          <span class="value" [style.color]="getStatusColor(newStatus!)">{{ newStatus }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn secondary" (click)="closeStatusConfirm()">
+        <i class="pi pi-times"></i>
+        Cancel
+      </button>
+      <button type="button" class="btn" [ngClass]="newStatus === 'active' ? 'primary' : 'danger'" (click)="confirmStatusToggle()">
+        <i class="pi" [ngClass]="newStatus === 'active' ? 'pi-check' : 'pi-ban'"></i>
+        {{ newStatus }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Success Popup -->
+<div class="success-popup" *ngIf="successPopupVisible">
+  <div class="success-content">
+    <div class="success-icon">
+      <i class="pi pi-check"></i>
+    </div>
+    <div class="success-message">
+      <h4>Success</h4>
+      <p>{{ successMessage }}</p>
+    </div>
+    <button type="button" class="success-close" (click)="closeSuccessPopup()" aria-label="Close">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Error Popup -->
+<div class="error-popup" *ngIf="errorPopupVisible">
+  <div class="error-content">
+    <div class="error-icon">
+      <i class="pi pi-exclamation-triangle"></i>
+    </div>
+    <div class="error-message">
+      <h4>Error</h4>
+      <p>{{ errorMessage }}</p>
+    </div>
+    <button type="button" class="error-close" (click)="closeErrorPopup()" aria-label="Close">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+</div>

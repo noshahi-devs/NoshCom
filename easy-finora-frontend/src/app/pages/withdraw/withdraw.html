@@ -1,0 +1,124 @@
+<div class="page-container">
+    <div class="header-card-3d">
+        <div class="header-content">
+            <h3>Withdraw Funds to your Account</h3>
+            <div class="header-image">
+                <span class="icon">💰</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-card-3d" [class.loading-overlay]="isLoading">
+        <form (ngSubmit)="submitWithdraw()">
+            <div class="wallet-balance-card">
+                <div>
+                    <h4>Wallet Balance</h4>
+                    <p class="balance">{{ walletBalance | currency: 'USD' }}</p>
+                </div>
+                <span class="badge">Available</span>
+            </div>
+
+            <div class="form-group">
+                <label>Withdraw Method <span class="required">*</span></label>
+                <select [(ngModel)]="withdrawMethod" name="withdrawMethod" class="form-control" [disabled]="isLoading">
+                    <option value="bank">Bank Transfer</option>
+                    <option value="crypto">Crypto Transfer</option>
+                </select>
+            </div>
+
+            <div class="form-group" *ngIf="cards.length > 0">
+                <label>Select Card <span class="required">*</span></label>
+                <select [(ngModel)]="selectedCardId" name="selectedCardId" class="form-control" [disabled]="isLoading"
+                    required>
+                    <option *ngFor="let card of cards" [value]="card.id">
+                        {{ card.cardType }} - **** {{ card.cardNumber.slice(-4) }} (${{ card.balance }})
+                    </option>
+                </select>
+                <p class="help-text" style="color: #e67e22; font-weight: 600;">Funds will be deducted from this card
+                    balance.</p>
+            </div>
+
+            <div class="form-group" *ngIf="cards.length === 0 && !isLoading">
+                <p class="error-text" style="color: #e74c3c; font-size: 13px;">You don't have any active virtual cards.
+                    Please create one first.</p>
+            </div>
+
+            <!-- Bank Account Details (Editable) -->
+            <div class="bank-details-input-section" *ngIf="withdrawMethod === 'bank'">
+                <div class="form-group">
+                    <label>Bank Name <span class="required">*</span></label>
+                    <input type="text" name="bankName" [(ngModel)]="bankDetails.bankName" class="form-control"
+                        placeholder="e.g. JPMorgan Chase" required [disabled]="isLoading">
+                </div>
+                <div class="form-group">
+                    <label>Account Title <span class="required">*</span></label>
+                    <input type="text" name="accountTitle" [(ngModel)]="bankDetails.accountTitle" class="form-control"
+                        placeholder="Account Holder Name" required [disabled]="isLoading">
+                </div>
+                <div class="form-group">
+                    <label>Account Number <span class="required">*</span></label>
+                    <input type="text" name="accountNumber" [(ngModel)]="bankDetails.accountNumber" class="form-control"
+                        placeholder="Account Number" required [disabled]="isLoading">
+                </div>
+                <div class="form-group">
+                    <label>IBAN (Optional)</label>
+                    <input type="text" name="iban" [(ngModel)]="bankDetails.iban" class="form-control"
+                        placeholder="IBAN if applicable" [disabled]="isLoading">
+                </div>
+            </div>
+
+            <div class="bank-details-input-section" *ngIf="withdrawMethod === 'crypto'">
+                <div class="form-group">
+                    <label>Crypto ID <span class="required">*</span></label>
+                    <input type="text" name="cryptoId" [(ngModel)]="cryptoDetails.cryptoId" class="form-control"
+                        placeholder="e.g. 1A1zP1..." required [disabled]="isLoading">
+                </div>
+                <div class="form-group">
+                    <label>Crypto Title <span class="required">*</span></label>
+                    <input type="text" name="cryptoTitle" [(ngModel)]="cryptoDetails.cryptoTitle" class="form-control"
+                        placeholder="e.g. Binance BTC Wallet" required [disabled]="isLoading">
+                </div>
+            </div>
+
+            <!-- Withdrawal Amount Input -->
+            <div class="form-group">
+                <label for="amount">Amount to Withdraw <span class="required">*</span></label>
+                <div class="amount-input-group">
+                    <span class="currency-symbol">$</span>
+                    <input type="number" name="amount" id="amount" [(ngModel)]="amount" class="form-control"
+                        placeholder="Enter amount" min="10" required [disabled]="isLoading">
+                    <span class="currency-code">USD</span>
+                </div>
+                <p class="help-text">Minimum withdrawal: $10.00</p>
+
+                <div class="fee-summary-3d" *ngIf="amount && amount >= 10">
+                    <div class="fee-row">
+                        <span>Withdrawal Amount</span>
+                        <span class="fee-amt" style="color: #2c3e50">{{ amount | currency:'USD' }}</span>
+                    </div>
+                    <div class="fee-row">
+                        <span>Platform Tax (3%)</span>
+                        <span class="fee-amt">-{{ getServiceFee() | currency:'USD' }}</span>
+                    </div>
+                    <div class="fee-row total">
+                        <span>You will Receive (Net)</span>
+                        <span class="net-amt">{{ getNetAmount() | currency:'USD' }}</span>
+                    </div>
+                </div>
+
+                <p class="help-text" *ngIf="amount && amount >= 10">
+                    Approx Receipt: Rs {{ calculateLocalAmount() | number }} PKR
+                </p>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="form-group">
+                <button type="submit" class="btn-3d btn-submit" [disabled]="!amount || isLoading"
+                    [class.btn-loading]="isLoading">
+                    <span *ngIf="!isLoading">Confirm Withdrawal</span>
+                    <span *ngIf="isLoading" class="btn-spinner"></span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

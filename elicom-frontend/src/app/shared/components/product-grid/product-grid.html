@@ -1,0 +1,57 @@
+<div class="container py-4">
+
+  <div class="skeleton-grid" *ngIf="isLoading">
+    <div class="skeleton-card" *ngFor="let _ of skeletonItems">
+      <div class="skeleton-image shimmer"></div>
+      <div class="skeleton-body">
+        <div class="skeleton-line shimmer short"></div>
+        <div class="skeleton-line shimmer medium"></div>
+        <div class="skeleton-line shimmer price"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && visibleProducts.length === 0">
+    No Product found
+  </div>
+
+  <div class="product-grid" *ngIf="!isLoading && visibleProducts.length > 0">
+    <div class="product-card" *ngFor="let product of visibleProducts"
+      [routerLink]="['/product-detail', product.productId, product.storeProductId || product.id]">
+
+      <div class="img-wrapper">
+        <div class="badge" *ngIf="product.resellerDiscountPercentage > 0">
+          -{{ product.resellerDiscountPercentage }}%
+        </div>
+        <img [src]="getFirstImage(product)" class="product-img main-img"
+          (error)="handleImageError($event, product, 'main')">
+        <img *ngIf="getSecondImage(product)" [src]="getSecondImage(product)" class="product-img hover-img"
+          (error)="handleImageError($event, product, 'hover')">
+      </div>
+
+      <div class="card-body">
+        <div class="product-title">{{ getTitle(product) }}</div>
+
+        <div class="price-row">
+          <div>
+            <span class="price">${{ product.price | number:'1.2-2' }}</span>
+          </div>
+
+          <button class="cart-btn" (click)="addToCart(product, $event)">
+            <i class="fa-solid fa-cart-shopping"></i>
+          </button>
+        </div>
+        <div class="store-name" style="font-size: 0.75rem; color: #888; margin-top: 4px;">
+          Sold by: {{ product.storeName }}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="view-more-wrapper" *ngIf="showViewMore">
+    <button class="view-more-btn" (click)="viewMore()">
+      View more <i class="fa-solid fa-angle-down"></i>
+    </button>
+  </div>
+</div>

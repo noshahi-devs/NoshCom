@@ -1,0 +1,32 @@
+.breadcrumb-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  background: transparent;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  color: #999;
+  pointer-events: none;
+}
+
+.breadcrumb-step {
+  white-space: nowrap;
+}
+
+.active-step {
+  color: #000;
+  font-weight: 600;
+}
+
+.separator {
+  font-size: 16px;        
+  color: #999;            
+  line-height: 1;         
+}

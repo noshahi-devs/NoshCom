@@ -1,0 +1,31 @@
+{
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "https://localhost:44311/",
+      "sslPort": 44311
+    }
+  },
+  "profiles": {
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ConnectionStrings__Default": "Server=38.247.148.123,55850;Database=ElicomDb_Testing;User Id=elicom_app;Password=Noshahi@000;Encrypt=True;TrustServerCertificate=True;MultipleActiveResultSets=True;Connection Timeout=60;",
+        "ConnectionStrings__DefaultConnection": "Server=38.247.148.123,55850;Database=ElicomDb_Testing;User Id=elicom_app;Password=Noshahi@000;Encrypt=True;TrustServerCertificate=True;MultipleActiveResultSets=True;Connection Timeout=60;"
+      }
+    },
+    "Elicom.Web.Host": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:44311/",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ConnectionStrings__Default": "Server=38.247.148.123,55850;Database=ElicomDb_Testing;User Id=elicom_app;Password=Noshahi@000;Encrypt=True;TrustServerCertificate=True;MultipleActiveResultSets=True;Connection Timeout=60;",
+        "ConnectionStrings__DefaultConnection": "Server=38.247.148.123,55850;Database=ElicomDb_Testing;User Id=elicom_app;Password=Noshahi@000;Encrypt=True;TrustServerCertificate=True;MultipleActiveResultSets=True;Connection Timeout=60;"
+      }
+    }
+  }
+}

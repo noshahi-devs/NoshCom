@@ -1,0 +1,109 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1>Apply for Debit Card</h1>
+        <p class="subtitle">Fill out the form below to apply for a new debit card</p>
+    </div>
+
+    <div class="apply-form-3d" [class.loading-overlay]="isLoading">
+        <div class="benefits-form-header">
+            <h3>APPLY FOR VIRTUAL DEBIT CARD</h3>
+            <div class="benefit-point">
+                <span class="num">1:</span>
+                <p><strong>Enhanced Security</strong> – Virtual cards protect against fraud by masking your real bank
+                    details, reducing the risk of unauthorized transactions.</p>
+            </div>
+            <div class="benefit-point">
+                <span class="num">2:</span>
+                <p><strong>Global Online Acceptance</strong> – Works seamlessly for online transactions, supplier
+                    payments, and subscriptions worldwide, just like a physical debit card.</p>
+            </div>
+            <div class="benefit-point">
+                <span class="num">3:</span>
+                <p><strong>Cost-Effective & Eco-Friendly</strong> – Eliminates the need for plastic cards, reducing
+                    costs and supporting sustainable, paperless transactions.</p>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <label>Full Name <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="fullName" placeholder="John Doe" class="input-3d" required
+                [disabled]="isLoading" />
+        </div>
+
+        <div class="form-section">
+            <label>Contact Number <span class="required">*</span></label>
+            <input type="tel" [(ngModel)]="contact" placeholder="+1 (555) 123-4567" class="input-3d" required
+                [disabled]="isLoading" />
+        </div>
+
+        <div class="form-section">
+            <label>Shipping Address <span class="required">*</span></label>
+            <textarea [(ngModel)]="address" placeholder="123 Main St, City, State, ZIP" class="input-3d" rows="3"
+                required [disabled]="isLoading"></textarea>
+        </div>
+
+        <div class="form-section">
+            <label>Card Type <span class="required">*</span></label>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="cardType" value="virtual" [(ngModel)]="cardType" [disabled]="isLoading" />
+                    <span>Virtual Card (Instant)</span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="cardType" value="physical" [(ngModel)]="cardType"
+                        [disabled]="isLoading" />
+                    <span>Physical Card (7-10 days delivery)</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Brand Selection for Virtual Card -->
+        <div class="form-section" *ngIf="cardType === 'virtual'">
+            <label>Card Brand <span class="required">*</span></label>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="cardBrand" value="Visa" [(ngModel)]="cardBrand" [disabled]="isLoading" />
+                    <span>Visa</span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="cardBrand" value="MasterCard" [(ngModel)]="cardBrand"
+                        [disabled]="isLoading" />
+                    <span>MasterCard</span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="cardBrand" value="Amex" [(ngModel)]="cardBrand" [disabled]="isLoading" />
+                    <span>American Express</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <label>Government ID Document <span class="required">*</span></label>
+            <div class="file-upload">
+                <input type="file" id="document" (change)="onFileSelected($event)" accept="image/*,.pdf"
+                    class="file-input" [disabled]="isLoading" />
+                <label for="document" class="file-label">
+                    <span class="icon">📄</span>
+                    <span *ngIf="!documentFile">Choose File</span>
+                    <span *ngIf="documentFile">{{ documentFile.name }}</span>
+                </label>
+            </div>
+            <p class="help-text">Upload a photo of your passport, driver's license, or national ID</p>
+        </div>
+
+        <div class="info-box">
+            <strong>📋 Requirements:</strong>
+            <ul>
+                <li>Valid government-issued ID</li>
+                <li>Minimum balance of $100 in your wallet</li>
+                <li>Verified email address</li>
+            </ul>
+        </div>
+
+        <button class="btn-3d btn-submit" (click)="submitApplication()"
+            [disabled]="!fullName || !contact || !address || !documentFile || isLoading" [class.btn-loading]="isLoading">
+            <span *ngIf="!isLoading">Submit Application</span>
+            <span *ngIf="isLoading" class="btn-spinner"></span>
+        </button>
+    </div>
+</div>

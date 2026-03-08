@@ -1,0 +1,36 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1>Business Plans</h1>
+        <p class="subtitle">Choose the plan that fits your business needs</p>
+    </div>
+
+    <div class="plans-grid">
+        <div *ngFor="let plan of plans" class="plan-card-3d" [class.popular]="plan.popular">
+            <div *ngIf="plan.popular" class="popular-badge">Most Popular</div>
+
+            <h3>{{ plan.name }}</h3>
+            <div class="price">
+                <span class="amount" *ngIf="plan.price">{{ plan.price | currency: 'USD':'symbol':'1.0-0' }}</span>
+                <span class="amount" *ngIf="!plan.price">Custom</span>
+                <span class="period" *ngIf="plan.price">/month</span>
+            </div>
+
+            <div class="limit" *ngIf="plan.monthlyLimit">
+                <strong>{{ plan.monthlyLimit | currency: 'USD':'symbol':'1.0-0' }}</strong> monthly limit
+            </div>
+            <div class="limit" *ngIf="!plan.monthlyLimit">
+                <strong>Unlimited</strong> monthly limit
+            </div>
+
+            <ul class="features">
+                <li *ngFor="let feature of plan.features">
+                    <span class="check">✓</span> {{ feature }}
+                </li>
+            </ul>
+
+            <button class="btn-3d btn-plan">
+                {{ plan.price ? 'Get Started' : 'Contact Sales' }}
+            </button>
+        </div>
+    </div>
+</div>

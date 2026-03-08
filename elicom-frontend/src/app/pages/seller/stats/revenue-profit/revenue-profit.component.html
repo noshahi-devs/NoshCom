@@ -1,0 +1,152 @@
+<div class="revenue-profit-page">
+    <div class="page-header-3d text-center">
+        <div class="header-content-center">
+            <h2 class="title-3d">Revenue and profit</h2>
+            <p class="sub-heading-3d">Track your earnings, platform fees, and net profit margins across all transactions.</p>
+        </div>
+        <div class="icon-3d-fixed"><i class="fa-solid fa-dollar-sign"></i></div>
+    </div>
+
+    <!-- Top Cards: Primary Metrics -->
+    <div class="row g-4 mb-4">
+        <!-- Current Balance -->
+        <div class="col-md-4">
+            <div class="financial-card">
+                <div class="card-content">
+                    <span class="label">Current Balance</span>
+                    <span class="value" *ngIf="stats">{{ stats.totalSales | currency }}</span>
+                    <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 150px; height: 3rem;"></div>
+                </div>
+                <div class="card-icon"><i class="fa-solid fa-wallet"></i></div>
+            </div>
+        </div>
+        <!-- Account Level Reserve -->
+        <div class="col-md-4">
+            <div class="financial-card">
+                <div class="card-content">
+                    <span class="label">Account Level Reserve</span>
+                    <span class="value" *ngIf="stats">$0.00</span>
+                    <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 120px; height: 3rem;"></div>
+                </div>
+                <div class="card-icon"><i class="fa-solid fa-coins"></i></div>
+            </div>
+        </div>
+        <!-- Sales Revenue -->
+        <div class="col-md-4">
+            <div class="financial-card">
+                <div class="card-content">
+                    <span class="label">Sales Revenue</span>
+                    <span class="value" *ngIf="stats">{{ stats.totalSales | currency }}</span>
+                    <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 150px; height: 3rem;"></div>
+                </div>
+                <div class="card-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Metrics -->
+    <div class="row g-4 mb-5">
+        <!-- Fees -->
+        <div class="col-md-3">
+            <div class="mini-card">
+                <div class="mini-content">
+                    <span class="label">FEES</span>
+                    <span class="value" *ngIf="stats">{{ stats.zalandoFees | currency }}</span>
+                    <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 100px; height: 2.5rem;"></div>
+                </div>
+                <div class="mini-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+            </div>
+        </div>
+        <!-- Refunds -->
+        <div class="col-md-3">
+            <div class="mini-card">
+                <div class="mini-content">
+                    <span class="label">REFUNDS</span>
+                    <span class="value" *ngIf="stats">{{ stats.totalRefunds | currency }}</span>
+                    <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 100px; height: 2.5rem;"></div>
+                </div>
+                <div class="mini-icon"><i class="fa-solid fa-rotate-left"></i></div>
+            </div>
+        </div>
+        <!-- Net Profit -->
+        <div class="col-md-3">
+            <div class="mini-card">
+                <div class="mini-content">
+                    <span class="label">NET PROFIT</span>
+                    <span class="value" *ngIf="stats">{{ stats.netProfit | currency }}</span>
+                    <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 100px; height: 2.5rem;"></div>
+                </div>
+                <div class="mini-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+            </div>
+        </div>
+        <!-- Profit Margin -->
+        <div class="col-md-3">
+            <div class="mini-card">
+                <div class="mini-content">
+                    <span class="label">NET PROFIT MARGIN</span>
+                    <span class="value" *ngIf="stats">{{ stats.netProfitMargin | percent:'1.2-2' }}</span>
+                    <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 80px; height: 2.5rem;"></div>
+                </div>
+                <div class="mini-icon"><i class="fa-solid fa-percent"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transactions Table -->
+    <h4 class="section-title"><i class="fa-solid fa-file-invoice-dollar me-2"></i> Sale Transactions</h4>
+    <div class="table-section-3d">
+        <div class="table-responsive">
+            <table class="transactions-table-3d">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Order ID</th>
+                        <th>Sale Revenue</th>
+                        <th>Fees</th>
+                        <th>Net Profit</th>
+                    </tr>
+                </thead>
+                <tbody *ngIf="transactions.length > 0">
+                    <tr *ngFor="let tx of transactions">
+                        <td>
+                            <div class="cell-3d">
+                                <span class="relative-time">{{ getRelativeTime(tx.creationTime) }}</span>
+                                <span class="full-date">{{ tx.creationTime | date:'yyyy-MM-dd' }}</span>
+                                <span class="full-time">{{ tx.creationTime | date:'HH:mm:ss' }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="cell-3d">
+                                <span class="status-badge" [ngClass]="'status-' + getStatusClass(tx.status)">
+                                    {{ tx.status }}
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="cell-3d">
+                                <a href="javascript:void(0)" class="order-link" (click)="goToOrderDetails(tx.orderId)">
+                                    {{ tx.orderFriendlyId }}
+                                </a>
+                            </div>
+                        </td>
+                        <td><div class="cell-3d">{{ tx.saleRevenue | currency }}</div></td>
+                        <td><div class="cell-3d">{{ tx.fee | currency }}</div></td>
+                        <td><div class="cell-3d"><b>{{ tx.netProfit | currency }}</b></div></td>
+                    </tr>
+                </tbody>
+                <!-- Skeleton Transactions -->
+                <tbody *ngIf="transactions.length === 0">
+                    <tr *ngFor="let i of [1,2,3,4,5]">
+                        <td><div class="skeleton skeleton-text" style="width: 80px;"></div></td>
+                        <td><div class="skeleton skeleton-text" style="width: 100px;"></div></td>
+                        <td><div class="skeleton skeleton-text" style="width: 120px;"></div></td>
+                        <td><div class="skeleton skeleton-text" style="width: 80px;"></div></td>
+                        <td><div class="skeleton skeleton-text" style="width: 80px;"></div></td>
+                        <td><div class="skeleton skeleton-text" style="width: 100px;"></div></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

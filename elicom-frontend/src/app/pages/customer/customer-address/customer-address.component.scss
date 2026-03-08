@@ -1,0 +1,23 @@
+.customer-address {
+    .x-small {
+        font-size: 11px;
+    }
+
+    .uppercase {
+        text-transform: uppercase;
+    }
+
+    .transition-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .hover-dark:hover {
+        background-color: #000 !important;
+        color: #fff !important;
+    }
+
+    .dropdown-item:active {
+        background-color: #000;
+    }
+}

@@ -1,0 +1,39 @@
+<div class="info-page track-page">
+    <div class="container">
+        <div class="track-card">
+            <div class="track-header">
+                <div class="icon-pulse">
+                    <i class="pi pi-map-marker"></i>
+                </div>
+                <h1>Track Your <span>Order</span></h1>
+                <p>Enter your order ID below to see real-time updates on your delivery.</p>
+            </div>
+
+            <div class="track-form">
+                <div class="input-group-3d">
+                    <i class="pi pi-hashtag"></i>
+                    <input type="text" [(ngModel)]="orderId" placeholder="Order ID (e.g. #ORD-12345)"
+                        (keyup.enter)="trackOrder()">
+                </div>
+                <button class="btn-track" (click)="trackOrder()">
+                    Track Status <i class="pi pi-arrow-right"></i>
+                </button>
+            </div>
+
+            <div class="track-features">
+                <div class="feat">
+                    <i class="pi pi-clock"></i>
+                    <span>Real-time GPS</span>
+                </div>
+                <div class="feat">
+                    <i class="pi pi-shield"></i>
+                    <span>Secure Delivery</span>
+                </div>
+                <div class="feat">
+                    <i class="pi pi-check-circle"></i>
+                    <span>Proof of Delivery</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

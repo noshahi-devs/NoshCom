@@ -1,0 +1,141 @@
+<div class="warehouse-content">
+    <div class="dashboard-header mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="fw-bold mb-2">
+                    <i class="fas fa-warehouse me-3 text-primary"></i>
+                    Stores & Warehouses
+                </h1>
+                <p class="lead mb-0 text-muted">
+                    Manage and visualize your global warehouse network and stores.
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <button (click)="createNewStore()" class="btn btn-primary-custom">
+                    <i class="fas fa-plus me-2"></i> Create New Store
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid mb-5">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-store"></i></div>
+            <div class="stat-info">
+                <h3>{{stores.length}}</h3>
+                <p>Total Stores</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon success"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-info">
+                <h3>{{activeStoresCount}}</h3>
+                <p>Active Stores</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon warning"><i class="fas fa-pause-circle"></i></div>
+            <div class="stat-info">
+                <h3>{{inactiveStoresCount}}</h3>
+                <p>Inactive Stores</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Store Edit/Create Modal Overlay -->
+    <div *ngIf="isEditing" class="modal-overlay">
+        <div class="modal-content-custom">
+            <div class="modal-header-custom mb-4">
+                <h3 class="fw-bold">{{selectedStore?.id === 0 ? 'Create New Store' : 'Edit Store'}}</h3>
+                <button (click)="isEditing = false" class="btn-close-custom"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="modal-body-custom" *ngIf="selectedStore">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label-custom">Store Owner Name</label>
+                        <input type="text" [(ngModel)]="selectedStore.ownerName" class="form-control-custom"
+                            placeholder="Search for user...">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-custom">Owner Email</label>
+                        <input type="email" [(ngModel)]="selectedStore.ownerEmail" class="form-control-custom">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label-custom">Store Name</label>
+                        <input type="text" [(ngModel)]="selectedStore.name" class="form-control-custom">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label-custom">Short Description</label>
+                        <textarea [(ngModel)]="selectedStore.shortDescription" rows="2"
+                            class="form-control-custom"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label-custom">Long Description</label>
+                        <textarea [(ngModel)]="selectedStore.longDescription" rows="4"
+                            class="form-control-custom"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check form-switch-custom mt-2">
+                            <input class="form-check-input" type="checkbox" [(ngModel)]="selectedStore.isActive"
+                                id="storeActive">
+                            <label class="form-check-label ms-2" for="storeActive">Store Active</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer-custom mt-4">
+                <button (click)="isEditing = false" class="btn btn-secondary-custom me-2">Cancel</button>
+                <button (click)="saveStore()" class="btn btn-primary-custom">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stores Table/Grid -->
+    <div class="stores-container">
+        <h3 class="fw-bold mb-4 text-primary">Managed Stores</h3>
+        <div class="row g-4">
+            <div *ngFor="let store of stores" class="col-lg-6">
+                <div class="store-card" [class.inactive]="!store.isActive">
+                    <div class="store-card-header d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="store-icon me-3"><i class="fas fa-warehouse"></i></div>
+                            <div>
+                                <h4 class="mb-0 fw-bold">{{store.name}}</h4>
+                                <small class="text-muted">Owner: {{store.ownerName}} ({{store.ownerEmail}})</small>
+                            </div>
+                        </div>
+                        <span class="status-badge" [class.active]="store.isActive">
+                            {{store.isActive ? 'Active' : 'Inactive'}}
+                        </span>
+                    </div>
+
+                    <p class="store-short-desc mb-3 text-muted">{{store.shortDescription}}</p>
+
+                    <div class="store-meta mb-4">
+                        <div class="meta-item">
+                            <i class="far fa-calendar-alt me-2"></i>
+                            Created: {{store.createdAt | date:'mediumDate'}}
+                        </div>
+                    </div>
+
+                    <div class="store-actions d-flex gap-2">
+                        <button (click)="editStore(store)" class="btn btn-outline-custom flex-grow-1">
+                            <i class="fas fa-edit me-2"></i> Edit
+                        </button>
+                        <button *ngIf="!store.isActive" (click)="publishAndNotify(store)"
+                            class="btn btn-publish-custom flex-grow-1">
+                            <i class="fas fa-paper-plane me-2"></i> Publish & Notify
+                        </button>
+                        <button (click)="toggleStoreStatus(store)" class="btn btn-status-custom"
+                            [class.active]="store.isActive">
+                            <i class="fas" [class.fa-power-off]="store.isActive" [class.fa-play]="!store.isActive"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

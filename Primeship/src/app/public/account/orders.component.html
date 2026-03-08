@@ -1,0 +1,119 @@
+<div class="account-container">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-3">
+        <div class="account-sidebar">
+          <div class="user-info">
+            <div class="user-avatar">
+              <img src="https://via.placeholder.com/100" alt="User Avatar">
+            </div>
+            <h5>{{ user?.firstName }} {{ user?.lastName }}</h5>
+            <p class="user-email">{{ user?.email }}</p>
+          </div>
+          
+          <nav class="account-nav">
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link" routerLink="/account/profile">
+                  <i class="fas fa-user"></i> Profile
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" routerLink="/account/orders">
+                  <i class="fas fa-shopping-bag"></i> Orders
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" routerLink="/account/settings">
+                  <i class="fas fa-cog"></i> Settings
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  <i class="fas fa-heart"></i> Wishlist
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+      
+      <div class="col-md-9">
+        <div class="account-content">
+          <div class="orders-header">
+            <h3>My Orders</h3>
+            <div class="order-filters">
+              <select class="form-select" [(ngModel)]="selectedStatus" (change)="filterOrders()">
+                <option value="all">All Orders</option>
+                <option value="pending">Pending</option>
+                <option value="processing">Processing</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="orders-list" *ngIf="filteredOrders.length > 0">
+            <div class="order-card" *ngFor="let order of filteredOrders">
+              <div class="order-header">
+                <div class="order-info">
+                  <h6>Order #{{ order.orderNumber }}</h6>
+                  <p class="order-date">Placed on {{ order.orderDate | date:'longDate' }}</p>
+                </div>
+                <div class="order-status">
+                  <span class="status-badge status-{{ order.status }}">{{ order.status }}</span>
+                </div>
+              </div>
+              
+              <div class="order-items">
+                <div class="order-item" *ngFor="let item of order.items">
+                  <img [src]="resolveImage(item)" [alt]="item.product.name" class="item-image" (error)="onImgError($event)">
+                  <div class="item-details">
+                    <h6>{{ item.product.name }}</h6>
+                    <p class="item-meta">Quantity: {{ item.quantity }} | Size: {{ item.size }} | Color: {{ item.color }}</p>
+                  </div>
+                  <div class="item-price">
+                    <span>{{ (item.product.price * item.quantity) | currency:'USD':'symbol':'1.2-2' }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="order-footer">
+                <div class="order-total">
+                  <span>Total: {{ order.total | currency:'USD':'symbol':'1.2-2' }}</span>
+                </div>
+                <div class="order-actions">
+                  <button class="btn btn-sm btn-outline-primary" (click)="viewOrderDetails(order)">
+                    View Details
+                  </button>
+                  <button class="btn btn-sm btn-outline-secondary" *ngIf="order.status === 'delivered'" (click)="trackOrder(order)">
+                    Track Order
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" *ngIf="order.status === 'pending'" (click)="cancelOrder(order)">
+                    Cancel Order
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="empty-orders" *ngIf="filteredOrders.length === 0">
+            <div class="text-center">
+              <i class="fas fa-shopping-bag fa-3x mb-3"></i>
+              <h4>No orders found</h4>
+              <p *ngIf="selectedStatus === 'all'">You haven't placed any orders yet.</p>
+              <p *ngIf="selectedStatus !== 'all'">No orders with status "{{ selectedStatus }}" found.</p>
+              <button class="btn btn-primary" routerLink="/">Start Shopping</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

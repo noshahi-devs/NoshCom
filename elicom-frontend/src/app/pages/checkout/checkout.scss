@@ -1,0 +1,127 @@
+.checkout-wrapper {
+  background-color: #f4f4f4;
+  min-height: 100vh;
+  padding-bottom: 50px;
+}
+
+.top-bar {
+  background: #000;
+  color: #fff;
+  padding: 8px 0;
+  font-size: 13px;
+  text-align: center;
+
+  .content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .check {
+    color: #4caf50;
+    font-style: normal;
+    font-weight: bold;
+    margin-right: 4px;
+  }
+}
+
+.checkout-layout {
+  margin-top: 30px;
+
+  .right-column-wrapper {
+    max-height: calc(100vh - 240px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 6px;
+    padding-left: 2px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+    min-height: calc(100vh - 80px);
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 999px;
+    }
+  }
+}
+
+.step-container {
+  background: transparent;
+  margin-bottom: 20px;
+}
+
+.address-summary-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+
+  h5 {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  p {
+    font-size: 14px;
+  }
+}
+
+.btn-next {
+  background: #111;
+  color: #fff;
+  padding: 14px 30px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 16px;
+  border: none;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s;
+
+  &:hover {
+    background: #222;
+    transform: translateY(-2px);
+  }
+}
+
+.btn-outline-secondary {
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #666;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+
+  &:hover {
+    background: #f9f9f9;
+    color: #333;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 991px) {
+  .col-lg-4 {
+    margin-top: 20px;
+  }
+}

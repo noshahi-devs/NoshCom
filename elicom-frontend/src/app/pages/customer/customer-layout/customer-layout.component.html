@@ -1,0 +1,71 @@
+<div class="cust-shell">
+
+    <!-- ===== TOP HEADER ===== -->
+    <header class="cust-header">
+        <div class="cust-header-brand">
+            <button class="btn btn-link text-white d-lg-none me-2 p-0" (click)="toggleSidebar()">
+                <i class="fa-solid fa-bars fs-4"></i>
+            </button>
+            <div class="cust-header-logo">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <span class="cust-header-title">World Cart</span>
+        </div>
+
+        <div class="cust-header-actions">
+            <!-- Backdrop for mobile -->
+            <div *ngIf="!isSidebarCollapsed" class="cust-sidebar-backdrop d-lg-none" (click)="toggleSidebar()"></div>
+            <div class="cust-header-profile">
+                <div class="cust-avatar">{{ userName.charAt(0).toUpperCase() || 'U' }}</div>
+                <div class="cust-profile-info">
+                    <span class="cust-profile-name">{{ userName || 'Customer' }}</span>
+                    <span class="cust-profile-role">Member</span>
+                </div>
+            </div>
+            <button (click)="logout()" class="cust-logout-btn" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- ===== BODY (sidebar + content) ===== -->
+    <div class="cust-body">
+
+        <!-- Sidebar -->
+        <aside class="cust-sidebar" [class.show-mobile]="!isSidebarCollapsed">
+            <nav class="cust-nav">
+                <div *ngFor="let group of menuGroups" class="cust-nav-group">
+                    <div class="cust-nav-group-label">{{ group.title }}</div>
+                    <ng-container *ngFor="let item of group.items">
+                        <a [routerLink]="item.path" routerLinkActive="active"
+                            [routerLinkActiveOptions]="{exact: item.path === '/customer/orders'}" class="cust-nav-item">
+                            <span class="cust-nav-icon">
+                                <i class="fas {{ item.icon }}"></i>
+                            </span>
+                            <span class="cust-nav-label">{{ item.label }}</span>
+                        </a>
+
+                        <a *ngIf="group.title === 'Account' && item.path === '/customer/profile'" [routerLink]="['/']"
+                            class="cust-shop-now-btn" (click)="isSidebarCollapsed = true">
+                            <i class="fas fa-store"></i>
+                            <span>Shop Now</span>
+                        </a>
+                    </ng-container>
+                </div>
+            </nav>
+
+            <div class="cust-sidebar-footer">
+                <button (click)="logout()" class="cust-sidebar-logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="cust-content">
+            <router-outlet></router-outlet>
+        </main>
+
+    </div>
+</div>

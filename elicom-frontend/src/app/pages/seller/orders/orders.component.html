@@ -1,0 +1,156 @@
+<div class="seller-orders-page">
+    <!-- Centered status header with 3D titles -->
+    <section class="status-header">
+        <h2 class="title-3d">
+            <i [class]="viewConfig.iconClass"></i>
+            {{ viewConfig.title }}
+        </h2>
+        <p class="sub-heading-3d">{{ viewConfig.description }}</p>
+    </section>
+
+    <!-- Deep 3D card for orders table -->
+    <section class="orders-table-card">
+        <div class="table-tools">
+            <div class="entries-info">
+                Show <span class="entries-chip">{{ pageSize }}</span> entries
+            </div>
+
+            <div class="search-wrap">
+                <label for="sellerOrderSearch">Search:</label>
+                <input id="sellerOrderSearch" type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
+                    placeholder="Type to search..." stroke-linecap="round" />
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th class="col-date">{{ viewConfig.dateHeading }}</th>
+                        <th class="col-details">Order details</th>
+                        <th class="col-customer">Customer option</th>
+                        <th class="col-ship" *ngIf="viewConfig.showShipVia">Ship Via</th>
+                        <th class="col-status">Order status</th>
+                        <th class="col-action">Action</th>
+                    </tr>
+                </thead>
+
+                <!-- Skeleton Shimmer Body -->
+                <tbody *ngIf="isLoading">
+                    <tr *ngFor="let row of [1,2,3,4]">
+                        <td [attr.colspan]="viewConfig.showShipVia ? 6 : 5">
+                            <div class="row-skeleton">
+                                <div class="sk sk-date"></div>
+                                <div class="sk sk-details"></div>
+                                <div class="sk sk-customer"></div>
+                                <div class="sk sk-status"></div>
+                                <div class="sk sk-action"></div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+
+                <tbody *ngIf="!isLoading && pagedOrders.length > 0">
+                    <tr *ngFor="let order of pagedOrders; let i = index">
+                        <td class="date-col">
+                            <div class="cell-box">
+                                <div class="relative-time">{{ getRelativeTime(order.createdAt) }}</div>
+                                <div class="date-val">{{ formatDate(order.createdAt) }}</div>
+                                <div class="time-val">{{ formatTime(order.createdAt) }}</div>
+                            </div>
+                        </td>
+
+                        <td class="details-col">
+                            <div class="cell-box">
+                                <div class="order-id">#{{ order.orderId }}</div>
+                                <div class="order-meta">Buyer: <b>{{ order.customerName }}</b></div>
+                                <div class="order-meta">Fulfillment: <b>Seller</b></div>
+                                <div class="order-meta">Channel: <b>{{ order.salesChannel }}</b></div>
+                            </div>
+                        </td>
+
+                        <td class="customer-col">
+                            <div class="cell-box">
+                                <div class="customer-option">Standard Shipping</div>
+                                <div class="ship-info">Ship by: {{ order.shipBy }}</div>
+                                <div class="ship-info">Deliver by: {{ order.deliverBy }}</div>
+                            </div>
+                        </td>
+
+                        <td class="ship-col" *ngIf="viewConfig.showShipVia">
+                            <div class="cell-box">
+                                <div class="ship-info"><b>Carrier:</b> {{ order.shipVia }}</div>
+                                <div class="ship-info"><b>Tracking:</b> {{ order.trackingId }}</div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="cell-box">
+                                <span class="status-pill" [ngClass]="getStatusClass(order.statusKey)">
+                                    {{ order.statusLabel }}
+                                </span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="actions-col" *ngIf="orderView === 'unshipped'; else genericActions">
+                                <button type="button" class="btn-action btn-confirm"
+                                    (click)="viewOrderDetails(order)">
+                                    Confirm Shipment
+                                </button>
+                                <button type="button" class="btn-action btn-cancel" (click)="cancelOrder(order)">
+                                    Cancel Order
+                                </button>
+                            </div>
+
+                            <ng-template #genericActions>
+                                <div class="actions-col" *ngIf="orderView === 'canceled'; else viewOnlyAction">
+                                    <button type="button" class="btn-action btn-view"
+                                        (click)="viewOrderDetails(order)">
+                                        Order Details
+                                    </button>
+                                    <button type="button" class="btn-action btn-cancel"
+                                        (click)="rejectOrder(order)">
+                                        Reject Order
+                                    </button>
+                                </div>
+                                <ng-template #viewOnlyAction>
+                                    <button type="button" class="btn-action btn-view"
+                                        (click)="viewOrderDetails(order)">
+                                        View Details
+                                    </button>
+                                </ng-template>
+                            </ng-template>
+                        </td>
+                    </tr>
+                </tbody>
+
+                <tbody *ngIf="!isLoading && pagedOrders.length === 0">
+                    <tr>
+                        <td [attr.colspan]="viewConfig.showShipVia ? 6 : 5" class="empty-row">
+                            <i class="fa-solid fa-folder-open mb-3 d-block" style="font-size: 3rem; opacity: 0.2;"></i>
+                            No orders found in this category.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Symmetrical Footer & Pager -->
+        <div class="table-footer">
+            <div class="info-text">
+                Showing entries <span>{{ showingFrom }}</span> to <span>{{ showingTo }}</span> of <span>{{ filteredOrders.length }}</span>
+            </div>
+
+            <div class="pager">
+                <button type="button" (click)="goPrevious()" [disabled]="currentPage <= 1">
+                    <i class="fa-solid fa-angle-left me-1"></i> Prev
+                </button>
+                <span>{{ currentPage }}</span>
+                <button type="button" (click)="goNext()" [disabled]="currentPage >= totalPages">
+                    Next <i class="fa-solid fa-angle-right ms-1"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+</div>

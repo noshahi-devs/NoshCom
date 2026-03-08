@@ -1,0 +1,87 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="glow-text">Support Management</h1>
+        <div class="header-actions">
+            <span class="admin-badge">ADMIN PANEL</span>
+        </div>
+    </div>
+
+    <div class="history-table-3d">
+        <div class="table-header">
+            <div class="col">User / Email</div>
+            <div class="col">Title</div>
+            <div class="col">Priority</div>
+            <div class="col">Status</div>
+            <div class="col">Date</div>
+            <div class="col actions">Actions</div>
+        </div>
+
+        <app-loader *ngIf="isLoading" message="Syncing global support tickets..."></app-loader>
+
+        @for (ticket of tickets; track ticket.id) {
+        <div class="table-row admin-row">
+            <div class="col user-info">
+                <span class="user-email">{{ ticket.userName || ticket.contactName || 'Anonymous' }}</span>
+                <small class="details">{{ ticket.contactEmail }}</small>
+            </div>
+            <div class="col method-info">
+                <strong>{{ ticket.title }}</strong>
+                <small class="details">{{ ticket.message | slice:0:50 }}{{ ticket.message.length > 50 ? '...' : ''
+                    }}</small>
+            </div>
+            <div class="col priority" [ngClass]="(ticket.priority || 'medium').toLowerCase()">
+                {{ ticket.priority }}
+            </div>
+            <div class="col">
+                <span class="status-badge" [ngClass]="(ticket.status || 'open').toLowerCase()">
+                    {{ ticket.status }}
+                </span>
+            </div>
+            <div class="col">{{ ticket.creationTime | date: 'MMM d, y h:mm a' }}</div>
+            <div class="col actions">
+                <ng-container *ngIf="ticket.status !== 'Closed'">
+                    <button class="btn-approve" (click)="reply(ticket)">Reply</button>
+                    <button class="btn-reject" (click)="closeTicket(ticket)">Close</button>
+                </ng-container>
+                <span *ngIf="ticket.status === 'Closed'" class="processed-text">
+                    Closed
+                </span>
+                <small *ngIf="ticket.adminRemarks" class="details admin-reply">
+                    Admin: {{ ticket.adminRemarks }}
+                </small>
+            </div>
+        </div>
+        }
+
+        @if (!isLoading && tickets.length === 0) {
+        <div class="table-row">
+            <div class="col" style="width: 100%; text-align: center;">No support tickets found.</div>
+        </div>
+        }
+
+        <!-- Pagination Section -->
+        <div class="pagination-container" *ngIf="totalCount > 0 && !isLoading">
+            <div class="pagination-info">
+                Showing {{ getStartIndex() }} to {{ getEndIndex() }} of {{ totalCount }} tickets
+            </div>
+
+            <div class="pagination-controls">
+                <button class="btn-pagination" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+
+                <div class="page-numbers">
+                    <button *ngFor="let page of getPageNumbers()" class="page-btn" [class.active]="page === currentPage"
+                        (click)="changePage(page)">
+                        {{ page }}
+                    </button>
+                </div>
+
+                <button class="btn-pagination" [disabled]="currentPage === totalPages"
+                    (click)="changePage(currentPage + 1)">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

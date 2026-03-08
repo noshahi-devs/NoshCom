@@ -1,0 +1,292 @@
+<div class="wallet-page">
+    <section class="wallet-cards">
+        <article class="summary-card card-wallet">
+            <div class="card-title">Wallet Balance</div>
+            <div class="card-sub">Wallet ID: <ng-container *ngIf="!isLoading; else idLoader">{{ walletId || 'N/A'
+                    }}</ng-container></div>
+            <div class="card-value"><ng-container *ngIf="!isLoading; else numLoader">${{ balance | number:'1.2-2'
+                    }}</ng-container></div>
+            <i class="fa-solid fa-wallet card-icon"></i>
+        </article>
+
+        <article class="summary-card card-pending">
+            <div class="card-title">Pending Payout</div>
+            <div class="card-value"><ng-container *ngIf="!isLoading; else numLoader">${{ pendingPayout | number:'1.2-2'
+                    }}</ng-container></div>
+            <i class="fa-solid fa-upload card-icon"></i>
+        </article>
+
+        <article class="summary-card card-complete">
+            <div class="card-title">Complete Payout</div>
+            <div class="card-value"><ng-container *ngIf="!isLoading; else numLoader">${{ completePayout | number:'1.2-2'
+                    }}</ng-container></div>
+            <i class="fa-solid fa-circle-check card-icon"></i>
+        </article>
+
+        <article class="summary-card card-recent">
+            <div class="card-title">Recent Payout</div>
+            <div class="card-value"><ng-container *ngIf="!isLoading; else numLoader">${{ recentPayout | number:'1.2-2'
+                    }}</ng-container></div>
+            <i class="fa-solid fa-upload card-icon"></i>
+        </article>
+    </section>
+
+    <section class="wallet-mid-grid">
+        <article class="panel-card">
+            <h3>Currently Active Payment Method</h3>
+            <div class="payment-card-wrap" *ngIf="!isLoading; else methodLoader">
+                <div class="virtual-card-3d">
+                    <div class="card-glass-shine"></div>
+                    <div class="card-bg-pattern"></div>
+
+                    <div class="card-chip"></div>
+                    <div class="card-brand-icon">
+                        <i class="fas fa-wifi fa-rotate-90 card-contactless"></i>
+                        <i class="fas fa-microchip"></i>
+                    </div>
+                    <div class="card-method-name">{{ activeMethod.method }}</div>
+
+                    <div class="card-details-row">
+                        <div class="card-number-mask">{{ activeMethod.walletId }}</div>
+                    </div>
+
+                    <div class="card-middle-row">
+                        <div class="card-info-item">
+                            <span class="label">MEMBER SINCE</span>
+                            <span class="val">2024</span>
+                        </div>
+                        <div class="card-info-item text-center">
+                            <span class="label">VALID THRU</span>
+                            <span class="val">12 / 29</span>
+                        </div>
+                        <div class="card-hologram-seal">
+                            <div class="seal-inner"></div>
+                        </div>
+                    </div>
+
+                    <div class="card-bottom-row">
+                        <div class="card-holder">
+                            <span class="label">RECEIVING VIA</span>
+                            <span class="val">{{ activeMethod.receiveIn }}</span>
+                        </div>
+                        <div class="badge-stack">
+                            <div class="card-platinum-badge">
+                                <i class="fas fa-crown"></i>
+                                <span>PLATINUM STATUS</span>
+                            </div>
+                            <div class="card-status-badge" [ngClass]="activeMethod.isVerified ? 'verified' : 'pending'">
+                                {{ activeMethod.isVerified ? 'VERIFIED' : 'PENDING' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="method-meta-info mt-3">
+                    <div class="meta-item">
+                        <i class="fas fa-check-circle" [class.text-success]="activeMethod.isVerified"></i>
+                        <span>{{ activeMethod.verificationMessage || (activeMethod.isVerified ? 'Payout method verified
+                            and active' : 'Awaiting verification') }}</span>
+                    </div>
+                </div>
+            </div>
+            <a routerLink="/seller/finances/add-payment-method" class="btn-link">Change Payment Method</a>
+        </article>
+
+        <article class="panel-card">
+            <h3>Withdraw Your Payment</h3>
+
+            <div *ngIf="currentStore?.withdrawLimit === null || currentStore?.withdrawLimit === undefined"
+                class="alert alert-danger-soft x-small mb-3 py-2">
+                <i class="fas fa-hand-holding-dollar me-2"></i> <strong>You cannot withdraw funds at this time.</strong>
+                <p class="mb-0 mt-1 opacity-75">Please wait for admin to set your withdrawal permission.</p>
+            </div>
+
+            <div *ngIf="currentStore?.withdrawLimit !== null && currentStore?.withdrawLimit !== undefined && (currentStore?.withdrawLimit || currentStore?.withdrawAllowedUntil)"
+                class="premium-rules-card mb-3" [class.expired]="isWithdrawExpired">
+                <div class="card-inner">
+                    <div class="card-header">
+                        <i class="fas fa-shield-halved"></i>
+                        <span>Withdrawal Protocol</span>
+                    </div>
+
+                    <div class="rules-grid">
+                        <div class="rule-box 3d-effect">
+                            <span class="box-label">Limit</span>
+                            <span class="box-value">${{ currentStore.withdrawLimit | number:'1.2-2' }}</span>
+                        </div>
+                        <div class="rule-box 3d-effect">
+                            <span class="box-label">Deadline</span>
+                            <span class="box-value">{{ currentStore.withdrawAllowedUntil | date:'dd MMM, hh:mm a'
+                                }}</span>
+                        </div>
+                    </div>
+
+                    <div class="countdown-panel 3d-effect">
+                        <div class="clock-title">{{ isWithdrawExpired ? 'PERMISSION EXPIRED' : 'REMAINING TIME' }}</div>
+                        <div class="main-clock">
+                            <div class="clock-unit">
+                                <span class="val">{{ countdownDaysDisplay }}</span>
+                                <span class="lbl">DAYS</span>
+                            </div>
+                            <div class="clock-sep">:</div>
+                            <div class="clock-unit">
+                                <span class="val">{{ countdownHoursDisplay }}</span>
+                                <span class="lbl">HOURS</span>
+                            </div>
+                            <div class="clock-sep">:</div>
+                            <div class="clock-unit">
+                                <span class="val">{{ countdownMinutesDisplay }}</span>
+                                <span class="lbl">MINS</span>
+                            </div>
+                            <div class="clock-sep">:</div>
+                            <div class="clock-unit">
+                                <span class="val">{{ countdownSecondsDisplay }}</span>
+                                <span class="lbl">SECS</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="status-bar" *ngIf="!isWithdrawExpired">
+                        <span class="dot pulse-green"></span> SYSTEM ACTIVE • NEXT PAYOUT
+                    </div>
+                    <div class="status-bar expired" *ngIf="isWithdrawExpired">
+                        <span class="dot pulse-green"></span> PROTOCOL COMPLETE • WITHDRAWAL UNLOCKED
+                    </div>
+
+                    <div class="instructions-footer" *ngIf="currentStore?.adminWithdrawRemarks">
+                        <i class="fas fa-info-circle"></i>
+                        <span>{{ currentStore.adminWithdrawRemarks }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Withdrawal Locking Logic -->
+            <div class="unlock-notice mb-3" *ngIf="!isWithdrawExpired && currentStore?.withdrawAllowedUntil">
+                <i class="fas fa-lock me-2 text-warning"></i>
+                <span class="text-warning fw-bold small">Withdrawal Locked until Protocol Conclusions</span>
+            </div>
+
+            <div class="withdraw-input-wrap" [class.locked]="!isWithdrawExpired">
+                <span>$</span>
+                <input type="number" [(ngModel)]="withdrawAmount" min="1" step="0.01" placeholder="0"
+                    [disabled]="!isWithdrawExpired">
+            </div>
+
+            <div class="withdraw-meta-info mt-2" *ngIf="currentStore?.withdrawLimit">
+                <div class="d-flex flex-column gap-1">
+                    <span class="text-muted x-small">Remaining limit: {{ currentStore.withdrawLimit | currency }}</span>
+
+                    <span class="text-danger x-small fw-bold"
+                        *ngIf="withdrawAmount && withdrawAmount > currentStore.withdrawLimit">
+                        <i class="fas fa-exclamation-triangle me-1"></i> Amount exceeds permitted withdrawal limit!
+                    </span>
+
+                    <span class="text-success x-small fw-bold" *ngIf="isWithdrawExpired">
+                        <i class="fas fa-unlock me-1"></i> Protocol complete. Withdrawal unlocked.
+                    </span>
+                </div>
+            </div>
+
+            <button type="button" class="btn-withdraw mt-3" [disabled]="!canWithdraw || isSubmitting"
+                (click)="submitWithdraw()">
+                <i class="fas" [class.fa-paper-plane]="!isSubmitting" [class.fa-spinner]="isSubmitting"
+                    [class.fa-spin]="isSubmitting" [class.me-2]="true"></i>
+                {{ isSubmitting ? 'Processing...' : (isWithdrawExpired ? 'Withdraw Now' : 'Withdrawal Locked') }}
+            </button>
+            <p class="hint">Request goes to admin approval first.</p>
+        </article>
+    </section>
+
+    <section class="table-card">
+        <div class="table-head">
+            <h3>Withdraw Transactions</h3>
+        </div>
+
+        <div class="table-tools">
+            <div>Show <span class="entries-chip">10</span> entries</div>
+            <div class="status-filters">
+                <button type="button" class="filter-btn" [class.active]="selectedStatusFilter === 'all'"
+                    (click)="setStatusFilter('all')">All</button>
+                <button type="button" class="filter-btn" [class.active]="selectedStatusFilter === 'pending'"
+                    (click)="setStatusFilter('pending')">Pending</button>
+                <button type="button" class="filter-btn" [class.active]="selectedStatusFilter === 'approved'"
+                    (click)="setStatusFilter('approved')">Approved</button>
+                <button type="button" class="filter-btn" [class.active]="selectedStatusFilter === 'rejected'"
+                    (click)="setStatusFilter('rejected')">Rejected</button>
+            </div>
+            <div class="search-wrap">
+                <label for="withdrawSearch">Search:</label>
+                <input id="withdrawSearch" type="text" [(ngModel)]="searchTerm" placeholder="Type to search">
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="withdraw-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Payment method</th>
+                        <th>Receive in</th>
+                        <th>Amount</th>
+                        <th>Withdraw status</th>
+                    </tr>
+                </thead>
+
+                <tbody *ngIf="isLoading">
+                    <tr *ngFor="let i of loadingRows">
+                        <td colspan="5">
+                            <div class="row-skeleton">
+                                <span class="s s-date"></span>
+                                <span class="s s-method"></span>
+                                <span class="s s-receive"></span>
+                                <span class="s s-amount"></span>
+                                <span class="s s-status"></span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+
+                <tbody *ngIf="!isLoading && filteredRequests.length">
+                    <tr *ngFor="let req of filteredRequests">
+                        <td>
+                            <div class="date-relative">{{ getRelativeDate(req.creationTime) }}</div>
+                            <div class="date-absolute">{{ req.creationTime | date:'dd-MM-yyyy' }}</div>
+                        </td>
+                        <td><span class="method-main">Via: {{ req.method || 'Third Party' }}</span></td>
+                        <td>{{ req.paymentDetails || activeMethod.receiveIn }}</td>
+                        <td>${{ req.amount || 0 | number:'1.2-2' }}</td>
+                        <td>
+                            <span class="status-chip" [ngClass]="getStatusClass(req.status)">{{ req.status || 'Pending'
+                                }}</span>
+                        </td>
+                    </tr>
+                </tbody>
+
+                <tbody *ngIf="!isLoading && !filteredRequests.length">
+                    <tr>
+                        <td colspan="5" class="empty-row">No data available in table</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <ng-template #numLoader>
+        <span class="loader-inline"><i class="fas fa-spinner fa-spin"></i></span>
+    </ng-template>
+
+    <ng-template #idLoader>
+        <span class="s s-id"></span>
+    </ng-template>
+
+    <ng-template #methodLoader>
+        <div class="method-skeleton">
+            <span class="s w-120"></span>
+            <span class="s w-220"></span>
+            <span class="s w-120"></span>
+            <span class="s w-220"></span>
+            <span class="s w-120"></span>
+            <span class="s w-220"></span>
+        </div>
+    </ng-template>
+</div>

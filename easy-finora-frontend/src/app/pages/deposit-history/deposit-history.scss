@@ -1,0 +1,255 @@
+@import "../../../styles.scss";
+
+.page-container {
+    padding: 30px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+
+    h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-main);
+    }
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.inline-loader {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(29, 224, 22, 0.08);
+    color: #1f7a2a;
+    font-weight: 600;
+    font-size: 12px;
+    border: 1px solid rgba(29, 224, 22, 0.2);
+
+    .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--primary);
+        animation: pulse 1.2s ease-in-out infinite;
+    }
+}
+
+.history-table-3d {
+    background: var(--bg-surface);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-3d-soft);
+
+    .table-header {
+        display: flex;
+        background: rgba(0, 0, 0, 0.02);
+        padding: 15px 25px;
+        font-weight: 700;
+        color: var(--text-muted);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+        .col {
+            flex: 1;
+        }
+    }
+
+    .table-row {
+        display: flex;
+        padding: 20px 25px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        align-items: center;
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        .col {
+            flex: 1;
+            color: var(--text-main);
+            font-size: 14px;
+        }
+
+        .amount {
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: capitalize;
+
+            &.pending {
+                background: #fff3cd;
+                color: #856404;
+            }
+
+            &.approved,
+            &.completed {
+                background: #d4edda;
+                color: #155724;
+            }
+
+            &.rejected,
+            &.failed {
+                background: #f8d7da;
+                color: #721c24;
+            }
+        }
+    }
+
+    .ghost-row {
+        .ghost-line {
+            display: inline-block;
+            height: 10px;
+            width: 140px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, rgba(226, 232, 240, 0.8), rgba(255, 255, 255, 0.9), rgba(226, 232, 240, 0.8));
+            background-size: 200% 100%;
+            animation: ghost-sheen 1.6s ease-in-out infinite;
+
+            &.id {
+                width: 160px;
+            }
+
+            &.amt {
+                width: 90px;
+            }
+
+            &.method {
+                width: 110px;
+            }
+
+            &.country {
+                width: 100px;
+            }
+
+            &.date {
+                width: 140px;
+            }
+        }
+
+        .ghost-pill {
+            display: inline-block;
+            height: 20px;
+            width: 72px;
+            border-radius: 999px;
+            background: rgba(29, 224, 22, 0.12);
+        }
+    }
+
+    .pagination-container {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 24px !important;
+        background: rgba(0, 0, 0, 0.02) !important;
+        border-top: 1px solid rgba(0, 0, 0, 0.05) !important;
+
+        .pagination-info {
+            font-size: 14px !important;
+            color: #7f8c8d !important;
+            font-weight: 600 !important;
+            margin: 0 !important;
+        }
+
+        .pagination-controls {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+
+            .btn-pagination {
+                padding: 8px 18px !important;
+                border-radius: 12px !important;
+                border: 1px solid #edf2f7 !important;
+                background: white !important;
+                color: #2c3e50 !important;
+                font-weight: 700 !important;
+                cursor: pointer !important;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+
+                &:hover:not(:disabled) {
+                    border-color: #2ecc71 !important;
+                    color: #2ecc71 !important;
+                    transform: translateY(-2px) !important;
+                    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15) !important;
+                }
+
+                &:disabled {
+                    opacity: 0.5 !important;
+                    cursor: not-allowed !important;
+                }
+            }
+
+            .page-numbers {
+                display: flex !important;
+                gap: 8px !important;
+
+                .page-btn {
+                    width: 38px !important;
+                    height: 38px !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    border-radius: 12px !important;
+                    border: 1px solid #edf2f7 !important;
+                    background: white !important;
+                    color: #2c3e50 !important;
+                    font-weight: 800 !important;
+                    cursor: pointer !important;
+                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+                    &:hover {
+                        border-color: #2ecc71 !important;
+                        color: #2ecc71 !important;
+                    }
+
+                    &.active {
+                        background: #2ecc71 !important;
+                        color: white !important;
+                        border-color: #2ecc71 !important;
+                        box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3) !important;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@keyframes ghost-sheen {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+    50% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+}

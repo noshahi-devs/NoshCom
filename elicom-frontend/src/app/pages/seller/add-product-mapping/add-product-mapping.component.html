@@ -1,0 +1,196 @@
+<div class="add-product-container">
+    <div class="page-header mb-5">
+        <i class="fas fa-store"></i>
+        <span>Add Product in Your Store Listing</span>
+    </div>
+
+    <div class="search-section mb-5" *ngIf="!product">
+        <div class="search-wrapper d-flex align-items-center gap-3">
+            <span class="fs-4"><i class="fas fa-search"></i></span>
+            <input type="text" class="search-input" placeholder="Search by Product ID / Name / SKU"
+                [(ngModel)]="searchQuery" (keyup.enter)="onSearch()">
+            <button class="btn btn-primary rounded-3 px-4" (click)="onSearch()" [disabled]="isSearching">
+                <i class="fas" [class.fa-search]="!isSearching" [class.fa-spinner]="isSearching"
+                    [class.fa-spin]="isSearching"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="category-showcase mb-5" *ngIf="!product">
+        <div class="category-showcase-head">
+            <h5 class="mb-1">Explore by Category</h5>
+            <p class="mb-0">Pick any category to instantly search matching supplier products.</p>
+        </div>
+
+        <div class="category-skeleton-grid" *ngIf="isCategoriesLoading">
+            <div class="category-skeleton" *ngFor="let _ of [1,2,3,4,5,6,7,8]"></div>
+        </div>
+
+        <div class="category-grid" *ngIf="!isCategoriesLoading && categoryTiles.length > 0">
+            <button type="button" class="category-tile" *ngFor="let cat of categoryTiles" [ngClass]="cat.tone"
+                (click)="onCategoryQuickSearch(cat.name)">
+                <span class="category-icon-wrap">
+                    <i class="fas" [ngClass]="cat.icon"></i>
+                </span>
+                <span class="category-meta">
+                    <span class="category-name">{{ cat.name }}</span>
+                    <span class="category-count">{{ cat.count }} product{{ cat.count === 1 ? '' : 's' }}</span>
+                </span>
+                <span class="category-arrow"><i class="fas fa-arrow-right"></i></span>
+            </button>
+        </div>
+
+        <div class="category-empty" *ngIf="!isCategoriesLoading && categoryTiles.length === 0">
+            Categories could not be loaded right now.
+        </div>
+    </div>
+
+    <div class="results-container mb-5" *ngIf="showResults && !product">
+        <h5 class="fw-bold mb-4 text-muted">Search Results</h5>
+        <div class="product-card d-flex align-items-center justify-content-between mb-4"
+            *ngFor="let res of searchResults">
+            <div class="product-main d-flex align-items-center gap-4">
+                <img [src]="res.images[0]" class="product-img" />
+                <div>
+                    <div class="result-title-wrap" tabindex="0">
+                        <h5 class="mb-2 fw-semibold result-title">{{ getPreviewTitle(res.name) }}</h5>
+                        <div class="title-tooltip" *ngIf="isTitleTruncated(res.name)">
+                            {{ res.name }}
+                        </div>
+                    </div>
+                    <div class="badge-group">
+                        <span class="badge-soft">ID: {{res.id.substring(0, 8)}}...</span>
+                        <span class="badge-soft">Category: {{res.categoryName}}</span>
+                        <span class="badge-soft">Brand: {{res.brandName || 'Generic'}}</span>
+                    </div>
+                    <span class="price-badge">${{res.supplierPriceResolved ?? res.supplierPrice}}</span>
+                </div>
+            </div>
+
+            <div class="action-group">
+                <button class="add-btn" (click)="selectProduct(res)">Add to Store</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mapping-section animate__animated animate__fadeInUp" *ngIf="product">
+        <div class="card-wrapper">
+            <div class="product-mapping-info">
+                <div class="gallery">
+                    <div class="main-image">
+                        <img [src]="selectedImage" alt="Product Image">
+                    </div>
+                    <div class="thumbs">
+                        <div class="thumb" *ngFor="let img of product.images" [class.active]="selectedImage === img"
+                            (click)="selectImage(img)">
+                            <img [src]="img">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-content">
+                    <div class="product-title">{{product.name}}</div>
+                    <div class="info-row mt-3">
+                        <div class="pill"><i class="fas fa-hashtag"></i> ID: {{product.id}}</div>
+                        <div class="pill"><i class="fas fa-tag"></i> Category: {{product.categoryName}}</div>
+                        <div class="pill"><i class="fas fa-copyright"></i> Brand: {{product.brandName || 'Generic'}}
+                        </div>
+                    </div>
+                    <div class="price"><i class="fas fa-tag"></i> Supplier Price: ${{product.supplierPriceResolved ??
+                        product.supplierPrice}}</div>
+                    <div class="product-description mt-4 text-muted border-top pt-3" *ngIf="product.description">
+                        <h6 class="fw-bold mb-2">Product Description</h6>
+                        <div class="desc-tooltip-wrap" tabindex="0">
+                            <div class="desc-clamp" [innerHTML]="product.description"></div>
+                            <div class="desc-tooltip-popup">
+                                <div [innerHTML]="product.description"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="attribute-card">
+            <div class="attribute-header mb-4">
+                <h4 class="fw-bold border-bottom pb-2 display-inline-block"
+                    style="border-width: 2px !important; border-color: #0f172a !important; display: inline-block;">
+                    Set Attributes For Store Listing
+                </h4>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="fw-bold mb-2">Minimum Seller Price</label>
+                    <div class="input-box custom-input-wrapper bg-light border-0">
+                        <span class="input-prefix fw-bold">$</span>
+                        <input type="number" [value]="minAllowedPrice" readonly placeholder="0.00">
+                    </div>
+                    <div class="small mt-1 text-muted" style="color:red !important">
+                        At least 40% above supplier price.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="fw-bold mb-2">Maximum Seller Price</label>
+                    <div class="input-box custom-input-wrapper bg-light border-0">
+                        <span class="input-prefix fw-bold">$</span>
+                        <input type="number" [value]="maxAllowedPrice" readonly placeholder="0.00">
+                    </div>
+                    <div class="small mt-1 text-muted" style="color:red !important">
+                        Up to 167% of supplier price.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="fw-bold mb-2">Standard Price</label>
+                    <div class="input-box custom-input-wrapper"
+                        [class.border-danger]="retailPrice > maxAllowedPrice || retailPrice < minAllowedPrice">
+                        <span class="input-prefix fw-bold">$</span>
+                        <input type="number" [(ngModel)]="retailPrice" [disabled]="isViewOnly" placeholder="0.00">
+                    </div>
+                    <div *ngIf="retailPrice > maxAllowedPrice" class="text-danger small mt-1">
+                        <i class="fas fa-exclamation-triangle"></i> Price exceeds the maximum allowed limit of
+                        ${{maxAllowedPrice}}
+                    </div>
+                    <div *ngIf="retailPrice < minAllowedPrice" class="text-danger small mt-1">
+                        <i class="fas fa-exclamation-triangle"></i> Price cannot be lower than the minimum allowed limit
+                        of
+                        ${{minAllowedPrice}}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="fw-bold mb-2">Handling Time</label>
+                    <div class="input-box custom-input-wrapper">
+                        <span class="input-prefix text-muted fw-bold">Days</span>
+                        <input type="number" [(ngModel)]="handlingTime" min="1" max="30" [disabled]="isViewOnly">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="fw-bold mb-2">Max Order Quantity</label>
+                    <div class="input-box custom-input-wrapper">
+                        <span class="input-prefix text-muted fw-bold">Units</span>
+                        <input type="number" [(ngModel)]="maxOrderQty" min="1" max="100" [disabled]="isViewOnly">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mt-4">
+                <label class="fw-bold mb-2">Seller Note</label>
+                <textarea class="form-control" [(ngModel)]="sellerNote" [disabled]="isViewOnly" rows="3"
+                    placeholder="Enter any extra details or instructions regarding this listing..."></textarea>
+            </div>
+
+            <div class="actions mt-4">
+                <button class="btn btn-cancel" (click)="cancelSearch()">
+                    <i class="fas fa-times"></i> {{ isViewOnly ? 'Back to Listings' : 'Cancel' }}
+                </button>
+                <button class="btn btn-primary px-4" (click)="publishToStore()" *ngIf="!isViewOnly">
+                    <i class="fas fa-check-circle"></i> Publish to Store
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

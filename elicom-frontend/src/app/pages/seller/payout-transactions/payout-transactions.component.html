@@ -1,0 +1,109 @@
+<div class="payout-transactions-page">
+    <section class="status-header">
+        <h2>
+            <i class="fa-solid fa-wallet"></i>
+            {{ title }}
+        </h2>
+        <p>{{ description }}</p>
+    </section>
+
+    <section class="orders-table-card">
+        <div class="table-tools">
+            <div class="entries-info">
+                Show <span class="entries-chip">10</span> entries
+            </div>
+
+            <div class="search-wrap">
+                <label for="ptSearch">Search:</label>
+                <input id="ptSearch" type="text" [(ngModel)]="searchTerm" placeholder="Type to search" />
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="orders-table payouts-table">
+                <thead>
+                    <tr>
+                        <th class="col-date">Date</th>
+                        <th class="col-method">Payment method</th>
+                        <th class="col-receive">Receive in</th>
+                        <th class="col-amount">Amount</th>
+                        <th class="col-status">Withdraw status</th>
+                        <th class="col-action">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody *ngIf="isLoading && !hasLoaded">
+                    <tr *ngFor="let i of [1,2,3,4]; let idx = index" [class.zebra-even]="idx % 2 === 0"
+                        [class.zebra-odd]="idx % 2 !== 0">
+                        <td colspan="6">
+                            <div class="row-skeleton">
+                                <span class="sk sk-date"></span>
+                                <span class="sk sk-method"></span>
+                                <span class="sk sk-receive"></span>
+                                <span class="sk sk-amount"></span>
+                                <span class="sk sk-status"></span>
+                                <span class="sk sk-action"></span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+
+                <tbody *ngIf="hasLoaded && filteredRequests.length">
+                    <tr *ngFor="let req of filteredRequests; let idx = index" [class.zebra-even]="idx % 2 === 0"
+                        [class.zebra-odd]="idx % 2 !== 0">
+                        <td class="date-col">
+                            <div class="cell-box">
+                                <div class="date-relative">{{ getRelativeDate(req.creationTime) }}</div>
+                                <div class="date-absolute">{{ req.creationTime | date:'dd/MM/yyyy' }}</div>
+                                <div>{{ req.creationTime | date:'hh:mm:ss a' }}</div>
+                            </div>
+                        </td>
+                        <td class="method-col">
+                            <div class="cell-box">
+                                <div class="method-main">Via: {{ req.method || 'Third Party' }}</div>
+                                <div class="sub-text">Payout request</div>
+                            </div>
+                        </td>
+                        <td class="receive-col">
+                            <div class="cell-box">
+                                {{ req.paymentDetails || 'API Payout' }}
+                            </div>
+                        </td>
+                        <td class="amount-col">
+                            <div class="cell-box amount-value">${{ req.amount || 0 | number:'1.2-2' }}</div>
+                        </td>
+                        <td>
+                            <div class="cell-box cell-box-status">
+                                <span class="status-pill" [ngClass]="getStatusClass(req.status)">
+                                    {{ getStatusLabel(req.status) }}
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="cell-box cell-box-actions">
+                                <button type="button" class="btn-action btn-view" (click)="onActionClick(req)">
+                                    {{ actionButtonLabel }}
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+
+                <tbody *ngIf="hasLoaded && !filteredRequests.length">
+                    <tr>
+                        <td colspan="6" class="empty-row">No data available in table</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-footer" *ngIf="hasLoaded">
+            <span>Showing {{ filteredRequests.length ? 1 : 0 }} to {{ filteredRequests.length }} of {{ filteredRequests.length }} entries</span>
+            <div class="pager">
+                <button type="button" disabled>Previous</button>
+                <span>1</span>
+                <button type="button" disabled>Next</button>
+            </div>
+        </div>
+    </section>
+</div>

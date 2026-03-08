@@ -1,0 +1,15 @@
+<header class="order-header">
+  <div class="header-left">
+    <span class="logo">{{ brandName }}</span>
+
+    <div class="location" *ngIf="showLocation">
+      <i class="fas fa-map-marker-alt"></i>
+      <span>{{ shippingAddress }}</span>
+    </div>
+  </div>
+
+  <div class="secure-checkout">
+    <i class="fas fa-lock"></i>
+    <span>Secure Checkout</span>
+  </div> 
+</header>

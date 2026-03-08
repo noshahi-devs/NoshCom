@@ -1,0 +1,34 @@
+<div class="left-column">
+  <div class="image-box">
+
+    <!-- Thumbnails -->
+    <div class="thumbnails">
+      <div
+        class="thumb c-thumb"
+        *ngFor="let img of images; let i = index"
+        [class.active]="i === activeIndex"
+        (click)="selectImage(i)"
+      >
+        <img [src]="img" />
+      </div>
+    </div> 
+
+    <!-- Main Image -->
+    <div class="main-image main-frame">
+      <button class="arrow left" (click)="prevImage()">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+
+      <img
+        [src]="images[activeIndex]"
+        alt="Main Product Image"
+        class="zoom-image"
+      />
+
+      <button class="arrow right" (click)="nextImage()">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+
+  </div>
+</div>

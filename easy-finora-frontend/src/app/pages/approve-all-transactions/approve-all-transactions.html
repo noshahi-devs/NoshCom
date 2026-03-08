@@ -1,0 +1,66 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="glow-text">All Global Transactions</h1>
+        <div class="header-actions">
+            <span class="admin-badge">ADMIN PANEL</span>
+        </div>
+    </div>
+
+    <div class="history-table-3d">
+        <div class="table-header">
+            <div class="col">Ref / ID</div>
+            <div class="col">Amount</div>
+            <div class="col">Type / Category</div>
+            <div class="col">Description</div>
+            <div class="col">Date</div>
+        </div>
+
+        <ng-container *ngIf="!isLoading">
+            <div *ngFor="let t of transactions" class="table-row">
+                <div class="col">
+                    <span class="ref-id">{{ t.referenceId || t.id }}</span>
+                </div>
+                <div class="col amount" [class.credit]="t.amount > 0" [class.debit]="t.amount < 0">
+                    {{ t.amount | currency }}
+                </div>
+                <div class="col">
+                    <span class="type-badge">{{ t.movementType }}</span>
+                    <small class="category">{{ t.category }}</small>
+                </div>
+                <div class="col desc">{{ t.description }}</div>
+                <div class="col">{{ t.creationTime | date: 'MMM d, y h:mm a' }}</div>
+            </div>
+
+            <div *ngIf="transactions.length === 0" class="table-row">
+                <div class="col" style="width: 100%; text-align: center;">No transactions found.</div>
+            </div>
+
+            <!-- Pagination Section -->
+            <div class="pagination-container" *ngIf="totalCount > 0">
+                <div class="pagination-info">
+                    Showing {{ getStartIndex() }} to {{ getEndIndex() }} of {{ totalCount }} transactions
+                </div>
+
+                <div class="pagination-controls">
+                    <button class="btn-pagination" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+
+                    <div class="page-numbers">
+                        <button *ngFor="let page of getPageNumbers()" class="page-btn"
+                            [class.active]="page === currentPage" (click)="changePage(page)">
+                            {{ page }}
+                        </button>
+                    </div>
+
+                    <button class="btn-pagination" [disabled]="currentPage === totalPages"
+                        (click)="changePage(currentPage + 1)">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </ng-container>
+
+        <app-loader *ngIf="isLoading" message="Auditing global transaction stream..."></app-loader>
+    </div>
+</div>

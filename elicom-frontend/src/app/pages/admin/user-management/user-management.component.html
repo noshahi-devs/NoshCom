@@ -1,0 +1,96 @@
+<div class="user-management container-fluid animate__animated animate__fadeIn">
+    <div class="mb-4">
+        <h2 class="fw-bold text-dark mb-1">User Management</h2>
+        <p class="text-muted small mb-0">Manage system administrators and their access levels.</p>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">User</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let user of users">
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="user-avatar" [style.background-color]="'#f8fafc'">
+                                    <i class="fas fa-user-circle text-primary fa-2x"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">{{ user.name }}</div>
+                                    <div class="text-muted x-small">{{ user.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge role-badge">{{ user.role }}</span>
+                        </td>
+                        <td>
+                            <span class="status-pill" [ngClass]="user.status.toLowerCase()">
+                                {{ user.status }}
+                            </span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="d-flex gap-2 justify-content-end">
+                                <button class="btn btn-icon" (click)="toggleStatus(user)"
+                                    [title]="user.status === 'Active' ? 'Deactivate' : 'Activate'">
+                                    <i class="fas"
+                                        [ngClass]="user.status === 'Active' ? 'fa-user-slash text-danger' : 'fa-user-check text-success'"></i>
+                                </button>
+                                <button class="btn btn-icon"><i class="fas fa-key text-warning"></i></button>
+                                <button class="btn btn-icon"><i class="fas fa-edit text-primary"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" [class.show]="showAddModal" [style.display]="showAddModal ? 'block' : 'none'" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-primary text-white p-4">
+                    <h5 class="modal-title fw-bold">Provision New Admin</h5>
+                    <button type="button" class="btn-close btn-close-white" (click)="closeAddModal()"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Full Name</label>
+                        <input type="text" class="form-control rounded-3" [(ngModel)]="newUser.name"
+                            placeholder="John Doe">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Email Address</label>
+                        <input type="email" class="form-control rounded-3" [(ngModel)]="newUser.email"
+                            placeholder="john@company.com">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Acess Role</label>
+                        <select class="form-select rounded-3" [(ngModel)]="newUser.role">
+                            <option>Super Admin</option>
+                            <option>Support Staff</option>
+                            <option>Financial Auditor</option>
+                            <option>KYC Reviewer</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4"
+                        (click)="closeAddModal()">Discard</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" (click)="addUser()">Create
+                        User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop fade" [class.show]="showAddModal" *ngIf="showAddModal"></div>
+</div>

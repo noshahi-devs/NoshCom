@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elegant Dashboard | Noshahi Store</title>
+
+<!-- Dependencies -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<style>
+:root {
+    --bg-body: #f8fafc;
+    --sidebar-bg: #ffffff;
+    --sidebar-width: 280px;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --brand-primary: #4F46E5;
+    --nav-hover: #f1f5f9;
+    --topbar-height: 60px;
+}
+
+body { background-color: var(--bg-body); font-family: 'Inter', sans-serif; color: var(--text-dark); overflow-x: hidden; margin:0; }
+
+/* Sidebar */
+.sidebar { width: var(--sidebar-width); height: 100vh; position: fixed; left: 0; top: 0; background: var(--sidebar-bg); border-right: 1px solid #e2e8f0; z-index: 1000; overflow-y: auto; transition: all 0.3s ease; }
+.sidebar.collapsed { width: 60px; }
+.sidebar.collapsed .nav-link span { display: none; }
+.sidebar.collapsed .nav-label { display: none; }
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 3px; }
+.sidebar-brand { padding: 1.5rem; display: flex; align-items: center; border-bottom: 1px solid #f1f5f9; }
+.brand-logo { width: 32px; height: 32px; background: var(--brand-primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; margin-right: 12px; }
+.nav-label { padding: 1.5rem 1.5rem 0.5rem; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: var(--text-muted); }
+.nav-link { padding: 0.8rem 1.5rem; display: flex; align-items: center; color: var(--text-dark); font-weight: 500; font-size: 14px; transition: all 0.2s; border-radius: 0; }
+.nav-link i { width: 20px; margin-right: 12px; font-size: 16px; color: var(--text-muted); }
+.nav-link:hover { background-color: var(--nav-hover); color: var(--brand-primary); }
+.nav-link.active { color: var(--brand-primary); background: #eef2ff; border-right: 3px solid var(--brand-primary); }
+.submenu { background: #fcfcfd; padding-left: 1rem; display: none; }
+.nav-item.open .submenu { display: block; }
+.chevron-icon { margin-left: auto; font-size: 10px; transition: transform 0.2s; }
+.nav-item.open .chevron-icon { transform: rotate(90deg); }
+.search-container { flex: 1; max-width: 500px; margin: 0 auto; }
+.search-input {
+    background: #f3f6f9; border: none; border-radius: 10px;
+    padding: 10px 20px; width: 100%;
+}
+/* Topbar */
+.topbar { height: var(--topbar-height); background: #fff; position: fixed; top: 0; right: 0; left: var(--sidebar-width); z-index: 999; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border-bottom: 1px solid #eef2f7; }
+.topbar.collapsed { left: 70px; }
+#sidebar-toggle { cursor: pointer; padding: 8px; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
+#sidebar-toggle:hover { background-color: var(--nav-hover); color: var(--brand-primary); }
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1040; }
+.overlay.active { display: block; }
+
+/* Main wrapper */
+.main-wrapper { margin-left: var(--sidebar-width); min-height: 100vh; padding: 2rem; padding-top: calc(var(--topbar-height) + 1rem); transition: margin-left 0.3s ease; }
+
+/* Stat Cards */
+.stat-card-new { border-radius: 15px; padding: 20px; color: white; position: relative; overflow: hidden; height: 150px; margin-bottom: 0; }
+.stat-card-new h5 { font-size: 0.75rem; opacity: 0.9; text-transform: uppercase; margin-bottom: 5px; }
+.stat-card-new h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 5px; }
+.stat-card-new .badge-soft { background: rgba(255,255,255,0.25); padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+.icon-circle-bg { width: 40px; height: 40px; background: rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; position: absolute; top: 20px; right: 20px; }
+
+/* Sub Stat Cards */
+.stat-sub-card { border: none; border-radius: 15px; padding: 20px 16px; height: 100%; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.03); background: #fff; transition: all 0.2s; }
+.stat-sub-card:hover { transform: scale(1.02); }
+.stat-label { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
+.stat-val { font-size: 1.4rem; font-weight: 800; color: #0f172a; }
+
+/* Sub Card Colors */
+.bg-c-1 { border-left: 5px solid #4361ee; background: #eef2ff; }
+.bg-c-2 { border-left: 5px solid #ff9f43; background: #fff7ed; }
+.bg-c-3 { border-left: 5px solid #28c76f; background: #f0fdf4; }
+.bg-c-4 { border-left: 5px solid #d63384; background: #fdf2f8; }
+.bg-c-5 { border-left: 5px solid #6610f2; background: #f5f3ff; }
+.bg-c-6 { border-left: 5px solid #0dcaf0; background: #ecfeff; }
+.bg-c-7 { border-left: 5px solid #20c997; background: #f0fdfa; }
+.bg-c-8 { border-left: 5px solid #ea5455; background: #fff1f2; }
+
+        .product-item { display: flex; align-items: center; padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid #f1f5f9; }
+        .product-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .product-img { width: 48px; height: 35px; border-radius: 8px; object-fit: cover; background: #f8fafc; padding: 4px; margin-right: 12px; }
+        .star-rating { color: #ffc107; font-size: 10px; }
+
+        .action-btn { background: #fff; border-radius: 12px; padding: 12px 6px; text-align: center; transition: all 0.2s; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #edf2f7; }
+        .action-btn:hover { transform: translateY(-3px); border-color: var(--accent-blue); }
+        .action-btn .icon-mini { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px; }
+
+        .alert-item { padding: 14px; border-radius: 12px; background: #fff; margin-bottom: 12px; display: flex; align-items: flex-start; gap: 12px; border: 1px solid #edf2f7; box-shadow: 0 2px 6px rgba(0,0,0,0.02); transition: transform 0.2s; }
+        .alert-item:hover { transform: translateX(5px); }
+        .alert-new { border-left: 4px solid var(--accent-blue); border-left: 5px solid #ea5455; background: #fff1f2; }
+        .alert-warn { border-left: 4px solid var(--accent-orange) ; border-left: 5px solid #20c997; background: #f0fdfa; }
+        .alert-danger { border-left: 4px solid var(--accent-red);border-left: 5px solid #ea5455; background: #fff1f2; }
+
+        .filter-group .btn { font-size: 0.75rem; font-weight: 600; border: 1px solid #e2e8f0; background: #fff; color: #64748b; }
+        .filter-group .btn.active { background: #f8fafc; color: #4361ee; border-color: #4361ee; }
+        
+        .bg-light-orange { background-color: #fff7ed; color: #f59e0b; }
+        .bg-light-green { background-color: #f0fdf4; color: #10b981; }
+        .bg-light-blue { background-color: #eff6ff; color: #3b82f6; }
+        
+        .time-widget { text-align: right; line-height: 1.2; margin-right: 20px; display: none; }
+        @media(min-width: 768px) { .time-widget { display: block; } }
+        @media (max-width: 992px) { .sidebar-container { transform: translateX(-100%); } .main-content-wrapper { margin-left: 0; width: 100%; } }
+/* Mobile sidebar */
+@media (max-width: 991.98px) {
+    .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        height: 100%;
+        z-index: 1050;
+        transition: left 0.3s ease;
+    }
+    .sidebar.open {
+        left: 0;
+    }
+    .topbar {
+        left: 0 !important;
+    }
+    .main-wrapper {
+        margin-left: 0;
+        margin-right: -100px;
+        transition: none;
+    }
+    .overlay {
+        display: none;
+    }
+    .overlay.active {
+        display: block;
+    }
+}
+/* Hide the "Select Date" button on screens smaller than 768px */
+@media (max-width: 767.98px) {
+    .select-date-option {
+        display: none !important;
+    }
+}
+
+#sidebar {
+    transition: width 0.3s;
+    width: 280px; /* default expanded width */
+}
+
+#sidebar.collapsed {
+    width: 60px;
+}
+
+#sidebar.hovered {
+    width: 280px;
+}
+
+#topbar {
+    transition: margin-left 0.3s;
+}
+
+#topbar.hovered {
+    margin-left: 280px;
+}
+        /* .card { border: none; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 24px; }
+
+.time-widget { background: var(--gradient-time); color: #fff; position: relative; overflow: hidden; }
+        .action-center-card { background: var(--gradient-action); color: #fff; position: relative; overflow: hidden; }
+        .blob { position: absolute; border-radius: 50%; filter: blur(40px); z-index: 0; }
+        .blob-1 { top: -10%; right: -10%; width: 120px; height: 120px; background: blue; }
+        
+        .icon-box {
+            width: 54px; height: 54px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center; font-size: 22px;
+        } */
+         /* General card styling */
+/* Cards General */
+.card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
+        min-height: 150px;
+    padding: 16px !important;
+    border-radius: 12px;
+
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* Time Widget */
+.time-widget {
+    background: linear-gradient(135deg, #4F46E5 0%, #818CF8 100%);
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    text-align: left;
+    width: 320px;
+    height: 90px;
+        min-height: 150px;
+
+}
+
+.time-widget .blob {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+}
+
+.time-widget .blob-1 {
+    /* width: 150px;
+    height: 150px; */
+    top: -30px;
+    right: -50px;
+}
+
+#digital-clock {
+    font-family: 'Roboto Mono', monospace;
+    letter-spacing: 1px;
+    font-size: 2.8rem;
+}
+
+/* Icon boxes */
+.icon-box {
+        width: 38px;
+    height: 38px;
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 12px;
+    font-size: 1.2rem;
+}
+
+.time-widget h2 {
+    font-size: 2.2rem !important;
+}
+
+.bg-primary { color: #4F46E5 !important; background-color: #EEF2FF !important; }
+.bg-info { color: #0EA5E9 !important; background-color: #E0F2FE !important; }
+
+.text-muted { color: #64748B !important; }
+.fw-bold { font-weight: 700 !important; }
+.ls-1 { letter-spacing: 1px !important; }
+
+h2.fw-bold { font-size: 2rem; }
+.text-success { color: #16A34A !important; }
+
+/* Responsive adjustments */
+@media (max-width: 991px) {
+    .col-xl-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    .time-widget {
+        text-align: center;
+    }
+    .icon-box {
+        margin: 0 auto 10px;
+    }
+}
+
+
+
+
+
+
+</style>
+
+
+<style>
+/* ================= Sidebar Base ================= */
+.sidebar {
+    width: 280px;
+    height: 100vh;
+    background: linear-gradient(180deg, #ffffff, #f8fafc);
+    padding: 25px 16px;
+    box-shadow: 8px 0 30px rgba(0, 0, 0, 0.08);
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow-y: auto;
+    transform-style: preserve-3d;
+    perspective: 1200px;
+}
+
+/* ================= Brand Section ================= */
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    margin-bottom: 30px;
+    border-radius: 14px;
+    background: white;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transform: translateZ(8px);
+}
+
+.brand-logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ================= Nav Links ================= */
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    color: #4b5563;
+    text-decoration: none;
+    margin-bottom: 16px;
+
+    background: linear-gradient(180deg, #f9fafb, #f1f5f9);
+    box-shadow: 0 4px 0 #e5e7eb, 0 6px 12px rgba(0,0,0,0.06);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.8);
+
+    /* Make it feel lifted by default */
+    transform: translateZ(2px);
+}
+
+/* Hover lift */
+.nav-link:hover {
+    transform: translateY(-2px) translateZ(8px);
+    color: #4f46e5;
+    box-shadow: 0 8px 0 #e5e7eb, 0 12px 20px rgba(0,0,0,0.12);
+}
+
+/* Press down */
+.nav-link:active {
+    transform: translateY(3px) translateZ(0);
+    box-shadow: 0 1px 0 #e5e7eb, 0 4px 8px rgba(0,0,0,0.08);
+}
+
+/* ================= Default Spotlight Active ================= */
+.nav-link.active {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: #ffffff !important;
+    border: none;
+
+    /* Lift up above all buttons */
+    transform: translateY(-6px) translateZ(12px);
+    z-index: 10;
+
+    /* Strong blue glow */
+    box-shadow:
+        0 14px 28px rgba(79,70,229,0.55),
+        0 6px 0 #4338ca,
+        0 0 20px rgba(79,70,229,0.45),
+        0 0 40px rgba(79,70,229,0.3),
+        0 0 60px rgba(79,70,229,0.2);
+
+    /* Optional subtle pulsing */
+    animation: spotlightPulse 2s infinite ease-in-out;
+}
+
+/* Glow pulse animation */
+@keyframes spotlightPulse {
+    0% { box-shadow: 0 14px 28px rgba(79,70,229,0.55),0 6px 0 #4338ca,0 0 20px rgba(79,70,229,0.45),0 0 40px rgba(79,70,229,0.3),0 0 60px rgba(79,70,229,0.2);}
+    50% { box-shadow: 0 16px 32px rgba(79,70,229,0.65),0 6px 0 #4338ca,0 0 24px rgba(79,70,229,0.55),0 0 48px rgba(79,70,229,0.35),0 0 70px rgba(79,70,229,0.25);}
+    100% { box-shadow: 0 14px 28px rgba(79,70,229,0.55),0 6px 0 #4338ca,0 0 20px rgba(79,70,229,0.45),0 0 40px rgba(79,70,229,0.3),0 0 60px rgba(79,70,229,0.2);}
+}
+
+/* ================= Submenu ================= */
+.nav-item {
+    margin-bottom: 16px;
+}
+
+.nav-item .nav-link {
+    margin-bottom: 0;
+}
+
+.submenu {
+    margin-left: 20px;
+    padding-left: 10px;
+    border-left: 2px solid #f1f5f9;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.submenu .nav-link.small {
+    margin-top: 10px;
+    font-size: 13px;
+    padding: 10px 14px;
+    background: #ffffff;
+    box-shadow: 0 2px 0 #f1f5f9, 0 5px 10px rgba(0,0,0,0.05);
+}
+
+/* ================= Chevron ================= */
+.chevron-icon {
+    font-size: 10px;
+    transition: transform 0.3s ease;
+}
+
+.nav-item.open .chevron-icon {
+    transform: rotate(90deg);
+}
+</style>
+
+
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+
+<!-- Sidebar -->
+<!-- <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-logo"><i class="fa fa-shop"></i></div>
+        <h5 class="fw-bold mb-0">Noshahi Store</h5>
+    </div>
+
+    <div class="nav-label"></div>
+    <a href="#" class="nav-link active"><i class="fa-solid fa-house"></i> Dashboard</a>
+    <a href="#" class="nav-link"><i class="fa-solid fa-circle-plus"></i> Add Products</a>
+
+    <div class="nav-label">Management</div>
+    <div class="nav-item">
+        <a href="javascript:void(0)" class="nav-link dropdown-trigger"><i class="fa-solid fa-list-check"></i> Listing Center <i class="fa fa-chevron-right chevron-icon"></i></a>
+        <div class="submenu">
+            <a href="#" class="nav-link small">Store Listing</a>
+            <a href="#" class="nav-link small">Favorite Listing</a>
+        </div>
+    </div>
+    <div class="nav-item">
+        <a href="javascript:void(0)" class="nav-link dropdown-trigger"><i class="fa-solid fa-cart-flatbed"></i> Order Center <i class="fa fa-chevron-right chevron-icon"></i></a>
+        <div class="submenu">
+            <a href="#" class="nav-link small">Unshipped Order</a>
+            <a href="#" class="nav-link small">Tracking Verification</a>
+            <a href="#" class="nav-link small">Shipped Complete</a>
+            <a href="#" class="nav-link small">Cancelled Order</a>
+            <a href="#" class="nav-link small">Rejected Trackings</a>
+            <a href="#" class="nav-link small">Order Returned</a>
+        </div>
+    </div>
+
+    <a href="#" class="nav-link"><i class="fa-solid fa-handshake"></i> 3PL Partner Service</a>
+    <a href="#" class="nav-link"><i class="fa-solid fa-warehouse"></i> Smart Cart Warehouses</a>
+
+    <div class="nav-label">Finances</div>
+    <div class="nav-item">
+        <a href="javascript:void(0)" class="nav-link dropdown-trigger"><i class="fa-solid fa-money-bill-transfer"></i> Withdrawal Section <i class="fa fa-chevron-right chevron-icon"></i></a>
+        <div class="submenu">
+            <a href="#" class="nav-link small">Add Payment Method</a>
+            <a href="#" class="nav-link small">Seller Wallet Center</a>
+            <a href="#" class="nav-link small">Pending Payouts</a>
+            <a href="#" class="nav-link small">Completed Payouts</a>
+            <a href="#" class="nav-link small">Refunded Payouts</a>
+        </div>
+    </div>
+
+    <div class="nav-label">System</div>
+    <a href="#" class="nav-link"><i class="fa-solid fa-gears"></i> Account Settings</a>
+    <a href="#" class="nav-link"><i class="fa-solid fa-headset"></i> Customer Support</a>
+    <a href="#" class="nav-link"><i class="fa-solid fa-download"></i> Download App</a>
+</aside> -->
+
+
+
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-logo"><i class="fa fa-shop"></i></div>
+        <h5 class="fw-bold mb-0">Smart Cart</h5>
+    </div>
+
+    <a href="adeel-final.html" class="nav-link active"><i class="fa-solid fa-house"></i> Dashboard</a>
+    <a href="add-product2.html" class="nav-link"><i class="fa-solid fa-circle-plus"></i> Add Products</a>
+
+    <div class="nav-item">
+        <a href="javascript:void(0)" class="nav-link dropdown-trigger"><i class="fa-solid fa-list-check"></i> Listing Center <i class="fa fa-chevron-right chevron-icon"></i></a>
+        <div class="submenu">
+            <a href="product-listing.html" class="nav-link small">Store Listing</a>
+            <a href="#" class="nav-link small">Favorite Listing</a>
+        </div>
+    </div>
+
+    <div class="nav-item">
+        <a href="javascript:void(0)" class="nav-link dropdown-trigger"><i class="fa-solid fa-cart-flatbed"></i> Order Center <i class="fa fa-chevron-right chevron-icon"></i></a>
+        <div class="submenu">
+            <a href="#" class="nav-link small">Unshipped Order</a>
+            <a href="#" class="nav-link small">Tracking Verification</a>
+            <a href="#" class="nav-link small">Shipped Complete</a>
+            <a href="#" class="nav-link small">Cancelled Order</a>
+            <a href="#" class="nav-link small">Rejected Trackings</a>
+            <a href="#" class="nav-link small">Order Returned</a>
+        </div>
+    </div>
+
+    <a href="3pl-partner.html" class="nav-link"><i class="fa-solid fa-handshake"></i> 3PL Partner Service</a>
+    <a href="#" class="nav-link"><i class="fa-solid fa-warehouse"></i> Smart Cart Warehouses</a>
+
+    <div class="nav-item">
+        <a href="javascript:void(0)" class="nav-link dropdown-trigger"><i class="fa-solid fa-money-bill-transfer"></i> Withdrawal Section <i class="fa fa-chevron-right chevron-icon"></i></a>
+        <div class="submenu">
+            <a href="#" class="nav-link small">Add Payment Method</a>
+            <a href="#" class="nav-link small">Seller Wallet Center</a>
+            <a href="#" class="nav-link small">Pending Payouts</a>
+            <a href="#" class="nav-link small">Completed Payouts</a>
+            <a href="#" class="nav-link small">Refunded Payouts</a>
+        </div>
+    </div>
+
+    <a href="#" class="nav-link"><i class="fa-solid fa-gears"></i> Account Settings</a>
+    <a href="#" class="nav-link"><i class="fa-solid fa-headset"></i> Customer Support</a>
+    <a href="#" class="nav-link"><i class="fa-solid fa-download"></i> Download App</a>
+</aside>
+<!-- Topbar -->
+<div class="topbar" id="topbar">
+    <div class="d-flex align-items-center">
+        <i id="sidebar-toggle" class="fa fa-bars me-3 text-muted fs-5 cursor-pointer"></i>
+    </div>
+    <div class="search-container d-none d-md-block">
+        <div class="position-relative">
+            <i class="fa fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+            <input type="text" class="search-input ps-5" placeholder="Search data...">
+        </div>
+    </div>
+    <div class="d-flex align-items-center">
+        <div class="position-relative me-4">
+            <i class="fa fa-bell text-muted fs-5"></i>
+            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+        </div>
+        <div class="d-flex align-items-center">
+            <div class="text-end me-2 d-none d-sm-block">
+                <p class="mb-0 fw-bold small">Arslan Noshahi</p>
+                <p class="mb-0 x-small text-muted" style="font-size: 10px;">Admin</p>
+            </div>
+            <img src="https://ui-avatars.com/api/?name=Arslan+Noshahi&background=4F46E5&color=fff" class="rounded-circle" width="40" height="40" alt="DP">
+        </div>
+    </div>
+</div> 
+
+
+
+<!-- Main Content -->
+<div class="main-wrapper" id="main-wrapper">
+    <!-- Top Stat Cards -->
+
+
+    <!-- Top Grid (Layout Dash 2) -->
+    <!-- <div class="row g-4 mb-4">
+
+        <div class="col-xl-4 col-md-6">
+            <div class="card time-widget h-100 p-4 border-0">
+                <div class="d-flex flex-column justify-content-center h-100">
+                    <p class="text-uppercase fw-bold ls-1 mb-1" style="font-size: 12px; opacity: 0.8;">Current Time (USA)</p>
+                    <h2 class="fw-bold mb-1" id="digital-clock" style="font-size: 32rem;">00:00:00</h2>
+                    <p class="mb-0 opacity-75" id="current-date">Loading date...</p>
+                </div>
+                <div class="blob blob-1"></div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-6">
+            <div class="card h-100 p-4">
+                <div class="icon-box bg-primary bg-opacity-10 text-primary mb-3">
+                    <i class="fa fa-layer-group"></i>
+                </div>
+                <h6 class="text-muted fw-bold text-uppercase ls-1 small mb-1">Listed Items</h6>
+                <h2 class="fw-bold mb-2">1,284</h2>
+                <div class="d-flex align-items-center text-success small">
+                    <i class="fa fa-arrow-up me-1"></i> <span>12.5% increase</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-12">
+            <div class="card h-100 p-4">
+                <div class="icon-box bg-info bg-opacity-10 text-info mb-3">
+                    <i class="fa fa-tags"></i>
+                </div>
+                <h6 class="text-muted fw-bold text-uppercase ls-1 small mb-1">Listed Categories</h6>
+                <h2 class="fw-bold mb-2">42</h2>
+                <p class="text-muted small mb-0">Total active categories</p>
+            </div>
+        </div>
+    </div> -->
+
+    <!-- Top Header Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-4 p-4 rounded-4" 
+        style="background:rgba(255,255,255,0.9); backdrop-filter: blur(10px); box-shadow:0 20px 40px rgba(0,0,0,0.12);">
+
+        <div>
+            <h2 class="fw-bold mb-1" style="color:#0f172a;">
+                Noshahi Store
+                <span style="margin-left:8px; padding:4px 10px; font-size:12px; border-radius:12px; 
+                            background:linear-gradient(135deg,#ea580c,#c2410c); 
+                            color:white; box-shadow:0 4px 10px rgba(234,88,12,0.45);">
+                    Published
+                </span>
+            </h2>
+            <p style="color:#64748b;">Here's what's happening in your store today.</p>
+        </div>
+
+        <div class="position-relative d-flex align-items-center rounded-4 px-4 py-3"
+            style="min-width:320px;
+                    background:linear-gradient(135deg,#f97316,#ea580c,#c2410c);
+                    box-shadow:0 18px 35px rgba(0,0,0,0.35), inset 0 2px 4px rgba(255,255,255,0.25);
+                    transform: perspective(900px) rotateX(3deg);">
+
+            <div class="flag-wrapper" style="width:60px; height:40px; overflow:hidden; 
+                        box-shadow:0 6px 15px rgba(0,0,0,0.3); border:2px solid rgba(255,255,255,0.3); border-radius:4px;">
+                <img src="https://flagcdn.com/w160/us.png" alt="USA Flag" 
+                    style="width:100%; height:100%; object-fit:cover;">
+            </div>
+
+            <div class="ms-3 text-white">
+                <div style="font-size:13px; opacity:0.85;" id="usa-clock">26-Dec-2025 | 04:15 AM</div>
+                <div class="fw-bold" style="font-size:18px; text-shadow:0 3px 8px rgba(0,0,0,0.45);">
+                    New York, USA (GMT-5)
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+    
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="stat-card-new" style="background: #00C9E8; position: relative;">
+            <h5>NEW ORDERS</h5>
+            <h2>35,673</h2>
+            <span class="badge-soft">2.00% (30 days)</span>
+            <div class="icon-circle-bg"><i class="fa fa-cart-plus"></i></div>
+            <canvas id="chart1" style="position:absolute; bottom:10px; left:10px; width:90%; height:50px;"></canvas>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="stat-card-new" style="background: #00A34D; position: relative;">
+            <h5>TOTAL INCOME</h5>
+            <h2>$14,966</h2>
+            <span class="badge-soft">Increased by 7.35%</span>
+            <div class="icon-circle-bg"><i class="fa fa-dollar-sign"></i></div>
+            <canvas id="chart2" style="position:absolute; bottom:10px; left:10px; width:90%; height:50px;"></canvas>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="stat-card-new" style="background: #0d6efd; position: relative;">
+            <h5>TOTAL EXPENSE</h5>
+            <h2>26,526</h2>
+            <span class="badge-soft">Increased by 7.35%</span>
+            <div class="icon-circle-bg"><i class="fa fa-money-bill-wave"></i></div>
+            <canvas id="chart3" style="position:absolute; bottom:10px; left:10px; width:90%; height:50px;"></canvas>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="stat-card-new" style="background: #ffc107; position: relative;">
+            <h5>NEW USERS</h5>
+            <h2>32,566</h2>
+            <span class="badge-soft">54.1% less earnings</span>
+            <div class="icon-circle-bg"><i class="fa fa-users"></i></div>
+            <canvas id="chart4" style="position:absolute; bottom:10px; left:10px; width:90%; height:50px;"></canvas>
+        </div>
+    </div>
+</div>
+
+
+
+
+            <div class="card p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                    <h5 class="fw-bold m-0">Detailed Statistics</h5>
+                    <div class="d-flex gap-3 align-items-center filter-group">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn">Day</button>
+                            <button type="button" class="btn active">Week</button>
+                            <button type="button" class="btn">Month</button>
+                            <button type="button" class="btn">Annual</button>
+                            <button type="button" class="btn">Lifetime</button>
+
+                        </div>
+                        <button class="btn btn-sm d-flex align-items-center gap-2 px-3 select-date-option">
+                            30 April 2019
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-3 col-6"><div class="stat-sub-card bg-c-1"><div class="stat-label">Current Balance</div><div class="stat-val">$5,240.50</div></div></div>
+                    <div class="col-md-3 col-6"><div class="stat-sub-card bg-c-2"><div class="stat-label">Payout till now</div><div class="stat-val">$28,150</div></div></div>
+                    <div class="col-md-3 col-6"><div class="stat-sub-card bg-c-3"><div class="stat-label">Recent payout</div><div class="stat-val">$1,840</div></div></div>
+                    <div class="col-md-3 col-6"><div class="stat-sub-card bg-c-4"><div class="stat-label">A/C Reserve</div><div class="stat-val">$450.00</div></div></div>
+                    <div class="col-md-3 col-6"><div class="stat-sub-card bg-c-5"><div class="stat-label">Shipped Orders</div><div class="stat-val">342</div></div></div>
+                    <div class="col-md-3 col-6"><div class="stat-sub-card bg-c-6"><div class="stat-label">Units Ordered</div><div class="stat-val">1,105</div></div></div>
+                    <div class="col-md-3 col-6"><div class="stat-sub-card bg-c-7"><div class="stat-label">Avg units/order</div><div class="stat-val">3.2</div></div></div>
+                    <div class="col-md-3 col-6"><div class="stat-sub-card bg-c-8"><div class="stat-label">Orders > 5 Units</div><div class="stat-val">24</div></div></div>
+                </div>
+            </div>
+  
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="section-header mb-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                            Growth Analysis
+                        </div>
+                        <select class="form-select form-select-sm w-auto" style="border-color:#e2e8f0; font-weight:600; color:#64748b;">
+                            <option>Today</option>
+                            <option>Yesterday</option>
+                            <option selected>Last Week</option>
+                            <option>Last Month</option>
+                            <option>Select Date</option>
+                        </select>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="card p-4">
+                                <h6 class="fw-bold mb-4 small text-uppercase text-muted">Revenue Growth ($)</h6>
+                                <div class="chart-container">
+                                    <canvas id="salesChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card p-4">
+                                <h6 class="fw-bold mb-4 small text-uppercase text-muted">Daily Volume (Orders)</h6>
+                                <div class="chart-container">
+                                    <canvas id="orderChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4 overflow-hidden">
+                        <div class="card-header bg-white py-3 border-bottom-0 d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 fw-bold">Recent Bulk Orders</h6>
+                            <button class="btn btn-sm btn-outline-primary rounded-pill px-3">View All</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light text-muted small text-uppercase">
+                                    <tr>
+                                        <th class="ps-4">Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Qty</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th class="text-end pe-4">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="ps-4"><strong>#ORD-10021</strong></td>
+                                        <td>Ali Traders</td>
+                                        <td>28 Units</td>
+                                        <td class="fw-bold">$1,120</td>
+                                        <td><span class="badge rounded-pill bg-light-orange text-warning">Pending</span></td>
+                                        <td class="text-end pe-4"><button class="btn btn-sm btn-light border">Review</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4"><strong>#ORD-10018</strong></td>
+                                        <td>Usman Store</td>
+                                        <td>15 Units</td>
+                                        <td class="fw-bold">$640</td>
+                                        <td><span class="badge rounded-pill bg-light-green text-success">Shipped</span></td>
+                                        <td class="text-end pe-4"><button class="btn btn-sm btn-light border">Track</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4"><strong>#ORD-10011</strong></td>
+                                        <td>Khan Mart</td>
+                                        <td>19 Units</td>
+                                        <td class="fw-bold">$780</td>
+                                        <td><span class="badge rounded-pill bg-light-blue text-primary">Processing</span></td>
+                                        <td class="text-end pe-4"><button class="btn btn-sm btn-light border">Manage</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4"><strong>#ORD-10011</strong></td>
+                                        <td>Khan Mart</td>
+                                        <td>19 Units</td>
+                                        <td class="fw-bold">$780</td>
+                                        <td><span class="badge rounded-pill bg-light-blue text-primary">Processing</span></td>
+                                        <td class="text-end pe-4"><button class="btn btn-sm btn-light border">Manage</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4"><strong>#ORD-10011</strong></td>
+                                        <td>Khan Mart</td>
+                                        <td>19 Units</td>
+                                        <td class="fw-bold">$780</td>
+                                        <td><span class="badge rounded-pill bg-light-blue text-primary">Processing</span></td>
+                                        <td class="text-end pe-4"><button class="btn btn-sm btn-light border">Manage</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card p-4 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h6 class="fw-bold m-0">Top Selling Products</h6>
+                        </div>
+                        <div class="product-item">
+                            <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/homepod-select-midnight-202210?wid=200&hei=200&fmt=jpeg&qlt=95&.v=1670557210018" class="product-img" alt="Product">
+                            <div class="flex-grow-1">
+                                <h6 class="m-0 small fw-bold">Homepod</h6>
+                                <div class="text-muted" style="font-size: 11px;">USB, wireless</div>
+                                <div class="star-rating">★★★★☆ <span class="text-muted ms-1">(24)</span></div>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-bold text-dark">$129.00</div>
+                                <div class="text-muted small" style="font-size: 10px;">Sales</div>
+                            </div>
+                        </div>
+                        <div class="product-item">
+                            <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/homepod-select-midnight-202210?wid=200&hei=200&fmt=jpeg&qlt=95&.v=1670557210018" class="product-img" alt="Product">
+                            <div class="flex-grow-1">
+                                <h6 class="m-0 small fw-bold">Macbook Pro</h6>
+                                <div class="text-muted" style="font-size: 11px;">USB, wireless</div>
+                                <div class="star-rating">★★★★★ <span class="text-muted ms-1">(52)</span></div>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-bold text-dark">$899.00</div>
+                                <div class="text-muted small" style="font-size: 10px;">Sales</div>
+                            </div>
+                        </div>
+                        <div class="product-item">
+                            <img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" class="product-img" alt="Product">
+                            <div class="flex-grow-1">
+                                <h6 class="m-0 small fw-bold">Apple Watch</h6>
+                                <div class="text-muted" style="font-size: 11px;">USB, wireless</div>
+                                <div class="star-rating">★★★★☆ <span class="text-muted ms-1">(85)</span></div>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-bold text-dark">$399.00</div>
+                                <div class="text-muted small" style="font-size: 10px;">Sales</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        Action Center
+                    </div>
+                    
+                    <div class="row g-2 mb-4">
+                        <div class="col-3">
+                            <div class="action-btn">
+                                <div class="icon-mini bg-light text-primary"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+                                <div style="font-size: 0.65rem; font-weight: 700;">ADD</div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="action-btn">
+                                <div class="icon-mini bg-light text-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></div>
+                                <div style="font-size: 0.65rem; font-weight: 700;">CSV</div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="action-btn">
+                                <div class="icon-mini bg-light text-warning"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg></div>
+                                <div style="font-size: 0.65rem; font-weight: 700;">LOGS</div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="action-btn">
+                                <div class="icon-mini bg-light text-danger"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg></div>
+                                <div style="font-size: 0.65rem; font-weight: 700;">OFF</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-header text-danger">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        Alerts & Notifications
+                    </div>
+                    <div class="alert-item alert-new">
+                        <div class="text-primary mt-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg></div>
+                        <div><strong>New order received</strong><br><span class="text-muted small">#ORD-10025 from Sarah</span></div>
+                    </div>
+                    <div class="alert-item alert-warn">
+                        <div class="text-warning mt-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>
+                        <div><strong>Stock Level Warning</strong><br><span class="text-muted small">iPhone Case is below 5 units</span></div>
+                    </div>
+                </div>
+            </div>
+</div>
+
+<script>
+// Sidebar toggle
+const sidebar = document.getElementById('sidebar');
+const topbar = document.getElementById('topbar');
+const mainWrapper = document.getElementById('main-wrapper');
+const toggleBtn = document.getElementById('sidebar-toggle');
+const overlay = document.getElementById('overlay');
+
+function setInitialSidebar() {
+    if(window.innerWidth >= 992) {
+        // Desktop: expanded by default
+        sidebar.classList.remove('collapsed');
+        topbar.classList.remove('collapsed');
+        mainWrapper.style.marginLeft = '280px';
+    } else {
+        // Mobile: collapsed by default
+        sidebar.classList.remove('collapsed');
+        topbar.classList.remove('collapsed');
+        mainWrapper.style.marginLeft = '0';
+    }
+}
+
+// Toggle button for manual collapse/expand
+function toggleSidebar() {
+    if(window.innerWidth >= 992) {
+        sidebar.classList.toggle('collapsed');
+        topbar.classList.toggle('collapsed');
+        mainWrapper.style.marginLeft = sidebar.classList.contains('collapsed') ? '60px' : '280px';
+    } else {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+    }
+}
+
+// Auto-expand on hover when collapsed
+sidebar.addEventListener('mouseenter', () => {
+    if(window.innerWidth >= 992 && sidebar.classList.contains('collapsed')) {
+        sidebar.classList.add('hovered');
+        topbar.classList.add('hovered');
+        mainWrapper.style.marginLeft = '280px';
+    }
+});
+
+sidebar.addEventListener('mouseleave', () => {
+    if(window.innerWidth >= 992 && sidebar.classList.contains('collapsed')) {
+        sidebar.classList.remove('hovered');
+        topbar.classList.remove('hovered');
+        mainWrapper.style.marginLeft = '60px';
+    }
+});
+
+// Initialize
+window.addEventListener('load', setInitialSidebar);
+window.addEventListener('resize', setInitialSidebar);
+
+// Button & overlay events
+toggleBtn.addEventListener('click', toggleSidebar);
+overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+});
+
+
+
+// Submenu toggle
+document.querySelectorAll('.dropdown-trigger').forEach(trigger => {
+    trigger.addEventListener('click', () => {
+        trigger.parentElement.classList.toggle('open');
+    });
+});
+    // Card 1: Line Chart (New Orders)
+    new Chart(document.getElementById('chart1'), {
+        type: 'line',
+        data: {
+            labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+            datasets: [{
+                data: [1200, 1900, 1500, 2200, 1800, 2300, 2100],
+                borderColor: 'white',
+                backgroundColor: 'rgba(255,255,255,0.2)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { x: { display: false }, y: { display: false } },
+            elements: { point: { radius: 0 } }
+        }
+    });
+
+    // Card 2: Bar Chart (Total Income)
+    new Chart(document.getElementById('chart2'), {
+        type: 'bar',
+        data: {
+            labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul'],
+            datasets: [{
+                data: [5000, 7000, 6000, 8000, 7500, 9000, 10000],
+                backgroundColor: 'rgba(255,255,255,0.7)'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { x: { display: false }, y: { display: false } }
+        }
+    });
+
+    // Card 3: Line Chart (Total Expense)
+    new Chart(document.getElementById('chart3'), {
+        type: 'line',
+        data: {
+            labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+            datasets: [{
+                data: [1000, 1200, 900, 1300, 1100, 1400, 1250],
+                borderColor: 'white',
+                backgroundColor: 'rgba(255,255,255,0.2)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { x: { display: false }, y: { display: false } },
+            elements: { point: { radius: 0 } }
+        }
+    });
+
+    // Card 4: Bar Chart (New Users)
+    new Chart(document.getElementById('chart4'), {
+        type: 'bar',
+        data: {
+            labels: ['Week1','Week2','Week3','Week4'],
+            datasets: [{
+                data: [8000, 9000, 8500, 9500],
+                backgroundColor: 'rgba(255,255,255,0.7)'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { x: { display: false }, y: { display: false } }
+        }
+    });
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const salesCtx = document.getElementById('salesChart').getContext('2d');
+const salesChart = new Chart(salesCtx, {
+    type: 'line',
+    data: {
+        labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+        datasets: [{
+            label: 'Revenue ($)',
+            data: [500, 700, 800, 600, 900, 1200, 1500],
+            backgroundColor: 'rgba(79,70,229,0.2)',
+            borderColor: '#4F46E5',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.3
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true },
+            x: { beginAtZero: true }
+        }
+    }
+});
+
+const orderCtx = document.getElementById('orderChart').getContext('2d');
+const orderChart = new Chart(orderCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+        datasets: [{
+            label: 'Orders',
+            data: [35, 50, 45, 60, 70, 55, 90],
+            backgroundColor: '#00C9E8',
+            borderRadius: 6
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true },
+            x: { beginAtZero: true }
+        }
+    }
+});
+   // Digital Clock (USA)
+        function updateClock() {
+            const now = new Date();
+            const timeOpts = { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+            const dateOpts = { timeZone: 'America/New_York', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+            document.getElementById('digital-clock').textContent = now.toLocaleTimeString('en-US', timeOpts);
+            document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', dateOpts);
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+</script>
+
+<script>
+document.querySelectorAll('.dropdown-trigger').forEach(trigger => {
+    trigger.addEventListener('click', () => {
+        const parent = trigger.closest('.nav-item');
+
+        // Close other open dropdowns
+        document.querySelectorAll('.nav-item.open').forEach(item => {
+            if (item !== parent) item.classList.remove('open');
+        });
+
+        parent.classList.toggle('open');
+    });
+});
+</script>
+
+
+</body>
+</html>

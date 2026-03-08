@@ -1,0 +1,62 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1>Contact Us</h1>
+        <p class="subtitle">Get in touch with our support team</p>
+    </div>
+
+    <div class="contact-grid">
+        <div class="contact-form-3d">
+            <h3>Send us a message</h3>
+
+            <div class="form-section">
+                <label>Name</label>
+                <input type="text" [(ngModel)]="name" placeholder="Your name" class="input-3d" />
+            </div>
+
+            <div class="form-section">
+                <label>Email</label>
+                <input type="email" [(ngModel)]="email" placeholder="your@email.com" class="input-3d" />
+            </div>
+
+            <div class="form-section">
+                <label>Subject</label>
+                <input type="text" [(ngModel)]="subject" placeholder="How can we help?" class="input-3d" />
+            </div>
+
+            <div class="form-section">
+                <label>Message</label>
+                <textarea [(ngModel)]="message" placeholder="Your message..." class="input-3d" rows="5"></textarea>
+            </div>
+
+            <button class="btn-3d btn-submit" (click)="submitContact()">Send Message</button>
+        </div>
+
+        <div class="contact-info-3d">
+            <h3>Contact Information</h3>
+
+            <div class="info-item">
+                <div class="icon">📧</div>
+                <div>
+                    <strong>Email</strong>
+                    <p>support@easyfinora.com</p>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="icon">📞</div>
+                <div>
+                    <strong>Phone</strong>
+                    <p>+1 (555) 123-4567</p>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="icon">🕐</div>
+                <div>
+                    <strong>Business Hours</strong>
+                    <p>Mon-Fri: 9:00 AM - 6:00 PM EST</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

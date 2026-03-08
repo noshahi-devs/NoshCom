@@ -1,0 +1,341 @@
+<div class="home-page">
+    <section class="hero-zone">
+        <div class="container">
+            <div class="hero-grid">
+                <div class="hero-slider" tabindex="0" (keydown)="onHeroKey($event)">
+                    <div class="hero-track" [style.transform]="'translateX(' + (-heroIndex * 100) + '%)'">
+                        <!-- slider -->
+                        <article class="hero-slide" *ngFor="let slide of heroSlides; let i = index">
+                            <div class="slide-text">
+                                <span class="slide-kicker">{{ slide.kicker }}</span>
+                                <h1>{{ slide.title }} <span>{{ slide.highlight }}</span></h1>
+                                <p>{{ slide.subtitle }}</p>
+                                <div class="slide-actions">
+                                    <button class="btn-solid" routerLink="/shop">{{ slide.primaryCta }}</button>
+                                    <button class="btn-ghost" routerLink="/shop">{{ slide.secondaryCta
+                                        }}</button>
+                                </div>
+                            </div>
+                            <div class="slide-media">
+                                <img [src]="slide.image"
+                                     [alt]="slide.title"
+                                     [attr.loading]="i === heroIndex ? 'eager' : 'lazy'" />
+                            </div>
+                        </article>
+                    </div>
+
+                    <button class="nav-btn prev" (click)="prevHero()" aria-label="Previous slide">
+                        <i class="pi pi-chevron-left"></i>
+                    </button>
+                    <button class="nav-btn next" (click)="nextHero()" aria-label="Next slide">
+                        <i class="pi pi-chevron-right"></i>
+                    </button>
+
+                    <div class="hero-dots">
+                        <button *ngFor="let slide of heroSlides; let i = index" [class.active]="i === heroIndex"
+                            (click)="goHero(i)" aria-label="Go to slide">
+                        </button>
+                    </div>
+                </div>
+
+                <div class="hero-side">
+                    <a class="side-card" *ngFor="let banner of heroSideBanners" routerLink="/shop"
+                        [style.backgroundImage]="'url(' + banner.image + ')'">
+                        <div class="side-text">
+                            <span>{{ banner.kicker }}</span>
+                            <h3>{{ banner.title }}</h3>
+                            <p>{{ banner.subtitle }}</p>
+                        </div>
+                        <div class="side-overlay" aria-hidden="true"></div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="trust-strip">
+        <div class="container">
+            <div class="trust-cards">
+                <div class="trust-card">
+                    <div class="trust-icon"><i class="pi pi-send"></i></div>
+                    <div>
+                        <h4>Free Worldwide Shipping</h4>
+                        <p>Free shipping for all orders over $100</p>
+                    </div>
+                </div>
+                <div class="trust-card">
+                    <div class="trust-icon"><i class="pi pi-undo"></i></div>
+                    <div>
+                        <h4>Money Back Guarantee</h4>
+                        <p>We return money within 30 days</p>
+                    </div>
+                </div>
+                <div class="trust-card">
+                    <div class="trust-icon"><i class="pi pi-headphones"></i></div>
+                    <div>
+                        <h4>24/7 Customer Support</h4>
+                        <p>Friendly 24/7 customer support</p>
+                    </div>
+                </div>
+                <div class="trust-card">
+                    <div class="trust-icon"><i class="pi pi-lock"></i></div>
+                    <div>
+                        <h4>Secure Online Payment</h4>
+                        <p>We possess SSL / Secure Certificate</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="section-block promo-block">
+        <div class="container">
+            <div class="section-head">
+                <h2>Popular Categories</h2>
+                <div class="tabs">
+                    <button *ngFor="let tab of categoryTabs; let i = index" (click)="selectTab(i)"
+                        [class.active]="i === activeTab">
+                        {{ tab.title }}
+                    </button>
+                </div>
+            </div>
+
+            <div class="carousel-shell">
+                <button class="arrow-btn left" (click)="scrollCategory(-1)" aria-label="Scroll left">
+                    <i class="pi pi-chevron-left"></i>
+                </button>
+                <div class="carousel-track" #categoryTrack tabindex="0" (keydown)="onCategoryKey($event)">
+                    <div class="product-card" *ngFor="let item of activeTabProducts" (click)="goToProduct(item)">
+                        <div class="card-media">
+                            <img [src]="item.image" [alt]="item.name" loading="lazy"
+                                (error)="setDefaultImage($event)" />
+                            <div class="card-actions">
+                                <button class="icon-btn" (click)="toggleWishlist(item, $event)"
+                                    [class.active]="isInWishlist(item)" aria-label="Add to wishlist"><i class="pi"
+                                        [ngClass]="isInWishlist(item) ? 'pi-heart-fill' : 'pi-heart'"></i></button>
+                                <button class="icon-btn" (click)="addToCompare(item, $event)" aria-label="Compare">
+                                    <i class="pi pi-refresh"></i>
+                                </button>
+                                <button class="icon-btn" (click)="openQuickView(item, $event)" aria-label="Quick View">
+                                    <i class="pi pi-eye"></i>
+                                </button>
+                                <button class="icon-btn" (click)="addToCart(item, $event)" aria-label="Add to cart"><i
+                                        class="pi pi-shopping-cart"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-info">
+                            <span class="card-category">{{ item.category }}</span>
+                            <h3>{{ item.name }}</h3>
+                            <div class="card-price">{{ item.price | currency:'USD':'symbol':'1.2-2' }}</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="arrow-btn right" (click)="scrollCategory(1)" aria-label="Scroll right">
+                    <i class="pi pi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-block">
+        <div class="container">
+            <div class="promo-grid">
+                <a class="promo-card" *ngFor="let promo of topPromoBanners" routerLink="/shop">
+                    <div class="promo-text">
+                        <span>{{ promo.kicker }}</span>
+                        <h3>{{ promo.title }}</h3>
+                    </div>
+                    <div class="promo-media">
+                        <div class="promo-blob" [style.background]="promo.blob"></div>
+                        <img [src]="promo.image" [alt]="promo.title" loading="lazy" />
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-block deals-block">
+        <div class="container">
+            <div class="section-head">
+                <h2>Deals of the Week</h2>
+                <div class="deal-timer">
+                    <span>{{ dealTimer.hours }}h</span>
+                    <span>{{ dealTimer.minutes }}m</span>
+                    <span>{{ dealTimer.seconds }}s</span>
+                </div>
+            </div>
+
+            <div class="deals-grid">
+                <div class="deal-card" *ngFor="let deal of visibleDeals" (click)="goToProduct(deal)">
+                    <div class="deal-badge">{{ deal.discount }}</div>
+                    <div class="deal-media">
+                        <img [src]="deal.image" [alt]="deal.name" loading="lazy" (error)="setDefaultImage($event)" />
+                    </div>
+                    <div class="deal-actions">
+                        <button class="deal-icon" (click)="toggleWishlist(deal, $event)" [class.active]="isInWishlist(deal)"
+                            aria-label="Add to wishlist">
+                            <i class="pi" [ngClass]="isInWishlist(deal) ? 'pi-heart-fill' : 'pi-heart'"></i>
+                        </button>
+                        <button class="deal-icon" (click)="addToCompare(deal, $event)" aria-label="Compare">
+                            <i class="pi pi-refresh"></i>
+                        </button>
+                        <button class="deal-icon" (click)="openQuickView(deal, $event)" aria-label="Quick View">
+                            <i class="pi pi-eye"></i>
+                        </button>
+                        <button class="deal-icon" (click)="addToCart(deal, $event)" aria-label="Add to cart">
+                            <i class="pi pi-shopping-cart"></i>
+                        </button>
+                    </div>
+                    <div class="deal-info">
+                        <span class="deal-category">{{ deal.category }}</span>
+                        <h4>{{ deal.name }}</h4>
+                        <div class="deal-price">
+                            <span class="current">{{ deal.price | currency:'USD':'symbol':'1.2-2' }}</span>
+                            <span class="old">{{ deal.oldPrice | currency:'USD':'symbol':'1.2-2' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="deals-load" *ngIf="canLoadMoreDeals">
+                <button class="btn-load-more" (click)="loadMoreDeals()">Load More</button>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="section-block promo-block promo-block-bottom">
+        <div class="container">
+            <div class="promo-grid">
+                <a class="promo-card" *ngFor="let promo of bottomPromoBanners" routerLink="/shop">
+                    <div class="promo-text">
+                        <span>{{ promo.kicker }}</span>
+                        <h3>{{ promo.title }}</h3>
+                    </div>
+                    <div class="promo-media">
+                        <div class="promo-blob" [style.background]="promo.blob"></div>
+                        <img [src]="promo.image" [alt]="promo.title" loading="lazy" />
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-block mini-category-block">
+        <div class="container">
+            <div class="mini-category-grid">
+                <div class="mini-category" *ngFor="let group of miniCategories">
+                    <div class="mini-header" [routerLink]="['/category', group.slug]">
+                        <h4>{{ group.title }}</h4>
+                        <button class="mini-next" aria-label="Next" (click)="goToMiniCategory(group.slug, $event)">
+                            <i class="pi pi-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="mini-list">
+                        <div class="mini-item" *ngFor="let item of group.items" (click)="goToProduct(item)">
+                            <div class="mini-thumb">
+                                <img [src]="item.image" [alt]="item.title" loading="lazy"
+                                    (error)="setDefaultImage($event)" />
+                            </div>
+                            <div class="mini-info">
+                                <span class="mini-title">{{ item.title }}</span>
+                                <span class="mini-price">{{ item.price | currency:'USD':'symbol':'1.2-2' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-block deals-block">
+        <div class="container">
+            <div class="section-head">
+                <h2>Top Trending Deals</h2>
+                <div class="deal-timer">
+                    <span>{{ dealTimer.hours }}h</span>
+                    <span>{{ dealTimer.minutes }}m</span>
+                    <span>{{ dealTimer.seconds }}s</span>
+                </div>
+            </div>
+
+            <div class="deals-grid">
+                <div class="deal-card" *ngFor="let deal of visibleDealsSecondary" (click)="goToProduct(deal)">
+                    <div class="deal-badge">{{ deal.discount }}</div>
+                    <div class="deal-media">
+                        <img [src]="deal.image" [alt]="deal.name" loading="lazy" (error)="setDefaultImage($event)" />
+                    </div>
+                    <div class="deal-actions">
+                        <button class="deal-icon" (click)="toggleWishlist(deal, $event)" [class.active]="isInWishlist(deal)"
+                            aria-label="Add to wishlist">
+                            <i class="pi" [ngClass]="isInWishlist(deal) ? 'pi-heart-fill' : 'pi-heart'"></i>
+                        </button>
+                        <button class="deal-icon" (click)="addToCompare(deal, $event)" aria-label="Compare">
+                            <i class="pi pi-refresh"></i>
+                        </button>
+                        <button class="deal-icon" (click)="openQuickView(deal, $event)" aria-label="Quick View">
+                            <i class="pi pi-eye"></i>
+                        </button>
+                        <button class="deal-icon" (click)="addToCart(deal, $event)" aria-label="Add to cart">
+                            <i class="pi pi-shopping-cart"></i>
+                        </button>
+                    </div>
+                    <div class="deal-info">
+                        <span class="deal-category">{{ deal.category }}</span>
+                        <h4>{{ deal.name }}</h4>
+                        <div class="deal-price">
+                            <span class="current">{{ deal.price | currency:'USD':'symbol':'1.2-2' }}</span>
+                            <span class="old">{{ deal.oldPrice | currency:'USD':'symbol':'1.2-2' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="deals-load" *ngIf="canLoadMoreDealsSecondary">
+                <button class="btn-load-more" (click)="loadMoreDealsSecondary()">Load More</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-block deals-block just-for-you">
+        <div class="container">
+            <div class="section-head">
+                <h2>Just For You</h2>
+            </div>
+
+            <div class="deals-grid">
+                <div class="deal-card" *ngFor="let deal of visibleJustForYou" (click)="goToProduct(deal)">
+                    <div class="deal-badge">{{ deal.discount }}</div>
+                    <div class="deal-media">
+                        <img [src]="deal.image" [alt]="deal.name" loading="lazy" (error)="setDefaultImage($event)" />
+                    </div>
+                    <div class="deal-actions">
+                        <button class="deal-icon" (click)="toggleWishlist(deal, $event)" [class.active]="isInWishlist(deal)"
+                            aria-label="Add to wishlist">
+                            <i class="pi" [ngClass]="isInWishlist(deal) ? 'pi-heart-fill' : 'pi-heart'"></i>
+                        </button>
+                        <button class="deal-icon" (click)="addToCompare(deal, $event)" aria-label="Compare">
+                            <i class="pi pi-refresh"></i>
+                        </button>
+                        <button class="deal-icon" (click)="openQuickView(deal, $event)" aria-label="Quick View">
+                            <i class="pi pi-eye"></i>
+                        </button>
+                        <button class="deal-icon" (click)="addToCart(deal, $event)" aria-label="Add to cart">
+                            <i class="pi pi-shopping-cart"></i>
+                        </button>
+                    </div>
+                    <div class="deal-info">
+                        <span class="deal-category">{{ deal.category }}</span>
+                        <h4>{{ deal.name }}</h4>
+                        <div class="deal-price">
+                            <span class="current">{{ deal.price | currency:'USD':'symbol':'1.2-2' }}</span>
+                            <span class="old">{{ deal.oldPrice | currency:'USD':'symbol':'1.2-2' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="deals-load" *ngIf="canLoadMoreJustForYou">
+                <button class="btn-load-more" (click)="loadMoreJustForYou()">Load More</button>
+            </div>
+        </div>
+    </section>
+</div>

@@ -1,0 +1,257 @@
+<div class="wc-seller-dashboard">
+    <section class="sd-hero">
+        <div class="sd-store">
+            <div class="sd-store-icon">
+                <i class="fas fa-store"></i>
+            </div>
+            <div class="sd-store-copy">
+                <div class="sd-store-title-row">
+                    <h2 class="sd-store-title">
+                        <ng-container *ngIf="!isStoreLoading; else storeNameLoading">
+                            {{ displayStoreName }}
+                        </ng-container>
+                        <ng-template #storeNameLoading>
+                            <span class="store-name-loader">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Loading store...
+                            </span>
+                        </ng-template>
+                    </h2>
+                    <span *ngIf="!isStoreLoading" class="sd-store-badge" [ngClass]="storeBadgeClass">
+                        <i class="fas"
+                            [ngClass]="currentStore?.status ? 'fa-check-circle' : (currentStore?.id ? 'fa-clock' : 'fa-store')"></i>
+                        {{ storeBadgeText }}
+                    </span>
+                </div>
+                <p class="sd-store-subtitle">Here's what's happening in your store today.</p>
+            </div>
+        </div>
+
+        <div class="sd-time-card">
+            <div class="sd-flag-wrap">
+                <img src="https://flagcdn.com/w80/us.png" alt="US flag">
+            </div>
+            <div class="sd-time-copy">
+                <div class="sd-time-main">{{ currentDate }} | {{ currentTime }}</div>
+                <div class="sd-time-location">New York, USA (GMT-5)</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="sd-kpi-grid">
+        <article class="sd-kpi-card sd-kpi-orders">
+            <div class="sd-kpi-head">Store Items</div>
+            <div class="sd-kpi-chip">Active Listing</div>
+            <div class="sd-kpi-value">
+                <ng-container *ngIf="!isStatsLoading; else metricLoader">{{ storeItemsCount | number }}</ng-container>
+            </div>
+            <div class="sd-kpi-icon"><i class="fas fa-cart-plus"></i></div>
+            <div class="sd-kpi-wave"></div>
+        </article>
+
+        <article class="sd-kpi-card sd-kpi-income">
+            <div class="sd-kpi-head">New Orders</div>
+            <div class="sd-kpi-chip">All Time</div>
+            <div class="sd-kpi-value">
+                <ng-container *ngIf="!isStatsLoading; else metricLoader">{{ stats?.totalOrders || 0 | number }}</ng-container>
+            </div>
+            <div class="sd-kpi-icon"><i class="fas fa-dollar-sign"></i></div>
+            <div class="sd-kpi-wave"></div>
+        </article>
+
+        <article class="sd-kpi-card sd-kpi-expense">
+            <div class="sd-kpi-head">Sales Revenue</div>
+            <div class="sd-kpi-chip">All Time</div>
+            <div class="sd-kpi-value">
+                <ng-container *ngIf="!isStatsLoading; else metricLoader">${{ stats?.totalIncome || 0 | number:'1.2-2' }}</ng-container>
+            </div>
+            <div class="sd-kpi-icon"><i class="fas fa-money-bill-wave"></i></div>
+            <div class="sd-kpi-wave"></div>
+        </article>
+
+        <article class="sd-kpi-card sd-kpi-users">
+            <div class="sd-kpi-head">Total Profit</div>
+            <div class="sd-kpi-chip">All Time</div>
+            <div class="sd-kpi-value">
+                <ng-container *ngIf="!isStatsLoading; else metricLoader">${{ totalProfit | number:'1.2-2' }}</ng-container>
+            </div>
+            <div class="sd-kpi-icon"><i class="fas fa-users"></i></div>
+            <div class="sd-kpi-wave"></div>
+        </article>
+    </section>
+
+    <section class="sd-stat-panel">
+        <div class="sd-stat-header">
+            <h3>STATISTICS</h3>
+            <div class="sd-window-switch">
+                <button type="button" [class.active]="statsWindow === 'day'" (click)="setStatsWindow('day')">Day</button>
+                <button type="button" [class.active]="statsWindow === 'week'" (click)="setStatsWindow('week')">Week</button>
+                <button type="button" [class.active]="statsWindow === 'month'" (click)="setStatsWindow('month')">Month</button>
+            </div>
+        </div>
+
+        <div class="sd-stat-grid">
+            <article class="sd-stat-card tone-violet">
+                <div>
+                    <h6>Current Balance</h6>
+                    <div class="sd-stat-value">
+                        <ng-container *ngIf="!isStatsLoading; else metricLoader">${{ stats?.walletBalance || 0 | number:'1.2-2' }}</ng-container>
+                    </div>
+                </div>
+            </article>
+
+            <article class="sd-stat-card tone-amber">
+                <div>
+                    <h6>Payout till now</h6>
+                    <div class="sd-stat-value">
+                        <ng-container *ngIf="!isStatsLoading; else metricLoader">${{ stats?.payoutTillNow || 0 | number:'1.2-2' }}</ng-container>
+                    </div>
+                </div>
+            </article>
+
+            <article class="sd-stat-card tone-green">
+                <div>
+                    <h6>Recent payout</h6>
+                    <div class="sd-stat-value">
+                        <ng-container *ngIf="!isStatsLoading; else metricLoader">${{ stats?.recentPayout || 0 | number:'1.2-2' }}</ng-container>
+                    </div>
+                </div>
+            </article>
+
+            <article class="sd-stat-card tone-pink">
+                <div>
+                    <h6>A/C Reserve</h6>
+                    <div class="sd-stat-value">
+                        <ng-container *ngIf="!isStatsLoading; else metricLoader">${{ stats?.acReserve || 0 | number:'1.2-2' }}</ng-container>
+                    </div>
+                </div>
+            </article>
+
+            <article class="sd-stat-card tone-purple">
+                <div>
+                    <h6>Shipped Orders</h6>
+                    <div class="sd-stat-value">
+                        <ng-container *ngIf="!isStatsLoading; else metricLoader">{{ stats?.shippedOrders || 0 | number }}</ng-container>
+                    </div>
+                </div>
+            </article>
+
+            <article class="sd-stat-card tone-cyan">
+                <div>
+                    <h6>Units Ordered</h6>
+                    <div class="sd-stat-value">
+                        <ng-container *ngIf="!isStatsLoading; else metricLoader">{{ stats?.unitsOrdered || 0 | number }}</ng-container>
+                    </div>
+                </div>
+            </article>
+
+            <article class="sd-stat-card tone-teal">
+                <div>
+                    <h6>Avg units/order</h6>
+                    <div class="sd-stat-value">
+                        <ng-container *ngIf="!isStatsLoading; else metricLoader">{{ stats?.avgUnitsPerOrder || 0 | number:'1.2-2' }}</ng-container>
+                    </div>
+                </div>
+            </article>
+
+            <article class="sd-stat-card tone-red">
+                <div>
+                    <h6>Orders &gt; 5 Units</h6>
+                    <div class="sd-stat-value">
+                        <ng-container *ngIf="!isStatsLoading; else metricLoader">{{ stats?.bulkOrdersCount || 0 | number }}</ng-container>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="sd-insights-grid">
+        <article class="sd-chart-card">
+            <h4>REVENUE GROWTH ($)</h4>
+            <ng-container *ngIf="!isStatsLoading; else chartLoader">
+                <svg class="sd-line-chart" viewBox="0 0 640 220" preserveAspectRatio="none" aria-label="Revenue growth chart">
+                    <polyline [attr.points]="revenueLinePoints" class="line"></polyline>
+                </svg>
+                <div class="sd-chart-labels">
+                    <span *ngFor="let label of chartLabels">{{ label }}</span>
+                </div>
+            </ng-container>
+        </article>
+
+        <article class="sd-chart-card">
+            <h4>DAILY VOLUME (ORDERS)</h4>
+            <ng-container *ngIf="!isStatsLoading; else chartLoader">
+                <div class="sd-bars" [style.grid-template-columns]="'repeat(' + orderVolumeBars.length + ', 1fr)'">
+                    <div class="sd-bar-item" *ngFor="let bar of orderVolumeBars; let i = index">
+                        <div class="bar-fill" [style.height.%]="bar"></div>
+                        <span>{{ chartLabels[i] || ('D' + (i + 1)) }}</span>
+                    </div>
+                </div>
+            </ng-container>
+        </article>
+    </section>
+
+    <section class="sd-orders-panel">
+        <div class="sd-orders-head">
+            <h4>Recent Store Orders</h4>
+            <a routerLink="/seller/orders" class="sd-view-all">View All</a>
+        </div>
+
+        <div class="sd-orders-table-wrap">
+            <table class="sd-orders-table">
+                <thead>
+                    <tr>
+                        <th>ORDER ID</th>
+                        <th>CUSTOMER</th>
+                        <th>ITEMS</th>
+                        <th>TOTAL</th>
+                        <th>STATUS</th>
+                        <th>ACTION</th>
+                    </tr>
+                </thead>
+                <tbody *ngIf="isStatsLoading">
+                    <tr *ngFor="let n of [1,2,3]">
+                        <td colspan="6">
+                            <span class="row-loader"><i class="fas fa-spinner fa-spin"></i> Loading orders...</span>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody *ngIf="!isStatsLoading && recentOrders.length">
+                    <tr *ngFor="let order of recentOrders">
+                        <td>{{ order.orderNumber || order.id }}</td>
+                        <td>{{ order.recipientName || 'Customer' }}</td>
+                        <td>{{ getOrderItemsCount(order) }}</td>
+                        <td>${{ order.totalAmount || 0 | number:'1.2-2' }}</td>
+                        <td>
+                            <span class="status-badge" [ngClass]="getOrderStatusClass(order.status)">{{ order.status || 'Pending' }}</span>
+                        </td>
+                        <td>
+                            <a class="details-btn" [routerLink]="['/seller/orders/details', order.id]">Details</a>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody *ngIf="!isStatsLoading && !recentOrders.length">
+                    <tr>
+                        <td colspan="6" class="empty-cell">
+                            <i class="fas fa-box-open"></i>
+                            <span>No orders found for this store yet.</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <ng-template #metricLoader>
+        <span class="wc-value-loader">
+            <i class="fas fa-spinner fa-spin"></i>
+        </span>
+    </ng-template>
+
+    <ng-template #chartLoader>
+        <div class="chart-loader">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Loading chart...</span>
+        </div>
+    </ng-template>
+</div>

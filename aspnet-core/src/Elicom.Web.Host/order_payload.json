@@ -1,0 +1,12 @@
+{
+    "userId": 10067,
+    "paymentMethod": "Easy Finora",
+    "shippingAddress": "Prismatic Technologies Ltd.",
+    "country": "Brazil",
+    "state": "New York",
+    "city": "New York City",
+    "postalCode": "53700",
+    "shippingCost": 0,
+    "discount": 0,
+    "sourcePlatform": "SmartStore"
+}

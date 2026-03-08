@@ -1,0 +1,328 @@
+/* Global variables for 3D greenish theme */
+:root {
+  --primary: #1de016;
+  --primary-dark: #16b010;
+  --primary-light: #45e940;
+  --bg-body: #f0f4f3;
+  --bg-surface: #ffffff;
+  --text-main: #1a1a1a;
+  --text-muted: #666666;
+
+  /* 3D Shadows */
+  --shadow-3d-soft:
+    0 10px 20px rgba(0, 0, 0, 0.05),
+    0 6px 6px rgba(0, 0, 0, 0.1);
+
+  --shadow-3d-deep:
+    0 15px 35px rgba(29, 224, 22, 0.1),
+    0 5px 15px rgba(0, 0, 0, 0.07);
+
+  --btn-3d: 0 4px 0 var(--primary-dark);
+  --btn-3d-active: 0 2px 0 var(--primary-dark);
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-body);
+  color: var(--text-main);
+}
+
+app-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-layout {
+  display: flex;
+  flex: 1;
+  background-color: var(--bg-body);
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+app-sidebar {
+  width: 280px;
+  background: var(--bg-surface);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.03);
+  z-index: 100;
+
+  @media (max-width: 1024px) {
+    width: 240px;
+  }
+
+  @media (max-width: 768px) {
+    position: fixed;
+    left: -280px;
+    transition: left 0.3s ease;
+    height: 100vh;
+
+    &.mobile-open {
+      left: 0;
+    }
+  }
+}
+
+.main-content {
+  flex: 1;
+  padding: 30px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
+  /* Added to contain absolute loaders */
+
+  @media (max-width: 1024px) {
+    padding: 24px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+}
+
+/* Mobile Menu Toggle Button */
+.mobile-menu-toggle {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow:
+    0 8px 16px rgba(29, 224, 22, 0.3),
+    0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Mobile Overlay */
+.mobile-overlay {
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+    animation: fadeIn 0.3s ease;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* 3D Utility Classes */
+.card-3d {
+  background: var(--bg-surface);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: var(--shadow-3d-soft);
+  border: 1px solid rgba(0, 0, 0, 0.02);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-3d-deep);
+  }
+}
+
+.btn-3d {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+  box-shadow: var(--btn-3d);
+  transition: all 0.1s ease;
+  cursor: pointer;
+
+  &:active {
+    transform: translateY(2px);
+    box-shadow: var(--btn-3d-active);
+  }
+}
+
+/* Hide scrollbar for cleaner look */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 10px;
+}
+
+/* Global Pagination Styles */
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.01);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  margin-top: 20px;
+  border-radius: 0 0 20px 20px;
+
+  .pagination-info {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .btn-pagination {
+      padding: 8px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+
+      &:hover:not(:disabled) {
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(29, 224, 22, 0.15);
+      }
+
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+    }
+
+    .page-numbers {
+      display: flex;
+      gap: 8px;
+
+      .page-btn {
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: var(--bg-surface);
+        color: var(--text-main);
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &:hover {
+          border-color: var(--primary);
+          color: var(--primary);
+          transform: translateY(-2px);
+        }
+
+        &.active {
+          background: var(--primary);
+          color: white;
+          border-color: var(--primary);
+          box-shadow: 0 4px 12px rgba(29, 224, 22, 0.3);
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+    padding: 20px;
+
+    .pagination-info {
+      order: 2;
+    }
+
+    .pagination-controls {
+      order: 1;
+      flex-direction: column;
+      width: 100%;
+
+      .btn-pagination {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .page-numbers {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+    }
+  }
+}
+
+.btn-loading {
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.btn-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: btn-spin 0.7s linear infinite;
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

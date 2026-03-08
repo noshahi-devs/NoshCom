@@ -1,0 +1,87 @@
+<div class="dashboard-container">
+    <!-- Header Section -->
+    <div class="dashboard-header">
+        <div>
+            <h1>Dashboard</h1>
+            <p class="subtitle">Welcome back! Here's your financial overview</p>
+        </div>
+        <button class="btn-logout" (click)="logout()" title="Logout">
+            <span class="icon">🚪</span>
+            <span class="text">Logout</span>
+        </button>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div *ngFor="let stat of stats" class="stat-card-3d" [style.--stat-color]="stat.color">
+            <div class="stat-icon">{{ stat.icon }}</div>
+            <div class="stat-content">
+                <p class="stat-label">{{ stat.label }}</p>
+                <h3 class="stat-value">
+                    <ng-container *ngIf="!isLoadingStats">
+                        <ng-container *ngIf="stat.label.includes('Total')">
+                            {{ stat.value | currency: 'USD' }}
+                        </ng-container>
+                        <ng-container *ngIf="!stat.label.includes('Total')">
+                            {{ stat.value }}
+                        </ng-container>
+                    </ng-container>
+                    <i *ngIf="isLoadingStats" class="fas fa-spinner fa-spin"
+                        style="font-size: 0.8em; opacity: 0.8;"></i>
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Balance Card -->
+    <div class="balance-card-3d">
+        <div class="balance-header">
+            <div>
+                <p class="label">Available Balance</p>
+                <h2 class="balance-amount">
+                    <ng-container *ngIf="!isLoadingBalance">{{ walletData.balance | currency: walletData.currency
+                        }}</ng-container>
+                    <i *ngIf="isLoadingBalance" class="fas fa-spinner fa-spin"
+                        style="font-size: 0.8em; opacity: 0.8;"></i>
+                </h2>
+            </div>
+            <div class="wallet-badge">
+                <span class="icon">💰</span>
+            </div>
+        </div>
+        <div class="wallet-info">
+            <div class="id-row">
+                <span class="wallet-id">Wallet ID: {{ walletData.walletId }}</span>
+                <button class="copy-btn" (click)="copyWalletId()" title="Copy ID">
+                    <i class="far fa-copy"></i>
+                </button>
+            </div>
+            <button class="btn-3d btn-sm" [routerLink]="['/transactions']">View Details</button>
+        </div>
+    </div>
+
+    <!-- Recent Transactions Removed -->
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h3>Quick Actions</h3>
+        <div class="actions-grid">
+            <button class="action-btn-3d" [routerLink]="['/transfer']">
+                <span class="icon">💸</span>
+                <span class="label">Transfer Money</span>
+            </button>
+            <button class="action-btn-3d" [routerLink]="['/deposit']">
+                <span class="icon">⬇️</span>
+                <span class="label">Deposit Funds</span>
+            </button>
+            <button class="action-btn-3d" [routerLink]="['/withdraw']">
+                <span class="icon">⬆️</span>
+                <span class="label">Withdraw</span>
+            </button>
+            <button class="action-btn-3d" [routerLink]="['/cards']">
+                <span class="icon">💳</span>
+                <span class="label">Apply for Card</span>
+            </button>
+        </div>
+    </div>
+</div>

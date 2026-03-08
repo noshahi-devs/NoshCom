@@ -1,0 +1,67 @@
+<div class="profile-container">
+    <div class="profile-header">
+        <h1>My Profile</h1>
+        <p>Manage your account settings</p>
+    </div>
+
+    <!-- Premium Loader -->
+    <app-loader *ngIf="isLoading && !isEditing" message="Securely accessing your identity vault..."></app-loader>
+
+    <div class="profile-card" *ngIf="!isLoading || isEditing">
+        <div class="user-info">
+            <div class="avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="details">
+                <h2>{{ user.name }}</h2>
+                <p>{{ user.email }}</p>
+                <span class="badge">Verified</span>
+            </div>
+        </div>
+
+        <form (ngSubmit)="saveProfile()" #profileForm="ngForm">
+            <div class="profile-form">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="name" [(ngModel)]="user.name" [readonly]="!isEditing"
+                        [class.editable]="isEditing" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" [(ngModel)]="user.email" readonly class="readonly-always"
+                        title="Email cannot be changed">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" name="phone" [(ngModel)]="user.phone" [readonly]="!isEditing"
+                        [class.editable]="isEditing">
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <input type="text" name="address" [(ngModel)]="user.address" [readonly]="!isEditing"
+                        [class.editable]="isEditing">
+                </div>
+            </div>
+
+            <div class="actions">
+                <!-- If NOT editing -->
+                <button type="button" class="btn-primary" *ngIf="!isEditing" (click)="toggleEdit()">
+                    <i class="fas fa-pen"></i> Edit Profile
+                </button>
+                <button type="button" class="btn-secondary" *ngIf="!isEditing" (click)="changePassword()">
+                    Change Password
+                </button>
+
+                <!-- If editing -->
+                <button type="submit" class="btn-success" *ngIf="isEditing" [disabled]="isLoading">
+                    <span *ngIf="!isLoading"><i class="fas fa-check"></i> Save Changes</span>
+                    <span *ngIf="isLoading">Saving...</span>
+                </button>
+                <button type="button" class="btn-secondary" *ngIf="isEditing" (click)="toggleEdit()"
+                    [disabled]="isLoading">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

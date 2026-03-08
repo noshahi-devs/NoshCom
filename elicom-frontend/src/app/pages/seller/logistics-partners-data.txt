@@ -1,0 +1,86 @@
+THIRD PARTY LOGISTICS PARTNERS DATA
+=====================================
+
+LOGISTICS PARTNERS IN USA
+========================
+
+1. Total Quality Logistics (TQL)
+   Address: 4230 Cincinnati-Dayton Rd, West Chester, OH, USA
+   Zip code: 45069
+   Website: TQL
+
+2. B-Stock Solutions
+   Address: 1351 4th St, Suite 400, San Francisco, CA, USA
+   Zip code: 94158
+   Website: B-Stock
+
+3. C.H. Robinson Worldwide
+   Address: 14701 Charlson Rd, Eden Prairie, MN, USA
+   Zip code: 55347
+   Website: C.H. Robinson
+
+4. ShipMonk
+   Address: 1661 W Las Olas Blvd, Fort Lauderdale, FL, USA
+   Zip code: 33312
+   Website: ShipMonk
+
+5. Ware2Go
+   Address: 2400 18th St NW, Suite 200, Atlanta, GA, USA
+   Zip code: 30309
+   Website: Ware2Go
+
+6. FreightPOP
+   Address: 2200 E College Ave, Suite 204, Decatur, GA, USA
+   Zip code: 30030
+   Website: FreightPOP
+
+LOGISTICS PARTNERS IN UK
+========================
+
+1. NHS Supply Chain
+   Address: 1st Floor, 5 Waltham Close, Leicester, UK
+   Zip code: LE4 9LG
+   Website: NHS Supply Chain
+
+2. DHL Express
+   Address: 2-4 Victoria Way, Burgess Hill, UK
+   Zip code: RH15 9AZ
+   Website: DHL Express
+
+3. Fortec Distribution Network
+   Address: Fortec House, Drayton Manor Business Park, UK
+   Zip code: Tamworth, B78 3HL
+   Website: Fortec
+
+4. Menzies Distribution
+   Address: Menzies House, 6th Floor, 10-12 Union Street, Glasgow, UK
+   Zip code: G1 3QW
+   Website: Menzies Distribution
+
+5. Wincanton
+   Address: Wincanton House, 1 Manning Road, Heywood, UK
+   Zip code: OL10 3HE
+   Website: Wincanton
+
+6. M&H Logistics
+   Address: 2nd Floor, M&H House, 123 High Street, Epsom, Surrey, UK
+   Zip code: KT19 8AU
+   Website: M&H Logistics
+
+7. Allport Cargo Services
+   Address: 12-16 Swan Street, Manchester, UK
+   Zip code: M4 5JW
+   Website: Allport Cargo Services
+
+8. Samskip
+   Address: 3rd Floor, 68-70 Carter Lane, London, UK
+   Zip code: EC4V 5EL
+   Website: Samskip
+
+SUMMARY
+=======
+Total USA Partners: 6
+Total UK Partners: 8
+Total Partners: 14
+
+Last Updated: January 26, 2026

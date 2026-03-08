@@ -1,0 +1,31 @@
+<div class="product-3d-viewer">
+  <div class="viewer-header">
+    <h4 class="viewer-title">3D Product View</h4>
+    <div class="viewer-controls">
+      <button class="control-btn" (click)="resetView()" title="Reset View">
+        <i class="pi pi-refresh"></i>
+      </button>
+      <button class="control-btn" (click)="setAutoRotate(!autoRotate)" 
+              [class.active]="autoRotate" title="Toggle Auto-Rotate">
+        <i class="pi pi-spin"></i>
+      </button>
+    </div>
+  </div>
+  
+  <div #canvasContainer class="canvas-container"></div>
+  
+  <div class="viewer-instructions">
+    <div class="instruction-item">
+      <i class="pi pi-arrows-alt"></i>
+      <span>Drag to rotate</span>
+    </div>
+    <div class="instruction-item">
+      <i class="pi pi-search-plus"></i>
+      <span>Scroll to zoom</span>
+    </div>
+    <div class="instruction-item">
+      <i class="pi pi-mobile"></i>
+      <span>Touch enabled</span>
+    </div>
+  </div>
+</div>

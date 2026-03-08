@@ -1,0 +1,39 @@
+<div class="container py-4">
+  <h4 class="recommend-title">Recommend</h4>
+
+  <div class="product-grid">
+    <div class="product-card"
+         *ngFor="let product of visibleProducts">
+
+      <img [src]="product.image"
+           class="product-img main-img">
+
+      <img *ngIf="product.hoverImage"
+           [src]="product.hoverImage"
+           class="product-img hover-img">
+
+      <div class="card-body">
+        <div class="product-title">{{ product.title }}</div>
+
+        <div class="price-row">
+          <div>
+            <span class="price">${{ product.price }}</span>
+            <span *ngIf="product.discount"
+                  class="discount">-{{ product.discount }}%</span>
+          </div>
+
+          <button class="cart-btn">
+            <i class="fa-solid fa-cart-shopping"></i>
+          </button>
+        </div> 
+      </div>
+
+    </div>
+  </div>
+
+  <div class="view-more-wrapper" *ngIf="showViewMore">
+    <button class="view-more-btn" (click)="viewMore()">
+      View more <i class="fa-solid fa-angle-down"></i>
+    </button>
+  </div>
+</div>

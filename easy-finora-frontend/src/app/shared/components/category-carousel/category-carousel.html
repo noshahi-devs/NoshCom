@@ -1,0 +1,39 @@
+<div class="category-slider">
+
+  <!-- PREV -->
+  <button class="arrow prev" *ngIf="enableCarousel" (click)="prev()">
+    <i class="fa-solid fa-angle-left"></i>
+  </button>
+
+  <!-- TRACK -->
+  <div class="slider-track" [style.transform]="'translateX(-' + (currentSlide * 100) + '%)'">
+
+    <div class="slide" *ngFor="let slide of categories">
+
+      <!-- ROW 1 -->
+      <div class="row-circles">
+        <div class="circle" *ngFor="let cat of categories.slice(0, itemsPerRow)">
+          <img [src]="cat.imageUrl" alt="{{ cat.name }}">
+          <p>{{ cat.name }}</p>
+        </div>
+      </div>
+
+      <!-- ROW 2 -->
+      <div class="row-circles">
+        <div class="circle" *ngFor="let cat of categories.slice(itemsPerRow, itemsPerRow * 2)">
+          <img [src]="cat.imageUrl" alt="{{ cat.name }}">
+          <p>{{ cat.name }}</p>
+        </div>
+      </div>
+
+    </div>
+    
+
+  </div>
+
+  <!-- NEXT -->
+  <button class="arrow next" *ngIf="enableCarousel" (click)="next()">
+    <i class="fa-solid fa-angle-right"></i>
+  </button>
+
+</div>

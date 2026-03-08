@@ -1,0 +1,211 @@
+<div class="financial-payouts-page">
+    <section class="status-header">
+        <h2>
+            <i class="fas fa-money-bill-transfer"></i>
+            Financial Oversight
+        </h2>
+        <p>Audit seller transactions and process withdrawal (payout) requests. Manage the marketplace's financial health
+            with ease.</p>
+
+        <div class="stats-mini-badge">
+            <i class="fas fa-wallet me-2"></i>
+            <span>Pending Volume: <strong>{{totalPendingVolume | currency}}</strong></span>
+        </div>
+    </section>
+
+    <section class="payouts-table-card">
+        <div class="table-tools">
+            <div class="entries-info">
+                Show <span class="entries-chip">{{ pageSize }}</span> entries
+            </div>
+
+            <div class="search-wrap">
+                <label for="payoutSearch">Search:</label>
+                <input id="payoutSearch" type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
+                    placeholder="Type to search" />
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="payouts-table">
+                <thead>
+                    <tr>
+                        <th class="col-date">Request Date</th>
+                        <th class="col-details">Payout Details</th>
+                        <th class="col-seller">Seller Information</th>
+                        <th class="col-method">Payment Method</th>
+                        <th class="col-status">Status</th>
+                        <th class="col-action">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody *ngIf="isLoading">
+                    <tr *ngFor="let row of [1,2,3,4]; let i = index" [class.zebra-even]="i % 2 === 0"
+                        [class.zebra-odd]="i % 2 !== 0">
+                        <td colspan="6">
+                            <div class="row-skeleton">
+                                <span class="sk sk-date"></span>
+                                <span class="sk sk-details"></span>
+                                <span class="sk sk-seller"></span>
+                                <span class="sk sk-method"></span>
+                                <span class="sk sk-status"></span>
+                                <span class="sk sk-action"></span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+
+                <tbody *ngIf="!isLoading && pagedRequests.length > 0">
+                    <tr *ngFor="let req of pagedRequests; let i = index" [class.zebra-even]="i % 2 === 0"
+                        [class.zebra-odd]="i % 2 !== 0">
+                        <td class="date-col">
+                            <div class="cell-box">
+                                <div class="relative-time">{{ getRelativeTime(req.requestDate) }}</div>
+                                <div>{{ formatDate(req.requestDate) }}</div>
+                                <div>{{ formatTime(req.requestDate) }}</div>
+                            </div>
+                        </td>
+
+                        <td class="details-col">
+                            <div class="cell-box">
+                                <div class="request-id">ID: {{ req.id }}</div>
+                                <div class="amount-val">Amount: <b>{{ req.amount | currency }}</b></div>
+                                <div class="method-text">Method: <b>{{ req.method }}</b></div>
+                            </div>
+                        </td>
+
+                        <td class="seller-col">
+                            <div class="cell-box">
+                                <div class="seller-name">{{ displaySellerName(req.sellerName) }}</div>
+                                <div class="account-details text-truncate" [title]="req.accountDetails">
+                                    {{ req.accountDetails }}
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="method-col">
+                            <div class="cell-box">
+                                <div class="icon-wrap">
+                                    <i class="fas"
+                                        [ngClass]="req.method === 'PayPal' ? 'fa-brands fa-paypal text-info' : 'fa-university text-secondary'"></i>
+                                </div>
+                                <div>{{ req.method }}</div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="cell-box cell-box-status">
+                                <span class="status-pill" [ngClass]="req.status">
+                                    {{ req.status | titlecase }}
+                                </span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="cell-box cell-box-actions">
+                                <div class="actions-col" *ngIf="req.status === 'pending'; else processedBadge">
+                                    <button type="button" class="btn-action btn-view" (click)="openReviewModal(req)">
+                                        Review Payout
+                                    </button>
+                                </div>
+                                <ng-template #processedBadge>
+                                    <span class="processed-text">Processed</span>
+                                </ng-template>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+
+                <tbody *ngIf="!isLoading && pagedRequests.length === 0">
+                    <tr>
+                        <td colspan="6" class="empty-row">
+                            No payout requests found
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-footer">
+            <div>
+                Showing {{ showingFrom }} to {{ showingTo }} of {{ filteredRequests.length }} entries
+            </div>
+
+            <div class="pager">
+                <button type="button" (click)="goPrevious()" [disabled]="currentPage <= 1">Previous</button>
+                <span>{{ currentPage }}</span>
+                <button type="button" (click)="goNext()" [disabled]="currentPage >= totalPages">Next</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Payout Review Modal -->
+    <div class="modal fade shadow-lg" [class.show]="showReviewModal"
+        [style.display]="showReviewModal ? 'block' : 'none'" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 overflow-hidden" *ngIf="selectedRequest">
+                <div class="modal-header bg-primary text-white p-4">
+                    <h5 class="modal-title fw-bold">Review Payout Request</h5>
+                    <button type="button" class="btn-close btn-close-white" (click)="closeReviewModal()"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="p-3 bg-light rounded-3 mb-4 review-summary">
+                        <div class="row gy-3 gx-4">
+                            <div class="col-6">
+                                <label class="small text-muted d-block p-0">Request ID</label>
+                                <span class="summary-value">{{selectedRequest.id}}</span>
+                            </div>
+                            <div class="col-6">
+                                <label class="small text-muted d-block p-0">Amount</label>
+                                <span class="text-success fs-5 summary-value amount-value">{{selectedRequest.amount |
+                                    currency}}</span>
+                            </div>
+                            <div class="col-6">
+                                <label class="small text-muted d-block p-0">Seller</label>
+                                <span
+                                    class="text-break summary-value">{{displaySellerName(selectedRequest.sellerName)}}</span>
+                            </div>
+                            <div class="col-6">
+                                <label class="small text-muted d-block p-0">Method</label>
+                                <span class="summary-value">{{selectedRequest.method}}</span>
+                            </div>
+                            <div class="col-12">
+                                <label class="small text-muted d-block p-0">Account Details</label>
+                                <span class="text-break summary-value">{{selectedRequest.accountDetails}}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Approval/Rejection Comments
+                            (Optional)</label>
+                        <textarea class="form-control rounded-3" rows="3" [(ngModel)]="reviewComment"
+                            placeholder="Provide any instructions or reasoning for the seller..."></textarea>
+                    </div>
+
+                    <div class="alert alert-warning border-0 rounded-3 small">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Approving this payout will mark it as
+                        transferred.
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0 gap-2">
+                    <button type="button" class="btn-action btn-cancel flex-grow-1" (click)="rejectPayout()"
+                        [disabled]="isApproving || isRejecting">
+                        <span *ngIf="!isRejecting">Reject</span>
+                        <span *ngIf="isRejecting" class="spinner-border spinner-border-sm me-1"></span>
+                        <span *ngIf="isRejecting">Rejecting...</span>
+                    </button>
+                    <button type="button" class="btn-action btn-confirm flex-grow-1" (click)="approvePayout()"
+                        [disabled]="isApproving || isRejecting"
+                        [class.btn-loading]="isApproving">
+                        <span *ngIf="!isApproving">Approve & Process</span>
+                        <span *ngIf="isApproving" class="spinner-border spinner-border-sm me-1"></span>
+                        <span *ngIf="isApproving">Processing...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop fade" [class.show]="showReviewModal" *ngIf="showReviewModal"></div>
+</div>

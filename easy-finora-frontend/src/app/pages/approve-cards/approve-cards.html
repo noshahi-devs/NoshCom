@@ -1,0 +1,130 @@
+<div class="page-container">
+    <div class="page-header">
+        <div class="page-header-left">
+            <h1 class="glow-text">Approve Card Requests</h1>
+            <p class="subtitle">Review and approve virtual card applications</p>
+        </div>
+        <div class="header-actions">
+            <div class="filter-buttons">
+                <button class="filter-btn" [class.active]="statusFilter === 'all'" (click)="setStatusFilter('all')">All</button>
+                <button class="filter-btn" [class.active]="statusFilter === 'pending'" (click)="setStatusFilter('pending')">Pending</button>
+                <button class="filter-btn" [class.active]="statusFilter === 'approved'" (click)="setStatusFilter('approved')">Approved</button>
+                <button class="filter-btn" [class.active]="statusFilter === 'rejected'" (click)="setStatusFilter('rejected')">Reject</button>
+            </div>
+            <span class="admin-badge">ADMIN PANEL</span>
+            <div class="inline-loader" *ngIf="isLoading">
+                <span class="dot"></span>
+                <span>Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container-3d" [class.loading]="isLoading">
+        <table class="table-3d">
+            <thead>
+                <tr>
+                    <th>Applicant</th>
+                    <th>Contact</th>
+                    <th>Card Type</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let app of applications">
+                    <td>
+                        <div class="user-info">
+                            <strong>{{ app.fullName }}</strong>
+                            <span>@{{ app.userName }}</span>
+                        </div>
+                    </td>
+                    <td>{{ app.contactNumber }}</td>
+                    <td><span class="badge card-type">{{ (app.cardType === 'Visa' || app.cardType === 0) ? 'Visa' :
+                            (app.cardType === 'MasterCard' || app.cardType === 1) ?
+                            'MasterCard' : 'Amex' }}</span></td>
+                    <td>
+                        <span class="badge" [ngClass]="app.status.toLowerCase()">
+                            {{ app.status }}
+                        </span>
+                    </td>
+                    <td>{{ app.appliedDate | date:'short' }}</td>
+                    <td>
+                        <div class="actions" *ngIf="app.status === 'Pending'">
+                            <button class="btn-icon approve" (click)="approve(app)" title="Approve">✅</button>
+                            <button class="btn-icon reject" (click)="openRejectModal(app)" title="Reject">❌</button>
+                            <button class="btn-icon view" (click)="viewDocument(app)" title="View ID">📄</button>
+                        </div>
+                        <span *ngIf="app.status !== 'Pending'" class="remarks">{{ app.reviewNotes }}</span>
+                    </td>
+                </tr>
+                <tr *ngIf="applications.length === 0 && !isLoading">
+                    <td colspan="6" class="no-data">No applications found.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Pagination Section -->
+        <div class="pagination-container" *ngIf="totalCount > 0 && !isLoading">
+            <div class="pagination-info">
+                Showing {{ getStartIndex() }} to {{ getEndIndex() }} of {{ totalCount }} applications
+            </div>
+
+            <div class="pagination-controls">
+                <button class="btn-pagination" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+
+                <div class="page-numbers">
+                    <button *ngFor="let page of getPageNumbers()" class="page-btn" [class.active]="page === currentPage"
+                        (click)="changePage(page)">
+                        {{ page }}
+                    </button>
+                </div>
+
+                <button class="btn-pagination" [disabled]="currentPage === totalPages"
+                    (click)="changePage(currentPage + 1)">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Confirmation & Rejection Modals -->
+<div class="modal-overlay" *ngIf="selectedApp && confirmationType">
+    <!-- Rejection Content -->
+    <div class="modal-3d" *ngIf="confirmationType === 'reject'">
+        <div class="modal-header">
+            <h2>Reject Application</h2>
+            <span class="close" (click)="cancelModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Reason for rejecting <strong>{{ selectedApp.fullName }}</strong>'s application:</p>
+            <textarea [(ngModel)]="adminRemarks" placeholder="Enter reason..." class="input-3d" rows="4"></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-3d cancel" (click)="cancelModal()">Cancel</button>
+            <button class="btn-3d reject" (click)="reject()" [disabled]="!adminRemarks">Confirm Reject</button>
+        </div>
+    </div>
+
+    <!-- Approval Confirmation Content -->
+    <div class="modal-3d" *ngIf="confirmationType === 'approve'">
+        <div class="modal-header">
+            <h2>Approve Card</h2>
+            <span class="close" (click)="cancelModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="confirm-icon">💳</div>
+            <p class="confirm-text">Are you sure you want to approve card for <br><strong>{{ selectedApp.fullName
+                    }}</strong>?</p>
+
+        </div>
+        <div class="modal-actions">
+            <button class="btn-3d cancel" (click)="cancelModal()">Cancel</button>
+            <button class="btn-3d approve" (click)="confirmApproval()">Yes, Approve Now</button>
+        </div>
+    </div>
+</div>
