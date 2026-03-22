@@ -23,6 +23,7 @@ export class StoreApprovalsComponent implements OnInit {
     verifiedSellers = 0;
     selectedStore: StoreDto | null = null;
     imageLoading: { [key: string]: boolean } = {};
+    isApproving = false;
 
     ngOnInit() {
         this.loadApplications();
@@ -32,21 +33,13 @@ export class StoreApprovalsComponent implements OnInit {
         this.isLoading = true;
         this.storeService.getAllStores().subscribe({
             next: (res) => {
-                console.log('Store API Response (Full):', res);
                 if (Array.isArray(res)) {
                     this.applications = res;
                 } else {
                     this.applications = res?.result?.items || res?.items || [];
                 }
-                console.log('Mapped Applications Count:', this.applications.length);
-
-                if (this.applications.length === 0) {
-                    console.warn('No stores found. Check DB or Permissions.');
-                    // Temporary debug alert
-                    // Swal.fire('Debug', 'Loaded 0 stores. Check console for details.', 'info');
-                }
-
-                // Sort by relative time or createdAt descending (newest first)
+                
+                // Sort by creationTime descending (newest first)
                 this.applications.sort((a, b) => {
                     const dateA = new Date((a as any).creationTime || a.createdAt || 0).getTime();
                     const dateB = new Date((b as any).creationTime || b.createdAt || 0).getTime();
@@ -60,8 +53,7 @@ export class StoreApprovalsComponent implements OnInit {
             error: (err) => {
                 console.error('API Error:', err);
                 this.isLoading = false;
-                // Show more detailed error
-                Swal.fire('Error', `Failed to load stores: ${err.status} ${err.statusText}`, 'error');
+                Swal.fire('Error', `Failed to load stores`, 'error');
             }
         });
     }
@@ -75,19 +67,36 @@ export class StoreApprovalsComponent implements OnInit {
     approveStore(store: StoreDto) {
         Swal.fire({
             title: 'Approve Store?',
-            text: `Are you sure you want to approve "${store.name}"?`,
+            text: `Confirm approval for "${store.name}"?`,
             icon: 'question',
             showCancelButton: true,
             confirmButtonText: 'Yes, Approve',
-            confirmButtonColor: '#10b981'
+            confirmButtonColor: '#10b981',
+            backdrop: true
         }).then((result) => {
             if (result.isConfirmed) {
+                // Immediate UI cleanup
+                this.selectedStore = null;
+                this.isApproving = true;
+                this.cdr.detectChanges();
+
+                // Global loader
+                Swal.fire({
+                    title: 'Approving...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
                 this.storeService.approveStore(store.id).subscribe({
                     next: () => {
-                        Swal.fire('Approved!', 'The store has been approved.', 'success');
+                        this.isApproving = false;
+                        Swal.fire('Approved!', 'Store has been approved.', 'success');
                         this.loadApplications();
                     },
-                    error: () => Swal.fire('Error', 'Approval failed.', 'error')
+                    error: () => {
+                        this.isApproving = false;
+                        Swal.fire('Error', 'Approval failed.', 'error');
+                    }
                 });
             }
         });
@@ -100,9 +109,6 @@ export class StoreApprovalsComponent implements OnInit {
             icon: 'warning',
             input: 'textarea',
             inputPlaceholder: 'Enter rejection reason...',
-            inputAttributes: {
-                'aria-label': 'Rejection reason'
-            },
             showCancelButton: true,
             confirmButtonText: 'Yes, Reject',
             confirmButtonColor: '#ef4444'
@@ -110,16 +116,30 @@ export class StoreApprovalsComponent implements OnInit {
             if (result.isConfirmed) {
                 const reason = (result.value || '').trim();
                 if (!reason) {
-                    Swal.fire('Reason Required', 'Please provide a rejection reason.', 'warning');
+                    Swal.fire('Reason Required', 'Please provide a reason.', 'warning');
                     return;
                 }
 
+                this.selectedStore = null;
+                this.isApproving = true;
+                this.cdr.detectChanges();
+
+                Swal.fire({
+                    title: 'Rejecting...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
                 this.storeService.rejectStore(store.id, reason).subscribe({
                     next: () => {
-                        Swal.fire('Rejected', 'The application has been rejected.', 'success');
+                        this.isApproving = false;
+                        Swal.fire('Rejected', 'Application rejected.', 'success');
                         this.loadApplications();
                     },
-                    error: () => Swal.fire('Error', 'Operation failed.', 'error')
+                    error: () => {
+                        this.isApproving = false;
+                        Swal.fire('Error', 'Action failed.', 'error');
+                    }
                 });
             }
         });
@@ -127,71 +147,58 @@ export class StoreApprovalsComponent implements OnInit {
 
     verifyKYC(store: StoreDto) {
         Swal.fire({
-            title: 'Verify KYC Documents?',
-            text: `Are you sure you want to verify the identity documents for "${store.kyc?.fullName || store.name}"?`,
+            title: 'Verify KYC?',
+            text: `Mark documents for "${store.name}" as verified?`,
             icon: 'info',
             showCancelButton: true,
             confirmButtonText: 'Yes, Verify',
             confirmButtonColor: '#0dcaf0'
         }).then((result) => {
             if (result.isConfirmed) {
+                this.selectedStore = null;
+                this.isApproving = true;
+                this.cdr.detectChanges();
+
+                Swal.fire({
+                    title: 'Verifying...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
                 this.storeService.verifyKyc(store.id).subscribe({
                     next: () => {
-                        Swal.fire('Verified!', 'Seller KYC documents have been marked as verified.', 'success');
+                        this.isApproving = false;
+                        Swal.fire('Verified!', 'KYC verified.', 'success');
                         this.loadApplications();
                     },
-                    error: () => Swal.fire('Error', 'KYC verification failed.', 'error')
+                    error: () => {
+                        this.isApproving = false;
+                        Swal.fire('Error', 'Verification failed.', 'error');
+                    }
                 });
             }
         });
     }
 
     viewStore(store: StoreDto) {
-        // Show existing light data immediately
         this.selectedStore = { ...store };
         this.isDetailsLoading = true;
+        this.imageLoading = {};
         this.cdr.detectChanges();
 
         this.storeService.getStore(store.id).subscribe({
             next: (res) => {
-                console.log('Store API Raw Response:', res);
                 const full = res?.result || res;
                 if (full && typeof full === 'object') {
-                    // Reset image loading states for this store
-                    this.imageLoading[store.id + '_front'] = false;
-                    this.imageLoading[store.id + '_back'] = false;
-
                     const kyc = full.kyc || full.Kyc;
-
                     this.selectedStore = {
                         ...this.selectedStore,
                         ...full,
-                        name: full.name || full.Name || this.selectedStore?.name,
-                        supportEmail: full.supportEmail || full.SupportEmail || this.selectedStore?.supportEmail,
-                        shortDescription: full.shortDescription || full.ShortDescription || this.selectedStore?.shortDescription,
-                        longDescription: full.longDescription || full.LongDescription || this.selectedStore?.longDescription,
-                        kyc: kyc ? {
-                            ...(this.selectedStore?.kyc || {}),
-                            ...kyc,
-                            fullName: kyc.fullName || kyc.FullName || this.selectedStore?.kyc?.fullName,
-                            cnic: kyc.cnic || kyc.CNIC || this.selectedStore?.kyc?.cnic,
-                            phone: kyc.phone || kyc.Phone || this.selectedStore?.kyc?.phone,
-                            address: kyc.address || kyc.Address || this.selectedStore?.kyc?.address,
-                            zipCode: kyc.zipCode || kyc.ZipCode || this.selectedStore?.kyc?.zipCode,
-                            issueCountry: kyc.issueCountry || kyc.IssueCountry || this.selectedStore?.kyc?.issueCountry,
-                            dob: kyc.dob || kyc.DOB || this.selectedStore?.kyc?.dob,
-                            expiryDate: kyc.expiryDate || kyc.ExpiryDate || this.selectedStore?.kyc?.expiryDate,
-                            frontImage: kyc.frontImage || kyc.FrontImage,
-                            backImage: kyc.backImage || kyc.BackImage
-                        } : this.selectedStore?.kyc
+                        kyc: kyc ? { ...(this.selectedStore?.kyc || {}), ...kyc } : this.selectedStore?.kyc
                     };
                 }
-                console.log('Hydrated Store Details:', this.selectedStore);
             },
-            error: (err) => {
-                console.error('Failed to load store details', err);
-                // Keep the summary data if full hydration fails
-            },
+            error: (err) => console.error('Failed to load store details', err),
             complete: () => {
                 this.isDetailsLoading = false;
                 this.cdr.detectChanges();
@@ -201,30 +208,17 @@ export class StoreApprovalsComponent implements OnInit {
 
     getImageUrl(path: string | undefined): string {
         if (!path) return '';
-
-        // Clean the path (remove extra quotes or whitespace)
         path = path.trim().replace(/^"|"$/g, '');
-
         if (path.startsWith('data:image')) return path;
-
-        // If it's a full URL already
         if (path.startsWith('http://') || path.startsWith('https://')) return path;
-
-        // If it looks like an absolute path but relative to server root
-        if (path.startsWith('/')) {
-            return `${environment.apiUrl}${path}`;
-        }
-
-        // Normal relative path
-        return `${environment.apiUrl}/${path}`;
+        return (path.startsWith('/')) ? `${environment.apiUrl}${path}` : `${environment.apiUrl}/${path}`;
     }
 
-    trackById(_index: number, item: StoreDto) {
-        return item.id;
-    }
+    trackById(_index: number, item: StoreDto) { return item.id; }
 
     closeModal() {
         this.selectedStore = null;
         this.isDetailsLoading = false;
+        this.cdr.detectChanges();
     }
 }

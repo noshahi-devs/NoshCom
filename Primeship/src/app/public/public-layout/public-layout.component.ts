@@ -76,11 +76,7 @@ import Swal from 'sweetalert2';
 
             <!-- Premium Brand Logo with Ship Icon -->
             <a routerLink="/" class="brand-logo">
-              <img src="/logo.png" alt="Prime Ship" class="logo-ship-img">
-              <div class="brand-text">
-                <span class="brand-name">PRIME</span>
-                <span class="brand-tagline">SHIP</span>
-              </div>
+              <img src="/assets/images/Prime-Ship-UK-header.svg" alt="Prime Ship" class="logo-ship-img">
             </a>
 
             <!-- Enhanced Search Bar -->
@@ -289,8 +285,7 @@ import Swal from 'sweetalert2';
           <div class="footer-grid">
             <div class="footer-col footer-brand-col">
               <div class="footer-brand-logo">
-                <img src="/logo.png" alt="Prime Ship" class="footer-logo-img">
-                <h3 class="footer-brand">PRIME<span>SHIP</span></h3>
+                <img src="/assets/images/Prime-Ship-UK-header.svg" alt="Prime Ship" class="footer-logo-img">
               </div>
               <p class="footer-desc">Your trusted global marketplace for premium products.</p>
               <div class="footer-newsletter mt-4">
@@ -544,7 +539,7 @@ import Swal from 'sweetalert2';
     .brand-logo { 
       display: flex; 
       align-items: center; 
-      gap: 14px; 
+      gap: 0; 
       text-decoration: none;
       transition: transform 0.3s;
     }
@@ -554,9 +549,10 @@ import Swal from 'sweetalert2';
     }
     
     .logo-ship-img { 
-      width: 48px;
-      height: 48px;
+      width: 220px;
+      height: 56px;
       object-fit: contain;
+      display: block;
     }
     
     .brand-text { 
@@ -1238,14 +1234,15 @@ import Swal from 'sweetalert2';
     .footer-brand-logo {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 0;
       margin-bottom: 1rem;
     }
 
     .footer-logo-img {
-      width: 40px;
-      height: 40px;
+      width: 210px;
+      height: 52px;
       object-fit: contain;
+      display: block;
     }
 
     .footer-brand { 
@@ -1593,6 +1590,11 @@ import Swal from 'sweetalert2';
         width: 45px;
         height: 45px;
       }
+
+      .logo-ship-img {
+        width: 180px;
+        height: 46px;
+      }
       
       .logo-letter {
         font-size: 24px;
@@ -1662,6 +1664,15 @@ import Swal from 'sweetalert2';
         text-align: center;
         margin-bottom: 1rem;
       }
+
+      .footer-brand-logo {
+        justify-content: center;
+      }
+
+      .footer-logo-img {
+        width: 190px;
+        height: 48px;
+      }
       
       .footer-bottom-content {
         flex-direction: column;
@@ -1685,6 +1696,11 @@ import Swal from 'sweetalert2';
       .brand-text {
         display: none;
       }
+
+      .logo-ship-img {
+        width: 150px;
+        height: 40px;
+      }
       
       .header-actions {
         gap: 0.5rem;
@@ -1704,6 +1720,15 @@ import Swal from 'sweetalert2';
         order: -1;
         text-align: center;
         margin-bottom: 1rem;
+      }
+
+      .footer-brand-logo {
+        justify-content: center;
+      }
+
+      .footer-logo-img {
+        width: 170px;
+        height: 44px;
       }
       
       .payment-badge {
@@ -1764,7 +1789,7 @@ export class PublicLayoutComponent implements OnInit {
     });
 
     this.authService.currentUser$.subscribe(user => {
-      if (user) {
+      if (user && this.authService.isAuthenticated()) {
         // Try getting name from token first for instant UI response
         const nameFromToken = this.authService.getUserName();
         this.userName = nameFromToken || 'User';
@@ -1794,6 +1819,7 @@ export class PublicLayoutComponent implements OnInit {
     ).subscribe(() => {
       this.syncCategoryWithUrl();
       this.showMobileNav = false;
+      this.scrollToTop();
     });
   }
 
@@ -1964,6 +1990,11 @@ export class PublicLayoutComponent implements OnInit {
     return '/seller/dashboard';
   }
 
+  private scrollToTop(): void {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    this.isScrolled = false;
+  }
+
   get showSellerStoreMenuButton(): boolean {
     return this.authService.isAuthenticated() && this.authService.isSeller();
   }
@@ -1974,6 +2005,9 @@ export class PublicLayoutComponent implements OnInit {
 
   get merchantPortalHref(): string {
     if (this.authService.isAuthenticated()) {
+      if (this.authService.isAdmin()) {
+        return '/admin/dashboard';
+      }
       return '/seller/dashboard';
     }
     return '/auth/login?returnUrl=%2Fseller%2Fdashboard';
@@ -1982,6 +2016,10 @@ export class PublicLayoutComponent implements OnInit {
   openMerchantPortal(event: Event): void {
     event.preventDefault();
     if (this.authService.isAuthenticated()) {
+      if (this.authService.isAdmin()) {
+        this.router.navigate(['/admin/dashboard']);
+        return;
+      }
       this.router.navigate(['/seller/dashboard']);
       return;
     }

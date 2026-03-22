@@ -120,6 +120,7 @@
           <div class="error" *ngIf="addCategoryForm.get('name')?.invalid && addCategoryForm.get('name')?.touched">
             <span *ngIf="addCategoryForm.get('name')?.errors?.['required']">Name is required</span>
             <span *ngIf="addCategoryForm.get('name')?.errors?.['minlength']">Minimum 2 characters required</span>
+            <span *ngIf="addCategoryForm.get('name')?.errors?.['duplicate']">Category already exists</span>
           </div>
         </div>
 
@@ -186,6 +187,7 @@
           <div class="error" *ngIf="editCategoryForm.get('name')?.invalid && editCategoryForm.get('name')?.touched">
             <span *ngIf="editCategoryForm.get('name')?.errors?.['required']">Name is required</span>
             <span *ngIf="editCategoryForm.get('name')?.errors?.['minlength']">Minimum 2 characters required</span>
+            <span *ngIf="editCategoryForm.get('name')?.errors?.['duplicate']">Category already exists</span>
           </div>
         </div>
 

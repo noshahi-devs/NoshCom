@@ -26,6 +26,7 @@ interface DealCard {
 })
 export class DealCardComponent implements OnChanges {
   @Input() products: any[] = [];
+  @Input() isLoading: boolean = false;
   private readonly localImageGroups: { image: string; hoverImage?: string }[][] = [
     [
       { image: '/assets/images/dealCard1.webp', hoverImage: '/assets/images/dealCard7.webp' },
@@ -36,8 +37,8 @@ export class DealCardComponent implements OnChanges {
       { image: '/assets/images/dealCard4.webp', hoverImage: '/assets/images/dealCard10.webp' }
     ],
     [
-      { image: '/assets/images/dealCard5.webp', hoverImage: '/assets/images/dealCard1.webp' },
-      { image: '/assets/images/dealCard6.webp', hoverImage: '/assets/images/dealCard2.jpg' }
+      { image: '/assets/images/card_1.jpg', hoverImage: '/assets/images/card_2.jpg' },
+      { image: '/assets/images/card_3.jpg', hoverImage: '/assets/images/card_4.webp' }
     ]
   ];
 
@@ -50,7 +51,17 @@ export class DealCardComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['products'] && this.products && this.products.length > 0) {
       this.generateDynamicDeals();
+    } else if (changes['products']) {
+      this.dealCards = [
+        { title: 'Super Deals', products: [] },
+        { title: 'Top Trends', products: [] },
+        { title: 'Brand Zone', products: [] }
+      ];
     }
+  }
+
+  get hasProducts(): boolean {
+    return this.dealCards.some(card => card.products && card.products.length > 0);
   }
 
   generateDynamicDeals() {

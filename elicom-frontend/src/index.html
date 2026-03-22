@@ -3,10 +3,10 @@
 
 <head>
   <meta charset="utf-8">
-  <title>World Cart</title>
+  <title>World Cart Us</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="shortcut icon" href="assets/images/Ecommerce.png" type="image/x-icon">
+  <link rel="shortcut icon" href="/assets/images/world-favicon.svg" type="image/x-icon">
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Wet+Paint&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -21,9 +21,9 @@
       <div class="app-loader-orbit">
         <span class="app-loader-ring app-loader-ring-1"></span>
         <span class="app-loader-ring app-loader-ring-2"></span>
-        <span class="app-loader-core"></span>
+        <img src="/assets/images/world-favicon.svg" alt="World Cart Logo" class="app-loader-center-logo">
       </div>
-      <h3>Loading World Cart</h3>
+      <h3>Loading World Cart Us</h3>
       <p>Preparing products, prices, and your personalized experience...</p>
       <div class="app-loader-dots">
         <span></span>
@@ -61,7 +61,7 @@
     }
 
     .app-loader-card h3 {
-      margin: 20px 0 8px;
+      margin: 15px 0 8px;
       font-size: clamp(28px, 2.3vw, 38px);
       font-weight: 900;
       line-height: 1.05;
@@ -71,6 +71,8 @@
       background-clip: text;
       color: transparent;
     }
+
+
 
     .app-loader-card p {
       margin: 0;
@@ -108,14 +110,13 @@
       animation: app-spin-reverse 1.3s linear infinite;
     }
 
-    .app-loader-core {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, #ffffff, #6366f1);
-      box-shadow:
-        0 0 0 8px rgba(99, 102, 241, 0.12),
-        0 0 24px rgba(99, 102, 241, 0.35);
+    .app-loader-center-logo {
+      height: 50px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 0 15px rgba(79, 70, 229, 0.2));
+      position: relative;
+      z-index: 10;
       animation: app-pulse 1.4s ease-in-out infinite;
     }
 

@@ -8,6 +8,10 @@
     font-family: 'Manrope', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     perspective: 2000px;
 
+    @media (max-width: 480px) {
+        margin-top: 20px;
+    }
+
     &.full-width-step {
         max-width: 1400px;
     }
@@ -55,8 +59,12 @@
     }
 
     @media (max-width: 480px) {
-        top: 14px;
-        right: 14px;
+        position: relative;
+        top: 0;
+        right: 0;
+        padding: 20px 20px 10px;
+        display: flex;
+        justify-content: flex-end;
 
         .btn-logout {
             padding: 8px 14px;

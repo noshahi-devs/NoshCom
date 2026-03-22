@@ -12,6 +12,7 @@ export interface Category {
   updatedAt?: string;
   id?: string;
   categoryId?: string;
+  previewImages?: string[];
 }
 
 @Injectable({

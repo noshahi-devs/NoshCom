@@ -146,6 +146,9 @@ export class PublicService {
 
     getProfile(): Observable<any> {
         const token = localStorage.getItem('authToken');
+        if (!token) {
+            return of(null);
+        }
         return this.http.get<any>(`${this.apiUrl}/GetProfile`, {
             headers: new HttpHeaders({
                 'Authorization': `Bearer ${token}`,
@@ -154,6 +157,9 @@ export class PublicService {
         }).pipe(
             map(res => res?.result || res),
             catchError(err => {
+                if (err?.status === 401 || err?.status === 403) {
+                    return of(null);
+                }
                 console.error('PublicService: GetProfile Error', err);
                 return throwError(() => err);
             })

@@ -1,5 +1,33 @@
 <div class="product-detail-container">
-  <div class="container">
+  <div class="container" *ngIf="isLoading">
+    <div class="product-loading">
+      <div class="skeleton-line wide"></div>
+      <div class="skeleton-line medium"></div>
+
+      <div class="loading-grid">
+        <div class="loading-media">
+          <div class="skeleton-image"></div>
+          <div class="skeleton-row">
+            <div class="skeleton-thumb" *ngFor="let _ of [1,2,3,4]"></div>
+          </div>
+        </div>
+        <div class="loading-info">
+          <div class="skeleton-line wide"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line short"></div>
+          <div class="skeleton-pill"></div>
+          <div class="skeleton-line medium"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-actions">
+            <div class="skeleton-btn"></div>
+            <div class="skeleton-btn"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" *ngIf="!isLoading">
     <!-- Breadcrumb Navigation -->
     <nav class="breadcrumb-nav">
       <div class="breadcrumb-wrapper">
@@ -76,11 +104,11 @@
 
           <div class="option-group">
             <label class="option-label">Color:</label>
-            <div class="color-options" *ngIf="colors.length > 0">
-              <div class="color-option" *ngFor="let color of colors" [style.backgroundColor]="color"
-                [class.active]="selectedColor === color" (click)="selectedColor = color"></div>
+            <div class="option-info">Standard Color</div>
+            <div class="category-chip">
+              <i class="pi pi-tags"></i>
+              <span>Category: {{ product?.category || '—' }}</span>
             </div>
-            <div class="option-info" *ngIf="colors.length === 0">Standard Color</div>
           </div>
 
           <div class="option-group quantity-group">
@@ -166,7 +194,7 @@
             <div class="product-gallery" *ngIf="galleryItems.length > 0">
               <h4>Product Gallery</h4>
               <div class="gallery-grid">
-                <div class="gallery-item" *ngFor="let item of galleryItems">
+                <div class="gallery-item" *ngFor="let item of galleryItems; let i = index" (click)="selectGalleryImage(item.image, i)">
                   <img [src]="item.image" [alt]="item.title">
                   <div class="gallery-overlay">
                     <span>{{ item.title }}</span>
@@ -204,7 +232,23 @@
     </div>
 
     <!-- Related Products Section -->
-    <div class="related-products-section" *ngIf="relatedProducts.length > 0">
+    <div class="related-products-section" *ngIf="isLoadingRelated">
+      <div class="section-header">
+        <h3>You Might Also Like</h3>
+        <span class="view-all-btn loading">Loading</span>
+      </div>
+
+      <div class="related-skeleton-grid">
+        <div class="related-skeleton-card" *ngFor="let _ of [1,2,3,4,5,6,7,8,9,10,11,12]">
+          <div class="skeleton media"></div>
+          <div class="skeleton line small"></div>
+          <div class="skeleton line"></div>
+          <div class="skeleton line price"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="related-products-section" *ngIf="!isLoadingRelated && relatedProducts.length > 0">
       <div class="section-header">
         <h3>You Might Also Like</h3>
         <a href="#" class="view-all-btn" [class.loading]="isLoadingMore"

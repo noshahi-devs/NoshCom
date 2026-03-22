@@ -627,7 +627,7 @@
                 white-space: nowrap;
             }
 
-            input {
+            input, select {
                 flex: 1;
                 border: none;
                 outline: none;
@@ -636,6 +636,8 @@
                 color: #0f172a;
                 background: transparent;
                 font-size: 18px;
+                appearance: none;
+                -webkit-appearance: none;
 
                 &::placeholder {
                     color: #94a3b8;

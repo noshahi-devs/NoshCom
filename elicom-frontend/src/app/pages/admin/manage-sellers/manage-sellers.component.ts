@@ -34,8 +34,9 @@ export class ManageSellersComponent implements OnInit, OnDestroy {
     };
     withdrawError = '';
 
-    // Search and Pagination
+    // Search, Filter and Pagination
     searchTerm = '';
+    filterMode: 'all' | 'active' | 'inactive' = 'all';
     pageSize = 10;
     currentPage = 1;
     private nowEpoch = Date.now();
@@ -57,6 +58,7 @@ export class ManageSellersComponent implements OnInit, OnDestroy {
         this.storeService.getAllStores().subscribe({
             next: (res: any) => {
                 this.sellers = res?.result?.items || res?.result || res || [];
+                console.log('Manage Sellers Debug:', this.sellers);
                 this.applyFilters();
                 this.isLoading = false;
                 this.cdr.detectChanges();
@@ -72,6 +74,12 @@ export class ManageSellersComponent implements OnInit, OnDestroy {
     applyFilters() {
         const term = (this.searchTerm || '').trim().toLowerCase();
         this.filteredSellers = this.sellers.filter(s => {
+            // 1. Filter by Product Count
+            const productCount = s.totalProducts || 0;
+            if (this.filterMode === 'active' && productCount === 0) return false;
+            if (this.filterMode === 'inactive' && productCount > 0) return false;
+
+            // 2. Filter by Search Term
             if (!term) return true;
             const haystack = [
                 s.name,
@@ -94,6 +102,12 @@ export class ManageSellersComponent implements OnInit, OnDestroy {
     }
 
     onSearchChange() {
+        this.currentPage = 1;
+        this.applyFilters();
+    }
+
+    setFilter(mode: 'all' | 'active' | 'inactive') {
+        this.filterMode = mode;
         this.currentPage = 1;
         this.applyFilters();
     }

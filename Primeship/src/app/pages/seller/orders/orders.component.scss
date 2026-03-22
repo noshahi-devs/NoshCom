@@ -500,6 +500,58 @@
           }
         }
 
+        &.tracking-cell {
+          .tracking-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(248, 86, 6, 0.12) 0%, rgba(255, 139, 82, 0.22) 100%);
+            border: 1px solid rgba(248, 86, 6, 0.25);
+            box-shadow: 0 6px 14px rgba(248, 86, 6, 0.15);
+            max-width: 200px;
+
+            @media (max-width: 768px) {
+              max-width: 160px;
+            }
+
+            &.muted {
+              background: rgba(148, 163, 184, 0.12);
+              border-color: rgba(148, 163, 184, 0.35);
+              box-shadow: none;
+
+              .tracking-dot {
+                background: #94a3b8;
+              }
+
+              .tracking-text {
+                color: #64748b;
+              }
+            }
+          }
+
+          .tracking-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #F85606 0%, #FF8B52 100%);
+            box-shadow: 0 0 0 2px rgba(248, 86, 6, 0.15);
+            flex: 0 0 8px;
+          }
+
+          .tracking-text {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #111827;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+
         &.total-cell {
           font-weight: 700;
           color: #1a202c;

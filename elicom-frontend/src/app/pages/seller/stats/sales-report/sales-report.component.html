@@ -1,15 +1,11 @@
 <div class="sales-report-page">
-    <div class="page-header-3d mb-5">
-        <div class="header-content text-center w-100">
+    <div class="page-header-3d d-flex justify-content-between align-items-start mb-5">
+        <div class="header-content">
             <h2 class="title-3d"><i class="fa-solid fa-chart-line me-2"></i> Sales Report</h2>
             <p class="sub-heading-3d">Detailed analysis of your sales performance and order metrics.</p>
         </div>
         <div class="filter-section-3d">
-            <select class="form-select-3d">
-                <option>Maximum Data</option>
-                <option>Last 30 Days</option>
-                <option>Last 7 Days</option>
-            </select>
+            <app-date-range-picker [storeCreatedAt]="currentStore?.createdAt" [initialRangeId]="'max'" (onRangeChange)="onRangeChange($event)"></app-date-range-picker>
         </div>
     </div>
 
@@ -21,7 +17,7 @@
             <div class="col-md-3">
                 <div class="financial-card variant-blue">
                     <div class="card-content">
-                        <span class="label">Total orders</span>
+                        <span class="label">Total Delivered Orders</span>
                         <span class="value" *ngIf="stats">{{ stats.totalOrders || 0 }}</span>
                         <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 80px; height: 3rem;"></div>
                     </div>
@@ -83,7 +79,7 @@
             <div class="col-md-3">
                 <div class="mini-card">
                     <div class="mini-content">
-                        <span class="label">Zalando Fees</span>
+                        <span class="label">World Cart Fees</span>
                         <span class="value" *ngIf="stats">{{ stats.zalandoFees | currency }}</span>
                         <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 120px; height: 2.5rem;"></div>
                     </div>
@@ -105,7 +101,7 @@
             <div class="col-md-3">
                 <div class="mini-card">
                     <div class="mini-content">
-                        <span class="label">Est Payout</span>
+                        <span class="label">Est Profit</span>
                         <span class="value" *ngIf="stats">{{ stats.estPayout | currency }}</span>
                         <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 120px; height: 2.5rem;"></div>
                     </div>
@@ -173,14 +169,22 @@
                 <!-- Skeleton Table -->
                 <tbody *ngIf="!stats">
                     <tr *ngFor="let i of [1,2,3,4,5]">
-                        <td><div class="skeleton skeleton-text" style="width: 80px;"></div></td>
+                        <td>
+                            <div class="skeleton skeleton-text" style="width: 80px;"></div>
+                        </td>
                         <td>
                             <div class="skeleton skeleton-text" style="width: 150px; margin-bottom: 5px;"></div>
                             <div class="skeleton skeleton-text" style="width: 100px;"></div>
                         </td>
-                        <td><div class="skeleton skeleton-text" style="width: 120px;"></div></td>
-                        <td><div class="skeleton skeleton-text" style="width: 100px;"></div></td>
-                        <td><div class="skeleton btn-3d" style="width: 120px; height: 40px; opacity: 0.5;"></div></td>
+                        <td>
+                            <div class="skeleton skeleton-text" style="width: 120px;"></div>
+                        </td>
+                        <td>
+                            <div class="skeleton skeleton-text" style="width: 100px;"></div>
+                        </td>
+                        <td>
+                            <div class="skeleton btn-3d" style="width: 120px; height: 40px; opacity: 0.5;"></div>
+                        </td>
                     </tr>
                 </tbody>
             </table>

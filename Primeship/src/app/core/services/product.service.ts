@@ -32,6 +32,9 @@ export interface ProductDto {
   metaTitle?: string;
   metaDescription?: string;
   createdAt?: Date;
+  updatedAt?: Date;
+  creationTime?: string;
+  lastModificationTime?: string;
 }
 
 export interface CreateProductDto {
@@ -60,6 +63,7 @@ export interface UpdateProductDto extends CreateProductDto {
 export class ProductService {
   private publicApiUrl = `${environment.apiUrl}/services/app/Public`;
   private productApiUrl = `${environment.apiUrl}/services/app/Product`;
+  private homepageApiUrl = `${environment.apiUrl}/services/app/Homepage`;
 
   constructor(
     private http: HttpClient,
@@ -77,6 +81,24 @@ export class ProductService {
         }
         return response?.result || [];
       })
+    );
+  }
+
+  getMarketplaceProductCount(): Observable<number> {
+    return this.http.get<any>(`${this.homepageApiUrl}/GetAllProductsForCards`, {
+      params: {
+        skipCount: '0',
+        maxResultCount: '1'
+      },
+      headers: this.authService.getAuthHeaders()
+    }).pipe(
+      map(res =>
+        res?.result?.totalCount ??
+        res?.totalCount ??
+        res?.result?.items?.length ??
+        res?.items?.length ??
+        0
+      )
     );
   }
 

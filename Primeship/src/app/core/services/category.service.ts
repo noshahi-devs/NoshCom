@@ -14,6 +14,8 @@ export interface CategoryDto {
     status: boolean;
     createdAt: Date;
     updatedAt: Date;
+    creationTime?: string;
+    lastModificationTime?: string;
     productCount?: number;
     parentId?: any; // For template compatibility (not used in current model)
 }

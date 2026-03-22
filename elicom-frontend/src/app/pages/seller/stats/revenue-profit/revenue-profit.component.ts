@@ -6,10 +6,12 @@ import { Router } from '@angular/router';
 import { AppPageLoaderService } from '../../../../services/app-page-loader.service';
 import { ChangeDetectorRef } from '@angular/core';
 
+import { DateRangePickerComponent, DateRangeResult } from '../../../../shared/date-range-picker/date-range-picker.component';
+
 @Component({
   selector: 'app-revenue-profit',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DatePipe, PercentPipe],
+  imports: [CommonModule, CurrencyPipe, DatePipe, PercentPipe, DateRangePickerComponent],
   templateUrl: './revenue-profit.component.html',
   styleUrls: ['./revenue-profit.component.scss']
 })
@@ -23,7 +25,9 @@ export class RevenueProfitComponent implements OnInit {
   stats?: SellerDashboardStats;
   transactions: OrderPaymentTransaction[] = [];
   isLoading = false;
+  hasLoaded = false;
   currentStore: any;
+  currentDateRange: DateRangeResult = { label: 'Maximum Data', id: 'max' };
 
   ngOnInit() {
     this.loadData();
@@ -33,24 +37,39 @@ export class RevenueProfitComponent implements OnInit {
     this.storeService.getMyStoreCached().subscribe((store: any) => {
       this.currentStore = store?.result || store;
       const storeId = this.currentStore?.id || '';
+
+      // Sync Date Range Label if it's the default 'max'
+      if (this.currentStore?.createdAt && this.currentDateRange.id === 'max') {
+        const date = new Date(this.currentStore.createdAt);
+        const formatted = new Intl.DateTimeFormat('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }).format(date);
+        this.currentDateRange.label = `Joined Date: ${formatted}`;
+      }
       
-      this.dashboardService.getStats(storeId).subscribe((stats: SellerDashboardStats) => {
+      this.dashboardService.getStats(storeId, this.currentDateRange.startDate, this.currentDateRange.endDate).subscribe((stats: SellerDashboardStats) => {
         this.stats = stats;
+        this.hasLoaded = false;
         
-        this.dashboardService.getSaleTransactions(storeId).subscribe({
+        this.dashboardService.getSaleTransactions(storeId, this.currentDateRange.startDate, this.currentDateRange.endDate).subscribe({
           next: (res: OrderPaymentTransaction[]) => {
             this.transactions = res;
+            this.hasLoaded = true;
             this.loaderService.markDataArrived();
             this.cdr.detectChanges();
           },
           error: (err: any) => {
             console.error('Failed to load revenue & profit transactions:', err);
+            this.hasLoaded = true;
             this.loaderService.markDataArrived();
             this.cdr.detectChanges();
           }
         });
       });
     });
+  }
+
+  onRangeChange(range: DateRangeResult) {
+    this.currentDateRange = range;
+    this.loadData();
   }
 
   goToOrderDetails(orderId: string) {

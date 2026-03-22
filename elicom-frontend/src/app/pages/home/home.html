@@ -7,21 +7,45 @@
     <p>{{ categoryError }}</p>
     <button (click)="loadCategories()" class="btn-retry">Retry</button>
   </div>
-  <app-category-carousel *ngIf="!categoryError" [categories]="categories"></app-category-carousel>
+  <div class="category-skeleton" *ngIf="isLoadingCategories && !categoryError">
+    <div class="category-skeleton-row" *ngFor="let _ of [1,2]">
+      <div class="category-skeleton-item" *ngFor="let _ of [1,2,3,4,5,6]">
+        <div class="skeleton circle"></div>
+        <div class="skeleton line small"></div>
+      </div>
+    </div>
+  </div>
+  <app-category-carousel *ngIf="!categoryError && !isLoadingCategories" [categories]="categories"></app-category-carousel>
 
-  <!-- Deal card (moved up under categories) -->
-  <app-deal-card *ngIf="!productError" [products]="products"></app-deal-card>
+  <!-- Deal card (shows skeleton internally when isLoadingProducts is true) -->
+  <app-deal-card *ngIf="!productError" [products]="products" [isLoading]="isLoadingProducts"></app-deal-card>
 
   <!-- Category tiles (premium gallery blocks) -->
-  <div class="category-tiles" *ngIf="categories.length">
+  <div class="category-tile-skeletons" *ngIf="isLoadingCategories && !categoryError">
+    <div class="category-tile-skeleton" *ngFor="let _ of [1,2,3,4]">
+      <div class="skeleton line medium"></div>
+      <div class="tile-skeleton-grid">
+        <div class="skeleton tile-box" *ngFor="let _ of [1,2,3,4]"></div>
+      </div>
+      <div class="skeleton line small"></div>
+    </div>
+  </div>
+  <div class="category-tiles" *ngIf="categories.length && !isLoadingCategories">
     <div class="tile" *ngFor="let c of categories | slice:0:8" [routerLink]="['/search-result']"
       [queryParams]="{ category: c.name }">
       <div class="tile-title">{{ c.name }}</div>
       <div class="tile-grid">
-        <div class="tile-box" *ngFor="let i of [1,2,3,4]">
-          <img [src]="c.imageUrl || 'https://picsum.photos/seed/' + c.name + i + '/200/200'" alt="Category"
-               (error)="onImgError($event, c)">
-        </div>
+        <ng-container *ngIf="c.previewImages && c.previewImages.length; else defaultImages">
+          <div class="tile-box" *ngFor="let img of c.previewImages">
+            <img [src]="img" alt="Product" (error)="onImgError($event, c)">
+          </div>
+        </ng-container>
+        <ng-template #defaultImages>
+          <div class="tile-box" *ngFor="let i of [1,2,3,4]">
+            <img [src]="c.imageUrl || 'https://picsum.photos/seed/' + c.name + i + '/200/200'" alt="Category"
+                 (error)="onImgError($event, c)">
+          </div>
+        </ng-template>
       </div>
       <div class="tile-link">Discover more</div>
     </div>
@@ -33,23 +57,35 @@
     <button (click)="loadProducts()" class="btn-retry">Retry</button>
   </div>
 
-  <!-- Loading skeleton -->
-  <div class="skeleton-grid" *ngIf="isLoadingProducts && !productError">
-    <div class="skeleton-card" *ngFor="let _ of [1,2,3,4,5,6]">
-      <div class="skeleton-header">
-        <div class="skeleton avatar"></div>
-        <div class="skeleton-lines">
-          <div class="skeleton line medium"></div>
-          <div class="skeleton line small"></div>
+  <!-- Loading skeleton with section headings -->
+  <div class="section-skeletons" *ngIf="isLoadingProducts && !productError">
+    <div class="section-skeleton" *ngFor="let _ of [1,2,3]">
+      <div class="section-header skeleton-header">
+        <div>
+          <div class="skeleton badge"></div>
+          <div class="skeleton title"></div>
+          <div class="skeleton subtitle"></div>
         </div>
+        <div class="skeleton action"></div>
       </div>
-      <div class="skeleton line large"></div>
-      <div class="skeleton line large"></div>
-      <div class="skeleton line medium"></div>
-      <div class="skeleton image"></div>
-      <div class="skeleton-buttons">
-        <div class="skeleton button"></div>
-        <div class="skeleton button"></div>
+      <div class="section-skeleton-grid">
+        <div class="skeleton-card" *ngFor="let _ of [1,2,3,4]">
+          <div class="skeleton-header">
+            <div class="skeleton avatar"></div>
+            <div class="skeleton-lines">
+              <div class="skeleton line medium"></div>
+              <div class="skeleton line small"></div>
+            </div>
+          </div>
+          <div class="skeleton line large"></div>
+          <div class="skeleton line large"></div>
+          <div class="skeleton line medium"></div>
+          <div class="skeleton image"></div>
+          <div class="skeleton-buttons">
+            <div class="skeleton button"></div>
+            <div class="skeleton button"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -139,7 +175,7 @@
             <div class="meta">
               <div class="name">{{ getTitle(product) }}</div>
               <div class="price-row">
-                <div class="price">Rs.{{ product.price | number:'1.0-0' }}</div>
+                <div class="price">${{ product.price | number:'1.2-2' }}</div>
                 <div class="off" *ngIf="getDiscountPercent(product) > 0">-{{ getDiscountPercent(product) }}%</div>
               </div>
               <div class="rating-row">
@@ -181,7 +217,7 @@
         </div>
       </div>
 
-      <div class="section-more" *ngIf="section.initialCount && (section.initialCount < section.products.length)">
+      <div class="section-more" *ngIf="section.initialCount && (section.initialCount > section.products.length)">
         <button class="more-btn" (click)="showMore(section.id, 8)">Show more</button>
       </div>
     </div>

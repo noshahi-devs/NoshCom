@@ -1,10 +1,10 @@
 <div class="seller-layout" [class.sidebar-collapsed]="isSidebarCollapsed">
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar" [class.show-mobile]="!isSidebarCollapsed">
-        <div class="sidebar-brand">
-            <div class="brand-logo"><i class="fa fa-shop"></i></div>
-            <h5 class="fw-bold mb-0">World Cart</h5>
-        </div>
+        <a routerLink="/seller/dashboard" class="sidebar-brand" style="text-decoration: none;">
+            <img src="/assets/images/header-worldcart-logo.png" alt="World Cart" class="sidebar-brand-logo">
+            <img src="/assets/images/world-favicon.svg" alt="World Cart" class="sidebar-brand-icon">
+        </a>
 
         <a routerLink="/seller/dashboard" routerLinkActive="active" class="nav-link nav-dashboard" data-tooltip="Dashboard">
             <i class="fa-solid fa-chart-line"></i> <span>Dashboard</span>
@@ -28,7 +28,7 @@
                 <span>Unshipped</span>
             </a>
             <a routerLink="/seller/orders/tracking-verifications" routerLinkActive="active" class="sub-nav-link">
-                <i class="fa-solid fa-hand"></i>
+                <i class="fa-solid fa-list-check"></i>
                 <span>Tracking Verifications</span>
             </a>
             <a routerLink="/seller/orders/shipped" routerLinkActive="active" class="sub-nav-link">
@@ -79,10 +79,10 @@
         </div>
 
         <!-- Stats Menu -->
-        <button type="button" class="nav-link nav-stats nav-dropdown-btn" data-tooltip="Stats" [class.active]="isStatsRoute()"
+        <button type="button" class="nav-link nav-stats nav-dropdown-btn" data-tooltip="Statistics" [class.active]="isStatsRoute()"
             (click)="toggleStatsMenu()">
             <i class="fa-solid fa-chart-pie"></i>
-            <span>Stats</span>
+            <span>Statistics</span>
         </button>
         <div class="sub-nav-list" *ngIf="showStatsMenu">
             <a routerLink="/seller/stats/sales-report" routerLinkActive="active" class="sub-nav-link">

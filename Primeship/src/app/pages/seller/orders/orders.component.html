@@ -89,11 +89,12 @@
   <div class="filters">
     <div class="search-box">
       <i class="pi pi-search"></i>
-      <input type="text" placeholder="Search my orders by number, customer or phone..." [(ngModel)]="searchTerm"
+      <input id="seller-order-search" name="sellerOrderSearch" type="text"
+        placeholder="Search my orders by number, customer or phone..." [(ngModel)]="searchTerm"
         (input)="applyFilters()" />
     </div>
 
-    <select [(ngModel)]="selectedStatus" (change)="applyFilters()">
+    <select id="seller-order-status" name="sellerOrderStatus" [(ngModel)]="selectedStatus" (change)="applyFilters()">
       <option value="all">All Status</option>
       <option value="pending">Pending</option>
       <option value="verified">Verified</option>
@@ -117,6 +118,7 @@
           <th>Customer</th>
           <th>Date</th>
           <th>Status</th>
+          <th>Tracking #</th>
           <th>Total</th>
           <th>Actions</th>
         </tr>
@@ -143,6 +145,12 @@
             <span class="status-badge" [ngClass]="order.status">
               {{ getStatusLabel(order.status) }}
             </span>
+          </td>
+          <td class="tracking-cell">
+            <div class="tracking-chip" [class.muted]="!order.hasTracking">
+              <span class="tracking-dot"></span>
+              <span class="tracking-text">{{ order.trackingDisplay }}</span>
+            </div>
           </td>
           <td class="total-cell">
             {{ formatPrice(getOrderTotal(order)) }}
@@ -378,16 +386,19 @@
           <div class="form-grid">
             <div class="form-group">
               <label>Customer Name *</label>
-              <input type="text" [(ngModel)]="newOrder.customerName" placeholder="Enter customer name" />
+              <input id="new-order-customer-name" name="newOrderCustomerName" type="text"
+                [(ngModel)]="newOrder.customerName" placeholder="Enter customer name" />
             </div>
             <div class="form-group">
               <label>Phone *</label>
-              <input type="text" [(ngModel)]="newOrder.phone" placeholder="Enter phone number" />
+              <input id="new-order-phone" name="newOrderPhone" type="text" [(ngModel)]="newOrder.phone"
+                placeholder="Enter phone number" />
             </div>
           </div>
           <div class="form-group">
             <label>Address *</label>
-            <input type="text" [(ngModel)]="newOrder.address" placeholder="Enter delivery address" />
+            <input id="new-order-address" name="newOrderAddress" type="text" [(ngModel)]="newOrder.address"
+              placeholder="Enter delivery address" />
           </div>
         </div>
 
@@ -397,7 +408,8 @@
           <div class="sku-search-box">
             <label>Add by SKU</label>
             <div class="search-input-group">
-              <input type="text" [(ngModel)]="skuSearchTerm" placeholder="Enter SKU (e.g. SHO-001)"
+              <input id="new-order-sku-search" name="newOrderSkuSearch" type="text" [(ngModel)]="skuSearchTerm"
+                placeholder="Enter SKU (e.g. SHO-001)"
                 (keyup.enter)="searchProduct()">
               <button type="button" class="btn primary" (click)="searchProduct()">
                 <i class="pi pi-search"></i>
@@ -417,9 +429,12 @@
           <div class="items-list">
             <div class="item-row" *ngFor="let item of newOrder.items; let i = index">
               <div class="item-inputs">
-                <input type="text" [(ngModel)]="item.name" placeholder="Item name" />
-                <input type="number" [(ngModel)]="item.qty" min="1" placeholder="Qty" />
-                <input type="number" [(ngModel)]="item.price" min="0" step="0.01" placeholder="Price" />
+                <input [id]="'new-order-item-name-' + i" [name]="'newOrderItemName' + i" type="text"
+                  [(ngModel)]="item.name" placeholder="Item name" />
+                <input [id]="'new-order-item-qty-' + i" [name]="'newOrderItemQty' + i" type="number"
+                  [(ngModel)]="item.qty" min="1" placeholder="Qty" />
+                <input [id]="'new-order-item-price-' + i" [name]="'newOrderItemPrice' + i" type="number"
+                  [(ngModel)]="item.price" min="0" step="0.01" placeholder="Price" />
                 <span class="item-total">{{ formatPrice(item.qty * item.price) }}</span>
               </div>
               <button type="button" class="btn icon danger" (click)="removeOrderItem(i)"

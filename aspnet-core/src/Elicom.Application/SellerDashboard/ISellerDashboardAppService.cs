@@ -2,14 +2,15 @@ using Abp.Application.Services;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Elicom.Orders.Dto;
 
 namespace Elicom.SellerDashboard
 {
     public interface ISellerDashboardAppService : IApplicationService
     {
-        Task<SellerDashboardStatsDto> GetStats(Guid storeId);
-        Task<List<OrderPaymentTransactionDto>> GetSaleTransactions(Guid storeId);
+        Task<SellerDashboardStatsDto> GetStats(Guid storeId, DateTime? startDate, DateTime? endDate);
+        Task<List<OrderPaymentTransactionDto>> GetSaleTransactions(Guid storeId, DateTime? startDate, DateTime? endDate);
     }
 
     public class SellerDashboardStatsDto

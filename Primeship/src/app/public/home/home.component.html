@@ -86,7 +86,25 @@
             </div>
         </div>
     </section>
-    <section class="section-block promo-block">
+    <section class="section-block promo-block" *ngIf="isLoadingCategories">
+        <div class="container">
+            <div class="section-head">
+                <h2>Popular Categories</h2>
+                <div class="skeleton tabs"></div>
+            </div>
+            <div class="carousel-shell skeleton-carousel">
+                <div class="carousel-track">
+                    <div class="skeleton-card" *ngFor="let _ of [1,2,3,4,5,6]">
+                        <div class="skeleton media"></div>
+                        <div class="skeleton line small"></div>
+                        <div class="skeleton line"></div>
+                        <div class="skeleton line price"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="section-block promo-block" *ngIf="!isLoadingCategories && categoryTabs.length > 0">
         <div class="container">
             <div class="section-head">
                 <h2>Popular Categories</h2>
@@ -152,7 +170,23 @@
         </div>
     </section>
 
-    <section class="section-block deals-block">
+    <section class="section-block deals-block" *ngIf="isLoadingDeals">
+        <div class="container">
+            <div class="section-head">
+                <h2>Deals of the Week</h2>
+                <div class="skeleton timer"></div>
+            </div>
+            <div class="deals-grid">
+                <div class="skeleton-card" *ngFor="let _ of [1,2,3,4,5,6,7,8,9,10,11,12]">
+                    <div class="skeleton media tall"></div>
+                    <div class="skeleton line small"></div>
+                    <div class="skeleton line"></div>
+                    <div class="skeleton line price"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="section-block deals-block" *ngIf="!isLoadingDeals && dealsPrimary.length > 0">
         <div class="container">
             <div class="section-head">
                 <h2>Deals of the Week</h2>
@@ -219,7 +253,20 @@
         </div>
     </section>
 
-    <section class="section-block mini-category-block">
+    <section class="section-block mini-category-block" *ngIf="isLoadingMiniCategories">
+        <div class="container">
+            <div class="mini-category-grid">
+                <div class="mini-category skeleton-card" *ngFor="let _ of [1,2,3]">
+                    <div class="skeleton line"></div>
+                    <div class="skeleton line small"></div>
+                    <div class="skeleton media"></div>
+                    <div class="skeleton line"></div>
+                    <div class="skeleton line"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="section-block mini-category-block" *ngIf="!isLoadingMiniCategories && miniCategories.length > 0">
         <div class="container">
             <div class="mini-category-grid">
                 <div class="mini-category" *ngFor="let group of miniCategories">
@@ -246,7 +293,23 @@
         </div>
     </section>
 
-    <section class="section-block deals-block">
+    <section class="section-block deals-block" *ngIf="isLoadingDeals">
+        <div class="container">
+            <div class="section-head">
+                <h2>Top Trending Deals</h2>
+                <div class="skeleton timer"></div>
+            </div>
+            <div class="deals-grid">
+                <div class="skeleton-card" *ngFor="let _ of [1,2,3,4,5,6,7,8,9,10,11,12]">
+                    <div class="skeleton media tall"></div>
+                    <div class="skeleton line small"></div>
+                    <div class="skeleton line"></div>
+                    <div class="skeleton line price"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="section-block deals-block" *ngIf="!isLoadingDeals && dealsSecondary.length > 0">
         <div class="container">
             <div class="section-head">
                 <h2>Top Trending Deals</h2>
@@ -295,7 +358,22 @@
         </div>
     </section>
 
-    <section class="section-block deals-block just-for-you">
+    <section class="section-block deals-block just-for-you" *ngIf="isLoadingDeals">
+        <div class="container">
+            <div class="section-head">
+                <h2>Just For You</h2>
+            </div>
+            <div class="deals-grid">
+                <div class="skeleton-card" *ngFor="let _ of [1,2,3,4,5,6,7,8,9,10,11,12]">
+                    <div class="skeleton media tall"></div>
+                    <div class="skeleton line small"></div>
+                    <div class="skeleton line"></div>
+                    <div class="skeleton line price"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="section-block deals-block just-for-you" *ngIf="!isLoadingDeals && dealsJustForYou.length > 0">
         <div class="container">
             <div class="section-head">
                 <h2>Just For You</h2>

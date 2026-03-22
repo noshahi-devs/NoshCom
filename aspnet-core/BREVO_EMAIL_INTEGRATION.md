@@ -50,7 +50,7 @@ Main file:
 ## Platform Sender Mapping
 Sender address is selected by platform:
 - World Cart/Default -> `no-reply@worldcartus.com`
-- Easy Finora -> `no-reply@easyfinora.com`
+- Easy Finora -> `  no-reply@easyfinora.com`
 - Prime Ship -> `no-reply@primeshipuk.com`
 
 ## Test Checklist

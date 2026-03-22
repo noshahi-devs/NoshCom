@@ -1,4 +1,4 @@
-﻿using Abp.Domain.Entities;
+using Abp.Domain.Entities;
 using System;
 
 namespace Elicom.Entities
@@ -13,6 +13,9 @@ namespace Elicom.Entities
 
         public int StockQuantity { get; set; }
         public bool Status { get; set; }
+
+        public int HandlingTime { get; set; }
+        public string SellerNote { get; set; }
 
         public virtual Store Store { get; set; }
         public virtual Product Product { get; set; }

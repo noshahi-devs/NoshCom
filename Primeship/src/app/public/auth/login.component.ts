@@ -14,7 +14,7 @@ export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   isLoading = false;
   showPassword = false;
-  returnUrl: string = '/admin/dashboard';
+  returnUrl: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -34,8 +34,8 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     console.log('🔄 ngOnInit called');
 
-    // Get return URL from route parameters or default to seller dashboard
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/admin/dashboard';
+    // Capture return URL (if any). Role-based destination is decided after login.
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '';
     console.log('📍 Return URL set to:', this.returnUrl);
 
     // If already logged in, redirect to return URL
@@ -43,8 +43,9 @@ export class LoginComponent implements OnInit {
     console.log('🔐 Is authenticated?', isAuth);
 
     if (isAuth) {
-      console.log('✅ Already authenticated, redirecting to:', this.returnUrl);
-      this.router.navigate([this.returnUrl], { replaceUrl: true });
+      const destination = this.resolvePostLoginUrl(this.returnUrl);
+      console.log('??? Already authenticated, redirecting to:', destination);
+      this.router.navigate([destination], { replaceUrl: true });
     }
   }
 
@@ -83,16 +84,7 @@ export class LoginComponent implements OnInit {
           console.log('💾 User email stored in localStorage');
 
           // Determine destination based on roles
-          let destination = this.returnUrl;
-          if (destination === '/admin/dashboard') {
-            if (this.authService.isAdmin()) {
-              destination = '/admin/dashboard';
-            } else if (this.authService.isSeller()) {
-              destination = '/seller/dashboard';
-            } else {
-              destination = '/home';
-            }
-          }
+          const destination = this.resolvePostLoginUrl(this.returnUrl);
 
           console.log('🧭 Attempting navigation to:', destination);
 
@@ -164,4 +156,23 @@ export class LoginComponent implements OnInit {
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }
+
+  private resolvePostLoginUrl(returnUrl: string): string {
+    // Always send Admin/Seller to their dashboards
+    if (this.authService.isAdmin()) {
+      return '/admin/dashboard';
+    }
+
+    if (this.authService.isSeller()) {
+      return '/seller/dashboard';
+    }
+
+    // For other roles (buyer), respect returnUrl if it's safe
+    if (returnUrl && returnUrl !== '/auth/login' && !returnUrl.startsWith('/auth/login')) {
+      return returnUrl;
+    }
+
+    return '/home';
+  }
 }
+

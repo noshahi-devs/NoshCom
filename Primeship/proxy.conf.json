@@ -1,7 +1,7 @@
 {
   "/api": {
-    "target": "https://api.worldcartus.com",
-    "secure": true,
+    "target": "https://localhost:44311",
+    "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
   }

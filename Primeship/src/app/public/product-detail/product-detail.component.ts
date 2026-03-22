@@ -1,9 +1,9 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { Observable } from 'rxjs';
+import { Observable, Subject, combineLatest, takeUntil } from 'rxjs';
 import { PublicService } from '../../core/services/public.service';
 import { ProductService, ProductDto } from '../../core/services/product.service';
 
@@ -20,14 +20,16 @@ import { ToastService } from '../../core/services/toast.service';
   templateUrl: './product-detail.component.html',
   styleUrls: ['./product-detail.component.scss']
 })
-export class ProductDetailComponent implements OnInit {
+export class ProductDetailComponent implements OnInit, OnDestroy {
   @ViewChild('mainImage') mainImageRef?: ElementRef<HTMLImageElement>;
+  private destroy$ = new Subject<void>();
   product: Product | null = null;
   relatedProducts: any[] = [];
   quantity: number = 1;
   selectedSize: string = '';
   selectedColor: string = '';
   isLoading = true;
+  isLoadingRelated = false;
 
   // New properties for enhanced functionality
 
@@ -63,25 +65,32 @@ export class ProductDetailComponent implements OnInit {
     private authService: AuthService,
     private cartService: CartService,
     private toastService: ToastService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
-    this.loadProduct();
+    combineLatest([this.route.paramMap, this.route.queryParamMap])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([params, query]) => {
+        const id = query.get('id');
+        const sku = query.get('sku');
+        const slug = params.get('slug');
+        this.loadProduct(id, sku, slug);
+      });
   }
 
 
-  private loadProduct(): void {
-    const id = this.route.snapshot.queryParamMap.get('id');
-    const sku = this.route.snapshot.queryParamMap.get('sku');
-    const slug = this.route.snapshot.paramMap.get('slug');
-
+  private loadProduct(id: string | null, sku: string | null, slug: string | null): void {
     if (!id && !sku && !slug) {
       this.router.navigate(['/home']);
       return;
     }
 
     this.isLoading = true;
+    this.isLoadingRelated = false;
+    this.relatedProducts = [];
+    this.cdr.detectChanges();
 
     // Strategy: Try looking up by ID (Marketplace/Supplier direct), then SKU, then Slug.
     // All these now hit the clean PublicAppService which has no "Store" dependency.
@@ -166,23 +175,27 @@ export class ProductDetailComponent implements OnInit {
     };
 
     this.isLoading = false;
+    this.cdr.detectChanges();
     if (dto.categoryId) {
       this.loadRelatedProducts(dto.categoryId);
     }
   }
 
   private handleLoadError(error: any): void {
+    this.isLoading = false;
+    this.cdr.detectChanges();
     console.error('❌ Error loading product:', error);
     this.router.navigate(['/home']);
   }
 
   private loadRelatedProducts(categoryId: string): void {
+    this.isLoadingRelated = true;
     this.publicService.getProductsByCategory('', undefined, categoryId).subscribe({
       next: (products) => {
 
         this.relatedProducts = (products || [])
           .filter(p => p.slug !== this.product?.slug)
-          .slice(0, 4)
+          .slice(0, 12)
           .map(p => ({
             ...p,
             images: this.productService.parseImages(p.images),
@@ -190,9 +203,15 @@ export class ProductDetailComponent implements OnInit {
             ...this.resolveDisplayPrices(p),
             reviewCount: Math.floor(Math.random() * 20) + 5
           }));
+        this.isLoadingRelated = false;
+        this.cdr.detectChanges();
 
       },
-      error: (err) => console.error('Error loading related products:', err)
+      error: (err) => {
+        console.error('Error loading related products:', err);
+        this.isLoadingRelated = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -321,10 +340,19 @@ export class ProductDetailComponent implements OnInit {
   }
 
   onRelatedProductClick(product: any): void {
-    if (product && product.slug) {
-      this.router.navigate(['/product', product.slug]);
-      // Scroll to top when navigating to a new product
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!product) return;
+    const id = product.id || product.productId;
+    const slug = product.slug || (product.name ? this.productService.generateSlug(product.name) : 'item');
+    this.router.navigate(['/product', slug], id ? { queryParams: { id } } : undefined);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  selectGalleryImage(image: string, index: number): void {
+    if (!this.product) return;
+    if (this.product.images && this.product.images[index]) {
+      this.product.image = this.product.images[index];
+    } else {
+      this.product.image = image;
     }
   }
 
@@ -346,4 +374,10 @@ export class ProductDetailComponent implements OnInit {
       imageEl.requestFullscreen().catch(() => undefined);
     }
   }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }
+

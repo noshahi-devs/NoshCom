@@ -19,6 +19,7 @@ interface Customer {
   email: string;
   phone: string;
   status: 'active' | 'inactive';
+  emailVerified: boolean;
   totalOrders: number;
   totalSpent: number;
   createdAt: Date;
@@ -53,6 +54,7 @@ export class CustomersComponent implements OnInit {
   selectedStatusFilter: string | null = null;
 
   isLoading = false;
+  isDeleting = false;
   toasts: Toast[] = [];
   private toastId = 0;
 
@@ -86,7 +88,8 @@ export class CustomersComponent implements OnInit {
       userName: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       phone: [''],
-      status: [true]
+      status: [true],
+      emailVerified: [false]
     });
   }
 
@@ -121,8 +124,9 @@ export class CustomersComponent implements OnInit {
             id: u.id,
             name: u.fullName || (u.name + ' ' + u.surname),
             email: u.emailAddress,
-            phone: (u as any).phoneNumber || '',
+            phone: u.phoneNumber || '',
             status: u.isActive ? 'active' : 'inactive',
+            emailVerified: !!u.isEmailConfirmed,
             totalOrders: userOrders.length,
             totalSpent: totalVolume,
             createdAt: new Date(u.creationTime)
@@ -216,7 +220,8 @@ export class CustomersComponent implements OnInit {
       userName: customer.email, // Often email is username
       email: customer.email,
       phone: customer.phone,
-      status: customer.status === 'active'
+      status: customer.status === 'active',
+      emailVerified: customer.emailVerified
     });
     this.editCustomerModalVisible = true;
     this.cdr.detectChanges();
@@ -235,6 +240,7 @@ export class CustomersComponent implements OnInit {
   }
 
   cancelDelete(): void {
+    if (this.isDeleting) return;
     this.deleteConfirmationVisible = false;
     this.customerToDelete = null;
     this.cdr.detectChanges();
@@ -242,14 +248,17 @@ export class CustomersComponent implements OnInit {
 
   confirmDelete(): void {
     if (this.customerToDelete) {
+      this.isDeleting = true;
       this.userService.delete(this.customerToDelete.id).subscribe({
         next: () => {
           this.showToast(`Customer "${this.customerToDelete?.name}" deleted successfully`, 'success');
           this.loadCustomers();
+          this.isDeleting = false;
           this.cancelDelete();
         },
         error: (err) => {
           this.showToast('Failed to delete customer', 'error');
+          this.isDeleting = false;
           this.cancelDelete();
         }
       });
@@ -268,6 +277,7 @@ export class CustomersComponent implements OnInit {
       name: formValue.name,
       surname: formValue.surname,
       emailAddress: formValue.email,
+      phoneNumber: formValue.phone,
       isActive: formValue.status,
       roleNames: ['Customer'],
       password: formValue.password
@@ -299,7 +309,9 @@ export class CustomersComponent implements OnInit {
       name: formValue.name,
       surname: formValue.surname,
       emailAddress: formValue.email,
+      phoneNumber: formValue.phone,
       isActive: formValue.status,
+      isEmailConfirmed: formValue.emailVerified,
       roleNames: ['Customer']
     };
 

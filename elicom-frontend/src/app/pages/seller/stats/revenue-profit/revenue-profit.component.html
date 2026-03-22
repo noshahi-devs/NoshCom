@@ -1,10 +1,12 @@
 <div class="revenue-profit-page">
-    <div class="page-header-3d text-center">
-        <div class="header-content-center">
+    <div class="page-header-3d d-flex justify-content-between align-items-start">
+        <div class="header-content">
             <h2 class="title-3d">Revenue and profit</h2>
-            <p class="sub-heading-3d">Track your earnings, platform fees, and net profit margins across all transactions.</p>
+            <p class="sub-heading-3d">Track your earnings, platform fees, and net profit margins.</p>
         </div>
-        <div class="icon-3d-fixed"><i class="fa-solid fa-dollar-sign"></i></div>
+        <div class="filter-section-3d">
+            <app-date-range-picker [storeCreatedAt]="currentStore?.createdAt" [initialRangeId]="'max'" (onRangeChange)="onRangeChange($event)"></app-date-range-picker>
+        </div>
     </div>
 
     <!-- Top Cards: Primary Metrics -->
@@ -14,7 +16,7 @@
             <div class="financial-card">
                 <div class="card-content">
                     <span class="label">Current Balance</span>
-                    <span class="value" *ngIf="stats">{{ stats.totalSales | currency }}</span>
+                    <span class="value" *ngIf="stats">{{ stats.walletBalance | currency }}</span>
                     <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 150px; height: 3rem;"></div>
                 </div>
                 <div class="card-icon"><i class="fa-solid fa-wallet"></i></div>
@@ -25,7 +27,7 @@
             <div class="financial-card">
                 <div class="card-content">
                     <span class="label">Account Level Reserve</span>
-                    <span class="value" *ngIf="stats">$0.00</span>
+                    <span class="value" *ngIf="stats">{{ stats.acReserve | currency }}</span>
                     <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 120px; height: 3rem;"></div>
                 </div>
                 <div class="card-icon"><i class="fa-solid fa-coins"></i></div>
@@ -61,8 +63,8 @@
         <div class="col-md-3">
             <div class="mini-card">
                 <div class="mini-content">
-                    <span class="label">REFUNDS</span>
-                    <span class="value" *ngIf="stats">{{ stats.totalRefunds | currency }}</span>
+                    <span class="label">REFUNDED ORDERS</span>
+                    <span class="value" *ngIf="stats">{{ stats.totalRefunds }}</span>
                     <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 100px; height: 2.5rem;"></div>
                 </div>
                 <div class="mini-icon"><i class="fa-solid fa-rotate-left"></i></div>
@@ -84,7 +86,7 @@
             <div class="mini-card">
                 <div class="mini-content">
                     <span class="label">NET PROFIT MARGIN</span>
-                    <span class="value" *ngIf="stats">{{ stats.netProfitMargin | percent:'1.2-2' }}</span>
+                    <span class="value" *ngIf="stats">{{ (stats.netProfitMargin / 100) | percent:'1.2-2' }}</span>
                     <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 80px; height: 2.5rem;"></div>
                 </div>
                 <div class="mini-icon"><i class="fa-solid fa-percent"></i></div>
@@ -107,7 +109,7 @@
                         <th>Net Profit</th>
                     </tr>
                 </thead>
-                <tbody *ngIf="transactions.length > 0">
+                <tbody *ngIf="hasLoaded && transactions.length > 0">
                     <tr *ngFor="let tx of transactions">
                         <td>
                             <div class="cell-3d">
@@ -135,8 +137,22 @@
                         <td><div class="cell-3d"><b>{{ tx.netProfit | currency }}</b></div></td>
                     </tr>
                 </tbody>
+
+                <!-- No Record Found -->
+                <tbody *ngIf="hasLoaded && transactions.length === 0">
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="empty-state-3d">
+                                <i class="fa-solid fa-magnifying-glass mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+                                <h5 class="opacity-50">No transactions found for this period.</h5>
+                                <p class="text-muted">Only delivered orders appear in these records.</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+
                 <!-- Skeleton Transactions -->
-                <tbody *ngIf="transactions.length === 0">
+                <tbody *ngIf="!hasLoaded">
                     <tr *ngFor="let i of [1,2,3,4,5]">
                         <td><div class="skeleton skeleton-text" style="width: 80px;"></div></td>
                         <td><div class="skeleton skeleton-text" style="width: 100px;"></div></td>

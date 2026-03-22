@@ -1,4 +1,4 @@
-﻿using Abp.Application.Services;
+using Abp.Application.Services;
 using Abp.Domain.Repositories;
 using Abp.UI;
 using Elicom.Entities;
@@ -305,8 +305,135 @@ namespace Elicom.Orders
             return ObjectMapper.Map<OrderDto>(createdOrders.First());
         }
 
+        [AbpAuthorize(PermissionNames.Pages_SmartStore_Admin, PermissionNames.Admin)]
+        public virtual async Task<OrderDto> CreateManualOrder(CreateManualOrderDto input)
+        {
+            Logger.Info($"[OrderAppService] CreateManualOrder: Starting for StoreProductId={input.StoreProductId}, AdminId={AbpSession.UserId}");
+            
+            try 
+            {
+                var adminId = AbpSession.GetUserId();
+                
+                using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
+                {
+                    // 1. Fetch Store Product
+                    var storeProduct = await _storeProductRepository.GetAll()
+                        .Include(sp => sp.Product)
+                        .Include(sp => sp.Store)
+                        .FirstOrDefaultAsync(sp => sp.Id == input.StoreProductId);
+
+                    if (storeProduct == null)
+                        throw new UserFriendlyException($"Product not found in store (ID: {input.StoreProductId}). It might be disabled or in another tenant.");
+
+                    // 2. Calculate Amounts
+                    var price = input.OverridePrice ?? storeProduct.ResellerPrice;
+                    var subTotal = price * input.Quantity;
+                    var totalAmount = subTotal;
+
+                    var orderNumber = $"MAN-{DateTime.Now:yyyyMMddHHmmss}";
+                    var sourcePlatform = "WorldCart";
+
+                    // 3. Create Order
+                    var order = new Order
+                    {
+                        UserId = adminId,
+                        OrderNumber = orderNumber,
+                        PaymentMethod = "System Credit",
+                        ShippingAddress = input.ShippingAddress,
+                        Country = input.Country,
+                        State = input.State,
+                        City = input.City,
+                        PostalCode = input.PostalCode,
+                        RecipientName = input.RecipientName,
+                        RecipientPhone = input.RecipientPhone,
+                        RecipientEmail = input.RecipientEmail,
+                        SubTotal = subTotal,
+                        ShippingCost = 0,
+                        Discount = 0,
+                        TotalAmount = totalAmount,
+                        Status = "Pending",
+                        PaymentStatus = "Paid (System Credit)",
+                        SourcePlatform = sourcePlatform,
+                        OrderItems = new List<OrderItem>()
+                    };
+
+                    await _orderRepository.InsertAsync(order);
+                    await CurrentUnitOfWork.SaveChangesAsync(); // Ensure ID is generated
+
+                    // 4. Create Order Item
+                    var orderItem = new OrderItem
+                    {
+                        OrderId = order.Id,
+                        StoreProductId = storeProduct.Id,
+                        ProductId = storeProduct.ProductId,
+                        Quantity = input.Quantity,
+                        PriceAtPurchase = price,
+                        OriginalPrice = storeProduct.Product?.ResellerMaxPrice ?? 0,
+                        DiscountPercentage = storeProduct.ResellerDiscountPercentage,
+                        ProductName = storeProduct.Product?.Name ?? "Unknown Product",
+                        StoreName = storeProduct.Store?.Name ?? "Unknown Store"
+                    };
+
+                    await _orderItemRepository.InsertAsync(orderItem);
+                    order.OrderItems.Add(orderItem);
+
+                    // 5. Create Supplier Order
+                    var supplierId = storeProduct.Product?.SupplierId.GetValueOrDefault() ?? 0;
+                    var supplierOrder = new SupplierOrder
+                    {
+                        SupplierId = supplierId,
+                        ResellerId = storeProduct.Store?.OwnerId ?? 0,
+                        OrderId = order.Id,
+                        ReferenceCode = $"SUP-MAN-{DateTime.Now:yyyyMMddHHmmss}",
+                        Status = "Purchased",
+                        TotalPurchaseAmount = ResolveSupplierPrice(storeProduct.Product) * input.Quantity,
+                        CustomerName = input.RecipientName,
+                        ShippingAddress = input.ShippingAddress,
+                        SourcePlatform = order.SourcePlatform,
+                        Items = new List<SupplierOrderItem>()
+                    };
+
+                    supplierOrder.Items.Add(new SupplierOrderItem
+                    {
+                        ProductId = storeProduct.ProductId,
+                        Quantity = input.Quantity,
+                        PurchasePrice = ResolveSupplierPrice(storeProduct.Product)
+                    });
+
+                    await _supplierOrderRepository.InsertAsync(supplierOrder);
+
+                    await _backgroundJobManager.EnqueueAsync<OrderEmailJob, OrderEmailJobArgs>(new OrderEmailJobArgs { OrderId = order.Id });
+
+                    if (order.Id == Guid.Empty)
+                    {
+                         Logger.Warn("[OrderAppService] CreateManualOrder: ID is still empty after insert/sync!");
+                    }
+
+                    Logger.Info($"[OrderAppService] CreateManualOrder: Success. OrderId={order.Id}, OrderNumber={order.OrderNumber}");
+                    return ObjectMapper.Map<OrderDto>(order);
+                }
+            }
+            catch (UserFriendlyException) { throw; }
+            catch (Exception ex)
+            {
+                Logger.Error($"[OrderAppService] CreateManualOrder: FAILED. Error={ex.Message}", ex);
+                throw new UserFriendlyException($"Manual Order Failed: {ex.Message}. Details: {ex.InnerException?.Message}");
+            }
+        }
+
         [AbpAuthorize]
         public virtual async Task<OrderDto> Get(Guid id)
+        {
+            return await GetOrderInternal(id, null);
+        }
+
+        [AbpAuthorize]
+        public virtual async Task<OrderDto> GetByOrderNumber(string orderNumber)
+        {
+            return await GetOrderInternal(null, orderNumber);
+        }
+
+        private async Task<OrderDto> GetOrderInternal(Guid? id, string orderNumber)
         {
             var userId = AbpSession.UserId;
             var isSeller = await PermissionChecker.IsGrantedAsync(PermissionNames.Pages_SmartStore_Seller);
@@ -314,10 +441,19 @@ namespace Elicom.Orders
 
             using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
             {
-                var order = await _orderRepository.GetAll()
+                IQueryable<Order> query = _orderRepository.GetAll()
                     .Include(o => o.OrderItems).ThenInclude(oi => oi.StoreProduct).ThenInclude(sp => sp.Product)
-                    .Include(o => o.OrderItems).ThenInclude(oi => oi.StoreProduct).ThenInclude(sp => sp.Store).ThenInclude(s => s.Owner)
-                    .FirstOrDefaultAsync(o => o.Id == id);
+                    .Include(o => o.OrderItems).ThenInclude(oi => oi.StoreProduct).ThenInclude(sp => sp.Store).ThenInclude(s => s.Owner);
+
+                Order order;
+                if (id.HasValue)
+                {
+                    order = await query.FirstOrDefaultAsync(o => o.Id == id.Value);
+                }
+                else
+                {
+                    order = await query.FirstOrDefaultAsync(o => o.OrderNumber == orderNumber);
+                }
 
                 if (order == null) return null;
 
@@ -757,6 +893,8 @@ namespace Elicom.Orders
 
         private static decimal ResolveSupplierPrice(Product product)
         {
+            if (product == null) return 0m;
+
             var resellerMaxPrice = Math.Max(0m, product.ResellerMaxPrice);
             var discountPercentage = Math.Clamp(product.DiscountPercentage, 0m, 100m);
             var discounted = resellerMaxPrice - (resellerMaxPrice * discountPercentage / 100m);
@@ -1318,21 +1456,6 @@ namespace Elicom.Orders
                 var totalAmount = sellerPay.Value;
                 var platformFee = Math.Round(totalAmount * 0.08m, 2);
                 var netSellerAmount = totalAmount - platformFee;
-
-                // Release seller net amount from escrow (admin wallet) to seller ledger.
-                var escrowReleased = await _walletManager.TryDebitAsync(
-                    PlatformAdminId,
-                    netSellerAmount,
-                    $"ESC-REL-{order.OrderNumber}-{sellerPay.Key}",
-                    $"Escrow release to seller {sellerPay.Key} for {order.OrderNumber}"
-                );
-
-                if (!escrowReleased)
-                {
-                    throw new UserFriendlyException(
-                        $"Escrow balance is insufficient to settle seller payout for order {order.OrderNumber}."
-                    );
-                }
 
                 // Credit Seller (92%) to SmartStore wallet.
                 await _smartStoreWalletManager.CreditAsync(

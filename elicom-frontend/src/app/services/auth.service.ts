@@ -332,7 +332,8 @@ export class AuthService {
     logout() {
         console.log('Logging out, clearing all storage');
         this.storage.clearAuthSession();
-        localStorage.removeItem('customerProfileId');
+        localStorage.clear();
+        sessionStorage.clear();
         this._currentUser.next(null);
         this._isAuthenticated.next(false);
         this.router.navigate(['/']);

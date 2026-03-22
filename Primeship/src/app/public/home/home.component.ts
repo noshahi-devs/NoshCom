@@ -127,52 +127,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   ];
 
-  categoryTabs: CategoryTab[] = [
-    {
-      title: 'baby accessories',
-      products: [
-        { name: 'Newborn Clothes Set', category: 'baby accessories', price: 32.4, image: 'assets/images/71NpF4JP7HL._AC_SY879_.jpg' },
-        { name: 'Baby Car Camera Full-Color', category: 'baby accessories', price: 34.2, image: 'assets/images/61+DG4Np+zL._AC_SX425_.jpg' },
-        { name: 'Infant Electric Swing', category: 'baby accessories', price: 42.73, image: 'assets/images/81jgetrp87L._AC_SX679_.jpg' },
-        { name: 'WonderFold Stroller Wagon', category: 'baby accessories', price: 37.7, image: 'assets/images/81ec6uY7eML._AC_SX425_.jpg' },
-        { name: 'Single Jogging Stroller', category: 'baby accessories', price: 27.3, image: 'assets/images/61BKAbqOL5L._AC_SX679_.jpg' },
-        { name: 'Portable Baby Monitor', category: 'baby accessories', price: 29.99, image: 'assets/images/81BrD6Y4ieL._AC_SX425_.jpg' },
-        { name: 'Cotton Swaddle Set', category: 'baby accessories', price: 18.99, image: 'assets/images/91NNZo3825L._AC_SX679_.jpg' },
-        { name: 'Bottle Sterilizer Pro', category: 'baby accessories', price: 54.0, image: 'assets/images/81eUg-ixCSL._AC_SX679_.jpg' }
-      ]
-    },
-    {
-      title: 'sports and outdoor',
-      products: [
-        { name: 'Foldable Camp Chair', category: 'sports and outdoor', price: 28.5, image: 'assets/images/91P2724BW3L._AC_SX679_.jpg' },
-        { name: 'Tactical Sports Backpack', category: 'sports and outdoor', price: 39.9, image: 'assets/images/61ZY6ZP0V6L._AC_SL1024_.jpg' },
-        { name: 'Outdoor Lantern Set', category: 'sports and outdoor', price: 22.4, image: 'assets/images/81OT48ieUNL._AC_SL1500_.jpg' },
-        { name: 'Running Hydration Vest', category: 'sports and outdoor', price: 26.75, image: 'assets/images/71J6P8L6ORL._AC_SX679_.jpg' },
-        { name: 'Portable Stove Kit', category: 'sports and outdoor', price: 31.6, image: 'assets/images/81eUg-ixCSL._AC_SX679_.jpg' },
-        { name: 'Thermal Flask Pro', category: 'sports and outdoor', price: 19.8, image: 'assets/images/61BKAbqOL5L._AC_SX679_.jpg' }
-      ]
-    },
-    {
-      title: 'Home Decor',
-      products: [
-        { name: 'Modern Table Lamp', category: 'Home Decor', price: 24.3, image: 'assets/images/81jgetrp87L._AC_SX679_.jpg' },
-        { name: 'Accent Wall Mirror', category: 'Home Decor', price: 39.0, image: 'assets/images/81OT48ieUNL._AC_SL1500_.jpg' },
-        { name: 'Minimal Vase Set', category: 'Home Decor', price: 18.2, image: 'assets/images/91NNZo3825L._AC_SX679_.jpg' },
-        { name: 'Nordic Cushion Pack', category: 'Home Decor', price: 22.1, image: 'assets/images/71NpF4JP7HL._AC_SY879_.jpg' },
-        { name: 'Decorative Shelf', category: 'Home Decor', price: 44.5, image: 'assets/images/61ZY6ZP0V6L._AC_SL1024_.jpg' }
-      ]
-    },
-    {
-      title: 'Beauty & Personal Care',
-      products: [
-        { name: 'Glow Facial Kit', category: 'Beauty & Personal Care', price: 19.9, image: 'assets/images/81BrD6Y4ieL._AC_SX425_.jpg' },
-        { name: 'Hair Dryer Ultra', category: 'Beauty & Personal Care', price: 45.0, image: 'assets/images/61+DG4Np+zL._AC_SX425_.jpg' },
-        { name: 'Portable Manicure Set', category: 'Beauty & Personal Care', price: 13.5, image: 'assets/images/91P2724BW3L._AC_SX679_.jpg' },
-        { name: 'Travel Makeup Bag', category: 'Beauty & Personal Care', price: 16.75, image: 'assets/images/71J6P8L6ORL._AC_SX679_.jpg' },
-        { name: 'Skin Care Bundle', category: 'Beauty & Personal Care', price: 27.9, image: 'assets/images/81eUg-ixCSL._AC_SX679_.jpg' }
-      ]
-    }
-  ];
+  categoryTabs: CategoryTab[] = [];
 
   topPromoBanners: PromoBanner[] = [
     {
@@ -216,144 +171,21 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   ];
 
-  miniCategories: MiniCategory[] = [
-    {
-      title: 'sports and outdoor',
-      slug: 'sports-outdoor',
-      items: [
-        { title: 'Plastic Cones and Rings Games', price: 5.12, image: 'assets/images/71pJrGjCY4L._AC_SY300_SX300_QL70_FMwebp_.webp' },
-        { title: 'Polarized Sunglasses-Men', price: 7.23, image: 'assets/images/71f5OAgbOhL._AC_SY300_SX300_QL70_FMwebp_.webp' },
-        { title: 'Badminton Set 4 Rackets', price: 12.23, image: 'assets/images/71J6P8L6ORL._AC_SX679_.jpg' },
-        { title: 'Premium Foam Glow Football', price: 6.12, image: 'assets/images/71KSGYZbdtL._AC_SY300_SX300_QL70_FMwebp_.webp' }
-      ]
-    },
-    {
-      title: 'Kitchen',
-      slug: 'kitchen',
-      items: [
-        { title: 'Amazon Basics File Tabs', price: 7.22, image: 'assets/images/71mDH9AeWL._AC_SY300_SX300_QL70_FMwebp_.webp' },
-        { title: 'Hanging Organizer File', price: 6.11, image: 'assets/images/71uCAB24cIL._AC_SY300_SX300_QL70_FMwebp_.webp' },
-        { title: 'Magnetic Clips 50 Pack', price: 9.32, image: 'assets/images/71wXw9c4UnL._AC_SY300_SX300_QL70_FMwebp_.webp' },
-        { title: 'Heavy Duty Shipping Tape', price: 7.88, image: 'assets/images/71pJrGjCY4L._AC_SY300_SX300_QL70_FMwebp_.webp' }
-      ]
-    },
-    {
-      title: 'Office Products',
-      slug: 'office-products',
-      items: [
-        { title: 'Under Sink Organizer 2 Tier', price: 7.22, image: 'assets/images/71yZ4mpVwoL._AC_SX679_.jpg' },
-        { title: 'Kitchen Pot Rack Mounted', price: 31.84, image: 'assets/images/71eefm+fvoL._AC_SX679_.jpg' },
-        { title: 'Kitchen Bakers Rack', price: 38.11, image: 'assets/images/71dY1KlUS3L._AC_SX679_.jpg' },
-        { title: 'Toddler Kitchen Stool Helper', price: 39.0, image: 'assets/images/81OT48ieUNL._AC_SL1500_.jpg' }
-      ]
-    }
-  ];
+  miniCategories: MiniCategory[] = [];
 
-  deals: DealItem[] = [
-    {
-      name: 'Smart Vacuum Cleaner',
-      category: 'Home Appliance',
-      price: 79.2,
-      oldPrice: 119.0,
-      discount: '-34%',
-      image: 'assets/images/81OT48ieUNL._AC_SL1500_.jpg'
-    },
-    {
-      name: 'Wireless Earbuds Pro',
-      category: 'Electronics',
-      price: 29.4,
-      oldPrice: 49.0,
-      discount: '-40%',
-      image: 'assets/images/61+DG4Np+zL._AC_SX425_.jpg'
-    },
-    {
-      name: 'Air Fryer XL',
-      category: 'Kitchen',
-      price: 64.0,
-      oldPrice: 89.0,
-      discount: '-28%',
-      image: 'assets/images/81jgetrp87L._AC_SX679_.jpg'
-    },
-    {
-      name: 'Fitness Smartwatch',
-      category: 'Wearables',
-      price: 55.5,
-      oldPrice: 79.0,
-      discount: '-30%',
-      image: 'assets/images/91NNZo3825L._AC_SX679_.jpg'
-    },
-    {
-      name: 'Portable Blender Mini',
-      category: 'Kitchen',
-      price: 24.9,
-      oldPrice: 35.0,
-      discount: '-29%',
-      image: 'assets/images/71J6P8L6ORL._AC_SX679_.jpg'
-    },
-    {
-      name: 'LED Desk Lamp',
-      category: 'Home Decor',
-      price: 18.5,
-      oldPrice: 29.0,
-      discount: '-36%',
-      image: 'assets/images/81jgetrp87L._AC_SX679_.jpg'
-    },
-    {
-      name: 'Noise Canceling Headset',
-      category: 'Electronics',
-      price: 69.0,
-      oldPrice: 95.0,
-      discount: '-27%',
-      image: 'assets/images/71eefm+fvoL._AC_SX679_.jpg'
-    },
-    {
-      name: 'Ergonomic Office Chair',
-      category: 'Office',
-      price: 129.0,
-      oldPrice: 179.0,
-      discount: '-28%',
-      image: 'assets/images/71dY1KlUS3L._AC_SX679_.jpg'
-    },
-    {
-      name: 'Smart Air Purifier',
-      category: 'Home Appliance',
-      price: 89.0,
-      oldPrice: 129.0,
-      discount: '-31%',
-      image: 'assets/images/81OT48ieUNL._AC_SL1500_.jpg'
-    },
-    {
-      name: 'Kitchen Knife Set',
-      category: 'Kitchen',
-      price: 39.0,
-      oldPrice: 59.0,
-      discount: '-34%',
-      image: 'assets/images/71fJxIg1yZL._AC_SX569_.jpg'
-    },
-    {
-      name: 'Fitness Resistance Bands',
-      category: 'Sports',
-      price: 16.9,
-      oldPrice: 24.0,
-      discount: '-30%',
-      image: 'assets/images/71kmszI1pfL._AC_SX679_.jpg'
-    },
-    {
-      name: 'Wireless Desk Charger',
-      category: 'Electronics',
-      price: 21.5,
-      oldPrice: 32.0,
-      discount: '-33%',
-      image: 'assets/images/71NsPQ4s+YL._AC_SX679_.jpg'
-    }
-  ];
+  dealsPrimary: DealItem[] = [];
+  dealsSecondary: DealItem[] = [];
+  dealsJustForYou: DealItem[] = [];
 
   dealTimer = { hours: 12, minutes: 45, seconds: 30 };
-  visibleDealsCount = 4;
-  readonly DEALS_PER_LOAD = 8;
-  visibleDealsSecondaryCount = 4;
-  visibleJustForYouCount = 4;
+  visibleDealsCount = 8;
+  readonly DEALS_PER_LOAD = 4;
+  visibleDealsSecondaryCount = 8;
+  visibleJustForYouCount = 12;
   readonly EXTRA_DEALS_PER_LOAD = 4;
+  isLoadingCategories = false;
+  isLoadingDeals = false;
+  isLoadingMiniCategories = false;
 
   private heroTimerId?: number;
   private dealTimerId?: number;
@@ -373,43 +205,66 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private loadBackendData(): void {
+    this.categoryTabs = [];
+    this.miniCategories = [];
+    this.dealsPrimary = [];
+    this.dealsSecondary = [];
+    this.dealsJustForYou = [];
+    this.activeTab = 0;
+    this.visibleDealsCount = 8;
+    this.visibleDealsSecondaryCount = 8;
+    this.visibleJustForYouCount = 12;
+    this.isLoadingCategories = true;
+    this.isLoadingDeals = true;
+    this.isLoadingMiniCategories = true;
+
     // 1. Load Categories for Tabs
-    this.publicService.getCategories().subscribe(cats => {
-      if (cats && cats.length > 0) {
+    this.publicService.getCategories().subscribe({
+      next: (cats) => {
+        this.isLoadingCategories = false;
+        if (cats && cats.length > 0) {
         // Create tabs for the first 3-5 categories
         this.categoryTabs = [];
+        this.activeTab = 0;
         const topCats = cats.slice(0, 5);
 
         topCats.forEach(cat => {
           this.publicService.getProductsByCategory(cat.slug).subscribe(products => {
             if (products && products.length > 0) {
+              const mapped = products.map(p => {
+                const originalPrice = p.resellerMaxPrice ?? (p as any).ResellerMaxPrice ?? p.price ?? 0;
+                const discount = p.discountPercentage ?? (p as any).DiscountPercentage ?? 0;
+                const salePrice = discount > 0 ? (originalPrice - (originalPrice * discount / 100)) : originalPrice;
+
+                return {
+                  name: p.name,
+                  category: cat.name,
+                  price: salePrice > 0 ? salePrice : (originalPrice > 0 ? originalPrice : 0),
+                  image: this.getParsedImage(p.images),
+                  id: p.id,
+                  slug: p.slug
+                };
+              });
               this.categoryTabs.push({
                 title: cat.name,
-                products: products.map(p => {
-                  const originalPrice = p.resellerMaxPrice ?? (p as any).ResellerMaxPrice ?? p.price ?? 0;
-                  const discount = p.discountPercentage ?? (p as any).DiscountPercentage ?? 0;
-                  const salePrice = discount > 0 ? (originalPrice - (originalPrice * discount / 100)) : originalPrice;
-
-                  return {
-                    name: p.name,
-                    category: cat.name,
-                    price: salePrice > 0 ? salePrice : (originalPrice > 0 ? originalPrice : 0),
-                    image: this.getParsedImage(p.images),
-                    id: p.id,
-                    slug: p.slug
-                  };
-                })
+                products: this.shuffle(mapped)
               });
             }
           });
         });
       }
+    },
+      error: () => {
+        this.isLoadingCategories = false;
+      }
     });
 
     // 2. Load Real Deals for Carousels
-    this.publicService.getProducts('', 0, 12).subscribe(products => {
-      if (products && products.length > 0) {
-        this.deals = products.map(p => {
+    this.publicService.getProducts('', 0, 120).subscribe({
+      next: (products) => {
+        this.isLoadingDeals = false;
+        if (products && products.length > 0) {
+          const mapped = products.map(p => {
           const originalPrice = p.resellerMaxPrice ?? (p as any).ResellerMaxPrice ?? p.price ?? 0;
           const discountPct = p.discountPercentage ?? (p as any).DiscountPercentage ?? 0;
           const salePrice = discountPct > 0 ? (originalPrice - (originalPrice * discountPct / 100)) : originalPrice;
@@ -417,10 +272,11 @@ export class HomeComponent implements OnInit, OnDestroy {
           const displayPrice = salePrice > 0 ? salePrice : (originalPrice > 0 ? originalPrice : 0);
           const oldPrice = discountPct > 0 ? originalPrice : (displayPrice * 1.25); // Show old price if there's a discount
           const discountLabel = discountPct > 0 ? `-${Math.round(discountPct)}%` : (oldPrice > displayPrice ? 'SALE' : 'HOT');
+          const categoryLabel = p.categoryName || (p as any).category || 'Featured';
 
           return {
             name: p.name,
-            category: 'Featured',
+            category: categoryLabel,
             price: displayPrice,
             oldPrice: oldPrice,
             discount: discountLabel,
@@ -429,35 +285,52 @@ export class HomeComponent implements OnInit, OnDestroy {
             slug: p.slug
           };
         });
+          const mixed = this.mixByKey(mapped, deal => deal.category || 'Featured');
+          const [primary, secondary, justForYou] = this.splitDeals(mixed, 3);
+          this.dealsPrimary = primary;
+          this.dealsSecondary = secondary;
+          this.dealsJustForYou = justForYou;
+        }
+      },
+      error: () => {
+        this.isLoadingDeals = false;
       }
     });
 
     // 3. Load Mini Categories
-    this.publicService.getCategories().subscribe(cats => {
-      const miniCats = cats.slice(5, 8); // Choose different categories
-      if (miniCats.length > 0) {
-        this.miniCategories = [];
-        miniCats.forEach(cat => {
-          this.publicService.getProductsByCategory(cat.slug).subscribe(items => {
-            this.miniCategories.push({
-              title: cat.name,
-              slug: cat.slug,
-              items: items.slice(0, 4).map(it => {
-                const originalPrice = it.resellerMaxPrice ?? (it as any).ResellerMaxPrice ?? it.price ?? 0;
-                const discount = it.discountPercentage ?? (it as any).DiscountPercentage ?? 0;
-                const salePrice = discount > 0 ? (originalPrice - (originalPrice * discount / 100)) : originalPrice;
+    this.publicService.getCategories().subscribe({
+      next: (cats) => {
+        const miniCats = this.shuffle(cats).slice(0, 3); // Random 3 categories each load
+        if (miniCats.length > 0) {
+          this.miniCategories = [];
+          miniCats.forEach(cat => {
+            this.publicService.getProductsByCategory(cat.slug).subscribe(items => {
+              this.miniCategories.push({
+                title: cat.name,
+                slug: cat.slug,
+                items: this.shuffle(items).slice(0, 4).map(it => {
+                  const originalPrice = it.resellerMaxPrice ?? (it as any).ResellerMaxPrice ?? it.price ?? 0;
+                  const discount = it.discountPercentage ?? (it as any).DiscountPercentage ?? 0;
+                  const salePrice = discount > 0 ? (originalPrice - (originalPrice * discount / 100)) : originalPrice;
 
-                return {
-                  title: it.name,
-                  price: salePrice > 0 ? salePrice : (originalPrice > 0 ? originalPrice : 0),
-                  image: this.getParsedImage(it.images),
-                  id: it.id,
-                  slug: it.slug
-                };
-              })
+                  return {
+                    title: it.name,
+                    price: salePrice > 0 ? salePrice : (originalPrice > 0 ? originalPrice : 0),
+                    image: this.getParsedImage(it.images),
+                    id: it.id,
+                    slug: it.slug
+                  };
+                })
+              });
+              this.isLoadingMiniCategories = false;
             });
           });
-        });
+        } else {
+          this.isLoadingMiniCategories = false;
+        }
+      },
+      error: () => {
+        this.isLoadingMiniCategories = false;
       }
     });
   }
@@ -486,6 +359,73 @@ export class HomeComponent implements OnInit, OnDestroy {
     return result || placeholder;
   }
 
+  private shuffle<T>(items: T[]): T[] {
+    const copy = [...items];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  private mixByKey<T>(items: T[], getKey: (item: T) => string): T[] {
+    if (!items || items.length <= 1) return items || [];
+
+    const buckets = new Map<string, T[]>();
+    for (const item of items) {
+      const key = (getKey(item) || 'unknown').toString();
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key)!.push(item);
+    }
+
+    const shuffledBuckets = this.shuffle(
+      Array.from(buckets.values()).map(bucket => this.shuffle(bucket))
+    );
+
+    const mixed: T[] = [];
+    let added = true;
+    while (added) {
+      added = false;
+      for (const bucket of shuffledBuckets) {
+        if (bucket.length) {
+          mixed.push(bucket.shift() as T);
+          added = true;
+        }
+      }
+    }
+
+    return mixed;
+  }
+
+  private splitDeals(items: DealItem[], groupCount: number): DealItem[][] {
+    const groups: DealItem[][] = Array.from({ length: groupCount }, () => []);
+    if (!items || items.length === 0) return groups;
+
+    const seen = new Set<string>();
+    const keyOf = (deal: DealItem) => (deal.id || deal.slug || `${deal.name}-${deal.price}`).toString();
+
+    let index = 0;
+    for (const deal of items) {
+      const key = keyOf(deal);
+      if (seen.has(key)) continue;
+      groups[index % groupCount].push(deal);
+      seen.add(key);
+      index++;
+    }
+
+    // Best-effort fallback if data is too small: ensure every group has something
+    if (groups.some(group => group.length === 0)) {
+      let fillIndex = 0;
+      for (const deal of items) {
+        groups[fillIndex % groupCount].push(deal);
+        fillIndex++;
+        if (!groups.some(group => group.length === 0)) break;
+      }
+    }
+
+    return groups;
+  }
+
   setDefaultImage(event: Event): void {
     (event.target as HTMLImageElement).src = 'assets/images/placeholder.jpg';
   }
@@ -504,27 +444,27 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   get visibleDeals(): DealItem[] {
-    return this.deals.slice(0, this.visibleDealsCount);
+    return this.dealsPrimary.slice(0, this.visibleDealsCount);
   }
 
   get canLoadMoreDeals(): boolean {
-    return this.visibleDealsCount < this.deals.length;
+    return this.visibleDealsCount < this.dealsPrimary.length;
   }
 
   get visibleDealsSecondary(): DealItem[] {
-    return this.deals.slice(0, this.visibleDealsSecondaryCount);
+    return this.dealsSecondary.slice(0, this.visibleDealsSecondaryCount);
   }
 
   get canLoadMoreDealsSecondary(): boolean {
-    return this.visibleDealsSecondaryCount < this.deals.length;
+    return this.visibleDealsSecondaryCount < this.dealsSecondary.length;
   }
 
   get visibleJustForYou(): DealItem[] {
-    return this.deals.slice(0, this.visibleJustForYouCount);
+    return this.dealsJustForYou.slice(0, this.visibleJustForYouCount);
   }
 
   get canLoadMoreJustForYou(): boolean {
-    return this.visibleJustForYouCount < this.deals.length;
+    return this.visibleJustForYouCount < this.dealsJustForYou.length;
   }
 
   selectTab(index: number): void {

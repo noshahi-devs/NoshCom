@@ -56,6 +56,23 @@
             <div class="row">
               <div class="col-md-6 mb-3">
                 <div class="form-group">
+                  <label for="phoneNumber">Phone Number</label>
+                  <input type="tel" id="phoneNumber" class="form-control" formControlName="phoneNumber"
+                    placeholder="Phone Number">
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label for="country">Country</label>
+                  <input type="text" id="country" class="form-control" formControlName="country"
+                    placeholder="Country">
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
                   <label for="address1">Address 1</label>
                   <input type="text" id="address1" class="form-control" formControlName="address1"
                     placeholder="Address 1">
@@ -109,6 +126,8 @@
               <p class="mb-1">{{ checkoutForm.get('firstName')?.value }} {{ checkoutForm.get('lastName')?.value }}
               </p>
               <p class="mb-0 text-muted">{{ checkoutForm.get('email')?.value }}</p>
+              <p class="mb-1" *ngIf="checkoutForm.get('phoneNumber')?.value">{{ checkoutForm.get('phoneNumber')?.value }}</p>
+              <p class="mb-1" *ngIf="checkoutForm.get('country')?.value">{{ checkoutForm.get('country')?.value }}</p>
               <p class="mb-1">{{ checkoutForm.get('address1')?.value }}</p>
               <p class="mb-1" *ngIf="checkoutForm.get('address2')?.value">{{ checkoutForm.get('address2')?.value }}</p>
               <p class="mb-1">{{ checkoutForm.get('city')?.value }}, {{ checkoutForm.get('zipCode')?.value }}</p>

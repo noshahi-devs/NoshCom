@@ -1,4 +1,4 @@
-﻿using Abp.Application.Services;
+using Abp.Application.Services;
 using Abp.Application.Services.Dto;
 using Elicom.StoreProducts.Dto;
 using System;
@@ -12,6 +12,7 @@ namespace Elicom.StoreProducts
         Task Create(CreateStoreProductDto input);
         Task MapProductToStore(MapProductDto input);
         Task<ListResultDto<StoreProductDto>> GetByStore(Guid storeId);
+        Task<PagedResultDto<StoreProductDto>> GetPagedByStore(GetStoreProductsPagedInput input);
         Task Update(UpdateStoreProductDto input);
         Task Delete(Guid id);
     }

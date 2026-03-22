@@ -131,21 +131,38 @@
 
 .p-input {
     width: 100%;
-    padding: 14px 18px;
-    border-radius: 15px;
-    border: 2px solid #e2e8f0;
-    background: #f8fafc;
-    font-weight: 650;
+    padding: 10px 18px; /* Reduced height */
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    background: linear-gradient(to bottom, #ffffff, #f1f5f9);
+    font-weight: 700;
     color: #1e293b;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        inset 0 2px 4px rgba(0,0,0,0.05),
+        0 2px 0 #cbd5e1;
+    appearance: none;
+    cursor: pointer;
 
     &:focus {
         outline: none;
         border-color: #6366f1;
         background: #ffffff;
-        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.05);
-        transform: translateY(-2px);
+        box-shadow: 
+            inset 0 2px 4px rgba(99, 102, 241, 0.05),
+            0 5px 15px rgba(99, 102, 241, 0.1),
+            0 2px 0 #4f46e5;
+        transform: translateY(-1px);
     }
+}
+
+/* Specific styling for select to ensure arrow and height are consistent */
+select.p-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 18px;
+    padding-right: 45px;
 }
 
 /* ─────────────── INSTRUCTION BOXES ─────────────── */

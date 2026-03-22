@@ -6,6 +6,7 @@ import { ProductService } from '../../../services/product.service';
 import { StoreProductService } from '../../../services/store-product.service';
 import { StoreService } from '../../../services/store.service';
 import { AlertService } from '../../../services/alert.service';
+import Swal from 'sweetalert2';
 
 @Component({
     selector: 'app-add-product-mapping',
@@ -61,6 +62,11 @@ export class AddProductMappingComponent implements OnInit {
             }
             if (state.product.stockQuantity) {
                 this.maxOrderQty = state.product.stockQuantity;
+            }
+            if (state.product.handlingTime) {
+                this.handlingTime = state.product.handlingTime;
+            } else {
+                this.handlingTime = 1; // Default if not found
             }
         }
     }
@@ -222,27 +228,7 @@ export class AddProductMappingComponent implements OnInit {
     }
 
     private resolveSupplierPriceValue(product: any): number {
-        const supplierPrice = Number(product?.supplierPrice || 0);
-        const resellerMaxPrice = Number(product?.resellerMaxPrice || 0);
-        const discountPercentage = Math.max(0, Math.min(100, Number(product?.discountPercentage || 0)));
-
-        if (resellerMaxPrice > 0) {
-            const discountedFromMax = Number(
-                (resellerMaxPrice - (resellerMaxPrice * discountPercentage / 100)).toFixed(2)
-            );
-
-            if (discountPercentage > 0) {
-                return Math.max(0, discountedFromMax);
-            }
-
-            if (supplierPrice > 0 && supplierPrice <= resellerMaxPrice) {
-                return Number(supplierPrice.toFixed(2));
-            }
-
-            return Number(resellerMaxPrice.toFixed(2));
-        }
-
-        return Number(Math.max(0, supplierPrice).toFixed(2));
+        return Number(product?.supplierPrice || 0);
     }
 
     private getCurrentSupplierPrice(): number {
@@ -260,13 +246,13 @@ export class AddProductMappingComponent implements OnInit {
         this.selectedProduct = normalizedProduct;
         this.selectedImage = (normalizedProduct.images && normalizedProduct.images.length > 0) ? normalizedProduct.images[0] : '';
 
-        // Calculate Min and Max Allowed Prices
+        // Calculate Min and Max Allowed Prices based on supplier price
         // Min = Supplier Price + 40% (SupplierPrice * 1.40)
-        // Max = Supplier Price + 167% (SupplierPrice * 2.67) 
+        // Max = Supplier Price + 167% (SupplierPrice * 2.67)
         const minAllowedPrice = Number((resolvedSupplierPrice * 1.40).toFixed(2));
         const maxAllowedPrice = Number((resolvedSupplierPrice * 2.67).toFixed(2));
 
-        // Default retail price is supplier price if not already set (e.g. not from existing mapping)
+        // Default retail price is min allowed if not already set (e.g. not from existing mapping)
         if (!this.currentMappingId) {
             this.retailPrice = minAllowedPrice;
         }
@@ -314,11 +300,22 @@ export class AddProductMappingComponent implements OnInit {
             return;
         }
 
+        if (this.handlingTime > 4 || this.handlingTime <= 0) {
+            this.alert.error('Handling Time must be between 1 and 4 days.');
+            return;
+        }
+
+        if (this.maxOrderQty > 15 || this.maxOrderQty <= 0) {
+            this.alert.error('Max Order Quantity must be between 1 and 15 units.');
+            return;
+        }
+
         const mapping: any = {
             storeId: this.currentStore.id,
             productId: this.product.id,
             resellerPrice: this.retailPrice,
             stockQuantity: this.maxOrderQty,
+            handlingTime: this.handlingTime,
             sellerNote: this.sellerNote,
             status: true
         };
@@ -343,9 +340,62 @@ export class AddProductMappingComponent implements OnInit {
                     this.router.navigate(['/seller/listings']);
                 },
                 error: (err) => {
-                    this.alert.error(err?.error?.error?.message || 'Failed to map product.');
+                    const errorMsg = err?.error?.error?.message || 'Failed to map product.';
+                    if (errorMsg.toLowerCase().includes('already mapped')) {
+                        Swal.fire({
+                            customClass: {
+                                popup: 'sui-swal-popup',
+                                confirmButton: 'sui-btn-primary',
+                                cancelButton: 'sui-btn-outline'
+                            },
+                            buttonsStyling: false,
+                            title: 'ALREADY LISTED',
+                            text: 'This product is already listed in your store. Would you like to update the existing listing with these new details?',
+                            icon: 'info',
+                            showCancelButton: true,
+                            confirmButtonText: 'Update',
+                            cancelButtonText: 'Cancel'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                this.updateExistingMapping(mapping);
+                            }
+                        });
+                    } else {
+                        this.alert.error(errorMsg);
+                    }
                 }
             });
         }
+    }
+
+    updateExistingMapping(mapping: any) {
+        this.alert.loading('FETCHING EXISTING LISTING...');
+        this.storeProductService.getByStore(this.currentStore.id).subscribe({
+            next: (res: any) => {
+                const existing = res.result?.items?.find((item: any) => item.productId === mapping.productId) 
+                              || res.result?.find((item: any) => item.productId === mapping.productId)
+                              || res?.items?.find((item: any) => item.productId === mapping.productId)
+                              || res?.find((item: any) => item.productId === mapping.productId);
+                              
+                if (existing) {
+                    mapping.id = existing.id;
+                    this.alert.loading('UPDATING LISTING...');
+                    this.storeProductService.update(mapping).subscribe({
+                        next: () => {
+                            this.alert.success('Listing updated successfully!');
+                            this.router.navigate(['/seller/listings']);
+                        },
+                        error: (err) => {
+                            this.alert.error(err?.error?.error?.message || 'Failed to update listing.');
+                        }
+                    });
+                } else {
+                    this.alert.error('Failed to find existing listing to update.');
+                }
+            },
+            error: () => {
+                this.alert.error('Failed to fetch existing listing.');
+            }
+        });
     }
 }

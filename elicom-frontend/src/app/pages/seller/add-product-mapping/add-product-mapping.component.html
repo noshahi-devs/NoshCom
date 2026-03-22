@@ -34,7 +34,7 @@
                 </span>
                 <span class="category-meta">
                     <span class="category-name">{{ cat.name }}</span>
-                    <span class="category-count">{{ cat.count }} product{{ cat.count === 1 ? '' : 's' }}</span>
+                    <!-- <span class="category-count">{{ cat.count }} product{{ cat.count === 1 ? '' : 's' }}</span> -->
                 </span>
                 <span class="category-arrow"><i class="fas fa-arrow-right"></i></span>
             </button>
@@ -96,8 +96,7 @@
                         <div class="pill"><i class="fas fa-copyright"></i> Brand: {{product.brandName || 'Generic'}}
                         </div>
                     </div>
-                    <div class="price"><i class="fas fa-tag"></i> Supplier Price: ${{product.supplierPriceResolved ??
-                        product.supplierPrice}}</div>
+                    <div class="price"><i class="fas fa-tag"></i> Supplier Price: ${{product.supplierPrice}}</div>
                     <div class="product-description mt-4 text-muted border-top pt-3" *ngIf="product.description">
                         <h6 class="fw-bold mb-2">Product Description</h6>
                         <div class="desc-tooltip-wrap" tabindex="0">
@@ -127,7 +126,7 @@
                         <input type="number" [value]="minAllowedPrice" readonly placeholder="0.00">
                     </div>
                     <div class="small mt-1 text-muted" style="color:red !important">
-                        At least 40% above supplier price.
+                        <!-- At least 40% above supplier price. -->
                     </div>
                 </div>
 
@@ -138,7 +137,7 @@
                         <input type="number" [value]="maxAllowedPrice" readonly placeholder="0.00">
                     </div>
                     <div class="small mt-1 text-muted" style="color:red !important">
-                        Up to 167% of supplier price.
+                        <!-- Up to 167% of supplier price. -->
                     </div>
                 </div>
 
@@ -162,17 +161,37 @@
 
                 <div class="form-group">
                     <label class="fw-bold mb-2">Handling Time</label>
-                    <div class="input-box custom-input-wrapper">
+                    <div class="input-box custom-input-wrapper position-relative"
+                        [class.border-danger]="handlingTime > 4 || handlingTime <= 0">
                         <span class="input-prefix text-muted fw-bold">Days</span>
-                        <input type="number" [(ngModel)]="handlingTime" min="1" max="30" [disabled]="isViewOnly">
+                        <select class="form-select border-0 bg-transparent shadow-none" [(ngModel)]="handlingTime" [disabled]="isViewOnly" style="padding-right: 30px; cursor: pointer;">
+                            <option [ngValue]="1">Day 1</option>
+                            <option [ngValue]="2">Day 2</option>
+                            <option [ngValue]="3">Day 3</option>
+                            <option [ngValue]="4">Day 4</option>
+                        </select>
+                        <i class="fas fa-chevron-down position-absolute text-muted" style="right: 18px; pointer-events: none;"></i>
+                    </div>
+                    <div *ngIf="handlingTime > 4" class="text-danger small mt-1">
+                        <i class="fas fa-exclamation-triangle"></i> Handling Time cannot be more than 4 days.
+                    </div>
+                    <div *ngIf="handlingTime <= 0" class="text-danger small mt-1">
+                        <i class="fas fa-exclamation-triangle"></i> Handling Time must be at least 1 day.
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="fw-bold mb-2">Max Order Quantity</label>
-                    <div class="input-box custom-input-wrapper">
+                    <div class="input-box custom-input-wrapper"
+                        [class.border-danger]="maxOrderQty > 15 || maxOrderQty <= 0">
                         <span class="input-prefix text-muted fw-bold">Units</span>
-                        <input type="number" [(ngModel)]="maxOrderQty" min="1" max="100" [disabled]="isViewOnly">
+                        <input type="number" [(ngModel)]="maxOrderQty" min="1" max="15" [disabled]="isViewOnly">
+                    </div>
+                    <div *ngIf="maxOrderQty > 15" class="text-danger small mt-1">
+                        <i class="fas fa-exclamation-triangle"></i> Max Order Quantity cannot be more than 15 units.
+                    </div>
+                    <div *ngIf="maxOrderQty <= 0" class="text-danger small mt-1">
+                        <i class="fas fa-exclamation-triangle"></i> Max Order Quantity must be at least 1 unit.
                     </div>
                 </div>
             </div>

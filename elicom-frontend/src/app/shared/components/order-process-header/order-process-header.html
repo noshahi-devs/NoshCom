@@ -1,6 +1,9 @@
 <header class="order-header">
   <div class="header-left">
-    <span class="logo">{{ brandName }}</span>
+    <div class="logo-container">
+      <img src="/assets/images/world-favicon.svg" alt="World Cart Us Logo" class="order-logo-img">
+      <span class="logo">{{ brandName }}</span>
+    </div>
 
     <div class="location" *ngIf="showLocation">
       <i class="fas fa-map-marker-alt"></i>

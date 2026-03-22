@@ -7,10 +7,12 @@ import { Router } from '@angular/router';
 import { AppPageLoaderService } from '../../../../services/app-page-loader.service';
 import { ChangeDetectorRef } from '@angular/core';
 
+import { DateRangePickerComponent, DateRangeResult } from '../../../../shared/date-range-picker/date-range-picker.component';
+
 @Component({
   selector: 'app-sales-report',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DatePipe, FormsModule],
+  imports: [CommonModule, CurrencyPipe, DatePipe, FormsModule, DateRangePickerComponent],
   templateUrl: './sales-report.component.html',
   styleUrls: ['./sales-report.component.scss']
 })
@@ -24,6 +26,7 @@ export class SalesReportComponent implements OnInit {
   stats?: SellerDashboardStats;
   isLoading = false; // Local flag mainly for internal states if needed, but not for UI overlay
   currentStore: any;
+  currentDateRange: DateRangeResult = { label: 'Maximum Data', id: 'max' };
 
   ngOnInit() {
     this.loadData();
@@ -33,8 +36,15 @@ export class SalesReportComponent implements OnInit {
     this.storeService.getMyStoreCached().subscribe((store: any) => {
       this.currentStore = store?.result || store;
       const storeId = this.currentStore?.id || '';
+
+      // Sync Date Range Label if it's the default 'max'
+      if (this.currentStore?.createdAt && this.currentDateRange.id === 'max') {
+        const date = new Date(this.currentStore.createdAt);
+        const formatted = new Intl.DateTimeFormat('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }).format(date);
+        this.currentDateRange.label = `Joined: ${formatted}`;
+      }
       
-      this.dashboardService.getStats(storeId).subscribe({
+      this.dashboardService.getStats(storeId, this.currentDateRange.startDate, this.currentDateRange.endDate).subscribe({
         next: (res: SellerDashboardStats) => {
           this.stats = res;
           this.loaderService.markDataArrived();
@@ -47,6 +57,11 @@ export class SalesReportComponent implements OnInit {
         }
       });
     });
+  }
+
+  onRangeChange(range: DateRangeResult) {
+    this.currentDateRange = range;
+    this.loadData();
   }
 
   goToOrderDetails(orderId: string) {

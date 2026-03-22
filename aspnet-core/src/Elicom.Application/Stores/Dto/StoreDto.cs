@@ -1,4 +1,4 @@
-﻿using Abp.Application.Services.Dto;
+using Abp.Application.Services.Dto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +27,7 @@ namespace Elicom.Stores.Dto
         public decimal WalletBalance { get; set; }
         public int TotalOrders { get; set; }
         public int ShippedOrders { get; set; }
+        public int TotalProducts { get; set; }
         public StoreKycDto Kyc { get; set; }
     }
 

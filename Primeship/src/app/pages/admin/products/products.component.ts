@@ -1,7 +1,8 @@
 import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
 import { ProductService, ProductDto, CreateProductDto, UpdateProductDto } from '../../../core/services/product.service';
+import { ProductImportService, ProductImportResult } from '../../../core/services/product-import.service';
 import { CategoryService, CategoryDto } from '../../../core/services/category.service';
 import { StorageService } from '../../../core/services/storage.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -43,6 +44,9 @@ export class ProductsComponent implements OnInit {
   searchTerm = '';
   selectedStatusFilter: boolean | null = null;
   selectedCategoryFilter: string | null = null;
+  latestCreatedProductId: string | null = null;
+  latestCreatedProductSku: string | null = null;
+  latestCreatedProductName: string | null = null;
 
   // Image management
   imageUrls: string[] = [];
@@ -51,6 +55,14 @@ export class ProductsComponent implements OnInit {
   // Loading state
   isLoading = false;
   isCategoriesLoading = false;
+  isImportingProduct = false;
+  importUrl = '';
+  importWarning = '';
+  importPriceIsFinal = false;
+  private readonly defaultImportDiscount = 5;
+  private readonly pkrPerUsd = 280;
+  private readonly amazonImportDivisor = 1690;
+  private readonly importPkrHeuristicThreshold = 10000;
 
   // Template compatibility properties
   imagePreviewUrls: string[] = []; // For template compatibility
@@ -61,6 +73,7 @@ export class ProductsComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     public productService: ProductService,
+    private productImportService: ProductImportService,
     private categoryService: CategoryService,
     private storageService: StorageService,
     private toastService: ToastService,
@@ -76,7 +89,7 @@ export class ProductsComponent implements OnInit {
 
   private initForms(): void {
     this.addProductForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
+      name: ['', [Validators.required, Validators.minLength(3), this.productNameValidator()]],
       sku: [{ value: '', disabled: true }, [Validators.required]],
       categoryId: ['', [Validators.required]],
       brandName: ['', [Validators.required]],
@@ -89,7 +102,7 @@ export class ProductsComponent implements OnInit {
 
     this.editProductForm = this.fb.group({
       id: [''],
-      name: ['', [Validators.required, Validators.minLength(3)]],
+      name: ['', [Validators.required, Validators.minLength(3), this.productNameValidator()]],
       sku: [{ value: '', disabled: true }, [Validators.required]],
       categoryId: ['', [Validators.required]],
       brandName: ['', [Validators.required]],
@@ -139,6 +152,89 @@ export class ProductsComponent implements OnInit {
     );
   }
 
+  get isSkuGenerating(): boolean {
+    if (!this.addProductModalVisible) return false;
+    const raw = this.addProductForm.getRawValue();
+    const name = (raw.name ?? '').toString().trim();
+    const categoryId = raw.categoryId;
+    const sku = (raw.sku ?? '').toString().trim();
+    if (!name || !categoryId) return true;
+    return !sku;
+  }
+
+  private productNameValidator(excludeId?: string): ValidatorFn {
+    return (control: AbstractControl) => {
+      const rawValue = (control.value ?? '').toString().trim();
+      if (!rawValue) return null;
+
+      const normalized = this.normalizeProductName(rawValue);
+      const hasDuplicate = this.products.some(product => {
+        if (excludeId && String(product.id) === String(excludeId)) {
+          return false;
+        }
+        return this.normalizeProductName(product.name) === normalized;
+      });
+
+      return hasDuplicate ? { duplicate: true } : null;
+    };
+  }
+
+  private normalizeProductName(value: string): string {
+    return value.toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+
+  private sortProducts(products: ProductDto[], pinnedId?: string, pinnedSku?: string, pinnedName?: string): ProductDto[] {
+    const toTime = (product: ProductDto): number => {
+      const keys = [
+        'updatedAt',
+        'createdAt',
+        'lastModificationTime',
+        'lastModifiedAt',
+        'lastModifiedTime',
+        'creationTime',
+        'createdOn',
+        'createdAt',
+        'UpdatedAt',
+        'CreatedAt',
+        'CreationTime'
+      ];
+
+      for (const key of keys) {
+        const raw = (product as any)?.[key];
+        if (!raw) continue;
+        const parsed = new Date(raw).getTime();
+        if (!Number.isNaN(parsed)) return parsed;
+      }
+      return 0;
+    };
+
+    return [...products].sort((a, b) => {
+      if (pinnedId || pinnedSku || pinnedName) {
+        const aPinned =
+          (pinnedId && String(a.id) === String(pinnedId)) ||
+          (pinnedSku && String(a.sku) === String(pinnedSku)) ||
+          (pinnedName && this.normalizeProductName(a.name) === this.normalizeProductName(String(pinnedName)));
+        const bPinned =
+          (pinnedId && String(b.id) === String(pinnedId)) ||
+          (pinnedSku && String(b.sku) === String(pinnedSku)) ||
+          (pinnedName && this.normalizeProductName(b.name) === this.normalizeProductName(String(pinnedName)));
+        if (aPinned !== bPinned) return aPinned ? -1 : 1;
+      }
+
+      const bTime = toTime(b);
+      const aTime = toTime(a);
+      if (bTime !== aTime) return bTime - aTime;
+
+      const bId = Number(b.id);
+      const aId = Number(a.id);
+      if (!Number.isNaN(bId) && !Number.isNaN(aId)) {
+        return bId - aId;
+      }
+
+      return String(b.id ?? '').localeCompare(String(a.id ?? ''), undefined, { numeric: true });
+    });
+  }
+
   // Load Categories from API
   loadCategories(): void {
     console.log('ðŸ“¥ Loading categories...');
@@ -180,12 +276,15 @@ export class ProductsComponent implements OnInit {
           featured: false, // Default
           metaTitle: p.name, // Default
           metaDescription: p.description, // Default
-          createdAt: new Date() // Default
+          createdAt: (p as any).creationTime ? new Date((p as any).creationTime)
+            : (p as any).CreatedAt ? new Date((p as any).CreatedAt)
+              : (p as any).createdAt ? new Date((p as any).createdAt)
+                : undefined
         }));
 
         // De-duplicate by id/sku/name to avoid multiple identical rows
         const seen = new Set<string>();
-        this.products = normalized.filter(p => {
+        const deduped = normalized.filter(p => {
           const key = (p.id || p.sku || p.name || '').toString();
           if (!key) return true;
           if (seen.has(key)) return false;
@@ -193,8 +292,19 @@ export class ProductsComponent implements OnInit {
           return true;
         });
 
+        this.products = this.sortProducts(
+          deduped,
+          this.latestCreatedProductId || undefined,
+          this.latestCreatedProductSku || undefined,
+          this.latestCreatedProductName || undefined
+        );
         this.filterTable();
         this.isLoading = false;
+        this.addProductForm.get('name')?.updateValueAndValidity({ emitEvent: false });
+        this.editProductForm.get('name')?.updateValueAndValidity({ emitEvent: false });
+        this.latestCreatedProductId = null;
+        this.latestCreatedProductSku = null;
+        this.latestCreatedProductName = null;
         this.cdr.detectChanges();
       },
       error: (error) => {
@@ -221,10 +331,176 @@ export class ProductsComponent implements OnInit {
     this.imageUrls = [];
     this.imagePreviewUrls = [];
     this.currentImageUrl = '';
+    this.importUrl = '';
+    this.importWarning = '';
+    this.importPriceIsFinal = false;
+    this.addProductForm.get('name')?.updateValueAndValidity({ emitEvent: false });
     this.addProductModalVisible = true;
     this.cdr.detectChanges();
   }
 
+  fetchProductFromUrl(): void {
+    const url = this.importUrl?.trim();
+    if (!url) {
+      this.toastService.showError('Please paste a product URL first');
+      return;
+    }
+
+    this.isImportingProduct = true;
+    this.importWarning = '';
+    this.importPriceIsFinal = false;
+    this.cdr.detectChanges();
+
+    this.productImportService.fetchProductByUrl(url).subscribe({
+      next: (result) => {
+        this.applyImportedProduct(result);
+        this.isImportingProduct = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('âŒ Product import failed:', error);
+        this.toastService.showError('Failed to fetch product details from URL');
+        this.isImportingProduct = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private applyImportedProduct(result: ProductImportResult): void {
+    if (!result) return;
+
+    if (result.warning) {
+      this.importWarning = result.warning;
+    }
+
+    const patch: any = {};
+    if (result.name) patch.name = this.sanitizeImportedName(result.name);
+    if (result.brand) patch.brandName = result.brand;
+    if (result.description) patch.description = result.description;
+    const rawAmazonPrice = this.resolveImportPrice(result);
+    const amazonPrice = this.normalizeImportPrice(rawAmazonPrice, result.currency, result.sourceUrl);
+    if (amazonPrice > 0) {
+      const pricing = this.computeImportPricing(amazonPrice, this.defaultImportDiscount);
+      patch.price = pricing.price;
+      patch.discountPercentage = pricing.discountPercentage;
+      this.importPriceIsFinal = true;
+    }
+
+    const categoryId = this.findCategoryIdByHint(result.categoryHint);
+    if (categoryId) {
+      patch.categoryId = categoryId;
+    }
+
+    this.addProductForm.patchValue(patch);
+
+    if (result.images && result.images.length) {
+      this.imageUrls = [...result.images];
+      this.imagePreviewUrls = [...result.images];
+    }
+
+    this.updateGeneratedFields();
+
+    if (result.name || result.description) {
+      this.toastService.showSuccess('Product details imported. Please review before saving.');
+    }
+  }
+
+  private findCategoryIdByHint(hint?: string): string | null {
+    if (!hint) return null;
+    const normalizedHint = hint.toLowerCase().trim();
+    if (!normalizedHint) return null;
+
+    const exact = this.categories.find(c => c.name.toLowerCase().trim() === normalizedHint);
+    if (exact) return exact.id;
+
+    const partial = this.categories.find(c =>
+      c.name.toLowerCase().includes(normalizedHint) || normalizedHint.includes(c.name.toLowerCase())
+    );
+    return partial ? partial.id : null;
+  }
+
+  private computeImportPricing(amazonPrice: number, discountPercentage: number): { price: number; discountPercentage: number } {
+    // Pricing logic: take 65% of Amazon price, then apply discount percentage
+    const basePrice = amazonPrice * 0.65;
+    const normalizedDiscount = Math.max(0, Math.min(100, Number(discountPercentage) || 0));
+    const finalPrice = basePrice * (1 - (normalizedDiscount / 100));
+    return {
+      price: this.roundCurrency(finalPrice),
+      discountPercentage: normalizedDiscount
+    };
+  }
+
+  private normalizeImportPrice(price: number, currency?: string, sourceUrl?: string): number {
+    const normalized = Number(price) || 0;
+    if (normalized <= 0) return 0;
+
+    const currencyCode = (currency || '').toString().trim().toUpperCase();
+    if (!currencyCode || currencyCode === 'USD' || currencyCode === '$' || currencyCode === 'US$') {
+      if (currencyCode) return normalized;
+      const isAmazon = this.isAmazonUrl(sourceUrl);
+      if (isAmazon && normalized >= this.importPkrHeuristicThreshold) {
+        return this.roundCurrency(normalized / this.amazonImportDivisor);
+      }
+      return normalized;
+    }
+
+    if (currencyCode === 'PKR' || currencyCode === 'RS' || currencyCode === 'RS.') {
+      return this.roundCurrency(normalized / this.pkrPerUsd);
+    }
+
+    return normalized;
+  }
+
+  private isAmazonUrl(sourceUrl?: string): boolean {
+    if (!sourceUrl) return false;
+    return sourceUrl.toLowerCase().includes('amazon.');
+  }
+
+  private parseImportedPrice(value: unknown): number {
+    if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+    if (typeof value === 'string') {
+      const match = value.replace(/,/g, '').match(/(\d+(?:\.\d{1,2})?)/);
+      if (!match) return 0;
+      const parsed = parseFloat(match[1]);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+    if (value && typeof value === 'object') {
+      const obj = value as any;
+      const candidates = [obj.amount, obj.value, obj.price, obj.Price, obj.listPrice, obj.ListPrice];
+      for (const candidate of candidates) {
+        const parsed = this.parseImportedPrice(candidate);
+        if (parsed > 0) return parsed;
+      }
+    }
+    return 0;
+  }
+  private resolveImportPrice(result: ProductImportResult): number {
+    const candidateValues: unknown[] = [
+      result.price,
+      result.listPrice,
+      (result as any)?.currentPrice,
+      (result as any)?.CurrentPrice,
+      (result as any)?.salePrice,
+      (result as any)?.SalePrice
+    ];
+
+    const parsed = candidateValues
+      .map(value => this.parseImportedPrice(value as any))
+      .filter(value => value > 0);
+
+    if (!parsed.length) return 0;
+
+    const withinRange = parsed.filter(value => value <= 10000);
+    return Math.min(...(withinRange.length ? withinRange : parsed));
+  }
+  private sanitizeImportedName(name: string): string {
+    const trimmed = name.trim();
+    return trimmed
+      .replace(/^Amazon\.?com\s*[:\-–|]\s*/i, '')
+      .replace(/^Amazon\.?com\s*/i, '')
+      .replace(/^Amazon\s*[:\-–|]\s*/i, '')
+      .trim();
+  }
   closeAddProductModal(): void {
     this.addProductModalVisible = false;
     this.cdr.detectChanges();
@@ -251,6 +527,13 @@ export class ProductsComponent implements OnInit {
       stock: product.stockQuantity,
       status: product.status
     });
+
+    this.editProductForm.get('name')?.setValidators([
+      Validators.required,
+      Validators.minLength(3),
+      this.productNameValidator(product.id)
+    ]);
+    this.editProductForm.get('name')?.updateValueAndValidity({ emitEvent: false });
 
     this.editProductModalVisible = true;
     this.cdr.detectChanges();
@@ -392,6 +675,13 @@ export class ProductsComponent implements OnInit {
       return;
     }
 
+    const pricing = this.importPriceIsFinal
+      ? this.resolveImportedPricingForSave(formValue.price, formValue.discountPercentage)
+      : {
+        resellerMaxPrice: this.roundCurrency(Number(formValue.price) || 0),
+        supplierPrice: this.calculateSupplierPrice(formValue.price, formValue.discountPercentage)
+      };
+
     const input: CreateProductDto = {
       tenantId: 2, // Explicitly set Prime Ship Tenant ID
       name: formValue.name,
@@ -400,8 +690,8 @@ export class ProductsComponent implements OnInit {
       description: formValue.description,
       brandName: formValue.brandName,
       images: this.productService.stringifyImages(this.imageUrls),
-      supplierPrice: this.calculateSupplierPrice(formValue.price, formValue.discountPercentage),
-      resellerMaxPrice: formValue.price,
+      supplierPrice: pricing.supplierPrice,
+      resellerMaxPrice: pricing.resellerMaxPrice,
       discountPercentage: formValue.discountPercentage,
       stockQuantity: formValue.stock,
       status: formValue.status,
@@ -415,6 +705,10 @@ export class ProductsComponent implements OnInit {
         console.log('âœ… Product created:', result);
         this.toastService.showSuccess('Product added successfully');
         this.closeAddProductModal();
+        this.currentPage = 1;
+        this.latestCreatedProductId = result?.id ? String(result.id) : null;
+        this.latestCreatedProductSku = result?.sku ? String(result.sku) : formValue?.sku ? String(formValue.sku) : null;
+        this.latestCreatedProductName = result?.name ? String(result.name) : formValue?.name ? String(formValue.name) : null;
         this.loadProducts();
       },
       error: (error) => {
@@ -438,6 +732,14 @@ export class ProductsComponent implements OnInit {
       return;
     }
 
+    const pricing = this.importPriceIsFinal
+      ? this.resolveImportedPricingForSave(formValue.price, formValue.discountPercentage)
+      : {
+        resellerMaxPrice: this.roundCurrency(Number(formValue.price) || 0),
+        supplierPrice: this.calculateSupplierPrice(formValue.price, formValue.discountPercentage)
+      };
+
+    
     const input: UpdateProductDto = {
       id: formValue.id,
       tenantId: 2, // Explicitly set Prime Ship Tenant ID
@@ -447,8 +749,8 @@ export class ProductsComponent implements OnInit {
       description: formValue.description,
       brandName: formValue.brandName,
       images: this.productService.stringifyImages(this.imageUrls),
-      supplierPrice: this.calculateSupplierPrice(formValue.price, formValue.discountPercentage),
-      resellerMaxPrice: formValue.price,
+      supplierPrice: pricing.supplierPrice,
+      resellerMaxPrice: pricing.resellerMaxPrice,
       discountPercentage: formValue.discountPercentage,
       stockQuantity: formValue.stock,
       status: formValue.status,
@@ -493,7 +795,20 @@ export class ProductsComponent implements OnInit {
       currency: 'USD'
     }).format(price || 0);
   }
+  private resolveImportedPricingForSave(price: number, discountPercentage: number): { resellerMaxPrice: number; supplierPrice: number } {
+    const normalizedPrice = Number(price) || 0;
+    const normalizedDiscount = Math.max(0, Math.min(99, Number(discountPercentage) || 0));
+    const basePrice = normalizedDiscount > 0 ? (normalizedPrice / (1 - normalizedDiscount / 100)) : normalizedPrice;
+    return {
+      resellerMaxPrice: this.roundCurrency(basePrice),
+      supplierPrice: this.roundCurrency(normalizedPrice)
+    };
+  }
 
+  private roundCurrency(value: number): number {
+    if (!Number.isFinite(value)) return 0;
+    return Math.round((value + Number.EPSILON) * 100) / 100;
+  }
   private calculateSupplierPrice(price: number, discountPercentage: number): number {
     const normalizedPrice = Number(price) || 0;
     const normalizedDiscount = Math.max(0, Math.min(100, Number(discountPercentage) || 0));
@@ -657,3 +972,15 @@ export class ProductsComponent implements OnInit {
     return product.brandName || (product as any).BrandName || 'Generic';
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+

@@ -10,5 +10,7 @@ namespace Elicom.StoreProducts.Dto
         public decimal ResellerPrice { get; set; }
         public int StockQuantity { get; set; } = 10; // Default stock
         public bool Status { get; set; } = true;
+        public int HandlingTime { get; set; }
+        public string SellerNote { get; set; }
     }
 }

@@ -2264,6 +2264,9 @@ namespace Elicom.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("AdminWithdrawRemarks")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("Balance")
                         .HasColumnType("decimal(18,2)");
 
@@ -2298,6 +2301,12 @@ namespace Elicom.Migrations
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("WithdrawAllowedUntil")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("WithdrawLimit")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -2356,10 +2365,10 @@ namespace Elicom.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsAdminActive")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsActive")
+                    b.Property<bool>("IsAdminActive")
                         .HasColumnType("bit");
 
                     b.Property<string>("LongDescription")
@@ -2449,6 +2458,9 @@ namespace Elicom.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("HandlingTime")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uniqueidentifier");
 
@@ -2457,6 +2469,9 @@ namespace Elicom.Migrations
 
                     b.Property<decimal>("ResellerPrice")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("SellerNote")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Status")
                         .HasColumnType("bit");

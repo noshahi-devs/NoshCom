@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, shareReplay, tap, map, catchError, switchMap } from 'rxjs';
+import { Observable, of, shareReplay, tap, map, catchError, switchMap, BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface StoreDto {
@@ -21,6 +21,7 @@ export interface StoreDto {
     walletBalance: number;
     totalOrders: number;
     shippedOrders: number;
+    totalProducts: number;
     supportEmail?: string;
     instagram?: string;
     whatsapp?: string;
@@ -71,6 +72,8 @@ export class StoreService {
     private apiUrl = `${environment.apiUrl}/api/services/app/Store`;
     private myStore$?: Observable<any>;
     private readonly cacheKey = 'myStore';
+    private currentStoreSubject = new BehaviorSubject<any>(this.getCachedStore());
+    public currentStore$ = this.currentStoreSubject.asObservable();
 
     getStore(id: string): Observable<any> {
         return this.http.get(`${this.apiUrl}/Get`, { params: { id } });
@@ -78,6 +81,10 @@ export class StoreService {
 
     getAllStores(): Observable<any> {
         return this.http.get(`${this.apiUrl}/GetAll`);
+    }
+
+    getStoreLookup(): Observable<any> {
+        return this.http.get(`${this.apiUrl}/GetStoreLookup`);
     }
 
     getMyStore(): Observable<any> {
@@ -115,6 +122,7 @@ export class StoreService {
             tap((store) => {
                 if (store) {
                     localStorage.setItem(this.cacheKey, JSON.stringify(store));
+                    this.currentStoreSubject.next(store);
                 }
             }),
             shareReplay({ bufferSize: 1, refCount: false })
@@ -195,6 +203,7 @@ export class StoreService {
                 const store = res?.result || res;
                 if (store?.id) {
                     localStorage.setItem(this.cacheKey, JSON.stringify(store));
+                    this.currentStoreSubject.next(store);
                     this.myStore$ = of(store).pipe(
                         shareReplay({ bufferSize: 1, refCount: false })
                     );

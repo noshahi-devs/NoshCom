@@ -1,4 +1,4 @@
-﻿using Abp.Application.Services;
+using Abp.Application.Services;
 using Elicom.Orders.Dto;
 using System;
 using System.Collections.Generic;
@@ -21,6 +21,7 @@ namespace Elicom.Orders
         Task<OrderDto> Deliver(VerifyOrderDto input);
         Task<OrderDto> Cancel(VerifyOrderDto input);
         Task<OrderDto> Reject(VerifyOrderDto input);
+        Task<OrderDto> CreateManualOrder(CreateManualOrderDto input);
         Task<List<CarrierDto>> GetCarriers();
     }
 }

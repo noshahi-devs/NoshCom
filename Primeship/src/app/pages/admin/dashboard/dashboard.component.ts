@@ -2,6 +2,9 @@
 import { CommonModule } from '@angular/common';
 import { OrderService } from '../../../core/services/order.service';
 import { Router } from '@angular/router';
+import { CategoryService } from '../../../core/services/category.service';
+import { ProductService } from '../../../core/services/product.service';
+import { catchError, finalize, of, timeout, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,6 +16,11 @@ import { Router } from '@angular/router';
 export class DashboardComponent implements OnInit {
   isLoadingStats = true;
   isLoadingOrders = true;
+  private statsLoad = {
+    orders: true,
+    categories: true,
+    products: true
+  };
 
   statsCards = [
     {
@@ -22,7 +30,8 @@ export class DashboardComponent implements OnInit {
       trend: 'up',
       icon: '💰',
       color: 'success',
-      gradient: 'linear-gradient(135deg, #f85606 0%, #ff8c42 100%)'
+      gradient: 'linear-gradient(135deg, #f85606 0%, #ff8c42 100%)',
+      route: '/admin/finance'
     },
     {
       title: 'Total Orders',
@@ -31,7 +40,8 @@ export class DashboardComponent implements OnInit {
       trend: 'up',
       icon: '🧾',
       color: 'info',
-      gradient: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)'
+      gradient: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+      route: '/admin/orders'
     },
     {
       title: 'Active Sellers',
@@ -40,7 +50,8 @@ export class DashboardComponent implements OnInit {
       trend: 'up',
       icon: '🏪',
       color: 'warning',
-      gradient: 'linear-gradient(135deg, #f85606 0%, #b43d04 100%)'
+      gradient: 'linear-gradient(135deg, #f85606 0%, #b43d04 100%)',
+      route: '/admin/sellers'
     },
     {
       title: 'Delivered Orders',
@@ -49,8 +60,29 @@ export class DashboardComponent implements OnInit {
       trend: 'up',
       icon: '📦',
       color: 'success',
-      gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
+      gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+      route: '/admin/orders'
     },
+    {
+      title: 'Total Categories',
+      value: '0',
+      change: '+0%',
+      trend: 'up',
+      icon: '🗂️',
+      color: 'info',
+      gradient: 'linear-gradient(135deg, #0f172a 0%, #1f2937 100%)',
+      route: '/admin/categories'
+    },
+    {
+      title: 'Total Products',
+      value: '0',
+      change: '+0%',
+      trend: 'up',
+      icon: '🛍️',
+      color: 'info',
+      gradient: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
+      route: '/admin/products'
+    }
   ];
 
   recentOrders: any[] = [];
@@ -69,17 +101,22 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private orderService: OrderService,
+    private categoryService: CategoryService,
+    private productService: ProductService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     const cached = this.hydrateFromCache();
-    // If cache existed, show it immediately; still refresh from network
-    this.isLoadingStats = !cached;
+    // Always keep stats loader until fresh values arrive
+    this.isLoadingStats = true;
     this.isLoadingOrders = !cached;
+    this.statsLoad = { orders: true, categories: true, products: true };
     this.cdr.detectChanges();
     this.loadAdminStats();
+    this.loadCategoryCount();
+    this.loadProductCount();
   }
 
   loadAdminStats(): void {
@@ -87,21 +124,22 @@ export class DashboardComponent implements OnInit {
     if (this.isLoadingStats || this.isLoadingOrders) {
       this.cdr.detectChanges();
     }
-    this.orderService.getAllOrders().subscribe({
-      next: (res) => {
-        this.processAdminStats(res);
-        this.recentOrders = res.slice(0, 5);
-        this.persistCache(res);
-        this.isLoadingStats = false;
-        this.isLoadingOrders = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
+    this.orderService.getAllOrders().pipe(
+      timeout(8000),
+      catchError(err => {
         console.error('Failed to load admin stats', err);
-        this.isLoadingStats = false;
+        return of([] as any[]);
+      }),
+      finalize(() => {
         this.isLoadingOrders = false;
+        this.statsLoad.orders = false;
+        this.updateStatsLoading();
         this.cdr.detectChanges();
-      }
+      })
+    ).subscribe(res => {
+      this.processAdminStats(res || []);
+      this.recentOrders = (res || []).slice(0, 5);
+      this.persistCache(res || []);
     });
   }
 
@@ -148,10 +186,10 @@ export class DashboardComponent implements OnInit {
       else if (['cancelled'].includes(s)) cancelledCount++;
     });
 
-    this.statsCards[0].value = '$' + totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    this.statsCards[1].value = orderCount.toString();
-    this.statsCards[2].value = uniqueSellers.size.toString();
-    this.statsCards[3].value = deliveredCount.toString();
+    this.updateCardValue('Total Revenue', '$' + totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    this.updateCardValue('Total Orders', orderCount.toString());
+    this.updateCardValue('Active Sellers', uniqueSellers.size.toString());
+    this.updateCardValue('Delivered Orders', deliveredCount.toString());
 
     this.statusOverview = {
       pending: pendingCount,
@@ -168,6 +206,53 @@ export class DashboardComponent implements OnInit {
     this.statsCards = [...this.statsCards];
   }
 
+  private loadCategoryCount(): void {
+    this.categoryService.getAll().pipe(
+      timeout(8000),
+      catchError(err => {
+        console.error('Failed to load categories count', err);
+        return of([]);
+      }),
+      finalize(() => {
+        this.statsLoad.categories = false;
+        this.updateStatsLoading();
+        this.cdr.detectChanges();
+      })
+    ).subscribe(cats => {
+      this.updateCardValue('Total Categories', (cats?.length || 0).toString());
+    });
+  }
+
+  private loadProductCount(): void {
+    this.productService.getAll().pipe(
+      timeout(8000),
+      catchError(err => {
+        console.error('Failed to load products count', err);
+        return of(null as any[] | null);
+      }),
+      switchMap(products => {
+        const count = products?.length ?? 0;
+        if (count > 0) {
+          return of(count);
+        }
+        return this.productService.getMarketplaceProductCount().pipe(
+          timeout(8000),
+          catchError(err => {
+            console.error('Failed to load marketplace product count', err);
+            return of(0);
+          })
+        );
+      }),
+      finalize(() => {
+        this.statsLoad.products = false;
+        this.updateStatsLoading();
+        this.cdr.detectChanges();
+      })
+    ).subscribe(count => {
+      this.updateCardValue('Total Products', (count || 0).toString());
+    });
+  }
+
   private getItems(order: any): any[] {
     return order?.items || order?.orderItems || [];
   }
@@ -180,7 +265,6 @@ export class DashboardComponent implements OnInit {
       if (!Array.isArray(orders)) return false;
       this.processAdminStats(orders);
       this.recentOrders = orders.slice(0, 5);
-      this.isLoadingStats = false;
       this.isLoadingOrders = false;
       return true;
     } catch {
@@ -194,6 +278,17 @@ export class DashboardComponent implements OnInit {
     } catch {
       // ignore storage failures
     }
+  }
+
+  private updateStatsLoading(): void {
+    this.isLoadingStats = this.statsLoad.orders || this.statsLoad.categories || this.statsLoad.products;
+  }
+
+  private updateCardValue(title: string, value: string): void {
+    const card = this.statsCards.find(c => c.title === title);
+    if (!card) return;
+    card.value = value;
+    this.statsCards = [...this.statsCards];
   }
 
   getStatusColor(status: string): string {
@@ -219,5 +314,11 @@ export class DashboardComponent implements OnInit {
 
   onQuickAction(route: string) {
     this.router.navigate([route]);
+  }
+
+  onStatCardClick(card: any) {
+    if (card?.route) {
+      this.router.navigate([card.route]);
+    }
   }
 }

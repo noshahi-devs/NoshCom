@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace Elicom.Wholesale
@@ -60,6 +61,7 @@ namespace Elicom.Wholesale
             // 1. Calculate Total Amount based on Wholesale Prices
             decimal totalAmount = 0;
             var orderItems = new List<SupplierOrderItem>();
+            string primaryProductName = null;
 
             foreach (var item in input.Items)
             {
@@ -76,6 +78,10 @@ namespace Elicom.Wholesale
 
                 var supplierPrice = ResolveSupplierPrice(product);
                 totalAmount += supplierPrice * item.Quantity;
+                if (string.IsNullOrWhiteSpace(primaryProductName))
+                {
+                    primaryProductName = product.Name;
+                }
 
                 orderItems.Add(new SupplierOrderItem
                 {
@@ -93,6 +99,10 @@ namespace Elicom.Wholesale
 
             // Generate a consistent ReferenceCode
             var refCode = $"WHOLE-{DateTime.UtcNow:yyyyMMddHHmmss}";
+            var trackingCode = NormalizeTrackingCode(
+                await GenerateUniqueTrackingCodeAsync(primaryProductName),
+                primaryProductName
+            );
 
             // 2. Pay Upfront (Deduct from EasyFinora Card if method is finora)
             if (paymentMethod == "finora")
@@ -133,6 +143,7 @@ namespace Elicom.Wholesale
                 ShippingAddress = input.ShippingAddress,
                 CustomerName = input.CustomerName,
                 SourcePlatform = "PrimeShip",
+                TrackingCode = trackingCode,
                 Items = orderItems
             };
 
@@ -199,6 +210,114 @@ namespace Elicom.Wholesale
             }
 
             return Math.Round(Math.Max(product.SupplierPrice, 0m), 2, MidpointRounding.AwayFromZero);
+        }
+
+        private async Task<string> GenerateUniqueTrackingCodeAsync(string productName)
+        {
+            var initials = ExtractTrackingInitials(productName);
+
+            using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
+            {
+                for (var attempt = 0; attempt < 30; attempt++)
+                {
+                    var candidate = $"UK-{initials}{GenerateTenDigitNumericPart()}";
+                    var exists = await _supplierOrderRepository.GetAll()
+                        .IgnoreQueryFilters()
+                        .AnyAsync(x => x.TrackingCode == candidate);
+
+                    if (!exists)
+                    {
+                        return candidate;
+                    }
+                }
+
+                while (true)
+                {
+                    var fallbackDigits = (DateTime.UtcNow.Ticks % 10000000000L).ToString("D10");
+                    var fallback = $"UK-{initials}{fallbackDigits}";
+                    var exists = await _supplierOrderRepository.GetAll()
+                        .IgnoreQueryFilters()
+                        .AnyAsync(x => x.TrackingCode == fallback);
+                    if (!exists)
+                    {
+                        return fallback;
+                    }
+                }
+            }
+        }
+
+        private static string ExtractTrackingInitials(string productName)
+        {
+            var letters = new string((productName ?? string.Empty).Where(char.IsLetter).ToArray()).ToUpperInvariant();
+            if (letters.Length == 0)
+            {
+                return "XX";
+            }
+
+            var first = letters[0];
+            var last = letters[letters.Length - 1];
+            return $"{first}{last}";
+        }
+
+        private static string GenerateTenDigitNumericPart()
+        {
+            var timePart = DateTime.UtcNow.ToString("HHmmss");
+            var randomPart = RandomNumberGenerator.GetInt32(0, 10000).ToString("D4");
+            return $"{timePart}{randomPart}";
+        }
+
+        private static string NormalizeTrackingCode(string trackingCode, string productName)
+        {
+            var value = (trackingCode ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+
+            if (IsTrackingCodeInNewFormat(value))
+            {
+                return value;
+            }
+
+            var initials = ExtractTrackingInitials(productName);
+            var digits = new string(value.Where(char.IsDigit).ToArray());
+            if (digits.Length == 0)
+            {
+                digits = GenerateTenDigitNumericPart();
+            }
+            else if (digits.Length < 10)
+            {
+                digits = digits.PadLeft(10, '0');
+            }
+            else if (digits.Length > 10)
+            {
+                digits = digits.Substring(digits.Length - 10, 10);
+            }
+
+            return $"UK-{initials}{digits}";
+        }
+
+        private static bool IsTrackingCodeInNewFormat(string trackingCode)
+        {
+            if (string.IsNullOrWhiteSpace(trackingCode))
+            {
+                return false;
+            }
+
+            if (!trackingCode.StartsWith("UK-", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (trackingCode.Length != 15)
+            {
+                return false;
+            }
+
+            var initials = trackingCode.Substring(3, 2);
+            var digits = trackingCode.Substring(5, 10);
+
+            return initials.All(char.IsLetter) && digits.All(char.IsDigit);
         }
     }
 }

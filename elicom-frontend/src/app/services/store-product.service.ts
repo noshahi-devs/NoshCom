@@ -22,6 +22,10 @@ export class StoreProductService {
         return this.http.get(`${this.apiUrl}/GetByStore`, { params: { storeId } });
     }
 
+    getPagedByStore(input: any): Observable<any> {
+        return this.http.get(`${this.apiUrl}/GetPagedByStore`, { params: input });
+    }
+
     update(input: any): Observable<any> {
         return this.http.put(`${this.apiUrl}/Update`, input);
     }

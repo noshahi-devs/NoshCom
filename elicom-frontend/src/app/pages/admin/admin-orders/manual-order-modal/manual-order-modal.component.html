@@ -1,0 +1,138 @@
+<div class="modal-backdrop animate__animated animate__fadeIn" (click)="close.emit()">
+    <div class="modal-card animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+        <!-- Header -->
+        <div class="modal-header-3d">
+            <div class="header-icon">
+                <i class="fas fa-magic"></i>
+            </div>
+            <div class="header-text">
+                <h3>Create Manual Order</h3>
+                <p>System Credit Transaction (No Real Funds Deducted)</p>
+            </div>
+            <button class="close-btn" (click)="close.emit()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="modal-body custom-scrollbar">
+            <form [formGroup]="orderForm" (ngSubmit)="onSubmit()">
+                <!-- Store & Product Selection -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-store"></i>
+                        <span>Store & Product</span>
+                        <div class="loader-inline" *ngIf="loading">
+                             <div class="spinner-3d"></div>
+                             <span>Loading Data...</span>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label-3d">Select Store</label>
+                            <select formControlName="storeId" class="form-select-3d" (change)="onStoreChange()">
+                                <option value="" disabled>Choose a Store...</option>
+                                <option *ngFor="let store of stores" [value]="store.id">{{ store.name }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label-3d">Select Product</label>
+                            <select formControlName="storeProductId" class="form-select-3d" [disabled]="!products.length || loading" (change)="onProductChange()">
+                                <option value="" disabled>{{ loading ? 'Fetching Products...' : (orderForm.get('storeId')?.value ? (products.length ? 'Choose a Product...' : 'No Products Found') : 'Select Store First') }}</option>
+                                <option *ngFor="let p of products" [value]="p.id">{{ (p.productName | slice:0:70) + (p.productName.length > 70 ? '...' : '') }}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recipient Info -->
+                <div class="form-section">
+                    <div class="section-title d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-user-tag"></i>
+                            <span>Recipient Information</span>
+                        </div>
+                        <button type="button" class="btn-randomize" (click)="randomizeBuyer()">
+                            <i class="fas fa-dice"></i> Randomize
+                        </button>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label-3d">Full Name</label>
+                            <input type="text" formControlName="recipientName" class="form-control-3d" placeholder="e.g. John Doe">
+                        </div>
+                        <!-- <div class="col-md-4">
+                            <label class="form-label-3d">Email Address</label>
+                            <input type="email" formControlName="recipientEmail" class="form-control-3d" placeholder="john@example.com">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label-3d">Phone Number</label>
+                            <input type="text" formControlName="recipientPhone" class="form-control-3d" placeholder="+1 ...">
+                        </div> -->
+                    </div>
+                </div>
+
+                <!-- Shipping Address -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Shipping Address</span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label-3d">Street Address</label>
+                            <input type="text" formControlName="shippingAddress" class="form-control-3d" placeholder="123 Street Name">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label-3d">City</label>
+                            <input type="text" formControlName="city" class="form-control-3d">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label-3d">State/Region</label>
+                            <input type="text" formControlName="state" class="form-control-3d">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label-3d">Postal Code</label>
+                            <input type="text" formControlName="postalCode" class="form-control-3d">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Extras -->
+                <div class="form-section last">
+                    <div class="section-title">
+                        <i class="fas fa-cog"></i>
+                        <span>Order Options</span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label-3d">Override Price (Optional)</label>
+                            <div class="input-group-3d">
+                                <span class="prefix">$</span>
+                                <input type="number" formControlName="overridePrice" class="form-control-3d" placeholder="Use product price if empty">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label-3d">Quantity</label>
+                            <input type="number" formControlName="quantity" class="form-control-3d">
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer-3d">
+            <button type="button" class="btn-cancel-3d" (click)="close.emit()">
+                Cancel
+            </button>
+            <button type="button" class="btn-create-3d" [disabled]="orderForm.invalid || submitting" (click)="onSubmit()">
+                <span *ngIf="!submitting">
+                    <i class="fas fa-paper-plane me-2"></i> Place Manual Order
+                </span>
+                <span *ngIf="submitting">
+                    <i class="fas fa-spinner fa-spin me-2"></i> Processing...
+                </span>
+            </button>
+        </div>
+    </div>
+</div>

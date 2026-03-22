@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,6 +16,8 @@ namespace Elicom.StoreProducts.Dto
 
         public int StockQuantity { get; set; }
         public bool Status { get; set; }
+        public int HandlingTime { get; set; }
+        public string SellerNote { get; set; }
     }
 
 }

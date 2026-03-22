@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Elicom.Entities;
 using Elicom.StoreProducts.Dto;
 
@@ -12,7 +12,9 @@ public class StoreProductMapProfile : Profile
             .ForMember(d => d.ProductImage,
                 o => o.MapFrom(s => s.Product.Images))
             .ForMember(d => d.BrandName,
-                o => o.MapFrom(s => s.Product.BrandName));
+                o => o.MapFrom(s => s.Product.BrandName))
+            .ForMember(d => d.SupplierPrice,
+                o => o.MapFrom(s => s.Product.SupplierPrice));
 
         CreateMap<CreateStoreProductDto, StoreProduct>();
         CreateMap<UpdateStoreProductDto, StoreProduct>();

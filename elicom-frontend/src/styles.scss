@@ -22,7 +22,6 @@
 html,
 body {
     overflow-x: hidden;
-    width: 100vw;
     scroll-behavior: smooth;
 }
 
@@ -422,7 +421,7 @@ h6,
 }
 
 .wc-global-loader-card h3 {
-    margin: 20px 0 8px;
+    margin: 15px 0 8px;
     font-size: clamp(28px, 2.3vw, 38px);
     font-weight: 900;
     line-height: 1.05;
@@ -432,6 +431,8 @@ h6,
     background-clip: text;
     color: transparent;
 }
+
+
 
 .wc-global-loader-card p {
     margin: 0;
@@ -469,14 +470,13 @@ h6,
     animation: wc-spin-reverse 1.3s linear infinite;
 }
 
-.wc-loader-core {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #ffffff, #6366f1);
-    box-shadow:
-        0 0 0 8px rgba(99, 102, 241, 0.12),
-        0 0 24px rgba(99, 102, 241, 0.35);
+.wc-loader-center-logo {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 0 15px rgba(79, 70, 229, 0.2));
+    position: relative;
+    z-index: 10;
     animation: wc-pulse 1.4s ease-in-out infinite;
 }
 

@@ -1,14 +1,10 @@
 <div class="app-container">
 
   <!-- 3D Sidebar -->
-  <div class="sidebar-3d" id="sidebar">
+  <div class="sidebar-3d" id="sidebar" [class.collapsed]="sidebarCollapsed" [class.show]="mobileSidebarOpen">
     <div class="sidebar-header">
       <div class="logo-section">
-        <img src="/logo.png" alt="Prime Ship Logo" class="logo-sidebar-img">
-        <div class="brand-info">
-          <h3>Prime Ship</h3>
-          <p>{{ isAdminView ? 'Admin Port' : 'Seller Port' }}</p>
-        </div>
+        <img src="/assets/images/Prime-Ship-UK-header.svg" alt="Prime Ship Logo" class="logo-sidebar-img">
       </div>
     </div>
 
@@ -94,7 +90,7 @@
   </div>
 
   <!-- Main Content Area -->
-  <div class="main-content">
+  <div class="main-content" [class.sidebar-collapsed]="sidebarCollapsed">
 
     <!-- 3D Header -->
     <header class="header-3d">
@@ -104,6 +100,7 @@
             class="sidebar-toggle-btn"
             [class.seller-toggle-btn]="isSellerView"
             id="sidebarToggle"
+            (click)="onSidebarToggle()"
             [attr.aria-label]="isSellerView ? 'Toggle seller sidebar' : 'Toggle admin sidebar'">
             <i class="fas fa-bars toggle-icon"></i>
           </button>

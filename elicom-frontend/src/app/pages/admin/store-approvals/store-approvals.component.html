@@ -283,11 +283,16 @@
                 </div>
             </div>
             <div class="modal-footer-custom">
-                <button type="button" *ngIf="!selectedStore.status" (click)="approveStore(selectedStore)"
-                    class="btn btn-success px-4 me-2">Approve</button>
+                <button type="button" *ngIf="!selectedStore.status" [disabled]="isApproving"
+                    (click)="approveStore(selectedStore)" class="btn btn-success px-4 me-2">
+                    <i class="fas fa-spinner fa-spin me-2" *ngIf="isApproving"></i>
+                    Approve
+                </button>
                 <button type="button" *ngIf="selectedStore.kyc && !selectedStore.kyc.status"
-                    (click)="verifyKYC(selectedStore)" class="btn btn-outline-info px-4 me-2" title="Verify KYC">
-                    <i class="fas fa-check-square"></i> Verify KYC
+                    [disabled]="isApproving" (click)="verifyKYC(selectedStore)" class="btn btn-outline-info px-4 me-2"
+                    title="Verify KYC">
+                    <i class="fas fa-spinner fa-spin me-2" *ngIf="isApproving"></i>
+                    <i class="fas fa-check-square" *ngIf="!isApproving"></i> Verify KYC
                 </button>
                 <button class="btn btn-secondary px-4" (click)="closeModal()">Close</button>
             </div>

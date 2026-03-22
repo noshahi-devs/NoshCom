@@ -10,6 +10,117 @@
   }
 }
 
+.product-loading {
+  display: grid;
+  gap: 18px;
+  padding: 12px 0 24px;
+}
+
+.product-loading .loading-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.product-loading .loading-media {
+  display: grid;
+  gap: 12px;
+}
+
+.product-loading .loading-info {
+  display: grid;
+  gap: 12px;
+}
+
+.product-loading .skeleton-line,
+.product-loading .skeleton-image,
+.product-loading .skeleton-thumb,
+.product-loading .skeleton-pill,
+.product-loading .skeleton-btn {
+  background: #eef2f7;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.product-loading .skeleton-line::after,
+.product-loading .skeleton-image::after,
+.product-loading .skeleton-thumb::after,
+.product-loading .skeleton-pill::after,
+.product-loading .skeleton-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -160px;
+  height: 100%;
+  width: 160px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.85), transparent);
+  animation: productShimmer 1.4s infinite;
+}
+
+.product-loading .skeleton-line {
+  height: 14px;
+}
+
+.product-loading .skeleton-line.short {
+  width: 35%;
+}
+
+.product-loading .skeleton-line.medium {
+  width: 55%;
+}
+
+.product-loading .skeleton-line.wide {
+  width: 80%;
+}
+
+.product-loading .skeleton-image {
+  height: 460px;
+  border-radius: 14px;
+}
+
+.product-loading .skeleton-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.product-loading .skeleton-thumb {
+  height: 70px;
+  border-radius: 8px;
+}
+
+.product-loading .skeleton-pill {
+  width: 120px;
+  height: 28px;
+  border-radius: 999px;
+}
+
+.product-loading .skeleton-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.product-loading .skeleton-btn {
+  height: 44px;
+  border-radius: 999px;
+}
+
+@keyframes productShimmer {
+  100% {
+    left: 100%;
+  }
+}
+
+@media (max-width: 1024px) {
+  .product-loading .loading-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 // Amazon Style Breadcrumb
 .breadcrumb-nav {
   margin-bottom: 2rem;
@@ -26,6 +137,7 @@
       font-size: 0.85rem;
       text-decoration: none;
       transition: color 0.2s ease;
+      cursor: pointer;
 
       &:hover {
         color: #C7511F;
@@ -373,6 +485,27 @@
             border-color: #E47911;
             box-shadow: 0 0 0 2px rgba(228, 121, 17, 0.3);
           }
+        }
+      }
+
+      .category-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        padding: 0.35rem 0.85rem;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(248, 86, 6, 0.12), rgba(255, 139, 82, 0.12));
+        border: 1px solid rgba(248, 86, 6, 0.35);
+        color: #7c2d12;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        width: fit-content;
+
+        i {
+          color: #f85606;
+          font-size: 0.9rem;
         }
       }
 
@@ -2067,6 +2200,62 @@
         font-size: 0.8rem;
       }
     }
+  }
+}
+
+.related-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.related-skeleton-card {
+  background: #ffffff;
+  border: 1px solid #D5D9D9;
+  border-radius: 8px;
+  padding: 1rem;
+  display: grid;
+  gap: 10px;
+}
+
+.related-skeleton-card .skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #eef2f7;
+  border-radius: 8px;
+}
+
+.related-skeleton-card .skeleton::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -160px;
+  height: 100%;
+  width: 160px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.85), transparent);
+  animation: relatedShimmer 1.6s infinite;
+}
+
+.related-skeleton-card .skeleton.media {
+  height: 200px;
+}
+
+.related-skeleton-card .skeleton.line {
+  height: 12px;
+}
+
+.related-skeleton-card .skeleton.line.small {
+  width: 55%;
+}
+
+.related-skeleton-card .skeleton.line.price {
+  width: 40%;
+  height: 14px;
+}
+
+@keyframes relatedShimmer {
+  100% {
+    left: 100%;
   }
 }
 

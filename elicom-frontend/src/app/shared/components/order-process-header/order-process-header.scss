@@ -16,13 +16,37 @@
   flex-wrap: wrap;
 }
 
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 90px;
+
+  @media (max-width: 600px) {
+    margin-left: 0;
+  }
+}
+
+.order-logo-img {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+
+  @media (max-width: 600px) {
+    height: 30px;
+  }
+}
+
 .logo {
   font-size: 26px;
   font-weight: 700;
   letter-spacing: 4px;
   line-height: 1;
-  margin-left: 90px;
   font-family: "Rubik Wet Paint", system-ui;
+
+  @media (max-width: 600px) {
+    font-size: 20px;
+  }
 }
 
 /* LOCATION BADGE */

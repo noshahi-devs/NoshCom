@@ -54,7 +54,7 @@
                     <tr *ngFor="let order of pagedOrders; let i = index">
                         <td class="date-col">
                             <div class="cell-box">
-                                <div class="relative-time">{{ getRelativeTime(order.createdAt) }}</div>
+                                <div class="relative-time">{{ getRelativeTime(order) }}</div>
                                 <div class="date-val">{{ formatDate(order.createdAt) }}</div>
                                 <div class="time-val">{{ formatTime(order.createdAt) }}</div>
                             </div>

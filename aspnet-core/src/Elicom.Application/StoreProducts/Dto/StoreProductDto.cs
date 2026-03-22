@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,10 +18,13 @@ namespace Elicom.StoreProducts.Dto
 
         public int StockQuantity { get; set; }
         public bool Status { get; set; }
+        public int HandlingTime { get; set; }
+        public string SellerNote { get; set; }
 
         public string ProductName { get; set; }
         public string ProductImage { get; set; }
         public string BrandName { get; set; }
+        public decimal SupplierPrice { get; set; }
     }
 
 }

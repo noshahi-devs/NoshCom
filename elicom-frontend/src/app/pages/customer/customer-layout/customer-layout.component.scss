@@ -58,6 +58,13 @@ $glass: blur(12px);
     font-size: 16px;
     color: #fff;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+
+    .cust-logo-img {
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+        filter: brightness(0) invert(1);
+    }
 }
 
 .cust-header-title {

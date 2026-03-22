@@ -27,7 +27,12 @@ public class UserDto : EntityDto<long>
     [StringLength(AbpUserBase.MaxEmailAddressLength)]
     public string EmailAddress { get; set; }
 
+    [StringLength(AbpUserBase.MaxPhoneNumberLength)]
+    public string PhoneNumber { get; set; }
+
     public bool IsActive { get; set; }
+
+    public bool IsEmailConfirmed { get; set; }
 
     public string FullName { get; set; }
 

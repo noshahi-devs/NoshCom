@@ -519,12 +519,12 @@ $shadow-medium: rgba(0, 0, 0, 0.15);
         }
       }
 
-      .form-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 1rem;
+        .form-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 1rem;
 
-        .form-group {
+          .form-group {
           label {
             display: block;
             margin-bottom: 0.5rem;
@@ -532,19 +532,40 @@ $shadow-medium: rgba(0, 0, 0, 0.15);
             color: $text-dark;
           }
 
-          input,
-          select {
-            width: 100%;
-            padding: 0.9rem 1rem;
-            border: 1px solid $border-color;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            @include transition();
+            input,
+            select {
+              width: 100%;
+              padding: 0.9rem 1rem;
+              border: 1px solid $border-color;
+              border-radius: 10px;
+              font-size: 0.95rem;
+              @include transition();
 
             &:focus {
               outline: none;
               border-color: $primary-color;
               box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+            }
+          }
+
+          .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding-top: 1.85rem;
+
+            .checkbox-row {
+              display: flex;
+              align-items: center;
+              gap: 0.6rem;
+              font-weight: 500;
+              color: $text-dark;
+
+              input {
+                width: 18px;
+                height: 18px;
+                padding: 0;
+              }
             }
           }
         }

@@ -7,11 +7,12 @@ import { SellerDashboardService, SellerDashboardStats } from '../../../services/
 import { StoreProductService } from '../../../services/store-product.service';
 import { WalletService } from '../../../services/wallet.service';
 import { catchError, map, of, forkJoin } from 'rxjs';
+import { DateRangePickerComponent, DateRangeResult } from '../../../shared/date-range-picker/date-range-picker.component';
 
 @Component({
     selector: 'app-seller-dashboard',
     standalone: true,
-    imports: [CommonModule, RouterModule],
+    imports: [CommonModule, RouterModule, DateRangePickerComponent],
     templateUrl: './seller-dashboard.component.html',
     styleUrls: ['./seller-dashboard.component.scss']
 })
@@ -37,20 +38,51 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
     currentTime: string = '';
     private timer: any;
     private statusCheckTimer: any;
-    isRangeMenuOpen = false;
-    selectedRange: 'max' | 'month' | '30d' | 'all' = 'max';
     statsWindow: 'day' | 'week' | 'month' = 'week';
+    currentDateRange: DateRangeResult = { label: 'Maximum Data', id: 'max' };
 
     ngOnInit() {
         this.currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        this.loadMyStore();
         this.startClock();
+
+        // Use reactive stream for store updates
+        this.storeService.currentStore$.subscribe(store => {
+            const wasPending = this.currentStore && !this.currentStore.status;
+            this.currentStore = store;
+
+            // Sync Date Range Label if it's the default 'max'
+            if (store?.createdAt && this.currentDateRange.id === 'max') {
+                const date = new Date(store.createdAt);
+                const formatted = new Intl.DateTimeFormat('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }).format(date);
+                this.currentDateRange.label = `Joined Date: ${formatted}`;
+            }
+            
+            if (store && store.id) {
+                if (wasPending && store.status) {
+                    // Approval detected! Stop polling and load everything
+                    console.log('Store approved! Loading dashboard data...');
+                    this.stopStatusPolling();
+                    this.loadStats();
+                } else if (!store.status) {
+                    this.startStatusPolling();
+                } else if (store.status && !this.stats) {
+                    // Normal load for already approved store
+                    this.loadStats();
+                }
+            } else if (!store) {
+                console.warn('No store found. Trying fallback resolution.');
+                this.resolveStoreFallbackAndLoadStats();
+            }
+            
+            this.isStoreLoading = false;
+            this.cdr.detectChanges();
+        });
+
+        this.loadMyStore();
     }
 
     ngOnDestroy() {
-        if (this.statusCheckTimer) {
-            clearInterval(this.statusCheckTimer);
-        }
+        this.stopStatusPolling();
         if (this.timer) {
             clearInterval(this.timer);
         }
@@ -83,54 +115,32 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
     }
 
     loadMyStore() {
-        console.log('Loading my store...');
         this.isStoreLoading = true;
         this.storeService.getMyStoreCached(true).subscribe({
             next: (res: any) => {
-                console.log('My Store API Response:', res);
-                // ABP wraps response in "result"
-                const store = res?.result || res;
-
-                if (store && store.id) {
-                    this.currentStore = store;
-                    this.loadStats();
-                    this.checkStoreStatusAndPoll();
-                } else {
-                    console.warn('No store found from GetMyStore. Trying fallback resolution from GetAllStores.');
-                    this.resolveStoreFallbackAndLoadStats();
-                }
+                // Subscription in ngOnInit handles the logic
                 this.isStoreLoading = false;
-                this.cdr.detectChanges(); // Force UI update
             },
             error: (err) => {
                 console.error('Failed to load store:', err);
+                this.isStoreLoading = false;
                 this.resolveStoreFallbackAndLoadStats();
             }
         });
     }
 
-    private checkStoreStatusAndPoll() {
-        // If the store is loaded but the status is false (pending), poll every 10 seconds.
-        if (this.currentStore && this.currentStore.id && !this.currentStore.status) {
-            if (!this.statusCheckTimer) {
-                this.statusCheckTimer = setInterval(() => {
-                    this.storeService.getMyStoreCached(true).subscribe({
-                        next: (res: any) => {
-                            const store = res?.result || res;
-                            if (store && store.status) {
-                                // Store was approved!
-                                this.currentStore = store;
-                                clearInterval(this.statusCheckTimer);
-                                this.statusCheckTimer = null;
-                                this.loadStats();
-                                this.cdr.detectChanges();
-                            }
-                        }
-                    });
-                }, 10000); // Check every 10 seconds
-            }
-        } else if (this.statusCheckTimer) {
-            // Stop polling if status is now true
+    private startStatusPolling() {
+        if (!this.statusCheckTimer) {
+            console.log('Starting store status polling...');
+            this.statusCheckTimer = setInterval(() => {
+                this.storeService.getMyStoreCached(true).subscribe();
+            }, 10000);
+        }
+    }
+
+    private stopStatusPolling() {
+        if (this.statusCheckTimer) {
+            console.log('Stopping store status polling.');
             clearInterval(this.statusCheckTimer);
             this.statusCheckTimer = null;
         }
@@ -169,7 +179,7 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
             : of(0);
 
         forkJoin({
-            stats: this.dashboardService.getStats(storeId).pipe(
+            stats: this.dashboardService.getStats(storeId, this.currentDateRange.startDate, this.currentDateRange.endDate).pipe(
                 catchError((err) => {
                     console.error('Error loading dashboard stats:', err);
                     return of(this.createEmptyStats());
@@ -271,35 +281,15 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
 
     get totalProfit(): number {
         const income = this.toSafeNumber(this.stats?.totalIncome);
-        const expense = this.toSafeNumber(this.stats?.totalExpense);
-        return Math.max(income - expense, 0);
+        // User confirmed: expected 54.01 for 58.71 revenue (Revenue - 8%)
+        return Math.max(income * 0.92, 0);
     }
 
-    get statsDateLabel(): string {
-        if (this.selectedRange !== 'max') {
-            const labels: Record<'month' | '30d' | 'all', string> = {
-                month: 'This Month',
-                '30d': 'Last 30 Days',
-                all: 'All Time'
-            };
-            return labels[this.selectedRange as 'month' | '30d' | 'all'];
+    onRangeChange(range: DateRangeResult): void {
+        this.currentDateRange = range;
+        if (this.currentStore?.id) {
+            this.loadStats();
         }
-
-        const candidate = this.currentStore?.creationTime || this.currentStore?.createdAt || null;
-        const date = candidate ? new Date(candidate) : new Date();
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `Maximum Data (${day}-${month}-${year})`;
-    }
-
-    toggleRangeMenu(): void {
-        this.isRangeMenuOpen = !this.isRangeMenuOpen;
-    }
-
-    selectRange(range: 'max' | 'month' | '30d' | 'all'): void {
-        this.selectedRange = range;
-        this.isRangeMenuOpen = false;
     }
 
     setStatsWindow(window: 'day' | 'week' | 'month'): void {
@@ -336,8 +326,8 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
     }
 
     getOrderItemsCount(order: any): number {
-        if (Array.isArray(order?.orderItems)) return order.orderItems.length;
-        return 0;
+        if (!Array.isArray(order?.orderItems)) return 0;
+        return order.orderItems.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0);
     }
 
     getOrderStatusClass(status: string): string {
@@ -350,10 +340,7 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
 
     @HostListener('document:click', ['$event'])
     onDocumentClick(event: MouseEvent): void {
-        const target = event.target as HTMLElement;
-        if (!target.closest('.wc-range-picker')) {
-            this.isRangeMenuOpen = false;
-        }
+        // Unused now since picker handles its own click outside
     }
 
     private toSafeNumber(value: any): number {

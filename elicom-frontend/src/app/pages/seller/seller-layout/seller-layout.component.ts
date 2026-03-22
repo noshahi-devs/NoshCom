@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, inject } from '@angular/core';
+import { Component, HostListener, OnInit, inject, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
@@ -28,6 +28,7 @@ export class SellerLayoutComponent implements OnInit {
     private router = inject(Router);
     private authService = inject(AuthService);
     private storeService = inject(StoreService);
+    private cdr = inject(ChangeDetectorRef);
 
     isSidebarCollapsed = true;
     showOrderMenu = true;
@@ -55,16 +56,31 @@ export class SellerLayoutComponent implements OnInit {
         this.showStatsMenu = this.isStatsRoute(this.router.url);
         this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe((event: any) => {
             const url = event.urlAfterRedirects || event.url;
-            if (this.isOrderRoute(url)) {
+            let stateChanged = false;
+            
+            if (this.isOrderRoute(url) && !this.showOrderMenu) {
                 this.showOrderMenu = true;
+                stateChanged = true;
             }
-            if (this.isWithdrawRoute(url)) {
+            if (this.isWithdrawRoute(url) && !this.showWithdrawMenu) {
                 this.showWithdrawMenu = true;
+                stateChanged = true;
             }
-            if (this.isStatsRoute(url)) {
+            if (this.isStatsRoute(url) && !this.showStatsMenu) {
                 this.showStatsMenu = true;
+                stateChanged = true;
+            }
+            if (stateChanged) {
+               this.cdr.detectChanges();
             }
         });
+
+        // Use reactive stream for store updates
+        this.storeService.currentStore$.subscribe(store => {
+            this.currentStore = store;
+            this.cdr.detectChanges();
+        });
+
         this.loadMyStore();
     }
 
@@ -72,7 +88,7 @@ export class SellerLayoutComponent implements OnInit {
         this.isStoreLoading = true;
         this.storeService.getMyStoreCached(true).subscribe({
             next: (res: any) => {
-                this.currentStore = res?.result || res;
+                // Subscription above handles the currentStore update
                 this.isStoreLoading = false;
             },
             error: (err) => {

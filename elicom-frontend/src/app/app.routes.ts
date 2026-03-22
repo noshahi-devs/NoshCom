@@ -12,6 +12,8 @@ export const routes: Routes = [
   { path: 'add-to-cart', component: AddToCart },
   { path: 'checkout', component: Checkout },
   { path: 'search-result', component: SearchResult },
+  { path: 'corporate/our-impact', loadComponent: () => import('./pages/corporate/our-impact/our-impact.component').then(m => m.OurImpactComponent) },
+  { path: 'corporate/:pageId', loadComponent: () => import('./pages/corporate/corporate-page.component').then(m => m.CorporatePageComponent) },
   { path: 'smartstore/auth', loadComponent: () => import('./pages/auth/login-page.component').then(m => m.LoginPageComponent) },
   { path: 'smartstore/login', redirectTo: 'smartstore/auth', pathMatch: 'full' },
   { path: 'smartstore/signup', redirectTo: 'smartstore/auth', pathMatch: 'full' },

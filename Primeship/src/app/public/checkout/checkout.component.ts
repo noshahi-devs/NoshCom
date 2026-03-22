@@ -90,6 +90,8 @@ export class CheckoutComponent implements OnInit {
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
+      phoneNumber: [''],
+      country: [''],
       address1: ['', Validators.required],
       address2: [''],
       zipCode: ['', Validators.required],
@@ -199,17 +201,48 @@ export class CheckoutComponent implements OnInit {
     this.profileService.getMyProfile().subscribe({
       next: (profile) => {
         if (!profile) return;
+        const patch: Partial<{
+          firstName: string;
+          lastName: string;
+          email: string;
+          phoneNumber: string;
+          country: string;
+          address1: string;
+          city: string;
+          zipCode: string;
+        }> = {};
         const fullName = (profile.fullName || '').trim();
         if (fullName) {
           this.profileCardHolderName = fullName;
           const [first, ...rest] = fullName.split(' ');
           const last = rest.join(' ').trim();
           if (!this.checkoutForm.get('firstName')?.value) {
-            this.checkoutForm.patchValue({ firstName: first || '' });
+            patch.firstName = first || '';
           }
           if (!this.checkoutForm.get('lastName')?.value) {
-            this.checkoutForm.patchValue({ lastName: last || '' });
+            patch.lastName = last || '';
           }
+        }
+        if (!this.checkoutForm.get('email')?.value && profile.email) {
+          patch.email = profile.email;
+        }
+        if (!this.checkoutForm.get('phoneNumber')?.value && profile.phoneNumber) {
+          patch.phoneNumber = profile.phoneNumber;
+        }
+        if (!this.checkoutForm.get('country')?.value && profile.country) {
+          patch.country = profile.country;
+        }
+        if (!this.checkoutForm.get('address1')?.value && profile.addressLine1) {
+          patch.address1 = profile.addressLine1;
+        }
+        if (!this.checkoutForm.get('city')?.value && profile.city) {
+          patch.city = profile.city;
+        }
+        if (!this.checkoutForm.get('zipCode')?.value && profile.postalCode) {
+          patch.zipCode = profile.postalCode;
+        }
+        if (Object.keys(patch).length > 0) {
+          this.checkoutForm.patchValue(patch);
         }
       },
       error: () => {
@@ -447,9 +480,8 @@ export class CheckoutComponent implements OnInit {
           this.isProcessing = false;
           this.isSuccess = true;
 
-          // Use order number from response or generate a mock one for testing
-          this.placedOrderNumber = res.orderNumber || res.id || `ORD-${new Date().getTime().toString().slice(-8)}`;
-          this.trackingNumber = this.generateTrackingNumber(sanitized.items);
+          this.placedOrderNumber = this.resolvePlacedOrderNumber(res);
+          this.trackingNumber = this.normalizeTrackingNumber(this.resolveTrackingNumber(res));
           this.cdr.detectChanges();
         },
         error: (err) => {
@@ -518,34 +550,116 @@ export class CheckoutComponent implements OnInit {
     return { items: validItems, removed: (items?.length || 0) - validItems.length };
   }
 
-  private generateTrackingNumber(items: CartItem[]): string {
-    const primaryName = this.getPrimaryProductName(items);
-    const normalized = primaryName.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  private resolvePlacedOrderNumber(source: any): string {
+    const direct = [
+      source?.referenceCode,
+      source?.orderNumber,
+      source?.id
+    ].find((value: any) => (typeof value === 'string' || typeof value === 'number') && `${value}`.trim().length > 0);
 
-    const first = normalized.charAt(0) || 'X';
-    const last = normalized.charAt(normalized.length - 1) || first;
-    const digits = this.generateTenDigits();
+    if (direct !== undefined) {
+      return `${direct}`.trim();
+    }
 
-    return `UK-${first}${last}${digits}`;
+    return `ORD-${new Date().getTime().toString().slice(-8)}`;
   }
 
-  private getPrimaryProductName(items: CartItem[]): string {
-    const firstItem: any = items?.[0] || {};
-    const product: any = firstItem.product || {};
+  private resolveTrackingNumber(source: any): string {
+    const direct = [
+      source?.trackingCode,
+      source?.deliveryTrackingNumber,
+      source?.primeShipTrackingNumber,
+      source?.trackingNumber,
+      source?.trackingNo,
+      source?.order?.trackingCode,
+      source?.order?.deliveryTrackingNumber,
+      source?.order?.primeShipTrackingNumber
+    ].find((value: any) => (typeof value === 'string' || typeof value === 'number') && `${value}`.trim().length > 0);
 
-    return (
-      product.name ||
-      product.title ||
-      product.productName ||
-      firstItem.name ||
-      'PRODUCT'
-    ).toString();
+    if (direct !== undefined) {
+      return `${direct}`.trim();
+    }
+
+    const deepValue = this.findTrackingDeep(source, 0);
+    return deepValue || 'Tracking will be assigned shortly';
   }
 
-  private generateTenDigits(): string {
-    // 10 numeric chars: last 5 from timestamp + 5 random => stable length and high uniqueness
-    const timePart = Date.now().toString().slice(-5);
-    const randomPart = Math.floor(Math.random() * 100000).toString().padStart(5, '0');
-    return `${timePart}${randomPart}`;
+  private normalizeTrackingNumber(raw: string): string {
+    const value = (raw || '').toString().trim();
+    if (!value) {
+      return value;
+    }
+
+    if (this.isNewTrackingFormat(value)) {
+      return value;
+    }
+
+    const digitsOnly = value.replace(/\D/g, '');
+    if (!digitsOnly) {
+      return value;
+    }
+
+    const initials = this.extractTrackingInitials(this.getPrimaryProductName());
+    const tenDigits = digitsOnly.length >= 10
+      ? digitsOnly.slice(-10)
+      : digitsOnly.padStart(10, '0');
+
+    return `UK-${initials}${tenDigits}`;
+  }
+
+  private isNewTrackingFormat(value: string): boolean {
+    return /^UK-[A-Z]{2}\d{10}$/.test(value);
+  }
+
+  private extractTrackingInitials(name: string): string {
+    const letters = (name || '').replace(/[^A-Za-z]/g, '').toUpperCase();
+    if (!letters) {
+      return 'XX';
+    }
+    return `${letters[0]}${letters[letters.length - 1]}`;
+  }
+
+  private getPrimaryProductName(): string {
+    for (const item of this.cartItems || []) {
+      const name = (item?.product?.name || '').toString().trim();
+      if (name) {
+        return name;
+      }
+    }
+    return '';
+  }
+
+  private findTrackingDeep(node: any, depth: number): string {
+    if (!node || depth > 4 || typeof node !== 'object') {
+      return '';
+    }
+
+    if (Array.isArray(node)) {
+      for (const item of node) {
+        const found = this.findTrackingDeep(item, depth + 1);
+        if (found) {
+          return found;
+        }
+      }
+      return '';
+    }
+
+    for (const [key, value] of Object.entries(node)) {
+      if (key.toLowerCase().includes('tracking') && (typeof value === 'string' || typeof value === 'number')) {
+        const normalized = `${value}`.trim();
+        if (normalized.length > 0) {
+          return normalized;
+        }
+      }
+    }
+
+    for (const value of Object.values(node)) {
+      const found = this.findTrackingDeep(value, depth + 1);
+      if (found) {
+        return found;
+      }
+    }
+
+    return '';
   }
 }

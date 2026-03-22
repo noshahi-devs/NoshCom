@@ -1,4 +1,4 @@
-﻿using Abp.Application.Services;
+using Abp.Application.Services;
 using Abp.Application.Services.Dto;
 using Elicom.Stores.Dto;
 using System;
@@ -13,6 +13,7 @@ namespace Elicom.Stores
     {
         Task<StoreDto> Get(Guid id);
         Task<ListResultDto<StoreDto>> GetAll();
+        Task<ListResultDto<StoreLookupDto>> GetStoreLookup();
         Task<StoreDto> Create(CreateStoreDto input);
         Task<StoreDto> Update(UpdateStoreDto input);
         Task Delete(Guid id);

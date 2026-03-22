@@ -39,12 +39,14 @@
                 justify-content: center;
                 padding: 10px;
 
-                h5 {
+                .sidebar-brand-logo {
                     display: none;
                 }
 
-                .brand-logo {
-                    margin: 0;
+                .sidebar-brand-icon {
+                    display: block;
+                    width: 40px;
+                    height: 40px;
                 }
             }
         }
@@ -134,31 +136,20 @@
     .sidebar-brand {
         display: flex;
         align-items: center;
-        gap: 12px;
         padding: 12px;
         margin-bottom: 30px;
         border-radius: 16px;
         background: white;
         box-shadow: 0 10px 30px rgba(79, 70, 229, 0.08);
 
-        .brand-logo {
-            width: 44px;
-            height: 44px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            box-shadow: 0 8px 15px rgba(79, 70, 229, 0.3);
+        .sidebar-brand-logo {
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
         }
 
-        h5 {
-            font-size: 1.1rem;
-            color: #0f172a;
-            font-weight: 800 !important;
-            letter-spacing: -0.5px;
+        .sidebar-brand-icon {
+            display: none;
         }
     }
 }
@@ -764,44 +755,42 @@
 /* Mobile Responsiveness Updates */
 @media (max-width: 991px) {
     :host {
-        --sidebar-width: 0px; // No margin for main content
+        --sidebar-width: 80px; // Default mobile width (collapsed)
     }
 
     .sidebar {
-        left: -280px; // Hide by default
-        width: 280px !important;
-        box-shadow: 15px 0 30px rgba(0, 0, 0, 0.1);
+        left: 0; // Always visible on left
+        width: 80px; 
+        padding: 20px 10px;
 
-        &::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 280px;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.3);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-    }
+        .sidebar-brand-wrapper {
+            flex-direction: column;
+            
+            .sidebar-brand {
+                padding: 10px;
+                .sidebar-brand-logo { display: none; }
+                .sidebar-brand-icon { display: block; width: 40px; height: 40px; }
+            }
 
-    .seller-layout.sidebar-collapsed {
-        .sidebar {
-            left: -280px; // Hide in collapsed state on mobile
-
-            &.show-mobile {
-                left: 0; // Show only if toggle is on
+            .mobile-toggle {
+                margin-top: 10px;
             }
         }
-    }
 
-    .sidebar.show-mobile {
-        left: 0;
+        .nav-link {
+            justify-content: center;
+            padding: 12px 0;
+            span { display: none; }
+            i { margin: 0; }
+        }
+
+        .sub-nav-list {
+            display: none; // Hide sub-menus in collapsed mobile state
+        }
     }
 
     .topbar {
-        left: 0 !important;
+        left: 80px !important;
         padding: 0 15px;
 
         .search-container {
@@ -810,7 +799,52 @@
     }
 
     .main-wrapper {
-        margin-left: 0 !important;
+        margin-left: 80px;
+        padding: 1.5rem;
+        padding-top: calc(var(--topbar-height) + 1.5rem);
+    }
+
+    .seller-layout:not(.sidebar-collapsed) {
+        :host {
+            --sidebar-width: 280px;
+        }
+
+        .sidebar {
+            width: 280px;
+            padding: 20px 14px;
+            box-shadow: 15px 0 30px rgba(0,0,0,0.1);
+
+            .sidebar-brand-wrapper {
+                flex-direction: row;
+                .sidebar-brand {
+                    .sidebar-brand-logo { display: block; }
+                    .sidebar-brand-icon { display: none; }
+                }
+            }
+
+            .nav-link {
+                justify-content: flex-start;
+                padding: 12px 14px;
+                span { display: block; }
+                i { margin-right: 0; }
+            }
+
+            .sub-nav-list {
+                display: flex;
+            }
+        }
+
+        .topbar {
+            left: 280px !important;
+        }
+
+        .main-wrapper {
+            margin-left: 280px;
+        }
+    }
+
+    .main-wrapper {
+        margin-left: 80px;
         padding: 1rem; // Less padding on mobile
     }
 }

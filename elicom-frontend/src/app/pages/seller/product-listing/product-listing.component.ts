@@ -19,11 +19,25 @@ export class ProductListingComponent implements OnInit {
     private alert = inject(AlertService);
     private router = inject(Router);
     private cdr = inject(ChangeDetectorRef);
+    protected readonly Math = Math;
 
     products: any[] = [];
     filterText: string = '';
     isLoading: boolean = true;
     currentStore: any = null;
+
+    // Pagination State
+    totalProducts: number = 0;
+    pageSize: number = 16;
+    currentPage: number = 1;
+
+    get totalPages(): number {
+        return Math.ceil(this.totalProducts / this.pageSize);
+    }
+
+    get skipCount(): number {
+        return (this.currentPage - 1) * this.pageSize;
+    }
 
     get filteredProducts() {
         if (!this.filterText) return this.products;
@@ -46,7 +60,7 @@ export class ProductListingComponent implements OnInit {
             next: (res) => {
                 this.currentStore = (res as any)?.result || res;
                 if (this.currentStore) {
-                    this.loadMappings(this.currentStore.id);
+                    this.loadMappings();
                 } else {
                     this.isLoading = false;
                     this.cdr.detectChanges();
@@ -59,13 +73,23 @@ export class ProductListingComponent implements OnInit {
         });
     }
 
-    loadMappings(storeId: string) {
-        this.storeProductService.getByStore(storeId).subscribe({
+    loadMappings() {
+        if (!this.currentStore) return;
+        
+        this.isLoading = true;
+        const input = {
+            storeId: this.currentStore.id,
+            maxResultCount: this.pageSize,
+            skipCount: this.skipCount
+        };
+
+        this.storeProductService.getPagedByStore(input).subscribe({
             next: (res) => {
+                this.totalProducts = res.result.totalCount;
                 this.products = res.result.items.map((sp: any) => ({
                     ...sp,
-                    mappingId: sp.id, // Preserve the StoreProduct ID for editing
-                    id: sp.productId, // Use product ID for general info
+                    mappingId: sp.id,
+                    id: sp.productId,
                     title: sp.productName,
                     price: sp.resellerPrice,
                     image: this.parseFirstImage(sp.productImage),
@@ -81,6 +105,25 @@ export class ProductListingComponent implements OnInit {
                 this.cdr.detectChanges();
             }
         });
+    }
+
+    onPageChange(page: number) {
+        if (page < 1 || page > this.totalPages) return;
+        this.currentPage = page;
+        this.loadMappings();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    onNextPage() {
+        if (this.currentPage < this.totalPages) {
+            this.onPageChange(this.currentPage + 1);
+        }
+    }
+
+    onPrevPage() {
+        if (this.currentPage > 1) {
+            this.onPageChange(this.currentPage - 1);
+        }
     }
 
     parseFirstImage(imageJson: string): string {
@@ -124,6 +167,7 @@ export class ProductListingComponent implements OnInit {
             supplierPrice: p.supplierPrice || (p.resellerPrice / 1.25), // Fallback if not in DTO
             resellerPrice: p.resellerPrice,
             stockQuantity: p.stockQuantity,
+            handlingTime: p.handlingTime,
             images: this.parseImages(p.productImage)
         };
 

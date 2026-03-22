@@ -9,13 +9,18 @@
 
 
 .hero-wrapper {
-  gap: 23px;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  gap: 15px;
+  padding: 0 15px;
+  width: 100%;
 }
 
 /* SIDE CARDS */
 .side-cards {
-  width: 18.5%;
-  min-width: 180px;
+  flex: 0 0 16%;
+  min-width: 150px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -55,7 +60,7 @@
 
 /* MAIN CAROUSEL */
 .main-carousel {
-  width: 47%;
+  flex: 1;
   height: 275px;
   margin-top: -14px;
 }

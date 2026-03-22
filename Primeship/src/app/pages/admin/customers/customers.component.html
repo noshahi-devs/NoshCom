@@ -155,6 +155,13 @@
               <span class="checkbox-label">Active Customer</span>
             </label>
           </div>
+
+          <div class="form-group checkbox">
+            <label>
+              <input type="checkbox" formControlName="emailVerified" />
+              <span class="checkbox-label">Email Verified</span>
+            </label>
+          </div>
         </div>
 
         <div class="form-actions">
@@ -201,10 +208,14 @@
             <input id="editPhone" type="text" formControlName="phone" />
           </div>
 
-          <div class="form-group checkbox">
-            <label>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-row">
               <input type="checkbox" formControlName="status" />
               <span class="checkbox-label">Active Customer</span>
+            </label>
+            <label class="checkbox-row">
+              <input type="checkbox" formControlName="emailVerified" />
+              <span class="checkbox-label">Email Verified</span>
             </label>
           </div>
         </div>
@@ -239,13 +250,14 @@
       </div>
 
       <div class="modal-actions">
-        <button type="button" class="btn secondary" (click)="cancelDelete()">
+        <button type="button" class="btn secondary" (click)="cancelDelete()" [disabled]="isDeleting">
           <i class="pi pi-times"></i>
           Cancel
         </button>
-        <button type="button" class="btn danger" (click)="confirmDelete()">
-          <i class="pi pi-trash"></i>
-          Delete
+        <button type="button" class="btn danger" (click)="confirmDelete()" [disabled]="isDeleting">
+          <i class="pi pi-spin pi-spinner" *ngIf="isDeleting"></i>
+          <i class="pi pi-trash" *ngIf="!isDeleting"></i>
+          {{ isDeleting ? 'Deleting...' : 'Delete' }}
         </button>
       </div>
     </div>

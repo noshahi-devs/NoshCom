@@ -14,6 +14,7 @@ import { ToastService } from '../../../core/services/toast.service';
 })
 export class AdminLayoutComponent implements OnInit, AfterViewInit {
     sidebarCollapsed = false;
+    mobileSidebarOpen = false;
     isAdminView = false;
     isSellerView = false;
     userEmail = 'portal@primeship.com';
@@ -43,6 +44,8 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
         ).subscribe(() => {
             this.updateViewMode();
             this.updateDisplayIdentity();
+            this.mobileSidebarOpen = false;
+            this.scrollToTop();
         });
     }
 
@@ -71,17 +74,8 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
     }
 
     initializeSidebarToggle() {
-        const sidebarToggleBtn = document.getElementById('sidebarToggle');
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.querySelector('.main-content');
         const userMenuBtn = document.getElementById('userMenuBtn');
         const userDropdown = document.getElementById('userDropdown');
-
-        if (sidebarToggleBtn && sidebar && mainContent) {
-            sidebarToggleBtn.addEventListener('click', () => {
-                this.toggleSidebar(sidebar as HTMLElement, mainContent as HTMLElement, sidebarToggleBtn as HTMLElement);
-            });
-        }
 
         if (userMenuBtn && userDropdown) {
             userMenuBtn.addEventListener('click', (e) => {
@@ -110,20 +104,13 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
         }
     }
 
-    toggleSidebar(sidebar: HTMLElement, mainContent: HTMLElement, toggleBtn: HTMLElement) {
-        const toggleIcon = toggleBtn.querySelector('.toggle-icon');
-        this.sidebarCollapsed = !this.sidebarCollapsed;
-
-        if (this.sidebarCollapsed) {
-            sidebar.classList.add('collapsed');
-            mainContent.classList.add('sidebar-collapsed');
-        } else {
-            sidebar.classList.remove('collapsed');
-            mainContent.classList.remove('sidebar-collapsed');
+    onSidebarToggle() {
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            this.mobileSidebarOpen = !this.mobileSidebarOpen;
+            return;
         }
-
-        // Mobile Sidebar Support
-        sidebar.classList.toggle('show');
+        this.sidebarCollapsed = !this.sidebarCollapsed;
     }
 
     toggleUserDropdown(userDropdown: HTMLElement) {
@@ -149,5 +136,9 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
     logout() {
         this.authService.logout();
         this.router.navigate(['/auth/login']);
+    }
+
+    private scrollToTop(): void {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     }
 }

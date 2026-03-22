@@ -26,6 +26,7 @@ export class OrderDetailsComponent implements OnInit {
         trackingCode: ''
     };
     fulfilling = false;
+    fromView: string | null = null;
 
     private router = inject(Router);
     private route = inject(ActivatedRoute);
@@ -40,19 +41,30 @@ export class OrderDetailsComponent implements OnInit {
         const state = window.history.state;
 
         if (state && state.order && state.order.orderItems) {
+            this.fromView = state.fromView || null;
             this.mapOrderData(state.order);
         } else if (orderId) {
+            this.fromView = state?.fromView || null;
             this.loadOrderDetails(orderId);
         }
     }
 
     loadOrderDetails(id: string) {
-        this.orderService.getOrder(id).subscribe({
+        // Check if ID is a GUID
+        const isGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+        
+        const observable = isGuid 
+            ? this.orderService.getOrder(id)
+            : this.orderService.getByOrderNumber(id);
+
+        observable.subscribe({
             next: (res: any) => {
                 this.mapOrderData(res);
             },
             error: (err: any) => {
                 console.error('Failed to load order details', err);
+                const message = err?.error?.error?.message || err?.message || 'Order not found';
+                this.alertService.error(message);
             }
         });
     }
@@ -76,20 +88,24 @@ export class OrderDetailsComponent implements OnInit {
         // Map backend DTO to template names
         this.order = {
             ...data,
-            id: data.orderNumber || data.id,
+            id: data.id, // KEEP REAL GUID
+            displayId: data.orderNumber || data.id,
             date: creationDate.toLocaleDateString(),
             fullDateTime: creationDate.toLocaleString(),
-            shipBy: `${shipByFrom.toLocaleDateString()} to ${shipByTo.toLocaleDateString()}`,
-            deliverBy: `${deliverByFrom.toLocaleDateString()} to ${deliverByTo.toLocaleDateString()}`,
+            uiPurchaseDate: this.formatDateForUI(creationDate),
+            uiPurchaseTime: this.formatTimeForUI(creationDate),
+            shipBy: this.formatShipByRange(creationDate, 1, 2),
+            deliverBy: this.formatShipByRange(creationDate, 3, 7),
             customer: data.recipientName || data.customerName || ('User #' + data.userId),
             phone: data.recipientPhone || data.phone || 'N/A',
             email: data.recipientEmail || data.email || 'N/A',
             subtotal: itemsTotal,
             shippingFee: data.shippingCost || 0,
             platformFee: platformFeeAmount,
+            taxAmount: itemsTotal * 0.04, // Mock 4% tax from screenshot
             platformFeeRatePercent: (platformFeeRate * 100),
             payoutAmount: netPayoutAmount,
-            grandTotal: netPayoutAmount,
+            grandTotal: itemsTotal + (itemsTotal * 0.04), // subtotal + tax
             shippingService: 'Standard',
             fulfillment: 'Seller',
             salesChannel: 'WorldCart.com',
@@ -111,6 +127,7 @@ export class OrderDetailsComponent implements OnInit {
                 const itemSubtotal = item.priceAtPurchase * item.quantity;
                 const itemPlatformFee = itemSubtotal * platformFeeRate;
                 const itemNetPayout = Math.max(0, itemSubtotal - itemPlatformFee);
+                const itemTax = itemSubtotal * 0.04;
                 return {
                     id: item.id,
                     name: item.productName,
@@ -119,12 +136,21 @@ export class OrderDetailsComponent implements OnInit {
                     price: item.priceAtPurchase,
                     quantity: item.quantity,
                     subtotal: itemSubtotal.toFixed(2),
+                    tax: itemTax.toFixed(2),
                     platformFee: itemPlatformFee.toFixed(2),
-                    total: itemNetPayout.toFixed(2),
+                    total: (itemSubtotal + itemTax).toFixed(2),
                     image: this.resolveProductImage(item.imageUrl)
                 };
             })
         };
+
+
+        this.order.statusLabel = this.order.status;
+        if (this.fromView === 'tracking-verifications') {
+            if (this.order.status === 'Shipped' || this.order.status === 'ShippedFromHub') {
+                this.order.statusLabel = 'Pending Verification';
+            }
+        }
 
         // Fallback for environments where seller meta fields are not yet deployed in backend.
         this.hydrateSellerInfoFallback();
@@ -447,7 +473,33 @@ export class OrderDetailsComponent implements OnInit {
         });
     }
 
+    private formatDateForUI(date: Date): string {
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric'
+        });
+    }
+
+    private formatTimeForUI(date: Date): string {
+        return date.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
+    }
+
+    private formatShipByRange(creationDate: Date, startDays: number, endDays: number): string {
+        const start = new Date(creationDate);
+        start.setDate(creationDate.getDate() + startDays);
+        const end = new Date(creationDate);
+        end.setDate(creationDate.getDate() + endDays);
+        return `${this.formatDateForUI(start)} to ${this.formatDateForUI(end)}`;
+    }
+
     goBack() {
+
         if (this.authService.isAdmin() && this.router.url.includes('/admin/')) {
             this.router.navigate(['/admin/orders']);
         } else {

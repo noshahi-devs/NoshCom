@@ -45,11 +45,41 @@ export class AddPaymentMethodComponent implements OnInit {
     ];
 
     bankOptions = [
-        { label: 'Chase Bank', value: 'Chase Bank' },
+        { label: 'American Express', value: 'American Express' },
+        { label: 'Ally Financial', value: 'Ally Financial' },
+        { label: 'Atlantic Union Bank', value: 'Atlantic Union Bank' },
         { label: 'Bank of America', value: 'Bank of America' },
-        { label: 'Wells Fargo', value: 'Wells Fargo' },
-        { label: 'Citibank', value: 'Citibank' },
-        { label: 'Capital One', value: 'Capital One' }
+        { label: 'BCI Financial Group', value: 'BCI Financial Group' },
+        { label: 'BMO USA', value: 'BMO USA' },
+        { label: 'Beal Bank', value: 'Beal Bank' },
+        { label: 'Capital One', value: 'Capital One' },
+        { label: 'Cathay Bank', value: 'Cathay Bank' },
+        { label: 'Citizens Financial Group', value: 'Citizens Financial Group' },
+        { label: 'East West Bank', value: 'East West Bank' },
+        { label: 'Fifth Third Bank', value: 'Fifth Third Bank' },
+        { label: 'First Hawaiian Bank', value: 'First Hawaiian Bank' },
+        { label: 'First Century Bank', value: 'First Century Bank' },
+        { label: 'Glacier Bancorp', value: 'Glacier Bancorp' },
+        { label: 'HSBC Bank USA', value: 'HSBC Bank USA' },
+        { label: 'Independent Bank', value: 'Independent Bank' },
+        { label: 'JPMorgan Chase', value: 'JPMorgan Chase' },
+        { label: 'M&T Bank', value: 'M&T Bank' },
+        { label: 'New York Community Bank', value: 'New York Community Bank' },
+        { label: 'Old National Bank', value: 'Old National Bank' },
+        { label: 'RBC Bank', value: 'RBC Bank' },
+        { label: 'Santander Bank', value: 'Santander Bank' },
+        { label: 'South State Bank', value: 'South State Bank' },
+        { label: 'State Street Corporation', value: 'State Street Corporation' },
+        { label: 'Sumitomo Mitsui Banking Corporation', value: 'Sumitomo Mitsui Banking Corporation' },
+        { label: 'Texas Capital Bank', value: 'Texas Capital Bank' },
+        { label: 'The Bank of New York Mellon', value: 'The Bank of New York Mellon' },
+        { label: 'U.S. Bancorp', value: 'U.S. Bancorp' },
+        { label: 'United Bank (West Virginia)', value: 'United Bank (West Virginia)' },
+        { label: 'United Community Bank', value: 'United Community Bank' },
+        { label: 'Valley Bank', value: 'Valley Bank' },
+        { label: 'Webster Bank', value: 'Webster Bank' },
+        { label: 'Western Alliance Bancorporation', value: 'Western Alliance Bancorporation' },
+        { label: 'WSFS Bank', value: 'WSFS Bank' }
     ];
 
     ngOnInit(): void {

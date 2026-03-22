@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace Elicom.SupplierOrders
@@ -26,6 +27,7 @@ namespace Elicom.SupplierOrders
         private readonly IRepository<Elicom.Entities.SupplierOrder, Guid> _supplierOrderRepository;
         private readonly IRepository<SupplierOrderItem, Guid> _supplierOrderItemRepository;
         private readonly IRepository<StoreProduct, Guid> _storeProductRepository;
+        private readonly IRepository<Product, Guid> _productRepository;
         private readonly IRepository<AppTransaction, long> _appTransactionRepository;
         private readonly ISmartStoreWalletManager _smartStoreWalletManager;
         private readonly IWalletManager _walletManager;
@@ -37,6 +39,7 @@ namespace Elicom.SupplierOrders
             IRepository<Elicom.Entities.SupplierOrder, Guid> supplierOrderRepository,
             IRepository<SupplierOrderItem, Guid> supplierOrderItemRepository,
             IRepository<StoreProduct, Guid> storeProductRepository,
+            IRepository<Product, Guid> productRepository,
             IRepository<AppTransaction, long> appTransactionRepository,
             ISmartStoreWalletManager smartStoreWalletManager,
             IWalletManager walletManager,
@@ -45,6 +48,7 @@ namespace Elicom.SupplierOrders
             _supplierOrderRepository = supplierOrderRepository;
             _supplierOrderItemRepository = supplierOrderItemRepository;
             _storeProductRepository = storeProductRepository;
+            _productRepository = productRepository;
             _appTransactionRepository = appTransactionRepository;
             _smartStoreWalletManager = smartStoreWalletManager;
             _walletManager = walletManager;
@@ -63,7 +67,13 @@ namespace Elicom.SupplierOrders
                 .OrderByDescending(x => x.CreationTime)
                 .ToListAsync();
 
-            return new ListResultDto<SupplierOrderDto>(ObjectMapper.Map<List<SupplierOrderDto>>(orders));
+            var changed = await EnsureTrackingCodesAsync(orders);
+            if (changed)
+            {
+                await CurrentUnitOfWork.SaveChangesAsync();
+            }
+
+            return new ListResultDto<SupplierOrderDto>(orders.Select(MapSupplierOrderToDto).ToList());
         }
 
         public async Task<SupplierOrderDto> Create(CreateSupplierOrderDto input)
@@ -78,6 +88,7 @@ namespace Elicom.SupplierOrders
             if (input.Items == null || !input.Items.Any())
                 throw new UserFriendlyException("Supplier order must contain items");
 
+            var primaryProductName = await ResolvePrimaryProductNameAsync(input.Items);
             var supplierOrder = new SupplierOrder
             {
                 ResellerId = user.Id, 
@@ -87,6 +98,10 @@ namespace Elicom.SupplierOrders
                 ShippingAddress = input.ShippingAddress,
                 Status = "Pending", 
                 ReferenceCode = GenerateReferenceCode(),
+                TrackingCode = NormalizeTrackingCode(
+                    await GenerateUniqueTrackingCodeAsync(primaryProductName),
+                    primaryProductName
+                ),
                 SourcePlatform = "Primeship",
                 TotalPurchaseAmount = input.Items.Sum(i => i.Quantity * i.PurchasePrice)
             };
@@ -111,7 +126,7 @@ namespace Elicom.SupplierOrders
                 await _supplierOrderItemRepository.InsertAsync(supplierOrderItem);
             }
 
-            return ObjectMapper.Map<SupplierOrderDto>(supplierOrder);
+            return MapSupplierOrderToDto(supplierOrder);
         }
 
         public async Task<SupplierOrderDto> Get(Guid id)
@@ -130,7 +145,12 @@ namespace Elicom.SupplierOrders
                  throw new UserFriendlyException("Access denied.");
             }
 
-            return ObjectMapper.Map<SupplierOrderDto>(supplierOrder);
+            var changed = await EnsureTrackingCodeAsync(supplierOrder);
+            if (changed)
+            {
+                await CurrentUnitOfWork.SaveChangesAsync();
+            }
+            return MapSupplierOrderToDto(supplierOrder);
         }
 
         public async Task MarkAsShipped(FulfillOrderDto input)
@@ -153,7 +173,8 @@ namespace Elicom.SupplierOrders
             order.Status = "Shipped";
             order.ShipmentDate = input.ShipmentDate;
             order.CarrierId = input.CarrierId;
-            order.TrackingCode = input.TrackingCode;
+            var primaryProductName = await ResolvePrimaryProductNameAsync(order);
+            order.TrackingCode = NormalizeTrackingCode(input.TrackingCode, primaryProductName);
 
             await _supplierOrderRepository.UpdateAsync(order);
 
@@ -204,7 +225,7 @@ namespace Elicom.SupplierOrders
             if (order == null) throw new UserFriendlyException("Supplier order not found");
 
             if (order.Status == "Verified")
-                return ObjectMapper.Map<SupplierOrderDto>(order);
+                return MapSupplierOrderToDto(order);
 
             order.Status = "Verified";
 
@@ -233,7 +254,7 @@ namespace Elicom.SupplierOrders
             }
 
             await _supplierOrderRepository.UpdateAsync(order);
-            return ObjectMapper.Map<SupplierOrderDto>(order);
+            return MapSupplierOrderToDto(order);
         }
 
         [AbpAuthorize(PermissionNames.Pages_PrimeShip_Admin, PermissionNames.Pages_SmartStore_Admin, PermissionNames.Admin)]
@@ -246,7 +267,12 @@ namespace Elicom.SupplierOrders
                 .OrderByDescending(x => x.CreationTime)
                 .ToListAsync();
 
-            return new ListResultDto<SupplierOrderDto>(ObjectMapper.Map<List<SupplierOrderDto>>(orders));
+            var changed = await EnsureTrackingCodesAsync(orders);
+            if (changed)
+            {
+                await CurrentUnitOfWork.SaveChangesAsync();
+            }
+            return new ListResultDto<SupplierOrderDto>(orders.Select(MapSupplierOrderToDto).ToList());
         }
 
         [AbpAuthorize(PermissionNames.Pages_PrimeShip_Admin, PermissionNames.Pages_SmartStore_Admin, PermissionNames.Admin)]
@@ -281,7 +307,7 @@ namespace Elicom.SupplierOrders
             order.Status = newStatus;
             await _supplierOrderRepository.UpdateAsync(order);
             
-            return ObjectMapper.Map<SupplierOrderDto>(order);
+            return MapSupplierOrderToDto(order);
         }
 
         private async Task HandleOrderRefund(SupplierOrder order)
@@ -349,6 +375,278 @@ namespace Elicom.SupplierOrders
         private string GenerateReferenceCode()
         {
             return $"SUP-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid().ToString("N")[..6].ToUpper()}";
+        }
+
+        private async Task<bool> EnsureTrackingCodeAsync(SupplierOrder order)
+        {
+            if (order == null)
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(order.TrackingCode) && IsTrackingCodeInNewFormat(order.TrackingCode))
+            {
+                return false;
+            }
+
+            var primaryProductName = await ResolvePrimaryProductNameAsync(order);
+
+            if (!string.IsNullOrWhiteSpace(order.TrackingCode))
+            {
+                var normalized = NormalizeTrackingCode(order.TrackingCode, primaryProductName);
+                order.TrackingCode = await EnsureUniqueTrackingCodeAsync(normalized, primaryProductName, order.Id);
+            }
+            else
+            {
+                order.TrackingCode = NormalizeTrackingCode(
+                    await GenerateUniqueTrackingCodeAsync(primaryProductName),
+                    primaryProductName
+                );
+            }
+
+            await _supplierOrderRepository.UpdateAsync(order);
+            return true;
+        }
+
+        private async Task<bool> EnsureTrackingCodesAsync(IEnumerable<SupplierOrder> orders)
+        {
+            if (orders == null)
+            {
+                return false;
+            }
+
+            var changed = false;
+            foreach (var order in orders)
+            {
+                changed = await EnsureTrackingCodeAsync(order) || changed;
+            }
+
+            return changed;
+        }
+
+        private SupplierOrderDto MapSupplierOrderToDto(SupplierOrder order)
+        {
+            if (order == null)
+            {
+                return null;
+            }
+
+            return new SupplierOrderDto
+            {
+                Id = order.Id,
+                ReferenceCode = order.ReferenceCode,
+                ResellerId = order.ResellerId,
+                SupplierId = order.SupplierId,
+                TotalPurchaseAmount = order.TotalPurchaseAmount,
+                CreationTime = order.CreationTime,
+                WarehouseAddress = order.WarehouseAddress,
+                ShippingAddress = order.ShippingAddress,
+                CustomerName = order.CustomerName,
+                Status = order.Status,
+                SellerId = order.ResellerId,
+                SellerName = order.Reseller != null
+                    ? $"{order.Reseller.Name} {order.Reseller.Surname}".Trim()
+                    : "Unknown",
+                ShipmentDate = order.ShipmentDate,
+                CarrierId = order.CarrierId,
+                TrackingCode = order.TrackingCode,
+                OrderId = order.OrderId,
+                Items = (order.Items ?? new List<SupplierOrderItem>())
+                    .Select(item => new SupplierOrderItemDto
+                    {
+                        Id = item.Id,
+                        SupplierOrderId = item.SupplierOrderId,
+                        ProductId = item.ProductId,
+                        Quantity = item.Quantity,
+                        PurchasePrice = item.PurchasePrice,
+                        ProductName = item.Product != null ? item.Product.Name : string.Empty
+                    })
+                    .ToList()
+            };
+        }
+
+        private async Task<string> ResolvePrimaryProductNameAsync(IEnumerable<CreateSupplierOrderItemDto> items)
+        {
+            var firstProductId = items?
+                .Select(x => (Guid?)x.ProductId)
+                .FirstOrDefault(x => x.HasValue && x.Value != Guid.Empty);
+
+            if (firstProductId == null || firstProductId == Guid.Empty)
+            {
+                return string.Empty;
+            }
+
+            return await ResolveProductNameByIdAsync(firstProductId.Value);
+        }
+
+        private async Task<string> ResolvePrimaryProductNameAsync(SupplierOrder order)
+        {
+            var itemWithName = order?.Items?.FirstOrDefault(x => x?.Product != null && !string.IsNullOrWhiteSpace(x.Product.Name));
+            if (itemWithName?.Product != null)
+            {
+                return itemWithName.Product.Name;
+            }
+
+            var firstProductId = order?.Items?
+                .Select(x => (Guid?)x.ProductId)
+                .FirstOrDefault(x => x.HasValue && x.Value != Guid.Empty);
+
+            if (firstProductId == null || firstProductId == Guid.Empty)
+            {
+                return string.Empty;
+            }
+
+            return await ResolveProductNameByIdAsync(firstProductId.Value);
+        }
+
+        private async Task<string> ResolveProductNameByIdAsync(Guid productId)
+        {
+            using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
+            {
+                var product = await _productRepository.GetAll()
+                    .IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(x => x.Id == productId);
+
+                if (!string.IsNullOrWhiteSpace(product?.Name))
+                {
+                    return product.Name;
+                }
+
+                var storeProduct = await _storeProductRepository.GetAll()
+                    .IgnoreQueryFilters()
+                    .Include(x => x.Product)
+                    .FirstOrDefaultAsync(x => x.Id == productId || x.ProductId == productId);
+
+                if (!string.IsNullOrWhiteSpace(storeProduct?.Product?.Name))
+                {
+                    return storeProduct.Product.Name;
+                }
+            }
+
+            return string.Empty;
+        }
+
+        private async Task<string> GenerateUniqueTrackingCodeAsync(string productName)
+        {
+            var initials = ExtractTrackingInitials(productName);
+
+            using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
+            {
+                for (var attempt = 0; attempt < 30; attempt++)
+                {
+                    var candidate = $"UK-{initials}{GenerateTenDigitNumericPart()}";
+                    var exists = await _supplierOrderRepository.GetAll()
+                        .IgnoreQueryFilters()
+                        .AnyAsync(x => x.TrackingCode == candidate);
+                    if (!exists)
+                    {
+                        return candidate;
+                    }
+                }
+
+                while (true)
+                {
+                    var fallbackDigits = (DateTime.UtcNow.Ticks % 10000000000L).ToString("D10");
+                    var fallback = $"UK-{initials}{fallbackDigits}";
+                    var exists = await _supplierOrderRepository.GetAll()
+                        .IgnoreQueryFilters()
+                        .AnyAsync(x => x.TrackingCode == fallback);
+                    if (!exists)
+                    {
+                        return fallback;
+                    }
+                }
+            }
+        }
+
+        private static string ExtractTrackingInitials(string productName)
+        {
+            var letters = new string((productName ?? string.Empty).Where(char.IsLetter).ToArray()).ToUpperInvariant();
+            if (letters.Length == 0)
+            {
+                return "XX";
+            }
+
+            var first = letters[0];
+            var last = letters[letters.Length - 1];
+            return $"{first}{last}";
+        }
+
+        private static string GenerateTenDigitNumericPart()
+        {
+            var timePart = DateTime.UtcNow.ToString("HHmmss");
+            var randomPart = RandomNumberGenerator.GetInt32(0, 10000).ToString("D4");
+            return $"{timePart}{randomPart}";
+        }
+
+        private static bool IsTrackingCodeInNewFormat(string trackingCode)
+        {
+            if (string.IsNullOrWhiteSpace(trackingCode))
+            {
+                return false;
+            }
+
+            if (!trackingCode.StartsWith("UK-", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (trackingCode.Length != 15)
+            {
+                return false;
+            }
+
+            var initials = trackingCode.Substring(3, 2);
+            var digits = trackingCode.Substring(5, 10);
+
+            return initials.All(char.IsLetter) && digits.All(char.IsDigit);
+        }
+
+        private static string NormalizeTrackingCode(string trackingCode, string productName)
+        {
+            var value = (trackingCode ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return string.Empty;
+            }
+
+            if (IsTrackingCodeInNewFormat(value))
+            {
+                return value;
+            }
+
+            var initials = ExtractTrackingInitials(productName);
+            var digits = new string(value.Where(char.IsDigit).ToArray());
+            if (digits.Length == 0)
+            {
+                digits = GenerateTenDigitNumericPart();
+            }
+            else if (digits.Length < 10)
+            {
+                digits = digits.PadLeft(10, '0');
+            }
+            else if (digits.Length > 10)
+            {
+                digits = digits.Substring(digits.Length - 10, 10);
+            }
+
+            return $"UK-{initials}{digits}";
+        }
+
+        private async Task<string> EnsureUniqueTrackingCodeAsync(string preferred, string productName, Guid? orderId)
+        {
+            if (!string.IsNullOrWhiteSpace(preferred))
+            {
+                var exists = await _supplierOrderRepository.GetAll()
+                    .IgnoreQueryFilters()
+                    .AnyAsync(x => x.TrackingCode == preferred && (!orderId.HasValue || x.Id != orderId.Value));
+                if (!exists)
+                {
+                    return preferred;
+                }
+            }
+
+            return await GenerateUniqueTrackingCodeAsync(productName);
         }
     }
 }

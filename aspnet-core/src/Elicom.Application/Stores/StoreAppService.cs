@@ -1,4 +1,4 @@
-﻿using Abp.Application.Services.Dto;
+using Abp.Application.Services.Dto;
 using Abp.Authorization;
 using Abp.Domain.Repositories;
 using Abp.Dependency;
@@ -27,6 +27,9 @@ namespace Elicom.Stores
         private readonly IBlobStorageService _blobStorageService;
         private readonly IRepository<SmartStoreWallet, Guid> _walletRepo;
         private readonly IBackgroundJobManager _backgroundJobManager;
+        private readonly IRepository<StoreProduct, Guid> _spRepo;
+        private readonly IRepository<Order, Guid> _orderRepo;
+        private readonly IRepository<OrderItem, Guid> _orderItemRepo;
 
         public StoreAppService(
             IRepository<Store, Guid> storeRepo, 
@@ -34,7 +37,10 @@ namespace Elicom.Stores
             IRepository<StoreKyc, Guid> kycRepo,
             IBlobStorageService blobStorageService,
             IRepository<SmartStoreWallet, Guid> walletRepo,
-            IBackgroundJobManager backgroundJobManager)
+            IBackgroundJobManager backgroundJobManager,
+            IRepository<StoreProduct, Guid> spRepo,
+            IRepository<Order, Guid> orderRepo,
+            IRepository<OrderItem, Guid> orderItemRepo)
         {
             _storeRepo = storeRepo;
             _userRepo = userRepo;
@@ -42,6 +48,9 @@ namespace Elicom.Stores
             _blobStorageService = blobStorageService;
             _walletRepo = walletRepo;
             _backgroundJobManager = backgroundJobManager;
+            _spRepo = spRepo;
+            _orderRepo = orderRepo;
+            _orderItemRepo = orderItemRepo;
         }
 
         // REMOVED [AbpAuthorize(PermissionNames.Pages_Stores)]
@@ -51,6 +60,7 @@ namespace Elicom.Stores
             {
                 using (CurrentUnitOfWork.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant, Abp.Domain.Uow.AbpDataFilters.MustHaveTenant))
                 {
+                    // Fetch stores with pre-calculated counts in one pass to avoid N+1 and unit-of-work filter issues.
                     var stores = await (from s in _storeRepo.GetAll()
                                        join w in _walletRepo.GetAll() on s.OwnerId equals w.UserId into sw
                                        from w in sw.DefaultIfEmpty()
@@ -74,6 +84,22 @@ namespace Elicom.Stores
                                            WithdrawAllowedUntil = w != null ? w.WithdrawAllowedUntil : null,
                                            AdminWithdrawRemarks = w != null ? w.AdminWithdrawRemarks : null,
                                            WalletBalance = w != null ? w.Balance : 0,
+                                           
+                                           // Efficient counts
+                                           TotalProducts = _spRepo.GetAll().Count(sp => sp.StoreId == s.Id),
+                                           
+                                           // Orders are linked via StoreProduct -> OrderItem -> Order
+                                           TotalOrders = (from oi in _orderItemRepo.GetAll()
+                                                         join sp in _spRepo.GetAll() on oi.StoreProductId equals sp.Id
+                                                         where sp.StoreId == s.Id
+                                                         select oi.OrderId).Distinct().Count(),
+
+                                           ShippedOrders = (from oi in _orderItemRepo.GetAll()
+                                                           join sp in _spRepo.GetAll() on oi.StoreProductId equals sp.Id
+                                                           join o in _orderRepo.GetAll() on oi.OrderId equals o.Id
+                                                           where sp.StoreId == s.Id && (o.Status == "Shipped" || o.Status == "Delivered")
+                                                           select oi.OrderId).Distinct().Count(),
+
                                            Kyc = s.Kyc == null ? null : new StoreKycDto
                                            {
                                                Id = s.Kyc.Id,
@@ -92,30 +118,6 @@ namespace Elicom.Stores
                                            }
                                        }).ToListAsync();
 
-                    // Calculate order stats in-memory using IocManager
-                    try
-                    {
-                        var spRepo = IocManager.Instance.Resolve<IRepository<StoreProduct, Guid>>();
-                        var oiRepo = IocManager.Instance.Resolve<IRepository<OrderItem, Guid>>();
-                        var oRepo  = IocManager.Instance.Resolve<IRepository<Order, Guid>>();
-
-                        var allSp = await spRepo.GetAllListAsync();
-                        var allOi = await oiRepo.GetAllListAsync();
-                        var allOrders = await oRepo.GetAllListAsync();
-
-                        foreach (var store in stores)
-                        {
-                            var spIds = allSp.Where(sp => sp.StoreId == store.Id).Select(sp => sp.Id).ToHashSet();
-                            var orderIds = allOi.Where(oi => spIds.Contains(oi.StoreProductId)).Select(oi => oi.OrderId).Distinct().ToList();
-                            store.TotalOrders = orderIds.Count;
-                            store.ShippedOrders = allOrders.Count(o => orderIds.Contains(o.Id) && (o.Status == "Shipped" || o.Status == "Delivered"));
-                        }
-                    }
-                    catch (Exception statsEx)
-                    {
-                        Logger.Warn($"[Store/GetAll] Could not calculate order stats: {statsEx.Message}");
-                    }
-
                     Logger.Info($"[Store/GetAll] Final result count: {stores.Count}");
                     return new ListResultDto<StoreDto>(stores);
                 }
@@ -124,6 +126,26 @@ namespace Elicom.Stores
             {
                 Logger.Error($"[Store/GetAll] Error: {ex.Message}", ex);
                 throw;
+            }
+        }
+
+        [AbpAuthorize]
+        [Microsoft.AspNetCore.Mvc.HttpGet]
+        public virtual async Task<ListResultDto<StoreLookupDto>> GetStoreLookup()
+        {
+            using (CurrentUnitOfWork.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant, Abp.Domain.Uow.AbpDataFilters.MustHaveTenant))
+            {
+                var stores = await _storeRepo.GetAll()
+                    .Where(s => s.IsActive && s.IsAdminActive)
+                    .Select(s => new StoreLookupDto
+                    {
+                        Id = s.Id,
+                        Name = s.Name
+                    })
+                    .OrderBy(s => s.Name)
+                    .ToListAsync();
+
+                return new ListResultDto<StoreLookupDto>(stores);
             }
         }
 

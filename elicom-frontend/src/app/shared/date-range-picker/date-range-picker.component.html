@@ -1,0 +1,16 @@
+<div class="wc-date-range-container" [class.is-open]="isOpen">
+    <button type="button" class="wc-date-trigger" (click)="toggleDropdown($event)">
+        <span class="wc-date-label">{{ selectedRange.label }}</span>
+        <i class="fa-solid fa-chevron-down ms-2 wc-date-caret"></i>
+    </button>
+    <div class="wc-date-dropdown-menu" *ngIf="isOpen">
+        <button 
+            type="button" 
+            class="wc-date-option" 
+            *ngFor="let range of ranges" 
+            [class.active]="selectedRange.id === range.id"
+            (click)="selectRange(range, $event)">
+            {{ range.label }}
+        </button>
+    </div>
+</div>

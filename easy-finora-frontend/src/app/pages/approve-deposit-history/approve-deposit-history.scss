@@ -515,3 +515,30 @@
         opacity: 1;
     }
 }
+
+@media (max-width: 768px) {
+    .page-container {
+        padding: 1.25rem;
+    }
+
+    .history-table-3d {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table-header,
+    .table-row {
+        min-width: 900px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-container {
+        padding: 1rem;
+    }
+
+    .table-header,
+    .table-row {
+        min-width: 860px;
+    }
+}

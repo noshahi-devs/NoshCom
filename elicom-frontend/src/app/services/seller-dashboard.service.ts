@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -51,13 +51,19 @@ export class SellerDashboardService {
     private http = inject(HttpClient);
     private apiUrl = `${environment.apiUrl}/api/services/app/SellerDashboard`;
 
-    getStats(storeId: string): Observable<SellerDashboardStats> {
-        return this.http.get<{ result: SellerDashboardStats }>(`${this.apiUrl}/GetStats`, { params: { storeId } })
-            .pipe(map((res: any) => (res?.result ?? res) as SellerDashboardStats));
+    getStats(storeId: string, startDate?: string, endDate?: string): Observable<SellerDashboardStats> {
+        let params = new HttpParams().set('storeId', storeId);
+        if (startDate) params = params.set('startDate', startDate);
+        if (endDate) params = params.set('endDate', endDate);
+        return this.http.get<{ result: SellerDashboardStats }>(`${this.apiUrl}/GetStats`, { params })
+            .pipe(map(res => res.result));
     }
 
-    getSaleTransactions(storeId: string): Observable<OrderPaymentTransaction[]> {
-        return this.http.get<{ result: OrderPaymentTransaction[] }>(`${this.apiUrl}/GetSaleTransactions`, { params: { storeId } })
-            .pipe(map((res: any) => (res?.result ?? res) as OrderPaymentTransaction[]));
+    getSaleTransactions(storeId: string, startDate?: string, endDate?: string): Observable<OrderPaymentTransaction[]> {
+        let params = new HttpParams().set('storeId', storeId);
+        if (startDate) params = params.set('startDate', startDate);
+        if (endDate) params = params.set('endDate', endDate);
+        return this.http.get<{ result: OrderPaymentTransaction[] }>(`${this.apiUrl}/GetSaleTransactions`, { params })
+            .pipe(map(res => res.result));
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Abp.Application.Services.Dto;
@@ -47,13 +47,15 @@ namespace Elicom.StoreProducts
                 ProductId = input.ProductId,
                 ResellerPrice = input.ResellerPrice,
                 StockQuantity = input.StockQuantity,
-                Status = input.Status
+                Status = input.Status,
+                HandlingTime = input.HandlingTime,
+                SellerNote = input.SellerNote
             };
 
             await _storeProductRepo.InsertAsync(storeProduct);
         }
 
-        [AbpAuthorize(PermissionNames.Pages_SmartStore_Seller)]
+        [AbpAuthorize(PermissionNames.Pages_SmartStore_Seller, PermissionNames.Pages_SmartStore_Admin)]
         public async Task<ListResultDto<StoreProductDto>> GetByStore(Guid storeId)
         {
             using (CurrentUnitOfWork.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant))
@@ -64,6 +66,29 @@ namespace Elicom.StoreProducts
                     .ToListAsync();
 
                 return new ListResultDto<StoreProductDto>(
+                    ObjectMapper.Map<System.Collections.Generic.List<StoreProductDto>>(list)
+                );
+            }
+        }
+
+        [AbpAuthorize(PermissionNames.Pages_SmartStore_Seller, PermissionNames.Pages_SmartStore_Admin)]
+        public async Task<PagedResultDto<StoreProductDto>> GetPagedByStore(GetStoreProductsPagedInput input)
+        {
+            using (CurrentUnitOfWork.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant))
+            {
+                var query = _storeProductRepo
+                    .GetAllIncluding(sp => sp.Product)
+                    .Where(sp => sp.StoreId == input.StoreId && sp.Status);
+
+                var totalCount = await query.CountAsync();
+
+                var list = await query
+                    .Skip(input.SkipCount)
+                    .Take(input.MaxResultCount)
+                    .ToListAsync();
+
+                return new PagedResultDto<StoreProductDto>(
+                    totalCount,
                     ObjectMapper.Map<System.Collections.Generic.List<StoreProductDto>>(list)
                 );
             }

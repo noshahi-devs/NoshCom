@@ -131,6 +131,7 @@
             height: 42px;
             overflow: hidden;
             display: -webkit-box;
+            line-clamp: 2;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
         }
@@ -266,25 +267,50 @@
         transform: translateZ(-12px);
     }
 
-    .load-more-container {
-        display: flex;
-        justify-content: center;
-        margin-top: 40px;
+    .pagination-footer {
+        border-top: 1px solid rgba(226, 232, 240, 0.5);
+        padding-top: 25px;
 
-        .load-more-btn {
-            padding: 14px 40px;
-            border-radius: 12px;
-            border: 2px solid #4f46e5;
-            background: transparent;
-            color: #4f46e5;
-            font-weight: 700;
-            transition: all 0.3s;
+        .pagination-info {
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
 
-            &:hover {
-                background: #4f46e5;
-                color: white;
-                box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
-                transform: translateY(-3px);
+        .pagination-controls {
+            .pag-btn {
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid #e2e8f0;
+                background: white;
+                color: #64748b;
+                font-weight: 600;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                cursor: pointer;
+
+                &:hover:not([disabled]) {
+                    background: #f8fafc;
+                    border-color: #4f46e5;
+                    color: #4f46e5;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+                }
+
+                &.active {
+                    background: #4f46e5;
+                    border-color: #4f46e5;
+                    color: white;
+                    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+                }
+
+                &[disabled] {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                    background: #f1f5f9;
+                }
             }
         }
     }

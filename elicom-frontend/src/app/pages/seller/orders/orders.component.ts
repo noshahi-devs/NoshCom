@@ -38,6 +38,8 @@ interface SellerOrderRow {
     trackingId: string;
     total: number;
     source: any;
+    initialAgeMs: number;
+    loadTimestamp: number;
 }
 
 @Component({
@@ -55,6 +57,8 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
     private cdr = inject(ChangeDetectorRef);
 
     isLoading = false;
+    isClockSynced = false;
+    syncOffset = 0;
     searchTerm = '';
     pageSize = 10;
     currentPage = 1;
@@ -68,6 +72,7 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
     private routeDataSub: any;
     private relativeTimeTimer: any;
     private nowEpoch = Date.now();
+    private serverClockOffset = 0; // ms to add to Date.now() to sync with server
 
     ngOnInit(): void {
         this.routeDataSub = this.route.data.subscribe((data) => {
@@ -131,7 +136,7 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
     viewOrderDetails(order: SellerOrderRow): void {
         if (!order?.guid) return;
         this.router.navigate(['/seller/orders/details', order.guid], {
-            state: { order: order.source }
+            state: { order: order.source, fromView: this.orderView }
         });
     }
 
@@ -196,29 +201,28 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
         });
     }
 
-    getRelativeTime(value: Date | string | null): string {
-        if (!value) return '-';
-        const date = value instanceof Date ? value : new Date(value);
-        const diffMs = Math.max(0, this.nowEpoch - date.getTime());
-        const minute = 60 * 1000;
-        const hour = 60 * minute;
-        const day = 24 * hour;
+    getRelativeTime(row: SellerOrderRow): string {
+        if (!row.createdAt) return '-';
+        
+        // Use the initial age calculated at load time + elapsed time since load
+        const elapsedSinceLoad = Date.now() - row.loadTimestamp;
+        const totalAgeMs = Math.max(0, row.initialAgeMs + elapsedSinceLoad);
+        
+        const seconds = Math.floor((totalAgeMs / 1000) % 60);
+        const minutes = Math.floor((totalAgeMs / 1000 / 60) % 60);
+        const hours = Math.floor((totalAgeMs / (1000 * 60 * 60)) % 24);
+        const days = Math.floor(totalAgeMs / (1000 * 60 * 60 * 24));
 
-        if (diffMs < minute) return 'just now';
-        if (diffMs < hour) {
-            const mins = Math.floor(diffMs / minute);
-            return `${mins} minute${mins > 1 ? 's' : ''} ago`;
+        if (days > 0) {
+            return `${days}d ${hours}h ${minutes}m ${seconds}s`;
         }
-        if (diffMs < day) {
-            const hrs = Math.floor(diffMs / hour);
-            return `${hrs} hour${hrs > 1 ? 's' : ''} ago`;
+        if (hours > 0) {
+            return `${hours}h ${minutes}m ${seconds}s`;
         }
-        if (diffMs < 30 * day) {
-            const days = Math.floor(diffMs / day);
-            return `${days} day${days > 1 ? 's' : ''} ago`;
+        if (minutes > 0) {
+            return `${minutes}m ${seconds}s`;
         }
-        const months = Math.floor(diffMs / (30 * day));
-        return `${months} month${months > 1 ? 's' : ''} ago`;
+        return `${seconds}s`;
     }
 
     formatDate(value: Date | null): string {
@@ -286,8 +290,58 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
 
     private fetchOrders(storeId: string): void {
         this.orderService.getOrdersByStore(storeId).subscribe({
-            next: (res) => {
-                this.allOrders = (res || []).map((order: any) => this.toRow(order));
+            next: (response) => {
+                const res = response.body?.result || [];
+                const loadTimestamp = Date.now();
+                
+                // Step 1: Sync Clock (User Laptop vs Server UTC)
+                const serverDateStr = response.headers.get('Date') || response.headers.get('date');
+                const serverDate = this.parseUTC(serverDateStr);
+                
+                if (serverDate) {
+                    this.isClockSynced = true;
+                    this.syncOffset = serverDate.getTime() - Date.now();
+                } else {
+                    this.isClockSynced = false;
+                    this.syncOffset = 0;
+                }
+
+                const serverNow = this.isClockSynced ? (Date.now() + this.syncOffset) : Date.now();
+
+                // Step 2: Convert to Rows
+                const rows = (res || []).map((order: any) => this.toRow(order));
+
+                // Step 3: AUTO-DETECT DATABASE TIMEZONE ERROR
+                // Most databases store time in Server Local (e.g. EST) or UTC. 
+                // We detect the systemic gap between Server Clock and Order Timestamps.
+                let dbCorrectionMs = 0;
+                const pendingOrders = rows.filter((r: SellerOrderRow) => r.statusKey === 'pending' && r.createdAt);
+                if (pendingOrders.length > 0) {
+                    const newestOrderTime = Math.max(...pendingOrders.map((r: SellerOrderRow) => r.createdAt!.getTime()));
+                    const rawAge = serverNow - newestOrderTime;
+                    
+                    // Usually a whole number of hours (Timezone Offset).
+                    const hoursRaw = rawAge / 3600000;
+                    // We use floor to ensure we don't snap to 0s if the gap is slightly less 
+                    // than the next whole hour. This preserves the elapsed minutes.
+                    const wholeHours = Math.floor(hoursRaw);
+                    
+                    if (wholeHours >= 1 && wholeHours <= 14) {
+                        dbCorrectionMs = wholeHours * 3600000;
+                        console.log(`Smart Sync: Applied ${wholeHours}h timezone correction.`);
+                    }
+                }
+
+                // Step 4: Finalize Timing
+                rows.forEach((row: SellerOrderRow) => {
+                    if (row.createdAt) {
+                        // Apply the detected DB correction to the creation time
+                        row.initialAgeMs = Math.max(0, serverNow - (row.createdAt.getTime() + dbCorrectionMs));
+                        row.loadTimestamp = loadTimestamp;
+                    }
+                });
+                
+                this.allOrders = rows;
                 this.isLoading = false;
                 this.applyFilters();
                 this.cdr.detectChanges();
@@ -331,7 +385,7 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
     }
 
     private toRow(order: any): SellerOrderRow {
-        const createdAt = order?.creationTime ? new Date(order.creationTime) : null;
+        const createdAt = this.parseUTC(order?.creationTime);
         const statusKey = this.normalizeStatus(order?.status);
         const shipBy = this.computeRange(createdAt, 1, 2);
         const deliverBy = this.computeRange(createdAt, 3, 7);
@@ -350,8 +404,34 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
             shipVia: order?.carrierId || '-',
             trackingId: order?.trackingCode || order?.deliveryTrackingNumber || '-',
             total: this.toNumber(order?.totalAmount),
+            initialAgeMs: 0,
+            loadTimestamp: 0,
             source: order
         };
+    }
+
+    private parseUTC(dateValue: any): Date | null {
+        if (!dateValue) return null;
+        if (dateValue instanceof Date) return dateValue;
+        
+        let s = String(dateValue).trim();
+        // Robust regex to extract date and time components
+        const match = s.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?/);
+        
+        if (match) {
+            const [ , y, mon, d, h, min, sec, msStr] = match;
+            // Standardize milliseconds (up to 3 digits)
+            const ms = msStr ? parseInt(msStr.substring(0, 3).padEnd(3, '0')) : 0;
+            // Force UTC epoch
+            return new Date(Date.UTC(+y, +mon - 1, +d, +h, +min, +sec, ms));
+        }
+        
+        // Fallback for strings that might already have Z or an explicit offset at the VERY END
+        if (!s.includes('Z') && !/[+-]\d{2}:?\d{2}$/.test(s)) {
+            s += 'Z';
+        }
+        const fallback = new Date(s);
+        return isNaN(fallback.getTime()) ? null : fallback;
     }
 
     private matchesCurrentView(statusKey: string): boolean {
@@ -359,7 +439,7 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
             case 'unshipped':
                 return statusKey === 'pending' || statusKey === 'processing';
             case 'tracking-verifications':
-                return statusKey === 'pendingverification';
+                return ['shipped', 'shippedfromhub', 'verified', 'pendingverification'].includes(statusKey);
             case 'shipped':
                 return ['shipped', 'shippedfromhub', 'verified', 'delivered'].includes(statusKey);
             case 'canceled':
@@ -375,6 +455,12 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
 
     private getStatusLabel(statusKey: string, rawStatus: string): string {
         if (statusKey === 'pending' || statusKey === 'processing') return 'Unshipped';
+        
+        if (this.orderView === 'tracking-verifications') {
+            if (statusKey === 'shipped' || statusKey === 'shippedfromhub') return 'Pending Verification';
+            if (statusKey === 'verified') return 'Verified';
+        }
+
         if (statusKey === 'pendingverification') return 'Pending Verification';
         if (statusKey === 'shipped' || statusKey === 'shippedfromhub') return 'Shipped';
         if (statusKey === 'verified') return 'Verified';
@@ -397,10 +483,10 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
             },
             'tracking-verifications': {
                 key: 'tracking-verifications',
-                title: 'Tracking Verification Pending',
-                description: 'Tracking information is being verified. Please allow the system to confirm details.',
-                iconClass: 'fa-solid fa-hand',
-                dateHeading: 'Ship date',
+                title: 'Tracking Verifications',
+                description: 'Manage and monitor your tracking information to ensure accurate status updates and verification.',
+                iconClass: 'fa-solid fa-list-check',
+                dateHeading: 'Order date',
                 showShipVia: true
             },
             'shipped': {
@@ -467,8 +553,8 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
 
     private startRelativeTicker(): void {
         this.relativeTimeTimer = setInterval(() => {
-            this.nowEpoch = Date.now();
+            // Force redraw to update timers
             this.cdr.detectChanges();
-        }, 60 * 1000);
+        }, 1000);
     }
 }

@@ -23,6 +23,22 @@ export interface CreateOrderDto {
     items?: any[];
 }
 
+export interface CreateManualOrderDto {
+    storeId: string;
+    storeProductId: string;
+    quantity: number;
+    recipientName: string;
+    recipientEmail: string;
+    recipientPhone: string;
+    shippingAddress: string;
+    city: string;
+    state: string;
+    country: string;
+    postalCode: string;
+    overridePrice?: number;
+    notes?: string;
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -63,12 +79,19 @@ export class OrderService {
         );
     }
 
-    getOrdersByStore(storeId: string): Observable<any[]> {
-        return this.http.get<any>(`${this.baseUrl}/GetByStore`, {
-            params: { storeId }
+    getByOrderNumber(orderNumber: string): Observable<any> {
+        return this.http.get<any>(`${this.baseUrl}/GetByOrderNumber`, {
+            params: { orderNumber }
         }).pipe(
-            map(res => res.result || [])
+            map(res => res.result)
         );
+    }
+
+    getOrdersByStore(storeId: string): Observable<any> {
+        return this.http.get<any>(`${this.baseUrl}/GetByStore`, {
+            params: { storeId },
+            observe: 'response'
+        });
     }
 
     getAllOrders(): Observable<any[]> {
@@ -114,5 +137,9 @@ export class OrderService {
         return this.http.get<any>(`${this.baseUrl}/GetCarriers`).pipe(
             map(res => res.result || [])
         );
+    }
+
+    createManualOrder(input: CreateManualOrderDto): Observable<any> {
+        return this.http.post(`${this.baseUrl}/CreateManualOrder`, input);
     }
 }

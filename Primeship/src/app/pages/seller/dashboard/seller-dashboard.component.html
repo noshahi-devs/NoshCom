@@ -121,7 +121,7 @@
             <div class="order-item" *ngFor="let order of recentOrders">
               <div class="order-info">
                 <div class="order-header">
-                  <p class="order-id">{{ order.referenceCode || order.orderNo }}</p>
+                  <p class="order-id">{{ getTrackingDisplayValue(order) }}</p>
                   <span class="status-badge" [class]="'status-' + getStatusColor(order.status)">
                     {{ getStatusLabel(order.status) }}
                   </span>

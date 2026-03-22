@@ -11,7 +11,9 @@ export interface UserDto {
     name: string;
     surname: string;
     emailAddress: string;
+    phoneNumber?: string;
     isActive: boolean;
+    isEmailConfirmed: boolean;
     fullName: string;
     lastLoginTime?: Date;
     creationTime: Date;
@@ -23,9 +25,11 @@ export interface CreateUserDto {
     name: string;
     surname: string;
     emailAddress: string;
+    phoneNumber?: string;
     isActive: boolean;
     roleNames: string[];
     password?: string;
+    isEmailConfirmed?: boolean;
 }
 
 export interface UpdateUserDto extends CreateUserDto {

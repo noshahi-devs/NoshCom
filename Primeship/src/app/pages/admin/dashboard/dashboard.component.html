@@ -7,30 +7,22 @@
 
   <!-- Stats Cards Grid -->
   <div class="stats-grid">
-    <ng-container *ngIf="!isLoadingStats; else adminStatsSkeleton">
-      <div *ngFor="let card of statsCards" class="stat-card-3d orange-card">
-        <div class="stat-card-content">
-          <div class="stat-icon-wrapper">
-            <span class="stat-icon">{{ card.icon }}</span>
-          </div>
+    <div *ngFor="let card of statsCards" class="stat-card-3d orange-card" (click)="onStatCardClick(card)">
+      <div class="stat-card-content">
+        <div class="stat-icon-wrapper">
+          <span class="stat-icon">{{ card.icon }}</span>
+        </div>
 
-          <div class="stat-info">
-            <h3 class="stat-value">{{ card.value }}</h3>
-            <p class="stat-title">{{ card.title }}</p>
-          </div>
-        </div>
-        <div class="stat-card-decoration"></div>
-      </div>
-    </ng-container>
-    <ng-template #adminStatsSkeleton>
-      <div class="stat-card-3d skeleton-card" *ngFor="let _ of [1,2,3]">
-        <div class="skeleton-icon"></div>
-        <div class="skeleton-lines">
-          <span class="skeleton-line short"></span>
-          <span class="skeleton-line"></span>
+        <div class="stat-info">
+          <h3 class="stat-value">
+            <span *ngIf="isLoadingStats" class="value-skeleton" aria-hidden="true"></span>
+            <ng-container *ngIf="!isLoadingStats">{{ card.value }}</ng-container>
+          </h3>
+          <p class="stat-title">{{ card.title }}</p>
         </div>
       </div>
-    </ng-template>
+      <div class="stat-card-decoration"></div>
+    </div>
   </div>
 
   <!-- Main Content Grid -->

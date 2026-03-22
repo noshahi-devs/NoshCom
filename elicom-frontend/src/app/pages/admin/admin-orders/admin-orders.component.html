@@ -4,6 +4,9 @@
             <h2 class="fw-bold text-dark mb-1">Order Management</h2>
             <p class="text-muted">Verify tracking and confirm deliveries</p>
         </div>
+        <button class="btn btn-create-manual shadow-sm" (click)="showManualOrderModal = true">
+            <i class="fas fa-plus-circle me-2"></i> Create Manual Order
+        </button>
     </div>
 
     <!-- Tabs -->
@@ -60,21 +63,21 @@
                             </tr>
                         </ng-container>
                         <tr *ngFor="let order of filteredOrders" class="transition-all" [class.d-none]="loading">
-                            <td class="ps-4">
+                            <td class="ps-4" data-label="Order #">
                                 <span class="fw-bold text-dark">{{ order.orderNumber }}</span>
                                 <div class="text-muted extra-small">Placed on {{ order.creationTime | date }}</div>
                             </td>
-                            <td>
+                            <td data-label="Customer">
                                 <div class="fw-semibold">{{ order.customerName || 'User #' + order.userId }}</div>
                             </td>
-                            <td>
+                            <td data-label="Amount">
                                 <span class="fw-bold text-primary">${{ order.totalAmount }}</span>
                             </td>
-                            <td>
+                            <td data-label="Carrier">
                                 <span class="badge bg-info-subtle text-info rounded-pill px-3">{{ order.carrierId ||
                                     'N/A' }}</span>
                             </td>
-                            <td>
+                            <td data-label="Tracking">
                                 <div class="d-flex align-items-center gap-2">
                                     <button *ngIf="order.trackingCode"
                                         class="btn btn-link p-0 border-0 text-decoration-none"
@@ -87,7 +90,7 @@
                                     <span *ngIf="!order.trackingCode" class="text-muted small">N/A</span>
                                 </div>
                             </td>
-                            <td class="text-end pe-4">
+                            <td class="text-end pe-4" data-label="Actions">
                                 <div class="d-flex justify-content-end gap-2 align-items-center">
                                     <button
                                         *ngIf="canVerify(order)"
@@ -120,6 +123,13 @@
         </div>
     </div>
 </div>
+
+<!-- =================== MANUAL ORDER MODAL =================== -->
+<app-manual-order-modal
+    *ngIf="showManualOrderModal"
+    (close)="showManualOrderModal = false"
+    (orderCreated)="showManualOrderModal = false; loadOrders()">
+</app-manual-order-modal>
 
 <!-- =================== TRACKING MODAL =================== -->
 <div class="tracking-modal-backdrop animate__animated animate__fadeIn" *ngIf="showTrackingModal"

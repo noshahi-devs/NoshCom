@@ -1,0 +1,106 @@
+.wc-date-range-container {
+    position: relative;
+    display: inline-block;
+    min-width: 280px;
+    font-family: 'Outfit', sans-serif;
+    perspective: 1000px;
+    
+    &.is-open {
+        .wc-date-caret {
+            transform: rotate(180deg) translateZ(10px);
+        }
+        .wc-date-trigger {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            box-shadow: 
+                0 4px 0 #1e3a8a,
+                0 10px 20px rgba(30, 58, 138, 0.3);
+        }
+    }
+}
+
+.wc-date-trigger {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 22px;
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-align: left;
+    transform-style: preserve-3d;
+    box-shadow: 
+        0 6px 0 #1d4ed8, 
+        0 12px 25px rgba(37, 99, 235, 0.2);
+    
+    &:hover {
+        transform: translateY(-4px) rotateX(2deg);
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        box-shadow: 
+            0 10px 0 #1e3a8a, 
+            0 20px 40px rgba(30, 58, 138, 0.3);
+    }
+
+    &:active {
+        transform: translateY(2px);
+        box-shadow: 0 4px 0 #1e3a8a;
+    }
+}
+
+.wc-date-caret {
+    font-size: 14px;
+    transition: transform 0.3s ease;
+    transform: translateZ(15px);
+}
+
+.wc-date-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: none;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+    z-index: 2000; /* High z-index to stay above everything */
+    max-height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    transform: translateZ(100px); /* Bring way forward in 3D space */
+    border: 1px solid #e2e8f0;
+
+    &::-webkit-scrollbar { width: 6px; }
+    &::-webkit-scrollbar-track { background: #f1f5f9; }
+    &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+}
+
+.wc-date-option {
+    width: 100%;
+    text-align: left;
+    padding: 12px 18px;
+    background: transparent;
+    border: none;
+    color: #1e293b;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.2s;
+    margin-bottom: 4px;
+
+    &:hover, &.active {
+        background: linear-gradient(135deg, #eff6ff, #dbeafe);
+        color: #2563eb;
+        transform: translateX(5px);
+    }
+}

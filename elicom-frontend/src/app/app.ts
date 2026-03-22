@@ -52,7 +52,8 @@ export class App {
       url.startsWith('/checkout') ||
       url.startsWith('/customer') ||
       url.startsWith('/seller') ||
-      url.startsWith('/admin')
+      url.startsWith('/admin') ||
+      url.startsWith('/corporate')
     );
   }
 

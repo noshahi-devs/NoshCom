@@ -4,7 +4,7 @@
 }
 
 .footer {
-    background-color: #f9f9f9;
+    background-color: #FFFFFF;
     color: #000;
     padding: 50px 0;
     font-family: 'Arial', sans-serif;
@@ -218,86 +218,180 @@
     }
 
     /* =========================
+     FOOTER LOGO
+     ========================= */
+
+    .footer-logo-section {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin: -120px 0 30px;
+        padding: 0;
+
+        .footer-logo {
+            max-width: 400px;
+            height: auto;
+        }
+    }
+
+    /* =========================
      FOOTER BOTTOM
      ========================= */
 
     .footer-bottom {
         display: flex;
-        flex-direction: column;
-        align-items: center;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
         width: 100%;
         margin-top: 40px;
         border-top: 1px solid #eee;
-        padding-top: 30px;
+        padding-top: 25px;
 
-        .banks {
-            width: 100%;
-            text-align: center;
-            margin-bottom: 30px;
-
-            h6 {
-                margin-bottom: 20px;
-            }
-
-            .payment-grid-footer {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 15px;
-
-                .pay-logo {
-                    background: #fff;
-                    padding: 5px 10px;
-                    border: 1px solid #eee;
-                    border-radius: 4px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-
-                    img {
-                        height: 20px;
-                        max-width: 40px;
-                        object-fit: contain;
-                    }
-                }
-            }
+        @media (max-width: 991px) {
+            flex-direction: column;
+            align-items: center;
         }
 
         .terms-conditions-policy {
-            width: 100%;
-            text-align: center;
+            width: 65%;
+            text-align: left;
+
+            @media (max-width: 991px) {
+                width: 100%;
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .copyright-text {
+                color: #333;
+                font-size: 13px;
+                font-weight: 500;
+                margin-bottom: 15px;
+            }
 
             .footer-links {
                 list-style: none;
                 padding: 0;
-                margin: 0 0 15px;
+                margin: 0;
                 display: flex;
                 flex-wrap: wrap;
-                justify-content: center;
-                gap: 10px;
+                gap: 8px 15px;
+                font-size: 11.5px;
+                color: #666;
+                align-items: center;
+
+                @media (max-width: 991px) {
+                    justify-content: center;
+                }
 
                 li {
-                    font-size: 12px;
-                    color: #777;
+                    display: flex;
+                    align-items: center;
+
+                    &:not(:last-child)::after {
+                        content: "|";
+                        margin-left: 15px;
+                        color: #ddd;
+                        font-weight: 300;
+                    }
 
                     a {
-                        display: inline;
-                        color: #777;
-                        text-decoration: none;
-                        font-size: 12px;
-                        margin: 0;
+                        color: #666;
+                        text-decoration: underline;
+                        transition: color 0.2s;
 
                         &:hover {
                             color: #000;
                         }
                     }
+
+                    &.location-link {
+                        i {
+                            margin-right: 5px;
+                            font-size: 13px;
+                            color: #000;
+                        }
+                        a {
+                            font-weight: 600;
+                            color: #333;
+                            text-decoration: none;
+                        }
+                    }
+                }
+            }
+        }
+
+        .banks {
+            width: 35%;
+            text-align: left;
+
+            @media (max-width: 991px) {
+                width: 100%;
+                text-align: center;
+            }
+
+            h6 {
+                margin-bottom: 12px;
+                font-size: 11px;
+                color: #333;
+                letter-spacing: 0.05em;
+            }
+
+            .payment-grid-footer {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                gap: 10px;
+
+                @media (max-width: 991px) {
+                    justify-content: center;
+                }
+
+                .pay-logo {
+                    background: #fff;
+                    padding: 5px 10px; // Slightly more padding
+                    border: 1px solid #eee;
+                    border-radius: 3px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-width: 45px; // Increased from 40px
+                    height: 32px; // Increased from 28px
+
+                    &.placeholder-logo {
+                        font-size: 9px;
+                        color: #999;
+                        text-align: center;
+                        background: #fdfdfd;
+                    }
+
+                    img {
+                        height: 22px; // Increased from 18px
+                        max-width: 50px; // Increased from 45px
+                        object-fit: contain;
+                        filter: grayscale(0.2);
+                        
+                        &:hover {
+                            filter: none;
+                        }
+                    }
                 }
             }
 
-            .copyright-text {
-                color: #999;
-                font-size: 12px;
-                margin-bottom: 30px; // Padding for bottom
+            .security-logos {
+                margin-top: 15px;
+
+                .security-logo {
+                    padding: 4px 8px;
+                    border: 1px solid #eee;
+                    border-radius: 3px;
+                    font-size: 10px;
+                    color: #888;
+                    background: #f9f9f9;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                }
             }
         }
     }

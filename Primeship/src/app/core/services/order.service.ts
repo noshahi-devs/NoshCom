@@ -135,6 +135,15 @@ export class OrderService {
         );
     }
 
+    getOrderById(id: string): Observable<any> {
+        return this.http.get<any>(`${this.apiUrl}/Get`, {
+            params: { id },
+            headers: this.authService.getAuthHeaders()
+        }).pipe(
+            map(response => response?.result ?? response)
+        );
+    }
+
     deleteOrder(id: any): Observable<any> {
         return this.http.delete(`${this.apiUrl}/Delete`, {
             params: { id },

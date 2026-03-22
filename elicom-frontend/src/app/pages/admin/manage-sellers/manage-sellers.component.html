@@ -34,6 +34,18 @@
                 entries
             </div>
 
+            <div class="filter-pills">
+                <button class="filter-pill" [class.active]="filterMode === 'all'" (click)="setFilter('all')">
+                    All
+                </button>
+                <button class="filter-pill" [class.active]="filterMode === 'active'" (click)="setFilter('active')">
+                    Active
+                </button>
+                <button class="filter-pill" [class.active]="filterMode === 'inactive'" (click)="setFilter('inactive')">
+                    In Active
+                </button>
+            </div>
+
             <div class="search-wrap">
                 <label><i class="fas fa-search"></i></label>
                 <input type="text" placeholder="Search sellers by name or email..." [(ngModel)]="searchTerm"
@@ -48,6 +60,7 @@
                     <tr>
                         <th>Seller & Shop</th>
                         <th>Joined</th>
+                        <th>Store Listings</th>
                         <th>Wallet Balance</th>
                         <th>Orders</th>
                         <th>Status</th>
@@ -70,6 +83,7 @@
                                 </div>
                             </td>
                             <td><div class="sk-line w-60 mx-auto"></div></td>
+                            <td><div class="sk-line w-40 mx-auto"></div></td> <!-- New column for listings -->
                             <td><div class="sk-line w-50 mx-auto"></div></td>
                             <td><div class="sk-line w-40 mx-auto"></div></td>
                             <td><div class="sk-pill w-60 mx-auto"></div></td>
@@ -85,7 +99,7 @@
 
                     <!-- Empty State -->
                     <tr *ngIf="!isLoading && pagedSellers.length === 0">
-                        <td colspan="7" class="text-center empty-row">
+                        <td colspan="8" class="text-center empty-row">
                             <i class="fas fa-users-slash d-block mb-3" style="font-size:3rem; color:#cbd5e1;"></i>
                             No sellers found matching your criteria.
                         </td>
@@ -114,9 +128,21 @@
                             <td class="date-col text-center">
                                 <div class="cell-box">
                                     <div class="relative-time">{{ getRelativeTime(seller.createdAt) }}</div>
-                                    <div class="exact-date text-muted" style="font-size: 0.8rem;">
+                                    <div class="exactly-at text-muted" style="font-size: 0.75rem;">
                                         {{ formatDate(seller.createdAt) }}
                                     </div>
+                                </div>
+                            </td>
+
+                            <!-- Store Listings -->
+                            <td class="listings-col text-center">
+                                <div class="cell-box">
+                                    <div class="listings-val">
+                                        <span class="badge" [ngClass]="(seller.totalProducts || 0) > 0 ? 'bg-primary' : 'bg-secondary'">
+                                            {{ seller.totalProducts || 0 }}
+                                        </span>
+                                    </div>
+                                    <div class="listings-label text-muted" style="font-size: 0.75rem;">Products</div>
                                 </div>
                             </td>
 

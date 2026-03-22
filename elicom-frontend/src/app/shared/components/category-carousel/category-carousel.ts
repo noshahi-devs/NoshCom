@@ -46,15 +46,14 @@ export class CategoryCarouselComponent implements OnInit, OnChanges {
     }
   }
 
-  // ... (existing layout code)
-
   loadMyCategories() {
     console.log('Carousel: Falling back to global robust stream...');
     // Use the shared cached observable from the service
     this.adeel.getAllCategories().subscribe({
       next: (res: any[]) => {
         console.log('Carousel: Categories received via shared stream. Count:', res.length);
-        this.categories = res || [];
+        this.categories = this.shuffle(res || []);
+        console.log(`[DEBUG] Carousel Shuffle: First category is now "${this.categories[0]?.name}" at ${new Date().toLocaleTimeString()}`);
         this.buildSlides();
         this.cdr.detectChanges();
       },
@@ -148,5 +147,14 @@ export class CategoryCarouselComponent implements OnInit, OnChanges {
     if (this.currentSlide > 0) {
       this.currentSlide--;
     }
+  }
+
+  private shuffle<T>(arr: T[]): T[] {
+    const copy = [...arr];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
   }
 }

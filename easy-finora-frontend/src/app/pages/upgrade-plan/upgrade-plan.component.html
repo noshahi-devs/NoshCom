@@ -119,7 +119,8 @@
     </ng-template>
 
     <ng-template #noCardBlock>
-        <div class="no-card-block">No active card found. Apply for a card to unlock upgrade analytics.</div>
+        <div class="usage-loading" *ngIf="!cardLoadCompleted">Loading card details...</div>
+        <div class="no-card-block" *ngIf="cardLoadCompleted">No active card found. Apply for a card to unlock upgrade analytics.</div>
     </ng-template>
 
     <div class="plans-grid">

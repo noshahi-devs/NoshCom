@@ -85,6 +85,7 @@
           <th>Seller</th>
           <th>Date</th>
           <th>Status</th>
+          <th>Tracking</th>
           <th>Total</th>
           <th>Actions</th>
         </tr>
@@ -107,6 +108,12 @@
             <span class="status-badge" [ngClass]="'status-' + (order.status | lowercase)">
               {{ getStatusLabel(order.status) }}
             </span>
+          </td>
+          <td class="tracking-cell">
+            <div class="tracking-chip" [class.muted]="!order.hasTracking">
+              <span class="tracking-dot"></span>
+              <span class="tracking-text">{{ order.trackingDisplay }}</span>
+            </div>
           </td>
           <td class="total">{{ formatPrice(getOrderTotal(order)) }}</td>
           <td class="actions">

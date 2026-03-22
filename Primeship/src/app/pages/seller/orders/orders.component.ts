@@ -93,15 +93,22 @@ export class SellerOrdersComponent implements OnInit {
       next: (res) => {
         const rawOrders = res || [];
         // Map backend data to frontend model to ensure consistent property access
-        this.orders = rawOrders.map((o: any) => ({
-          ...o,
-          items: (o.items || o.orderItems || []).map((it: any) => ({
-            ...it,
-            qty: it.qty || it.quantity || 0,
-            price: it.price || it.purchasePrice || it.priceAtPurchase || 0,
-            productName: it.productName || it.name
-          }))
-        }));
+        this.orders = rawOrders.map((o: any) => {
+          const trackingValue = this.resolveTrackingValue(o);
+          const normalizedTracking = this.normalizeTrackingValue(trackingValue || o?.trackingCode, o);
+          return {
+            ...o,
+            trackingCode: normalizedTracking || trackingValue || o.trackingCode || '',
+            trackingDisplay: normalizedTracking || trackingValue || this.getTrackingFallbackLabel(o),
+            hasTracking: !!(normalizedTracking || trackingValue),
+            items: (o.items || o.orderItems || []).map((it: any) => ({
+              ...it,
+              qty: it.qty || it.quantity || 0,
+              price: it.price || it.purchasePrice || it.priceAtPurchase || 0,
+              productName: it.productName || it.name
+            }))
+          };
+        });
 
         this.applyFilters();
         this.calculateSellerStats();
@@ -121,11 +128,15 @@ export class SellerOrdersComponent implements OnInit {
     this.filteredOrders = this.orders.filter(o => {
       const orderNo = (o.referenceCode || o.orderNo || o.orderNumber || '').toLowerCase();
       const customerName = (o.customerName || '').toLowerCase();
+      const phone = (o.phone || o.recipientPhone || '').toLowerCase();
+      const tracking = (o.trackingDisplay || o.trackingCode || '').toString().toLowerCase();
 
       const matchesSearch =
         !q ||
         orderNo.includes(q) ||
-        customerName.includes(q);
+        customerName.includes(q) ||
+        phone.includes(q) ||
+        tracking.includes(q);
 
       const status = (o.status || '').toLowerCase();
       const matchesStatus = this.selectedStatus === 'all' || status === this.selectedStatus.toLowerCase();
@@ -174,6 +185,126 @@ export class SellerOrdersComponent implements OnInit {
       default:
         return status || 'Unknown';
     }
+  }
+
+  private getTrackingFallbackLabel(order: any): string {
+    const status = (order?.status || '').toLowerCase();
+    if (status === 'pending' || status === 'purchased' || status === 'processing') {
+      return 'Pending assignment';
+    }
+
+    return 'N/A';
+  }
+
+  private resolveTrackingValue(source: any): string {
+    if (!source || typeof source !== 'object') {
+      return '';
+    }
+
+    const direct = [
+      source?.trackingCode,
+      source?.deliveryTrackingNumber,
+      source?.primeShipTrackingNumber,
+      source?.trackingNumber,
+      source?.trackingNo,
+      source?.trackingId,
+      source?.primeShipInfo?.trackingNumber,
+      source?.order?.trackingCode,
+      source?.order?.deliveryTrackingNumber,
+      source?.order?.primeShipTrackingNumber
+    ].find((value: any) => (typeof value === 'string' || typeof value === 'number') && `${value}`.trim().length > 0);
+
+    if (direct !== undefined) {
+      return `${direct}`.trim();
+    }
+
+    return this.findTrackingDeep(source, 0) || '';
+  }
+
+  private normalizeTrackingValue(raw: any, order: any): string {
+    const value = (raw ?? '').toString().trim();
+    if (!value) {
+      return '';
+    }
+
+    if (this.isNewTrackingFormat(value)) {
+      return value;
+    }
+
+    const productName = this.getPrimaryProductName(order);
+    const initials = this.extractTrackingInitials(productName);
+    const digitsOnly = value.replace(/\D/g, '');
+    if (!digitsOnly) {
+      return value;
+    }
+
+    const tenDigits = digitsOnly.length >= 10
+      ? digitsOnly.slice(-10)
+      : digitsOnly.padStart(10, '0');
+
+    return `UK-${initials}${tenDigits}`;
+  }
+
+  private isNewTrackingFormat(value: string): boolean {
+    return /^UK-[A-Z]{2}\d{10}$/.test(value);
+  }
+
+  private extractTrackingInitials(name: string): string {
+    const letters = (name || '').replace(/[^A-Za-z]/g, '').toUpperCase();
+    if (!letters) {
+      return 'XX';
+    }
+    return `${letters[0]}${letters[letters.length - 1]}`;
+  }
+
+  private getPrimaryProductName(order: any): string {
+    const items = order?.items || order?.orderItems || [];
+    for (const item of items) {
+      const name = (item?.productName || item?.name || '').toString().trim();
+      if (name) {
+        return name;
+      }
+    }
+    return '';
+  }
+
+  private findTrackingDeep(node: any, depth: number): string {
+    if (!node || depth > 4) {
+      return '';
+    }
+
+    if (typeof node !== 'object') {
+      return '';
+    }
+
+    if (Array.isArray(node)) {
+      for (const item of node) {
+        const found = this.findTrackingDeep(item, depth + 1);
+        if (found) {
+          return found;
+        }
+      }
+
+      return '';
+    }
+
+    for (const [key, value] of Object.entries(node)) {
+      if (key.toLowerCase().includes('tracking') && (typeof value === 'string' || typeof value === 'number')) {
+        const normalized = `${value}`.trim();
+        if (normalized.length > 0) {
+          return normalized;
+        }
+      }
+    }
+
+    for (const value of Object.values(node)) {
+      const found = this.findTrackingDeep(value, depth + 1);
+      if (found) {
+        return found;
+      }
+    }
+
+    return '';
   }
 
   getOrderTotal(order: any): number {

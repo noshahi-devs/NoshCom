@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { timeout } from 'rxjs/operators';
 import { CardService } from '../../services/card.service';
 import { ToastService } from '../../shared/toast/toast.service';
 import { TransactionService } from '../../services/transaction.service';
@@ -28,6 +29,11 @@ interface ActiveCardSnapshot {
     activeSubscription: string;
 }
 
+interface PersistedCardSnapshot {
+    userId: string;
+    card: ActiveCardSnapshot;
+}
+
 @Component({
     selector: 'app-upgrade-plan',
     standalone: true,
@@ -37,6 +43,7 @@ interface ActiveCardSnapshot {
 })
 export class UpgradePlan implements OnInit {
     private readonly activePlanStorageKey = 'easy_finora_active_plan_code';
+    private readonly activeCardStorageKey = 'easy_finora_active_card_snapshot';
     private isUsageOverviewApiAvailable = true;
     showPurchaseModal = false;
     isSubmitting = false;
@@ -52,6 +59,7 @@ export class UpgradePlan implements OnInit {
     usageOverview: any = null;
     usageLoading = false;
     cardSectionLoading = true;
+    cardLoadCompleted = false;
 
     constructor(
         private cardService: CardService,
@@ -136,10 +144,36 @@ export class UpgradePlan implements OnInit {
             this.activePlanCode = persistedPlanCode;
             this.applyPlanState();
         }
+
+        const persistedCard = this.getPersistedActiveCardSnapshot();
+        if (persistedCard) {
+            this.activeCard = {
+                ...persistedCard,
+                activeSubscription: this.getPlanDisplayName(this.activePlanCode)
+            };
+            this.usageOverview = this.buildUsageOverviewFromHistory([], persistedCard.cardId, this.activePlanCode);
+            this.cardLoadCompleted = true;
+            this.cardSectionLoading = false;
+            this.usageLoading = false;
+            this.debugLog('ngOnInit restored cached active card', {
+                cardId: persistedCard.cardId,
+                activePlanCode: this.activePlanCode
+            });
+        }
+
         this.syncPlanStateFromServer();
     }
 
     onPlanAction(plan: UpgradePlanItem): void {
+        this.debugLog('plan tab clicked', {
+            code: plan.code,
+            name: plan.name,
+            tabText: plan.tabText,
+            isPurchased: !!plan.isPurchased,
+            activePlanCode: this.activePlanCode,
+            pendingPlanCode: this.pendingPlanCode,
+            activeCardId: this.activeCard?.cardId || 0
+        });
         if (plan.tabText === 'Active') {
             this.toastService.showModal(`${plan.name} plan is already active.`, 'Info', 'info');
             return;
@@ -259,6 +293,7 @@ export class UpgradePlan implements OnInit {
                         status: resultCardStatus || 'Active',
                         activeSubscription: this.getPlanDisplayName(this.activePlanCode)
                     };
+                    this.persistActiveCardSnapshot(this.activeCard);
                 }
 
                 if (this.activeCard) {
@@ -267,6 +302,7 @@ export class UpgradePlan implements OnInit {
                         status: 'Active',
                         activeSubscription: this.getPlanDisplayName(this.activePlanCode)
                     };
+                    this.persistActiveCardSnapshot(this.activeCard);
 
                     if (this.activeCard.cardId) {
                         this.loadUsageOverview(this.activeCard.cardId);
@@ -377,12 +413,27 @@ export class UpgradePlan implements OnInit {
     }
 
     private syncPlanStateFromServer(): void {
-        this.cardSectionLoading = true;
-        this.usageLoading = true;
-        this.usageOverview = null;
-        this.cardService.getUserCards().subscribe({
+        const hasCachedCard = !!this.activeCard?.cardId;
+        if (hasCachedCard && !this.usageOverview && this.activeCard?.cardId) {
+            this.usageOverview = this.buildUsageOverviewFromHistory([], this.activeCard.cardId, this.activePlanCode);
+        }
+        this.cardLoadCompleted = hasCachedCard;
+        this.cardSectionLoading = !hasCachedCard;
+        this.usageLoading = !hasCachedCard;
+        if (!hasCachedCard) {
+            this.usageOverview = null;
+        }
+
+        this.cardService.getUserCards().pipe(
+            timeout(12000)
+        ).subscribe({
             next: (res) => {
                 const cards = this.extractCards(res);
+                this.debugLog('GetUserCards success', {
+                    count: cards.length,
+                    hasCachedCard,
+                    currentActiveCardId: this.activeCard?.cardId || 0
+                });
                 const activeCard = cards.find((c: any) => this.isCardActive(c)) || cards[0];
                 const planCodeFromServer = this.normalizePlanCode(
                     activeCard?.activeSubscriptionCode ||
@@ -405,24 +456,32 @@ export class UpgradePlan implements OnInit {
 
                 this.activeCard = activeCard
                     ? {
-                        cardId: activeCard.cardId ?? activeCard.id,
-                        cardTypeLabel: this.resolveCardTypeLabel(activeCard.cardType),
-                        holderName: activeCard.holderName || 'Card Holder',
-                        cardNumber: activeCard.cardNumber || '**** **** **** ****',
-                        expiryDate: activeCard.expiryDate || '--/--',
-                        status: activeCard.status || 'Inactive',
+                        cardId: activeCard.cardId ?? activeCard.CardId ?? activeCard.id,
+                        cardTypeLabel: this.resolveCardTypeLabel(activeCard.cardType ?? activeCard.CardType),
+                        holderName: activeCard.holderName || activeCard.HolderName || 'Card Holder',
+                        cardNumber: activeCard.cardNumber || activeCard.CardNumber || '**** **** **** ****',
+                        expiryDate: activeCard.expiryDate || activeCard.ExpiryDate || '--/--',
+                        status: activeCard.status || activeCard.Status || 'Inactive',
                         // Always bind display to resolved active plan code
                         // so top panel stays correct after plan switches.
                         activeSubscription: this.getPlanDisplayName(this.activePlanCode)
                     }
                     : null;
+                this.persistActiveCardSnapshot(this.activeCard);
 
                 if (this.activeCard?.cardId) {
+                    this.cardLoadCompleted = true;
+                    this.debugLog('loading usage overview for active card', {
+                        cardId: this.activeCard.cardId,
+                        activePlanCode: this.activePlanCode
+                    });
                     this.loadUsageOverview(this.activeCard.cardId);
                 } else {
                     this.usageOverview = null;
                     this.usageLoading = false;
                     this.cardSectionLoading = false;
+                    this.cardLoadCompleted = true;
+                    this.debugLog('no active card available from server', {});
                 }
             },
             error: () => {
@@ -436,12 +495,31 @@ export class UpgradePlan implements OnInit {
                 this.usageOverview = null;
                 this.usageLoading = false;
                 this.cardSectionLoading = false;
+                this.cardLoadCompleted = true;
+
+                if (!this.activeCard) {
+                    const persistedCard = this.getPersistedActiveCardSnapshot();
+                    if (persistedCard) {
+                        this.activeCard = {
+                            ...persistedCard,
+                            activeSubscription: this.getPlanDisplayName(this.activePlanCode)
+                        };
+                        this.cardLoadCompleted = true;
+                    }
+                }
 
                 if (this.activeCard) {
                     this.activeCard = {
                         ...this.activeCard,
                         activeSubscription: this.getPlanDisplayName(this.activePlanCode)
                     };
+                    this.usageOverview = this.usageOverview || this.buildUsageOverviewFromHistory([], this.activeCard.cardId, this.activePlanCode);
+                    this.debugLog('GetUserCards failed, fallback from cached card', {
+                        cardId: this.activeCard.cardId,
+                        activePlanCode: this.activePlanCode
+                    });
+                } else {
+                    this.debugLog('GetUserCards failed and no cached active card', {});
                 }
             }
         });
@@ -452,22 +530,28 @@ export class UpgradePlan implements OnInit {
             this.usageOverview = null;
             this.usageLoading = false;
             this.cardSectionLoading = false;
+            this.debugLog('loadUsageOverview skipped: invalid cardId', { cardId });
             return;
         }
 
+        const emptyUsageFallback = this.buildUsageOverviewFromHistory([], cardId, this.activePlanCode);
         this.usageLoading = true;
         this.cardSectionLoading = true;
-        this.usageOverview = null;
+        this.usageOverview = emptyUsageFallback;
 
         if (!this.isUsageOverviewApiAvailable) {
             this.loadUsageOverviewFromHistoryFallback(cardId);
             return;
         }
 
-        this.cardService.getCardUsageOverview(cardId).subscribe({
+        this.cardService.getCardUsageOverview(cardId).pipe(
+            timeout(12000)
+        ).subscribe({
             next: (res) => {
-                this.usageOverview = this.mapUsageOverviewFromServer(res?.result, cardId);
-                this.activePlanCode = this.normalizePlanCode(this.usageOverview?.planCode) || this.activePlanCode;
+                const rawUsage = res?.result ?? res;
+                this.usageOverview = this.mapUsageOverviewFromServer(rawUsage, cardId) || emptyUsageFallback;
+                const usagePlanCode = this.normalizePlanCode(this.usageOverview?.planCode);
+                this.activePlanCode = this.resolveActivePlanCode(usagePlanCode);
                 this.persistActivePlanCode(this.activePlanCode);
 
                 if (this.activeCard) {
@@ -480,6 +564,15 @@ export class UpgradePlan implements OnInit {
                 this.applyPlanState();
                 this.usageLoading = false;
                 this.cardSectionLoading = false;
+                this.debugLog('GetCardUsageOverview success', {
+                    cardId,
+                    planCode: this.usageOverview?.planCode,
+                    dailyTxUsed: this.usageOverview?.dailyTransactionUsed,
+                    monthlyTxUsed: this.usageOverview?.monthlyTransactionUsed,
+                    monthlyTxRemaining: this.usageOverview?.monthlyTransactionRemaining,
+                    monthlyAmountUsed: this.usageOverview?.monthlyAmountUsed,
+                    monthlyAmountRemaining: this.usageOverview?.monthlyAmountRemaining
+                });
             },
             error: (err) => {
                 if (Number(err?.status) === 404) {
@@ -487,83 +580,85 @@ export class UpgradePlan implements OnInit {
                     // Stop calling it repeatedly and use local history computation.
                     this.isUsageOverviewApiAvailable = false;
                 }
+                this.debugLog('GetCardUsageOverview failed, using history fallback', {
+                    cardId,
+                    status: Number(err?.status || 0)
+                });
                 this.loadUsageOverviewFromHistoryFallback(cardId);
             }
         });
     }
 
     private loadUsageOverviewFromHistoryFallback(cardId: number): void {
-        this.transactionService.getHistory(0, 1000).subscribe({
+        this.transactionService.getHistory(0, 1000).pipe(
+            timeout(12000)
+        ).subscribe({
             next: (res) => {
                 const items = Array.isArray(res?.result?.items) ? res.result.items : [];
                 this.usageOverview = this.buildUsageOverviewFromHistory(items, cardId, this.activePlanCode);
                 this.usageLoading = false;
                 this.cardSectionLoading = false;
+                this.debugLog('history fallback success', {
+                    cardId,
+                    txCount: items.length,
+                    monthlyTxUsed: this.usageOverview?.monthlyTransactionUsed,
+                    monthlyTxRemaining: this.usageOverview?.monthlyTransactionRemaining
+                });
             },
             error: () => {
                 this.usageOverview = this.buildUsageOverviewFromHistory([], cardId, this.activePlanCode);
                 this.usageLoading = false;
                 this.cardSectionLoading = false;
+                this.debugLog('history fallback failed, using empty usage', { cardId });
             }
         });
     }
 
     private mapUsageOverviewFromServer(raw: any, cardId: number): any {
-        if (!raw) {
+        const payload = raw?.result ?? raw;
+        if (!payload) {
             return this.buildUsageOverviewFromHistory([], cardId, this.activePlanCode);
         }
 
         const now = new Date();
         const dayStartFallback = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
         const monthStartFallback = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0));
-        const planCode = this.normalizePlanCode(raw?.planCode ?? raw?.PlanCode) || this.activePlanCode || 'free';
+        const planCode = this.normalizePlanCode(payload?.planCode ?? payload?.PlanCode) || this.activePlanCode || 'free';
         const limits = this.getPlanLimits(planCode);
 
-        const dailyTransactionLimit = this.toSafeNumber(raw?.dailyTransactionLimit ?? raw?.DailyTransactionLimit, limits.transactionsPerDay);
-        const dailyTransactionUsed = this.toSafeNumber(raw?.dailyTransactionUsed ?? raw?.DailyTransactionUsed, 0);
-        const monthlyTransactionLimit = this.toSafeNumber(raw?.monthlyTransactionLimit ?? raw?.MonthlyTransactionLimit, limits.transactionsPerMonth);
-        const monthlyTransactionUsed = this.toSafeNumber(raw?.monthlyTransactionUsed ?? raw?.MonthlyTransactionUsed, 0);
-        const dailyAmountLimit = this.toSafeNumber(raw?.dailyAmountLimit ?? raw?.DailyAmountLimit, limits.dailyAmountLimit);
-        const dailyAmountUsed = this.toSafeNumber(raw?.dailyAmountUsed ?? raw?.DailyAmountUsed, 0);
-        const monthlyAmountLimit = this.toSafeNumber(raw?.monthlyAmountLimit ?? raw?.MonthlyAmountLimit, limits.monthlyAmountLimit);
-        const monthlyAmountUsed = this.toSafeNumber(raw?.monthlyAmountUsed ?? raw?.MonthlyAmountUsed, 0);
+        const dailyTransactionLimit = Math.max(0, this.toSafeNumber(payload?.dailyTransactionLimit ?? payload?.DailyTransactionLimit, limits.transactionsPerDay));
+        const dailyTransactionUsed = Math.max(0, this.toSafeNumber(payload?.dailyTransactionUsed ?? payload?.DailyTransactionUsed, 0));
+        const monthlyTransactionLimit = Math.max(0, this.toSafeNumber(payload?.monthlyTransactionLimit ?? payload?.MonthlyTransactionLimit, limits.transactionsPerMonth));
+        const monthlyTransactionUsed = Math.max(0, this.toSafeNumber(payload?.monthlyTransactionUsed ?? payload?.MonthlyTransactionUsed, 0));
+        const dailyAmountLimit = Math.max(0, this.toSafeNumber(payload?.dailyAmountLimit ?? payload?.DailyAmountLimit, limits.dailyAmountLimit));
+        const dailyAmountUsed = Math.max(0, this.toSafeNumber(payload?.dailyAmountUsed ?? payload?.DailyAmountUsed, 0));
+        const monthlyAmountLimit = Math.max(0, this.toSafeNumber(payload?.monthlyAmountLimit ?? payload?.MonthlyAmountLimit, limits.monthlyAmountLimit));
+        const monthlyAmountUsed = Math.max(0, this.toSafeNumber(payload?.monthlyAmountUsed ?? payload?.MonthlyAmountUsed, 0));
 
         return {
-            cardId: this.toSafeNumber(raw?.cardId ?? raw?.CardId, cardId),
+            cardId: this.toSafeNumber(payload?.cardId ?? payload?.CardId, cardId),
             planCode,
             planName: this.getPlanDisplayName(planCode),
             dailyTransactionLimit,
             dailyTransactionUsed,
-            dailyTransactionRemaining: this.toSafeNumber(
-                raw?.dailyTransactionRemaining ?? raw?.DailyTransactionRemaining,
-                Math.max(0, dailyTransactionLimit - dailyTransactionUsed)
-            ),
+            dailyTransactionRemaining: Math.max(0, dailyTransactionLimit - dailyTransactionUsed),
             monthlyTransactionLimit,
             monthlyTransactionUsed,
-            monthlyTransactionRemaining: this.toSafeNumber(
-                raw?.monthlyTransactionRemaining ?? raw?.MonthlyTransactionRemaining,
-                Math.max(0, monthlyTransactionLimit - monthlyTransactionUsed)
-            ),
+            monthlyTransactionRemaining: Math.max(0, monthlyTransactionLimit - monthlyTransactionUsed),
             dailyAmountLimit,
             dailyAmountUsed,
-            dailyAmountRemaining: this.toSafeNumber(
-                raw?.dailyAmountRemaining ?? raw?.DailyAmountRemaining,
-                Math.max(0, dailyAmountLimit - dailyAmountUsed)
-            ),
+            dailyAmountRemaining: Math.max(0, dailyAmountLimit - dailyAmountUsed),
             monthlyAmountLimit,
             monthlyAmountUsed,
-            monthlyAmountRemaining: this.toSafeNumber(
-                raw?.monthlyAmountRemaining ?? raw?.MonthlyAmountRemaining,
-                Math.max(0, monthlyAmountLimit - monthlyAmountUsed)
-            ),
-            usageDayStartUtc: this.toSafeDate(raw?.usageDayStartUtc ?? raw?.UsageDayStartUtc, dayStartFallback),
-            usageMonthStartUtc: this.toSafeDate(raw?.usageMonthStartUtc ?? raw?.UsageMonthStartUtc, monthStartFallback),
+            monthlyAmountRemaining: Math.max(0, monthlyAmountLimit - monthlyAmountUsed),
+            usageDayStartUtc: this.toSafeDate(payload?.usageDayStartUtc ?? payload?.UsageDayStartUtc, dayStartFallback),
+            usageMonthStartUtc: this.toSafeDate(payload?.usageMonthStartUtc ?? payload?.UsageMonthStartUtc, monthStartFallback),
             nextDailyResetUtc: this.toSafeDate(
-                raw?.nextDailyResetUtc ?? raw?.NextDailyResetUtc,
+                payload?.nextDailyResetUtc ?? payload?.NextDailyResetUtc,
                 new Date(dayStartFallback.getTime() + 24 * 60 * 60 * 1000)
             ),
             nextMonthlyResetUtc: this.toSafeDate(
-                raw?.nextMonthlyResetUtc ?? raw?.NextMonthlyResetUtc,
+                payload?.nextMonthlyResetUtc ?? payload?.NextMonthlyResetUtc,
                 new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1, 0, 0, 0))
             )
         };
@@ -815,5 +910,72 @@ export class UpgradePlan implements OnInit {
         } catch {
             return '';
         }
+    }
+
+    private persistActiveCardSnapshot(card: ActiveCardSnapshot | null): void {
+        const userId = this.getCurrentUserId();
+        if (!userId) {
+            return;
+        }
+
+        try {
+            if (!card) {
+                localStorage.removeItem(this.activeCardStorageKey);
+                return;
+            }
+
+            const payload: PersistedCardSnapshot = { userId, card };
+            localStorage.setItem(this.activeCardStorageKey, JSON.stringify(payload));
+        } catch {
+            // Ignore storage failures.
+        }
+    }
+
+    private getPersistedActiveCardSnapshot(): ActiveCardSnapshot | null {
+        const userId = this.getCurrentUserId();
+        if (!userId) {
+            return null;
+        }
+
+        try {
+            const raw = localStorage.getItem(this.activeCardStorageKey);
+            if (!raw) {
+                return null;
+            }
+
+            const parsed = JSON.parse(raw) as PersistedCardSnapshot;
+            if (!parsed || parsed.userId !== userId || !parsed.card) {
+                return null;
+            }
+
+            const cardId = Number(parsed.card.cardId || 0);
+            if (!cardId) {
+                return null;
+            }
+
+            return {
+                cardId,
+                cardTypeLabel: parsed.card.cardTypeLabel || 'Card',
+                holderName: parsed.card.holderName || 'Card Holder',
+                cardNumber: parsed.card.cardNumber || '**** **** **** ****',
+                expiryDate: parsed.card.expiryDate || '--/--',
+                status: parsed.card.status || 'Active',
+                activeSubscription: this.getPlanDisplayName(this.activePlanCode)
+            };
+        } catch {
+            return null;
+        }
+    }
+
+    private getCurrentUserId(): string {
+        try {
+            return (sessionStorage.getItem('userId') || localStorage.getItem('userId') || '').toString().trim();
+        } catch {
+            return '';
+        }
+    }
+
+    private debugLog(message: string, data: any): void {
+        console.log('[UpgradePlan]', message, data);
     }
 }

@@ -294,7 +294,9 @@ namespace Elicom.Cards
                     }
                 }
 
-                await SetPendingSubscriptionCodeAsync(planCode);
+                // Purchase should activate immediately for the selected card.
+                await SetActiveSubscriptionCodeAsync(planCode);
+                await SetPendingSubscriptionCodeAsync(string.Empty);
                 activeSubscriptionCode = await GetActiveSubscriptionCodeAsync();
                 pendingSubscriptionCode = await GetPendingSubscriptionCodeAsync();
 
@@ -313,8 +315,8 @@ namespace Elicom.Cards
                     PendingSubscriptionCode = pendingSubscriptionCode,
                     PendingSubscription = GetPlanDisplayName(pendingSubscriptionCode),
                     Message = amount <= 0m
-                        ? $"{planName} plan is ready. Click Apply Now to activate it."
-                        : $"{planName} plan purchased successfully. Click Apply Now to activate it."
+                        ? $"{planName} plan activated successfully."
+                        : $"{planName} plan purchased and activated successfully."
                 };
             }
         }
@@ -599,42 +601,71 @@ namespace Elicom.Cards
         public async Task<List<VirtualCardDto>> GetUserCards()
         {
             var userId = AbpSession.GetUserId();
-            var cards = await _cardRepository.GetAllListAsync(c => c.UserId == userId);
-            var activeSubscriptionCode = await GetActiveSubscriptionCodeAsync();
-            var pendingSubscriptionCode = await GetPendingSubscriptionCodeAsync();
-
-            // Mask card numbers for security and map to DTO
-            var dtos = cards.Select(card => new VirtualCardDto
+            using (UnitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
             {
-                CardId = card.Id,
-                CardNumber = MaskCardNumber(FormatCardNumber(card.CardNumber)),
-                CardType = card.CardType,
-                HolderName = card.HolderName,
-                ExpiryDate = card.ExpiryDate,
-                Cvv = "***", // Hide CVV in list view
-                Balance = card.Balance,
-                Currency = card.Currency,
-                Status = card.Status,
-                ActiveSubscriptionCode = activeSubscriptionCode,
-                ActiveSubscription = GetPlanDisplayName(activeSubscriptionCode),
-                PendingSubscriptionCode = pendingSubscriptionCode,
-                PendingSubscription = GetPlanDisplayName(pendingSubscriptionCode)
-            }).ToList();
+                var cardQuery = _cardRepository.GetAll()
+                    .IgnoreQueryFilters()
+                    .Where(c => c.UserId == userId);
 
-            return dtos;
+                if (AbpSession.TenantId.HasValue)
+                {
+                    var tenantId = AbpSession.TenantId.Value;
+                    cardQuery = cardQuery.Where(c => c.TenantId == tenantId);
+                }
+
+                var cards = await cardQuery
+                    .OrderByDescending(c => c.CreationTime)
+                    .ToListAsync();
+                var activeSubscriptionCode = await GetActiveSubscriptionCodeAsync();
+                var pendingSubscriptionCode = await GetPendingSubscriptionCodeAsync();
+
+                // Mask card numbers for security and map to DTO
+                var dtos = cards.Select(card => new VirtualCardDto
+                {
+                    CardId = card.Id,
+                    CardNumber = MaskCardNumber(FormatCardNumber(card.CardNumber)),
+                    CardType = card.CardType,
+                    HolderName = card.HolderName,
+                    ExpiryDate = card.ExpiryDate,
+                    Cvv = "***", // Hide CVV in list view
+                    Balance = card.Balance,
+                    Currency = card.Currency,
+                    Status = card.Status,
+                    ActiveSubscriptionCode = activeSubscriptionCode,
+                    ActiveSubscription = GetPlanDisplayName(activeSubscriptionCode),
+                    PendingSubscriptionCode = pendingSubscriptionCode,
+                    PendingSubscription = GetPlanDisplayName(pendingSubscriptionCode)
+                }).ToList();
+
+                return dtos;
+            }
         }
 
         public async Task<VirtualCardDto> GetCardSensitiveDetails(long cardId)
         {
             var userId = AbpSession.GetUserId();
-            var card = await _cardRepository.GetAsync(cardId);
+            VirtualCard card;
+            using (UnitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
+            {
+                var cardQuery = _cardRepository.GetAll()
+                    .IgnoreQueryFilters()
+                    .Where(c => c.Id == cardId && c.UserId == userId);
+
+                if (AbpSession.TenantId.HasValue)
+                {
+                    var tenantId = AbpSession.TenantId.Value;
+                    cardQuery = cardQuery.Where(c => c.TenantId == tenantId);
+                }
+
+                card = await cardQuery.FirstOrDefaultAsync();
+                if (card == null)
+                {
+                    throw new UserFriendlyException("Card not found or unauthorized access.");
+                }
+            }
+
             var activeSubscriptionCode = await GetActiveSubscriptionCodeAsync();
             var pendingSubscriptionCode = await GetPendingSubscriptionCodeAsync();
-
-            if (card.UserId != userId)
-            {
-                throw new UserFriendlyException("Unauthorized access to card details.");
-            }
 
             return new VirtualCardDto
             {

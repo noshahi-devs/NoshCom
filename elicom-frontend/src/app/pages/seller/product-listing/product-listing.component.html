@@ -94,10 +94,27 @@
         </div>
     </div>
 
-    <!-- Load More -->
-    <div class="load-more-container" *ngIf="!isLoading && products.length > 0">
-        <button class="load-more-btn">
-            Load More Products
-        </button>
+    <!-- Pagination -->
+    <div class="pagination-footer d-flex justify-content-between align-items-center mt-5 mb-4 px-2" *ngIf="!isLoading && totalProducts > 0">
+        <div class="pagination-info text-muted small">
+            Showing {{ ((currentPage - 1) * pageSize) + 1 }} - {{ Math.min(currentPage * pageSize, totalProducts) }} of {{ totalProducts }} listings
+        </div>
+        
+        <div class="pagination-controls d-flex gap-2">
+            <button class="pag-btn" [disabled]="currentPage === 1" (click)="onPrevPage()">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            
+            <button class="pag-btn" 
+                    *ngFor="let p of [].constructor(totalPages); let i = index" 
+                    [class.active]="currentPage === (i + 1)"
+                    (click)="onPageChange(i + 1)">
+                {{ i + 1 }}
+            </button>
+            
+            <button class="pag-btn" [disabled]="currentPage === totalPages" (click)="onNextPage()">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
     </div>
 </div>

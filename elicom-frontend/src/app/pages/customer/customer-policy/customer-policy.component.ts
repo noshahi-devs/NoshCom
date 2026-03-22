@@ -1,6 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+export interface PolicyItem {
+    title: string;
+    icon: string;
+    description: string;
+}
+
 @Component({
     selector: 'app-customer-policy',
     standalone: true,
@@ -9,13 +15,28 @@ import { CommonModule } from '@angular/common';
     styleUrls: ['./customer-policy.component.scss']
 })
 export class CustomerPolicyComponent implements OnInit {
-    policies = [
-        { title: 'Return Policy', icon: 'fa-undo', description: 'Everything you need to know about returns and replacements.' },
-        { title: 'Refund Policy', icon: 'fa-money-bill-wave', description: 'How and when you will receive your money back.' },
-        { title: 'Coupon Policy', icon: 'fa-ticket-alt', description: 'Rules and limitations for using promotional codes.' },
-        { title: 'Bonus Point Policy', icon: 'fa-coins', description: 'Earn and spend points on your favorite items.' },
-        { title: 'Privacy Policy', icon: 'fa-lock', description: 'How we protect your personal data and privacy.' },
-        { title: 'Terms & Conditions', icon: 'fa-file-contract', description: 'The legal agreement for using our platform.' }
+
+    policies: PolicyItem[] = [
+        {
+            title: 'Privacy Policy',
+            icon: 'fa-user-shield',
+            description: 'Your privacy is important to us. This policy explains how we collect, use, and protect your personal information.'
+        },
+        {
+            title: 'Terms & Conditions',
+            icon: 'fa-file-contract',
+            description: 'By using World Cart, you agree to our terms and conditions. These govern your use of our platform and services.'
+        },
+        {
+            title: 'Return & Refund Policy',
+            icon: 'fa-undo',
+            description: 'We offer a flexible return and refund policy. Please ensure items are in their original condition for a full refund.'
+        },
+        {
+            title: 'Cookie Policy',
+            icon: 'fa-cookie-bite',
+            description: 'We use cookies to enhance your browsing experience. You can manage your cookie preferences in your browser settings.'
+        }
     ];
 
     constructor() { }

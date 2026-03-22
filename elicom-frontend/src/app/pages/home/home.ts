@@ -42,7 +42,7 @@ export class HomeComponent implements OnInit {
   popularApparel: ProductCardDto[] = [];
   deals: ProductCardDto[] = [];
   bestBooks: ProductCardDto[] = [];
-  categories: Category[] = [];
+  categories: any[] = [];
   productError: string = '';
   categoryError: string = '';
   isLoadingCategories: boolean = false;
@@ -81,8 +81,10 @@ export class HomeComponent implements OnInit {
         else if (res && Array.isArray(res.result)) items = res.result;
 
         console.log('HomeComponent: Products received:', items.length);
-        this.products = items;
-        this.buildSections(items);
+        const mixedItems = this.mixByCategory(items);
+        this.products = mixedItems;
+        this.buildSections(mixedItems);
+        this.assignPreviewImages();
         this.cdr.detectChanges();
       },
       error: (err: any) => {
@@ -98,11 +100,13 @@ export class HomeComponent implements OnInit {
     this.isLoadingCategories = true;
     this.categoryError = '';
     console.log('HomeComponent: Triggering robust category load...');
-    this.categoryService.getAllCategories(8).subscribe({
+    this.categoryService.getAllCategories(30).subscribe({
       next: (res: any[]) => {
         this.isLoadingCategories = false;
         console.log('HomeComponent: Categories arrived reliably. Count:', res.length);
-        this.categories = res;
+        this.categories = this.shuffle(res);
+        console.log(`[DEBUG] Home Shuffle: First category is "${this.categories[0]?.name}" at ${new Date().toLocaleTimeString()}`);
+        this.assignPreviewImages();
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -143,14 +147,7 @@ export class HomeComponent implements OnInit {
       return picked;
     };
 
-    const shuffle = (arr: ProductCardDto[]) => {
-      const copy = [...arr];
-      for (let i = copy.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [copy[i], copy[j]] = [copy[j], copy[i]];
-      }
-      return copy;
-    };
+    const shuffle = (arr: ProductCardDto[]) => this.shuffle(arr);
 
     const discountedSource = baseItems.filter(p =>
       (p as any).resellerDiscountPercentage > 0 ||
@@ -158,7 +155,7 @@ export class HomeComponent implements OnInit {
     );
 
     const discounted = take(discountedSource, 36);
-    const topProducts = take(pool.slice().sort((a, b) => (b.price || 0) - (a.price || 0)), 24);
+    const topProducts = take(this.mixByCategory(pool), 24);
     const forYou = take(shuffle(pool), 32);
     const trending = take(shuffle(pool), 24);
     const freshFinds = take(shuffle(pool), 24);
@@ -231,8 +228,65 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  private assignPreviewImages() {
+    if (!this.categories.length || !this.products.length) return;
+
+    this.categories.forEach((cat: any) => {
+      const catProducts = this.products.filter(p => 
+        p.categoryId === cat.id || 
+        p.categoryName?.toLowerCase() === cat.name?.toLowerCase()
+      );
+
+      if (catProducts.length > 0) {
+        cat.previewImages = this.shuffle(catProducts)
+          .slice(0, 4)
+          .map(p => this.getImage(p));
+      } else {
+        cat.previewImages = [];
+      }
+    });
+  }
+
   private getKey(p: ProductCardDto): string {
     return ((p as any).__cloneId || p.storeProductId || p.id || p.productId || '') as string;
+  }
+
+  private shuffle<T>(arr: T[]): T[] {
+    const copy = [...arr];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  private mixByCategory(items: ProductCardDto[]): ProductCardDto[] {
+    if (!items || items.length <= 1) return items || [];
+
+    const buckets = new Map<string, ProductCardDto[]>();
+    for (const item of items) {
+      const key = (item.categoryId || item.categoryName || 'uncategorized').toString();
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key)!.push(item);
+    }
+
+    const shuffledBuckets = this.shuffle(
+      Array.from(buckets.values()).map(bucket => this.shuffle(bucket))
+    );
+
+    const mixed: ProductCardDto[] = [];
+    let added = true;
+    while (added) {
+      added = false;
+      for (const bucket of shuffledBuckets) {
+        if (bucket.length) {
+          mixed.push(bucket.shift() as ProductCardDto);
+          added = true;
+        }
+      }
+    }
+
+    return mixed;
   }
 
   private pickByCategory(items: ProductCardDto[], keywords: string[], count: number): ProductCardDto[] {

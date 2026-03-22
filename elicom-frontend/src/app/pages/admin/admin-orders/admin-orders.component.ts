@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { OrderService } from '../../../services/order.service';
 import { AlertService } from '../../../services/alert.service';
+import { ManualOrderModalComponent } from './manual-order-modal/manual-order-modal.component';
 
 @Component({
     selector: 'app-admin-orders',
     standalone: true,
-    imports: [CommonModule, RouterModule, FormsModule],
+    imports: [CommonModule, RouterModule, FormsModule, ManualOrderModalComponent],
     templateUrl: './admin-orders.component.html',
     styleUrls: ['./admin-orders.component.scss']
 })
@@ -21,6 +22,7 @@ export class AdminOrdersComponent implements OnInit {
     loading = false;
     selectedOrder: any = null;
     showTrackingModal = false;
+    showManualOrderModal = false;
 
     private orderService = inject(OrderService);
     private cdr = inject(ChangeDetectorRef);
@@ -57,7 +59,8 @@ export class AdminOrdersComponent implements OnInit {
             || normalized === 'pendingverification'
             || normalized === 'shipped'
             || normalized === 'shippedfromhub'
-            || normalized === 'processing';
+            || normalized === 'processing'
+            || normalized === 'paid (system credit)';
     }
 
     isVerifiedStatus(status: any): boolean {
@@ -186,7 +189,7 @@ export class AdminOrdersComponent implements OnInit {
             order?.orderItems?.[0]?.id
         ];
         for (const value of candidates) {
-            if (typeof value === 'string' && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(value)) {
+            if (typeof value === 'string' && /^[0-9a-f_]{8}-[0-9a-f_]{4}-[0-9a-f_]{4}-[0-9a-f_]{4}-[0-9a-f_]{12}$/.test(value)) {
                 return value;
             }
         }

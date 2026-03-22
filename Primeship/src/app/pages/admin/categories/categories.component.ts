@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
 import { CategoryService, CategoryDto, CreateCategoryDto, UpdateCategoryDto } from '../../../core/services/category.service';
 import { StorageService } from '../../../core/services/storage.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -50,6 +50,7 @@ export class CategoriesComponent implements OnInit {
   totalPages = 1;
   searchTerm = "";
   selectedStatusFilter: boolean | null = null;
+  latestCreatedCategoryId: string | null = null;
 
   // Loading state
   isLoading = false;
@@ -71,14 +72,14 @@ export class CategoriesComponent implements OnInit {
 
   private initForms(): void {
     this.addCategoryForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
+      name: ['', [Validators.required, Validators.minLength(2), this.categoryNameValidator()]],
       imageUrl: [''],
       status: [true]
     });
 
     this.editCategoryForm = this.fb.group({
       id: [''],
-      name: ['', [Validators.required, Validators.minLength(2)]],
+      name: ['', [Validators.required, Validators.minLength(2), this.categoryNameValidator()]],
       imageUrl: [''],
       status: [true]
     });
@@ -92,15 +93,85 @@ export class CategoriesComponent implements OnInit {
       .replace(/-+/g, '-');
   }
 
+  private categoryNameValidator(excludeId?: string): ValidatorFn {
+    return (control: AbstractControl) => {
+      const rawValue = (control.value ?? '').toString().trim();
+      if (!rawValue) return null;
+
+      const normalized = this.normalizeCategoryName(rawValue);
+      const hasDuplicate = this.categories.some(category => {
+        if (excludeId && String(category.id) === String(excludeId)) {
+          return false;
+        }
+        return this.normalizeCategoryName(category.name) === normalized;
+      });
+
+      return hasDuplicate ? { duplicate: true } : null;
+    };
+  }
+
+  private normalizeCategoryName(value: string): string {
+    return value.toLowerCase().replace(/\\s+/g, ' ').trim();
+  }
+
+  private sortCategories(categories: CategoryDto[], pinnedId?: string): CategoryDto[] {
+    const toTime = (category: CategoryDto): number => {
+      const keys = [
+        'updatedAt',
+        'createdAt',
+        'lastModificationTime',
+        'lastModifiedAt',
+        'lastModifiedTime',
+        'creationTime',
+        'createdOn',
+        'createdAt'
+      ];
+
+      for (const key of keys) {
+        const raw = (category as any)?.[key];
+        if (!raw) continue;
+        const parsed = new Date(raw).getTime();
+        if (!Number.isNaN(parsed)) return parsed;
+      }
+
+      return 0;
+    };
+
+    return [...categories].sort((a, b) => {
+      if (pinnedId) {
+        const aPinned = String(a.id) === String(pinnedId);
+        const bPinned = String(b.id) === String(pinnedId);
+        if (aPinned !== bPinned) return aPinned ? -1 : 1;
+      }
+
+      const bTime = toTime(b);
+      const aTime = toTime(a);
+      if (bTime !== aTime) return bTime - aTime;
+
+      const bId = Number(b.id);
+      const aId = Number(a.id);
+      if (!Number.isNaN(bId) && !Number.isNaN(aId)) {
+        return bId - aId;
+      }
+
+      return String(b.id ?? '').localeCompare(String(a.id ?? ''), undefined, { numeric: true });
+    });
+  }
+
   // Load Categories from API
   loadCategories(): void {
     this.isLoading = true;
 
     this.categoryService.getAll().subscribe({
       next: (categories) => {
-        this.categories = categories;
+        this.categories = this.sortCategories(categories, this.latestCreatedCategoryId || undefined);
         this.filterTable();
         this.isLoading = false;
+
+        this.addCategoryForm.get('name')?.updateValueAndValidity({ emitEvent: false });
+        this.editCategoryForm.get('name')?.updateValueAndValidity({ emitEvent: false });
+
+        this.latestCreatedCategoryId = null;
 
         // Force change detection
         this.cdr.detectChanges();
@@ -117,6 +188,7 @@ export class CategoriesComponent implements OnInit {
   openAddCategoryModal(): void {
     this.addCategoryForm.reset({ name: '', slug: '', imageUrl: '', status: true });
     this.imagePreviewUrl = null;
+    this.addCategoryForm.get('name')?.updateValueAndValidity({ emitEvent: false });
     this.addCategoryModalVisible = true;
     this.cdr.detectChanges();
   }
@@ -136,6 +208,12 @@ export class CategoriesComponent implements OnInit {
       status: category.status
     });
     this.editImagePreviewUrl = category.imageUrl;
+    this.editCategoryForm.get('name')?.setValidators([
+      Validators.required,
+      Validators.minLength(2),
+      this.categoryNameValidator(category.id)
+    ]);
+    this.editCategoryForm.get('name')?.updateValueAndValidity({ emitEvent: false });
     this.editCategoryModalVisible = true;
     this.cdr.detectChanges();
   }
@@ -221,6 +299,8 @@ export class CategoriesComponent implements OnInit {
         console.log('✅ Category created:', result);
         this.toastService.showSuccess('Category added successfully');
         this.closeAddCategoryModal();
+        this.currentPage = 1;
+        this.latestCreatedCategoryId = result?.id ? String(result.id) : null;
         this.loadCategories();
       },
       error: (error) => {
