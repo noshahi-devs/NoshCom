@@ -1,7 +1,15 @@
-import { Component, HostListener, OnInit, ChangeDetectorRef, Input, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CategoryService } from '../../../services/category';
 import { Router } from '@angular/router';
+import { CategoryService } from '../../../services/category';
 import { SearchService } from '../../../services/search.service';
 import { environment } from '../../../../environments/environment';
 
@@ -10,26 +18,35 @@ import { environment } from '../../../../environments/environment';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './category-carousel.html',
-  styleUrls: ['./category-carousel.scss']
+  styleUrls: ['./category-carousel.scss'],
 })
 export class CategoryCarouselComponent implements OnInit, OnChanges {
-
   @Input() categories: any[] = [];
+
   slides: any[][] = [];
+  featureCategories: any[] = [];
+  currentSlide = 0;
+  enableCarousel = false;
+
+  itemsPerRow = 8;
+  rows = 2;
+  itemsPerSlide = 16;
+
+  private readonly promoLabels = [
+    '50% OFF',
+    '40% OFF',
+    '60% OFF',
+    'NEW ARRIVAL',
+    'BEST SELLER',
+    'LIMITED',
+  ];
 
   constructor(
     private adeel: CategoryService,
     private cdr: ChangeDetectorRef,
     private router: Router,
     private searchService: SearchService
-  ) { }
-  currentSlide = 0;
-  enableCarousel = false;
-
-  // responsive vars
-  itemsPerRow = 6;
-  rows = 2;
-  itemsPerSlide = 16;
+  ) {}
 
   ngOnInit(): void {
     this.calculateLayout();
@@ -40,63 +57,71 @@ export class CategoryCarouselComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['categories'] && this.categories) {
-      console.log('Carousel: Received items via Input. Count:', this.categories.length);
       this.buildSlides();
       this.cdr.detectChanges();
     }
   }
 
-  loadMyCategories() {
-    console.log('Carousel: Falling back to global robust stream...');
-    // Use the shared cached observable from the service
+  loadMyCategories(): void {
     this.adeel.getAllCategories().subscribe({
       next: (res: any[]) => {
-        console.log('Carousel: Categories received via shared stream. Count:', res.length);
         this.categories = this.shuffle(res || []);
-        console.log(`[DEBUG] Carousel Shuffle: First category is now "${this.categories[0]?.name}" at ${new Date().toLocaleTimeString()}`);
         this.buildSlides();
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Carousel: Robust category load failure', err);
-      }
+        console.error('Carousel: category load failure', err);
+      },
     });
   }
 
-  /* 🔹 RESPONSIVE LOGIC */
   @HostListener('window:resize')
-  calculateLayout() {
+  calculateLayout(): void {
     const width = window.innerWidth;
 
-    if (width < 480) {
-      this.itemsPerRow = 2;
-    } else if (width < 768) {
+    if (width < 600) {
+      this.itemsPerRow = 3;
+    } else if (width < 900) {
       this.itemsPerRow = 4;
-    } else if (width < 1200) {
-      this.itemsPerRow = 6;
     } else {
-      this.itemsPerRow = 6;
+      this.itemsPerRow = 8;
     }
 
     this.itemsPerSlide = this.itemsPerRow * this.rows;
-
     this.buildSlides();
-    this.cdr.detectChanges(); // Refresh on resize
+    this.cdr.detectChanges();
   }
 
-  /* 🔹 SLIDE BUILDER */
-  buildSlides() {
+  buildSlides(): void {
     this.slides = [];
     this.currentSlide = 0;
+    this.featureCategories = this.categories.slice(0, 6);
 
     for (let i = 0; i < this.categories.length; i += this.itemsPerSlide) {
-      this.slides.push(
-        this.categories.slice(i, i + this.itemsPerSlide)
-      );
+      this.slides.push(this.categories.slice(i, i + this.itemsPerSlide));
     }
 
-    // 🔥 MAIN RULE
-    this.enableCarousel = this.categories.length > this.itemsPerSlide;
+    this.enableCarousel = this.slides.length > 1;
+  }
+
+  getPromoLabel(index: number): string {
+    return this.promoLabels[index] || 'FEATURED';
+  }
+
+  getTrackTransform(): string {
+    if (!this.slides.length) {
+      return 'translateX(0)';
+    }
+
+    return `translateX(-${(this.currentSlide * 100) / this.slides.length}%)`;
+  }
+
+  getSlideWidthPercent(): number {
+    if (!this.slides.length) {
+      return 100;
+    }
+
+    return 100 / this.slides.length;
   }
 
   getCategoryImage(cat: any): string {
@@ -104,46 +129,57 @@ export class CategoryCarouselComponent implements OnInit, OnChanges {
 
     if (!val || val === 'string' || val.trim() === '') {
       const seed = cat.id || cat.categoryId || cat.name || 'default';
-      return `https://picsum.photos/seed/${seed}/110/110`;
+      return `https://picsum.photos/seed/${seed}/240/240`;
     }
 
-    // Clean malformed strings from API
     val = val.trim();
     if (val.startsWith('"') || val.startsWith('\\"')) {
-      val = val.replace(/^\\"/, '').replace(/\\"$/, '').replace(/^"/, '').replace(/"$/, '').replace(/\\"/g, '');
+      val = val
+        .replace(/^\\"/, '')
+        .replace(/\\"$/, '')
+        .replace(/^"/, '')
+        .replace(/"$/, '')
+        .replace(/\\"/g, '');
     }
     if (val.startsWith('[')) {
-      val = val.replace(/^\[/, '').replace(/\]$/, '').replace(/^"/, '').replace(/"$/, '').replace(/\\"/g, '');
+      val = val
+        .replace(/^\[/, '')
+        .replace(/\]$/, '')
+        .replace(/^"/, '')
+        .replace(/"$/, '')
+        .replace(/\\"/g, '');
     }
 
-    if (val.startsWith('http')) return val;
+    if (val.startsWith('http')) {
+      return val;
+    }
 
-    // Handle local images (e.g. 'hair.png')
     return `${environment.apiUrl}/images/products/${val}`;
   }
 
-  handleImageError(event: any, cat: any) {
+  handleImageError(event: any, cat: any): void {
     const seed = cat.id || cat.categoryId || cat.name || 'default';
-    const fallbackUrl = `https://picsum.photos/seed/${seed}/110/110`;
+    const fallbackUrl = `https://picsum.photos/seed/${seed}/240/240`;
 
-    if (event.target.src === fallbackUrl) return;
+    if (event.target.src === fallbackUrl) {
+      return;
+    }
     event.target.src = fallbackUrl;
   }
 
-  onCategoryClick(cat: any) {
+  onCategoryClick(cat: any): void {
     const term = cat.name;
     this.searchService.setSearchTerm(term);
-    // Navigate to search-result (or reuse component if already there)
     this.router.navigate(['/search-result'], { queryParams: { cat: term } });
   }
 
-  next() {
+  next(): void {
     if (this.currentSlide < this.slides.length - 1) {
       this.currentSlide++;
     }
   }
 
-  prev() {
+  prev(): void {
     if (this.currentSlide > 0) {
       this.currentSlide--;
     }

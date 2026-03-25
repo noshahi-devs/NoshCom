@@ -6,7 +6,7 @@
     flex-direction: column;
     height: 100%;
     min-height: 100%;
-    overflow: hidden;
+    overflow: visible;
 
     &::-webkit-scrollbar {
         display: none;
@@ -16,8 +16,9 @@
 /* ===== IMAGE CONTAINER ===== */
 .image-box {
     display: flex;
-    gap: 2px;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
     height: 100%;
     min-height: 100%;
 }
@@ -25,57 +26,128 @@
 /* ===== THUMBNAILS ===== */
 .thumbnails {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 10px;
+    width: 100%;
 }
 
 .thumb {
-    width: 50px;
-    height: 75px;
+    width: 60px;
+    height: 85px;
     border: 2px solid transparent;
     cursor: pointer;
-    background: #f2f2f2;
-    transition: all 0.2s ease;
-
-    img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    &:hover {
-        border-color: #aaa;
-    }
-
-    &.active {
-        border-color: #000;
-    }
-}
-
-/* ===== MAIN IMAGE ===== */
-.main-image {
-    position: relative;
-    flex: 1;
-    width: auto;
-    min-height: 660px;
-    height: 100%;
-    background: #f8f8f8;
-    margin-left: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    cursor: zoom-in;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform: translateY(0);
 
     img {
         width: 100%;
         height: 100%;
         object-fit: contain;
-        transition: transform 0.3s ease;
+        border-radius: 10px;
+        padding: 4px;
     }
 
-    &:hover img {
-        transform: scale(1.03);
+    &:hover {
+        border-color: #ffc107;
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(255, 193, 7, 0.2);
+    }
+
+    &.active {
+        border-color: #ffc107;
+        box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.3);
+        transform: scale(1.05);
+    }
+}
+
+/* ===== MAIN IMAGE ===== */
+@keyframes dynamicBorder {
+    0% { box-shadow: inset 0 0 0 5px #ffc107; }
+    50% { box-shadow: inset 0 0 0 5px #000; }
+    100% { box-shadow: inset 0 0 0 5px #ffc107; }
+}
+
+.main-image {
+    position: relative;
+    width: 100%;
+    height: 480px; /* Bounded height */
+    min-height: unset;
+    background: #ffffff;
+    border-radius: 20px;
+    margin-left: 0;
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: zoom-in;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 20px;
+        pointer-events: none;
+        animation: dynamicBorder 3s infinite ease-in-out;
+        z-index: 10;
+    }
+
+    .carousel-book {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        perspective: 1500px;
+    }
+
+    .page {
+        position: absolute;
+        inset: 0;
+        
+        /* PEELING AWAY STATE (when it loses .active-page state) */
+        transform-origin: top left;
+        transform: rotate3d(1, 1, 0, -110deg) scale(0.85); /* Pulls from bottom-right corner upwards to top-left */
+        opacity: 0;
+        z-index: 3; /* Keep exiting page on top of the incoming page */
+        pointer-events: none;
+        transition: transform 1s cubic-bezier(0.5, 0, 0.2, 1), opacity 0.8s ease-in, box-shadow 1s ease;
+        box-shadow: 30px 30px 50px rgba(0, 0, 0, 0.3); /* Big shadow as the paper lifts from corner */
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 20px;
+            background: #fff; /* Solid paper background while peeling */
+            border-radius: 20px;
+            transition: none; /* Let container do the rotating */
+        }
+
+        &.active-page {
+            /* INCOMING / RESTING STATE (Ready directly underneath the peeling page) */
+            opacity: 1;
+            transform: rotate3d(0, 0, 0, 0deg) scale(1);
+            z-index: 2; /* Sits below the peeling page */
+            pointer-events: auto;
+            box-shadow: 0 0 0 rgba(0,0,0,0);
+            /* Instantly snap into place underneath, no animation when entering. 
+               Only animates when leaving! */
+            transition: transform 0s, opacity 0.3s ease;
+        }
+    }
+
+    &:hover {
+        transform: translateY(-5px);
+        
+        .active-page img {
+            transform: scale(1.08);
+        }
     }
 }
 
@@ -124,14 +196,12 @@
     }
 
     .image-box {
-        flex-direction: column-reverse;
+        flex-direction: column;
         min-height: auto;
     }
 
     .thumbnails {
-        flex-direction: row;
-        justify-content: center;
-        gap: 2px;
+        gap: 6px;
     }
 
     .thumb {
@@ -140,17 +210,15 @@
     }
 
     .main-image {
-        height: 520px;
-        min-height: 520px;
+        height: 400px;
     }
 }
 
 @media (max-width: 600px) {
     .main-image {
-        height: 420px;
-        min-height: 420px;
+        height: 350px;
         margin-left: 0px;
-        border-radius: 5px;
+        border-radius: 12px;
     }
 
     .arrow {

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HeroCarouselComponent } from '../../shared/components/hero-carousel/hero-carousel';
@@ -23,7 +23,25 @@ import { Router } from '@angular/router';
   templateUrl: './home.html',
   styleUrls: ['./home.scss']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('featuresSection') featuresSection?: ElementRef<HTMLElement>;
+  @ViewChild('forYouSection') forYouSection?: ElementRef<HTMLElement>;
+  @ViewChild('gallerySection') gallerySection?: ElementRef<HTMLElement>;
+  @ViewChild('premiumSection') premiumSection?: ElementRef<HTMLElement>;
+  @ViewChildren('forYouCard') forYouCards?: QueryList<ElementRef<HTMLElement>>;
+  @ViewChildren('galleryCard') galleryCards?: QueryList<ElementRef<HTMLElement>>;
+  @ViewChildren('premiumCard') premiumCards?: QueryList<ElementRef<HTMLElement>>;
+
+  featuresInView = false;
+  forYouVisibleRows = new Set<number>();
+  galleryVisibleRows = new Set<number>();
+  premiumVisibleRows = new Set<number>();
+  private featuresObserver?: IntersectionObserver;
+  private forYouObserver?: IntersectionObserver;
+  private galleryObserver?: IntersectionObserver;
+  private premiumObserver?: IntersectionObserver;
+  favoriteKeys = new Set<string>();
+  burstingFavoriteKeys = new Set<string>();
 
   products: ProductCardDto[] = [];
   sections: {
@@ -67,6 +85,221 @@ export class HomeComponent implements OnInit {
     this.loadCategories();
   }
 
+  ngAfterViewInit(): void {
+    if (this.featuresSection?.nativeElement) {
+      this.updateFeaturesInView();
+
+      this.featuresObserver = new IntersectionObserver(
+        (entries) => {
+          const [entry] = entries;
+          if (!entry) {
+            return;
+          }
+
+          this.featuresInView = entry.isIntersecting;
+          this.cdr.detectChanges();
+        },
+        {
+          threshold: 0.08,
+          rootMargin: '0px 0px -8% 0px',
+        }
+      );
+
+      this.featuresObserver.observe(this.featuresSection.nativeElement);
+    }
+
+    if (this.forYouSection?.nativeElement) {
+      this.updateForYouVisibleRows();
+
+      this.forYouObserver = new IntersectionObserver(
+        (entries) => {
+          const [entry] = entries;
+          if (!entry) {
+            return;
+          }
+
+          if (entry.isIntersecting) {
+            this.updateForYouVisibleRows();
+          }
+          this.cdr.detectChanges();
+        },
+        {
+          threshold: 0.08,
+          rootMargin: '0px 0px -10% 0px',
+        }
+      );
+
+      this.forYouObserver.observe(this.forYouSection.nativeElement);
+    }
+
+    if (this.gallerySection?.nativeElement) {
+      this.updateGalleryVisibleRows();
+
+      this.galleryObserver = new IntersectionObserver(
+        (entries) => {
+          const [entry] = entries;
+          if (!entry) {
+            return;
+          }
+
+          if (entry.isIntersecting) {
+            this.updateGalleryVisibleRows();
+          }
+          this.cdr.detectChanges();
+        },
+        {
+          threshold: 0.08,
+          rootMargin: '0px 0px -10% 0px',
+        }
+      );
+
+      this.galleryObserver.observe(this.gallerySection.nativeElement);
+    }
+
+    if (this.premiumSection?.nativeElement) {
+      this.updatePremiumVisibleRows();
+
+      this.premiumObserver = new IntersectionObserver(
+        (entries) => {
+          const [entry] = entries;
+          if (!entry) {
+            return;
+          }
+
+          if (entry.isIntersecting) {
+            this.updatePremiumVisibleRows();
+          }
+          this.cdr.detectChanges();
+        },
+        {
+          threshold: 0.08,
+          rootMargin: '0px 0px -10% 0px',
+        }
+      );
+
+      this.premiumObserver.observe(this.premiumSection.nativeElement);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.featuresObserver?.disconnect();
+    this.forYouObserver?.disconnect();
+    this.galleryObserver?.disconnect();
+    this.premiumObserver?.disconnect();
+  }
+
+  @HostListener('window:scroll')
+  @HostListener('window:resize')
+  onViewportChange(): void {
+    this.updateFeaturesInView();
+    this.updateForYouVisibleRows();
+    this.updateGalleryVisibleRows();
+    this.updatePremiumVisibleRows();
+  }
+
+  private updateFeaturesInView(): void {
+    const element = this.featuresSection?.nativeElement;
+    if (!element) {
+      return;
+    }
+
+    const rect = element.getBoundingClientRect();
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const isVisible = rect.top < viewportHeight * 0.9 && rect.bottom > viewportHeight * 0.15;
+
+    if (this.featuresInView !== isVisible) {
+      this.featuresInView = isVisible;
+      this.cdr.detectChanges();
+    }
+  }
+
+  private updateForYouVisibleRows(): void {
+    const cards = this.forYouCards?.toArray() ?? [];
+    if (!cards.length) {
+      return;
+    }
+
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const nextVisibleRows = new Set<number>();
+
+    cards.forEach((cardRef, index) => {
+      const rect = cardRef.nativeElement.getBoundingClientRect();
+      const rowIndex = this.getForYouRowIndex(index);
+      const isVisible = rect.top < viewportHeight * 0.88 && rect.bottom > viewportHeight * 0.2;
+
+      if (isVisible) {
+        nextVisibleRows.add(rowIndex);
+      }
+    });
+
+    const hasChanged =
+      nextVisibleRows.size !== this.forYouVisibleRows.size ||
+      [...nextVisibleRows].some((row) => !this.forYouVisibleRows.has(row));
+
+    if (hasChanged) {
+      this.forYouVisibleRows = nextVisibleRows;
+      this.cdr.detectChanges();
+    }
+  }
+
+  private updateGalleryVisibleRows(): void {
+    const cards = this.galleryCards?.toArray() ?? [];
+    if (!cards.length) {
+      return;
+    }
+
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const nextVisibleRows = new Set<number>();
+
+    cards.forEach((cardRef, index) => {
+      const rect = cardRef.nativeElement.getBoundingClientRect();
+      const rowIndex = this.getGalleryRowIndex(index);
+      const isVisible = rect.top < viewportHeight * 0.88 && rect.bottom > viewportHeight * 0.2;
+
+      if (isVisible) {
+        nextVisibleRows.add(rowIndex);
+      }
+    });
+
+    const hasChanged =
+      nextVisibleRows.size !== this.galleryVisibleRows.size ||
+      [...nextVisibleRows].some((row) => !this.galleryVisibleRows.has(row));
+
+    if (hasChanged) {
+      this.galleryVisibleRows = nextVisibleRows;
+      this.cdr.detectChanges();
+    }
+  }
+
+  private updatePremiumVisibleRows(): void {
+    const cards = this.premiumCards?.toArray() ?? [];
+    if (!cards.length) {
+      return;
+    }
+
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const nextVisibleRows = new Set<number>();
+
+    cards.forEach((cardRef, index) => {
+      const rect = cardRef.nativeElement.getBoundingClientRect();
+      const rowIndex = this.getPremiumRowIndex(index);
+      const isVisible = rect.top < viewportHeight * 0.88 && rect.bottom > viewportHeight * 0.2;
+
+      if (isVisible) {
+        nextVisibleRows.add(rowIndex);
+      }
+    });
+
+    const hasChanged =
+      nextVisibleRows.size !== this.premiumVisibleRows.size ||
+      [...nextVisibleRows].some((row) => !this.premiumVisibleRows.has(row));
+
+    if (hasChanged) {
+      this.premiumVisibleRows = nextVisibleRows;
+      this.cdr.detectChanges();
+    }
+  }
+
   loadProducts() {
     this.isLoadingProducts = true;
     this.productError = '';
@@ -86,6 +319,9 @@ export class HomeComponent implements OnInit {
         this.buildSections(mixedItems);
         this.assignPreviewImages();
         this.cdr.detectChanges();
+        window.setTimeout(() => this.updateForYouVisibleRows(), 0);
+        window.setTimeout(() => this.updateGalleryVisibleRows(), 0);
+        window.setTimeout(() => this.updatePremiumVisibleRows(), 0);
       },
       error: (err: any) => {
         this.isLoadingProducts = false;
@@ -398,6 +634,175 @@ export class HomeComponent implements OnInit {
   getReviewCount(product: any): number {
     const seed = this.hashSeed(this.getKey(product) || this.getTitle(product));
     return 120 + (seed % 4800);
+  }
+
+  getPromoLabel(product: any): string | null {
+    const seed = this.hashSeed(this.getKey(product) || this.getTitle(product));
+    const promoIndex = seed % 5;
+
+    if (promoIndex === 0) return null;
+    if (promoIndex === 1) return 'New';
+    if (promoIndex === 2) return 'Limited';
+    if (promoIndex === 3) return 'Almost Sold Out';
+    return this.getDiscountPercent(product) > 0 ? `Sale -${this.getDiscountPercent(product)}%` : 'Best Pick';
+  }
+
+  isFavorite(product: any): boolean {
+    return this.favoriteKeys.has(this.getKey(product));
+  }
+
+  isHeartBursting(product: any): boolean {
+    return this.burstingFavoriteKeys.has(this.getKey(product));
+  }
+
+  toggleFavorite(event: Event, product: any): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const key = this.getKey(product);
+    const willBeFavorite = !this.favoriteKeys.has(key);
+
+    if (willBeFavorite) {
+      this.favoriteKeys.add(key);
+      this.burstingFavoriteKeys.add(key);
+      window.setTimeout(() => {
+        this.burstingFavoriteKeys.delete(key);
+        this.cdr.detectChanges();
+      }, 900);
+    } else {
+      this.favoriteKeys.delete(key);
+      this.burstingFavoriteKeys.delete(key);
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  getHeartBurstPieces(): number[] {
+    return [1, 2, 3, 4, 5, 6];
+  }
+
+  getForYouCardsPerRow(): number {
+    if (typeof window === 'undefined') {
+      return 5;
+    }
+
+    const width = window.innerWidth;
+    if (width <= 768) {
+      return 2;
+    }
+
+    if (width <= 1200) {
+      return 3;
+    }
+
+    return 5;
+  }
+
+  getGalleryCardsPerRow(): number {
+    if (typeof window === 'undefined') {
+      return 5;
+    }
+
+    const width = window.innerWidth;
+    if (width <= 768) {
+      return 1;
+    }
+
+    if (width <= 1200) {
+      return 2;
+    }
+
+    return 5;
+  }
+
+  getPremiumCardsPerRow(): number {
+    if (typeof window === 'undefined') {
+      return 4;
+    }
+
+    const width = window.innerWidth;
+    if (width <= 768) {
+      return 2;
+    }
+
+    if (width <= 1200) {
+      return 3;
+    }
+
+    return 4;
+  }
+
+  isForYouRowFromLeft(index: number): boolean {
+    const rowIndex = this.getForYouRowIndex(index);
+    return rowIndex % 2 === 0;
+  }
+
+  getForYouAnimationDelay(index: number): string {
+    const perRow = this.getForYouCardsPerRow();
+    const rowIndex = this.getForYouRowIndex(index);
+    const columnIndex = index % perRow;
+    const inRowOrder = this.isForYouRowFromLeft(index)
+      ? columnIndex
+      : Math.max(0, perRow - columnIndex - 1);
+
+    const delayMs = rowIndex * 160 + inRowOrder * 140;
+    return `${delayMs}ms`;
+  }
+
+  getForYouRowIndex(index: number): number {
+    return Math.floor(index / this.getForYouCardsPerRow());
+  }
+
+  isForYouRowVisible(index: number): boolean {
+    return this.forYouVisibleRows.has(this.getForYouRowIndex(index));
+  }
+
+  getGalleryRowIndex(index: number): number {
+    return Math.floor(index / this.getGalleryCardsPerRow());
+  }
+
+  isGalleryRowFromLeft(index: number): boolean {
+    return this.getGalleryRowIndex(index) % 2 === 0;
+  }
+
+  getGalleryAnimationDelay(index: number): string {
+    const perRow = this.getGalleryCardsPerRow();
+    const rowIndex = this.getGalleryRowIndex(index);
+    const columnIndex = index % perRow;
+    const inRowOrder = this.isGalleryRowFromLeft(index)
+      ? columnIndex
+      : Math.max(0, perRow - columnIndex - 1);
+
+    const delayMs = rowIndex * 160 + inRowOrder * 140;
+    return `${delayMs}ms`;
+  }
+
+  isGalleryRowVisible(index: number): boolean {
+    return this.galleryVisibleRows.has(this.getGalleryRowIndex(index));
+  }
+
+  getPremiumRowIndex(index: number): number {
+    return Math.floor(index / this.getPremiumCardsPerRow());
+  }
+
+  isPremiumRowFromLeft(index: number): boolean {
+    return this.getPremiumRowIndex(index) % 2 === 0;
+  }
+
+  getPremiumAnimationDelay(index: number): string {
+    const perRow = this.getPremiumCardsPerRow();
+    const rowIndex = this.getPremiumRowIndex(index);
+    const columnIndex = index % perRow;
+    const inRowOrder = this.isPremiumRowFromLeft(index)
+      ? columnIndex
+      : Math.max(0, perRow - columnIndex - 1);
+
+    const delayMs = rowIndex * 160 + inRowOrder * 140;
+    return `${delayMs}ms`;
+  }
+
+  isPremiumRowVisible(index: number): boolean {
+    return this.premiumVisibleRows.has(this.getPremiumRowIndex(index));
   }
 
   private hashSeed(value: string): number {

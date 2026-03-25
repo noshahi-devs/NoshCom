@@ -1,8 +1,28 @@
 .product-info-column {
-    width: 85%;
+    width: 100%;
     min-height: 100%;
     margin-left: 0;
-    padding: 0 14px;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255, 193, 7, 0.3);
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: linear-gradient(90deg, #ffc107, #000);
+    }
+    
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(255, 193, 7, 0.5);
+    }
 
     .title-row {
         display: flex;
@@ -963,47 +983,153 @@
 .add-cart-section {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
+    gap: 15px;
+    margin-bottom: 25px;
 
     .add-cart {
         flex: 1;
-        height: 46px;
-        background: #000;
-        color: #fff;
+        height: 54px;
+        background: #ffc107;
+        color: #000;
         border: none;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 700;
-        letter-spacing: 0.02em;
+        border-radius: 14px;
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
         cursor: pointer;
+        box-shadow: 0 10px 20px rgba(255, 193, 7, 0.25), inset 0 -3px 0 rgba(0, 0, 0, 0.1);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        text-transform: uppercase;
+
+        &:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(255, 193, 7, 0.35), inset 0 -3px 0 rgba(0, 0, 0, 0.15);
+            background: #ffc824;
+        }
+
+        &:active {
+            transform: translateY(1px);
+            box-shadow: 0 5px 10px rgba(255, 193, 7, 0.3), inset 0 2px 0 rgba(0, 0, 0, 0.1);
+        }
     }
 
     .fav-btn {
-        width: 46px;
-        height: 46px;
-        border: 1px solid #e5e7eb;
+        width: 54px;
+        height: 54px;
+        border: 2px solid #eef2f7;
         background: #fff;
-        border-radius: 8px;
+        border-radius: 14px;
         display: grid;
         place-items: center;
         cursor: pointer;
-        font-size: 18px;
+        font-size: 20px;
+        color: #000;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.04);
+
+        &:hover {
+            border-color: #ffc107;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 20px rgba(255, 193, 7, 0.15);
+        }
+
+        .fa-solid.fa-heart {
+            color: #ef4444;
+        }
+    }
+}
+
+.about-product-card {
+    width: 100%;
+    margin: 25px 0;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255, 193, 7, 0.3);
+    padding: 25px 30px;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 6px;
+        height: 100%;
+        background: linear-gradient(180deg, #ffc107, #000);
+    }
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12), inset 0 0 0 2px rgba(255, 193, 7, 0.5);
+    }
+
+    h2 {
+        margin: 0 0 10px;
+        font-size: 20px;
+        font-weight: 800;
+        color: #000;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .about-content {
+        font-size: 14.5px;
+        line-height: 1.6;
         color: #444;
+        white-space: pre-line;
+        display: -webkit-box;
+        -webkit-line-clamp: 5;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.expanded {
+            display: block;
+            -webkit-line-clamp: unset;
+        }
+    }
+
+    .view-more-btn {
+        display: inline-block;
+        margin-top: 15px;
+        background: transparent;
+        border: none;
+        color: #000;
+        font-weight: 800;
+        font-size: 13.5px;
+        cursor: pointer;
+        padding: 0;
+        transition: color 0.3s ease;
+        text-transform: uppercase;
+        border-bottom: 2px solid #ffc107;
+        
+        &:hover {
+            color: #ffc107;
+        }
     }
 }
 
 .ship-box {
-    background: #f8fafc;
-    border: 1px solid #eef2f7;
-    border-radius: 12px;
-    padding: 16px;
+    background: #ffffff;
+    border: 1px solid #ffc107;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 12px 30px rgba(255, 193, 7, 0.05);
 
     .title-main {
-        font-size: 13px;
-        font-weight: 600;
-        color: #111;
-        margin-bottom: 10px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #000;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        
+        span {
+            color: #ffc107;
+            text-decoration: underline;
+        }
     }
 }
 
@@ -1020,14 +1146,14 @@
     }
 }
 
-.green-text {
-    color: #198055;
-    font-weight: 700;
+.theme-text {
+    color: #000000;
+    font-weight: 800;
     font-size: 13px;
 }
 
 .gray {
-    color: #6b7280;
+    color: #555555;
     font-size: 12px;
     margin-top: 2px;
 }
@@ -1036,27 +1162,29 @@
     font-weight: 400;
 }
 
-.red-box {
+.theme-badge {
     display: inline-block;
     margin-top: 6px;
-    background: #ffe8e8;
-    color: #d32f2f;
+    background: #ffc107;
+    color: #000000;
     font-size: 11px;
-    font-weight: 600;
-    padding: 2px 8px;
+    font-weight: 700;
+    padding: 3px 10px;
     border-radius: 999px;
+    box-shadow: 0 4px 10px rgba(255, 193, 7, 0.3);
 }
 
 .security-pill {
     display: inline-block;
-    background: #e8f5e9;
-    color: #2e7d32;
+    background: #fff8e1;
+    color: #000000;
     font-size: 11px;
-    font-weight: 600;
-    padding: 2px 8px;
+    font-weight: 700;
+    padding: 3px 10px;
     border-radius: 999px;
     margin-right: 6px;
     margin-top: 6px;
+    border: 1px solid #ffeeba;
 }
 
 @media (max-width: 600px) {

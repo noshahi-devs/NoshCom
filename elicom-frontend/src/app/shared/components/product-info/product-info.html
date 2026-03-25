@@ -75,106 +75,61 @@
     </div>
 
     <!-- About this product -->
+    <div class="about-product-card">
+        <h2>About this Product</h2>
+        <div class="about-content" [class.expanded]="showFullAbout">
+            {{ product.description || 'No product description available at this moment. You can discover more premium quality goods by browsing through our exclusive catalog.' }}
+        </div>
+        <button class="view-more-btn" (click)="showFullAbout = !showFullAbout" *ngIf="product.description && product.description.length > 200">
+            {{ showFullAbout ? 'View less' : 'View more' }}
+        </button>
+    </div>
 
-
+    <!-- NoshCom Highlights Box -->
     <div class="ship-box">
-        <!-- TITLE -->
         <div class="title-main">
-            Shipping to <span>{{ shippingData.location }}</span>
+            Why shop with <span>NoshCom</span>?
         </div>
 
-        <!-- FREE SHIPPING -->
+        <!-- HIGHLIGHT: Premium Quality -->
         <div class="row-item">
-            <svg style="width: 24px; height: 24px;" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <rect width="24" height="24" fill="white" fill-opacity="0.01"></rect>
-                <path fill-rule="evenodd" clip-rule="evenodd"
-                    d="M17.4086 6.92012V4H3.01044V8.64506V14.2934V18.4515H4.76135C5.24011 16.7751 6.78359 15.5479 8.61371 15.5479C10.4438 15.5479 11.9873 16.7751 12.4661 18.4515H13.6171C14.0958 16.7751 15.6393 15.5479 17.4694 15.5479C19.2996 15.5479 20.8431 16.7752 21.3218 18.4517H22.5697V8.60743L17.4086 6.92012ZM17.4086 12.4516V9.02453L20.5692 10.0576V12.4516H17.4086Z"
-                    fill="#198055"></path>
-                <circle cx="17.5168" cy="19.554" r="2" fill="#198055"></circle>
-                <circle cx="8.61353" cy="19.554" r="2" fill="#198055"></circle>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="width: 24px; height: 24px;">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#ffc107" stroke="#000000" stroke-width="1.5"></path>
             </svg>
-
             <div>
-                <div class="green-text" *ngIf="shippingData.shipping.free">
-                    Free Shipping (Orders &gt; ${{ shippingData.shipping.minOrder }})
-                </div>
-
-                <div class="gray">
-                    Estimated Delivery:
-                    <span class="bold">
-                        {{ shippingData.shipping.estimatedFrom }} -
-                        {{ shippingData.shipping.estimatedTo }}
-                    </span>
-                </div>
-
-                <div class="red-box">
-                    {{ shippingData.shipping.onTimePercentage }}% arrive in &le; 7 days
-                </div>
+                <div class="theme-text">Premium Quality Guaranteed</div>
+                <div class="gray">Every NoshCom product is highly vetted for the best standard.</div>
             </div>
         </div>
 
-        <!-- RETURN POLICY -->
+        <!-- HIGHLIGHT: Fast Dispatch -->
         <div class="row-item">
-            <svg style="width:24;height:24;" width="48" height="48" viewBox="0 0 48 48" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <path fill-rule="evenodd" clip-rule="evenodd"
-                    d="M22.7311 32.1047L15.3483 25.9523L22.7311 19.8L24.6517 22.1047L21.7772 24.5H32.5V31H29.5V27.5H21.8916L24.6517 29.8L22.7311 32.1047Z"
-                    fill="#198055"></path>
-                <path fill-rule="evenodd" clip-rule="evenodd"
-                    d="M44 7.99994V15.9999H41.5V41.4999H6.5V15.9999H4V7.99994H44ZM7 12.9999H41V10.9999H7V12.9999ZM9.5 15.9999V38.4999H38.5V15.9999H9.5Z"
-                    fill="#198055"></path>
-                <rect width="48" height="48" fill="white" fill-opacity="0.01"></rect>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="width: 24px; height: 24px;">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7zm-4 6h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" fill="#000000"></path>
+                <circle cx="5" cy="5" r="2" fill="#ffc107"></circle>
+                <circle cx="5" cy="12" r="2" fill="#ffc107"></circle>
+                <circle cx="5" cy="19" r="2" fill="#ffc107"></circle>
             </svg>
-
             <div>
-                <div class="green-text">Return Policy</div>
-                <div class="gray normal" *ngIf="shippingData.returnPolicy.freeReturn">
-                    Free Return
-                </div>
+                <div class="theme-text">Lightning Fast Dispatch</div>
+                <div class="gray">Orders are processed & dispatched <span class="theme-badge">Within 24 Hours</span></div>
             </div>
         </div>
 
-        <!-- SECURITY -->
+        <!-- HIGHLIGHT: Dedicated Support -->
         <div class="row-item">
-            <svg style="width:24;height:24;" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <path fill-rule="evenodd" clip-rule="evenodd"
-                    d="M16.9718 9.77253L15.4476 8.4777L11.3724 13.274L8.17984 10.6854L6.92024 12.2389L11.6317 16.0589L16.9718 9.77253Z"
-                    fill="#198055"></path>
-                <path fill-rule="evenodd" clip-rule="evenodd"
-                    d="M21.6305 4.98486L11.9994 0.914062L2.41368 4.97874L2.38343 5.60605C2.27318 7.89188 2.34505 10.168 2.59902 12.434L2.65097 12.8847L2.75641 13.7228C2.7919 13.9882 2.82774 14.2395 2.86395 14.4768C3.12183 16.1674 3.98828 17.7055 5.30045 18.8021L5.65733 19.0978C8.07722 21.0858 10.0646 22.3651 11.6608 22.9407L12 23.063L12.3392 22.9407C14.0351 22.3292 16.1089 20.997 18.5953 18.9432C19.7483 17.9909 20.5667 16.6952 20.9314 15.2449L21.0539 14.7254C21.2154 13.9925 21.3392 13.2334 21.4288 12.434C21.6207 10.722 21.6961 8.64587 21.6565 6.20185L21.6305 4.98486ZM11.9994 3.08599L19.6574 6.32199L19.6636 6.76927C19.6834 8.90083 19.6089 10.7158 19.4413 12.2112C19.3593 12.9426 19.2468 13.6325 19.1039 14.281L18.9882 14.7718C18.7311 15.794 18.1459 16.7204 17.3217 17.4012L16.9762 17.684C15.0366 19.2565 13.4062 20.3228 12.106 20.8827L12.0014 20.925L11.9236 20.894C10.6338 20.3363 8.9601 19.2228 6.93017 17.5552L6.57978 17.2648C5.64489 16.4835 5.02544 15.3838 4.84108 14.1752L4.7553 13.5801L4.67045 12.9254L4.58657 12.2112L4.50393 11.4008C4.35491 9.77906 4.30354 8.15195 4.34983 6.51922L4.35637 6.32598L11.9994 3.08599Z"
-                    fill="#198055"></path>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="width: 24px; height: 24px;">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12c0 2.16.68 4.16 1.83 5.76L3 22l3.43-1.07C7.88 21.6 9.87 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.74 0-3.41-.46-4.85-1.25l-2.45.76.78-2.33C4.55 15.65 4 13.9 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z" fill="#000000"></path>
+                <circle cx="12" cy="12" r="1.5" fill="#ffc107"></circle>
+                <circle cx="8" cy="12" r="1.5" fill="#ffc107"></circle>
+                <circle cx="16" cy="12" r="1.5" fill="#ffc107"></circle>
             </svg>
-
             <div>
-                <div class="green-text">Shopping Security</div>
+                <div class="theme-text">24/7 Priority Support</div>
+                <div class="gray">Our dedicated team is ready to assist you any time.</div>
                 <div>
-                    <span class="security-pill" *ngIf="shippingData.security.safePayments">
-                        &#10003; Safe Payments
-                    </span>
-                    <span class="security-pill" *ngIf="shippingData.security.privacyProtection">
-                        &#10003; Privacy Protection
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <!-- SELLER -->
-        <div class="row-item">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"
-                style="width: 24px; height: 24px;">
-                <path fill-rule="evenodd" clip-rule="evenodd"
-                    d="M14.5 1.5H1.5V14.5H14.5V1.5ZM13.5 2.5H2.5V6.1L2.51171 6.18873C2.59911 6.88733 3.16423 7.42854 3.85935 7.49346L4 7.5C4.7583 7.5 5.39507 6.93391 5.48829 6.18873L5.54308 5.7508H6.45692L6.51171 6.18873C6.60493 6.93391 7.2417 7.5 8 7.5C8.7583 7.5 9.39507 6.93391 9.48829 6.18873L9.54308 5.7508H10.4569L10.5117 6.18873C10.6049 6.93391 11.2417 7.5 12 7.5C12.7583 7.5 13.3951 6.93391 13.4883 6.18873L13.5 6.092V2.5ZM13.5 8.00006C13.1218 8.28385 12.6614 8.46241 12.1637 8.4947L12 8.5C11.2305 8.5 10.5364 8.15058 10.0759 7.59655L10 7.499L9.92411 7.59655C9.49649 8.11101 8.86743 8.44904 8.16367 8.4947L8 8.5C7.23054 8.5 6.53641 8.15058 6.07589 7.59655L6 7.499L5.92411 7.59655C5.49649 8.11101 4.86743 8.44904 4.16367 8.4947L4 8.5C3.43968 8.5 2.91931 8.31471 2.5 8.00006V13.5H6V10.5H10V13.5H13.5V8.00006ZM9 11.5V13.5H7V11.5H9Z"
-                    fill="#198055"></path>
-            </svg>
-
-            <div>
-                <div class="gray">
-                    Sourced from <span class="bold">{{ shippingData.seller.name }}</span>
-                </div>
-                <div class="gray normal">
-                    Sold by and Ships from {{ shippingData.seller.fulfilledBy }}
+                    <span class="security-pill">✓ Secure Checkout</span>
+                    <span class="security-pill">✓ Verified by NoshCom</span>
                 </div>
             </div>
         </div>

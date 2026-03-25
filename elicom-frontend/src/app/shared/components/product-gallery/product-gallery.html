@@ -1,6 +1,28 @@
 <div class="left-column">
   <div class="image-box">
 
+    <!-- Main Image Carousel -->
+    <div class="main-image main-frame">
+      <button class="arrow left" (click)="prevImage()">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+
+      <div class="carousel-book">
+        <div class="page" *ngFor="let img of images; let i = index" [class.active-page]="i === activeIndex">
+          <img
+            [src]="img"
+            alt="Main Product Image"
+            class="zoom-image"
+            (error)="handleMainError($event)"
+          />
+        </div>
+      </div>
+
+      <button class="arrow right" (click)="nextImage()">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+
     <!-- Thumbnails -->
     <div class="thumbnails">
       <div
@@ -12,24 +34,6 @@
         <img [src]="img" (error)="handleThumbError(i)" />
       </div>
     </div> 
-
-    <!-- Main Image -->
-    <div class="main-image main-frame">
-      <button class="arrow left" (click)="prevImage()">
-        <i class="fa-solid fa-chevron-left"></i>
-      </button>
-
-      <img
-        [src]="images[activeIndex]"
-        alt="Main Product Image"
-        class="zoom-image"
-        (error)="handleMainError($event)"
-      />
-
-      <button class="arrow right" (click)="nextImage()">
-        <i class="fa-solid fa-chevron-right"></i>
-      </button>
-    </div>
 
   </div>
 </div>

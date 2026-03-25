@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ChangeDetectorRef, NgZone, ApplicationRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductDetailDto } from '../../../services/product';
 import { environment } from '../../../../environments/environment';
@@ -10,13 +10,15 @@ import { environment } from '../../../../environments/environment';
   templateUrl: './product-gallery.html',
   styleUrls: ['./product-gallery.scss']
 })
-export class ProductGallery implements OnInit {
+export class ProductGallery implements OnInit, OnDestroy {
 
   @Input() productData?: ProductDetailDto;
 
   images: string[] = [];
-
   activeIndex = 0;
+  private intervalId: any;
+
+  constructor(private cdr: ChangeDetectorRef, private zone: NgZone, private appRef: ApplicationRef) {}
 
   ngOnInit(): void {
     if (this.productData) {
@@ -63,6 +65,29 @@ export class ProductGallery implements OnInit {
           `https://picsum.photos/seed/${this.productData.productId || 'p'}_alt/600/800`
         ];
       }
+      this.resumeCarousel();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.pauseCarousel();
+  }
+
+  resumeCarousel() {
+    this.pauseCarousel();
+    this.zone.runOutsideAngular(() => {
+      this.intervalId = setInterval(() => {
+        this.zone.run(() => {
+          this.nextImage();
+        });
+      }, 4000);
+    });
+  }
+
+  pauseCarousel() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
     }
   }
 
@@ -112,16 +137,27 @@ export class ProductGallery implements OnInit {
 
   selectImage(index: number) {
     this.activeIndex = index;
+    this.forceUpdate();
   }
 
   prevImage() {
+    if (this.images.length === 0) return;
     this.activeIndex =
       (this.activeIndex - 1 + this.images.length) % this.images.length;
+    this.forceUpdate();
   }
 
   nextImage() {
+    if (this.images.length === 0) return;
     this.activeIndex =
       (this.activeIndex + 1) % this.images.length;
+    this.forceUpdate();
+  }
+
+  forceUpdate() {
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
+    this.appRef.tick();
   }
 
   setMainImage(src: string) {

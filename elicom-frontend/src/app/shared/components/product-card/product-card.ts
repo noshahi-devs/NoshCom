@@ -43,6 +43,31 @@ export class ProductCard {
     this.visibleCount += 25;
   }
 
+  stopCardClick(event: Event) {
+    event.stopPropagation();
+  }
+
+  quickView(event: Event, product: any) {
+    event.stopPropagation();
+    this.goToDetail(product);
+  }
+
+  getBadgeLabel(product: any): string {
+    if (product.discount || product.resellerDiscountPercentage) {
+      return 'SALE';
+    }
+
+    return 'NEW';
+  }
+
+  getRating(product: any): number {
+    return Math.max(1, Math.min(5, Number(product.rating || 5)));
+  }
+
+  getReviewCount(product: any): number {
+    return Number(product.reviewCount || 128);
+  }
+
   // Helper for coupon price
   couponPrice(product: any): number {
     if (!product.couponDiscount) return product.price;

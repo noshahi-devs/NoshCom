@@ -82,6 +82,9 @@ export class ProductInfo implements OnInit {
   sizes: string[] = [];
   selectedSize: string = '';
 
+  // ABOUT
+  showFullAbout = false;
+
   // QTY & FAV
   quantity = 1;
   fav = false;

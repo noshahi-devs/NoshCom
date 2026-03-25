@@ -17,10 +17,53 @@
   </div>
   <app-category-carousel *ngIf="!categoryError && !isLoadingCategories" [categories]="categories"></app-category-carousel>
 
-  <!-- Deal card (shows skeleton internally when isLoadingProducts is true) -->
-  <app-deal-card *ngIf="!productError" [products]="products" [isLoading]="isLoadingProducts"></app-deal-card>
+  <div class="features-container" #featuresSection [class.in-view]="featuresInView">
+    <div class="feature-card">
+      <div class="icon-box">
+        <i class="fa-solid fa-paper-plane"></i>
+      </div>
+      <div class="content">
+        <h3>Free Worldwide Shipping</h3>
+        <p>Free shipping for all orders over $100</p>
+      </div>
+    </div>
 
-  <!-- Category tiles (premium gallery blocks) -->
+    <div class="feature-card">
+      <div class="icon-box">
+        <i class="fa-solid fa-rotate-left"></i>
+      </div>
+      <div class="content">
+        <h3>Money Back Guarantee</h3>
+        <p>We return money within 30 days</p>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="icon-box">
+        <i class="fa-solid fa-headset"></i>
+      </div>
+      <div class="content">
+        <h3>24/7 Customer Support</h3>
+        <p>Friendly 24/7 customer support</p>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="icon-box">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+      <div class="content">
+        <h3>Secure Online Payment</h3>
+        <p>We possess SSL / Secure Certificate</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Deal card (shows skeleton internally when isLoadingProducts is true)
+  <app-deal-card *ngIf="!productError" [products]="products" [isLoading]="isLoadingProducts"></app-deal-card>
+  -->
+
+  <!-- Category tiles (premium gallery blocks)
   <div class="category-tile-skeletons" *ngIf="isLoadingCategories && !categoryError">
     <div class="category-tile-skeleton" *ngFor="let _ of [1,2,3,4]">
       <div class="skeleton line medium"></div>
@@ -50,6 +93,64 @@
       <div class="tile-link">Discover more</div>
     </div>
   </div>
+  -->
+
+  <section class="categories-showcase">
+    <div class="categories-header">
+      <div class="categories-header-copy">
+        <h2>Shop by Category</h2>
+        <p>Discover our wide range of premium handpicked products</p>
+        <hr />
+      </div>
+      <a class="categories-view-all" routerLink="/search-result">View All</a>
+    </div>
+
+    <div class="categories-grid">
+      <div class="cat-card">
+        <img
+          src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1000&auto=format&fit=crop"
+          alt="Electronics"
+        />
+        <div class="cat-overlay">
+          <h3>High-End Electronics</h3>
+          <span>240+ Products</span>
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <img
+          src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=1000&auto=format&fit=crop"
+          alt="Fashion"
+        />
+        <div class="cat-overlay">
+          <h3>Premium Fashion</h3>
+          <span>1.2k+ Products</span>
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <img
+          src="https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=1000&auto=format&fit=crop"
+          alt="Home"
+        />
+        <div class="cat-overlay">
+          <h3>Home & Decor</h3>
+          <span>500+ Products</span>
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <img
+          src="https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=1000&auto=format&fit=crop"
+          alt="Gadgets"
+        />
+        <div class="cat-overlay">
+          <h3>Smart Gadgets</h3>
+          <span>150+ Products</span>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- Errors / Items -->
   <div *ngIf="productError" class="centered-error">
@@ -90,7 +191,6 @@
     </div>
   </div>
 
-  <!-- Product sections -->
   <div class="home-sections" *ngIf="!productError && !isLoadingProducts">
     <div class="home-section" *ngFor="let section of sections">
       <div class="section-header">
@@ -106,36 +206,107 @@
 
       <div class="section-body" [ngSwitch]="section.style">
         <!-- Gallery grid -->
-        <div class="gallery-grid" *ngSwitchCase="'gallery'">
-          <a class="gallery-card" *ngFor="let product of getVisibleProducts(section)"
+        <div class="gallery-grid" *ngSwitchCase="'gallery'" #gallerySection>
+          <a class="gallery-card" *ngFor="let product of getVisibleProducts(section); let i = index"
+             #galleryCard
+             [class.row-from-left]="isGalleryRowFromLeft(i)"
+             [class.row-from-right]="!isGalleryRowFromLeft(i)"
+             [class.row-in-view]="isGalleryRowVisible(i)"
+             [style.--card-delay]="getGalleryAnimationDelay(i)"
              [routerLink]="['/product-detail', product.productId, product.storeProductId || product.id]">
             <div class="media">
-              <img [src]="getImage(product)" [alt]="getTitle(product)" (error)="onImgError($event, product)">
-              <div class="glow"></div>
-              <span class="chip" *ngIf="getDiscountPercent(product) > 0">
-                -{{ getDiscountPercent(product) }}%
+              <span
+                class="discount"
+                *ngIf="getPromoLabel(product) as promoLabel"
+                [ngClass]="{
+                  'limited': promoLabel === 'Limited',
+                  'almost-sold': promoLabel === 'Almost Sold Out',
+                  'new-badge': promoLabel === 'New',
+                  'best-pick': promoLabel === 'Best Pick'
+                }"
+              >{{ promoLabel }}</span>
+              <span
+                class="wish-btn"
+                [class.active]="isFavorite(product)"
+                [class.is-bursting]="isHeartBursting(product)"
+                (click)="toggleFavorite($event, product)"
+              >
+                <i [class]="isFavorite(product) ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+                <span class="burst-piece" *ngFor="let _ of getHeartBurstPieces()"></span>
               </span>
+              <img [src]="getImage(product)" [alt]="getTitle(product)" (error)="onImgError($event, product)">
             </div>
             <div class="meta">
+              <div class="rating-row">
+                <span class="stars">
+                  <i class="fa-solid fa-star" *ngFor="let _ of [1,2,3,4,5]; let i = index"
+                     [class.muted]="i + 1 > getRating(product)"></i>
+                </span>
+                <span class="count">({{ getReviewCount(product) }} Reviews)</span>
+              </div>
               <div class="name">{{ getTitle(product) }}</div>
-              <div class="price">${{ product.price | number:'1.2-2' }}</div>
-              <div class="store">Sold by: {{ product.storeName }}</div>
+              <div class="price-row">
+                <div class="price-block">
+                  <div class="price">${{ product.price | number:'1.2-2' }}</div>
+                  <div class="off" *ngIf="getDiscountPercent(product) > 0">
+                    ${{ ((product.price || 0) * (1 + getDiscountPercent(product) / 100)) | number:'1.2-2' }}
+                  </div>
+                </div>
+                <span class="cart-cta">Add to Cart</span>
+              </div>
             </div>
           </a>
         </div>
 
         <!-- Premium cards -->
-        <div class="premium-grid" *ngSwitchCase="'premium'">
-          <a class="premium-card" *ngFor="let product of getVisibleProducts(section)"
+        <div class="premium-grid" *ngSwitchCase="'premium'" #premiumSection>
+          <a class="premium-card" *ngFor="let product of getVisibleProducts(section); let i = index"
+             #premiumCard
+             [class.row-from-left]="isPremiumRowFromLeft(i)"
+             [class.row-from-right]="!isPremiumRowFromLeft(i)"
+             [class.row-in-view]="isPremiumRowVisible(i)"
+             [style.--card-delay]="getPremiumAnimationDelay(i)"
              [routerLink]="['/product-detail', product.productId, product.storeProductId || product.id]">
             <div class="media">
-              <span class="pill" *ngIf="product.resellerDiscountPercentage > 0">-{{ product.resellerDiscountPercentage }}%</span>
+              <span
+                class="discount"
+                *ngIf="getPromoLabel(product) as promoLabel"
+                [ngClass]="{
+                  'limited': promoLabel === 'Limited',
+                  'almost-sold': promoLabel === 'Almost Sold Out',
+                  'new-badge': promoLabel === 'New',
+                  'best-pick': promoLabel === 'Best Pick'
+                }"
+              >{{ promoLabel }}</span>
+              <span
+                class="wish-btn"
+                [class.active]="isFavorite(product)"
+                [class.is-bursting]="isHeartBursting(product)"
+                (click)="toggleFavorite($event, product)"
+              >
+                <i [class]="isFavorite(product) ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+                <span class="burst-piece" *ngFor="let _ of getHeartBurstPieces()"></span>
+              </span>
               <img [src]="getImage(product)" [alt]="getTitle(product)" (error)="onImgError($event, product)">
             </div>
             <div class="meta">
+              <div class="rating-row">
+                <span class="stars">
+                  <i class="fa-solid fa-star" *ngFor="let _ of [1,2,3,4,5]; let i = index"
+                     [class.muted]="i + 1 > getRating(product)"></i>
+                </span>
+                <span class="count">({{ getReviewCount(product) }} Reviews)</span>
+              </div>
               <div class="name">{{ getTitle(product) }}</div>
-              <div class="price">${{ product.price | number:'1.2-2' }}</div>
-              <div class="store">Sold by: {{ product.storeName }}</div>
+              <div class="price-row">
+                <div class="price-block">
+                  <div class="price">${{ product.price | number:'1.2-2' }}</div>
+                  <div class="off" *ngIf="getDiscountPercent(product) > 0">
+                    ${{ ((product.price || 0) * (1 + getDiscountPercent(product) / 100)) | number:'1.2-2' }}
+                  </div>
+                </div>
+                <span class="cart-cta">Add to Cart</span>
+              </div>
             </div>
           </a>
         </div>
@@ -149,11 +320,45 @@
             <a class="carousel-card" *ngFor="let product of section.products"
                [routerLink]="['/product-detail', product.productId, product.storeProductId || product.id]">
               <div class="media">
+                <span
+                  class="discount"
+                  *ngIf="getPromoLabel(product) as promoLabel"
+                  [ngClass]="{
+                    'limited': promoLabel === 'Limited',
+                    'almost-sold': promoLabel === 'Almost Sold Out',
+                    'new-badge': promoLabel === 'New',
+                    'best-pick': promoLabel === 'Best Pick'
+                  }"
+                >{{ promoLabel }}</span>
+                <span
+                  class="wish-btn"
+                  [class.active]="isFavorite(product)"
+                  [class.is-bursting]="isHeartBursting(product)"
+                  (click)="toggleFavorite($event, product)"
+                >
+                  <i [class]="isFavorite(product) ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+                  <span class="burst-piece" *ngFor="let _ of getHeartBurstPieces()"></span>
+                </span>
                 <img [src]="getImage(product)" [alt]="getTitle(product)" (error)="onImgError($event, product)">
               </div>
               <div class="meta">
+                <div class="rating-row">
+                  <span class="stars">
+                    <i class="fa-solid fa-star" *ngFor="let _ of [1,2,3,4,5]; let i = index"
+                       [class.muted]="i + 1 > getRating(product)"></i>
+                  </span>
+                  <span class="count">({{ getReviewCount(product) }} Reviews)</span>
+                </div>
                 <div class="name">{{ getTitle(product) }}</div>
-                <div class="price">${{ product.price | number:'1.2-2' }}</div>
+                <div class="price-row">
+                  <div class="price-block">
+                    <div class="price">${{ product.price | number:'1.2-2' }}</div>
+                    <div class="off" *ngIf="getDiscountPercent(product) > 0">
+                      ${{ ((product.price || 0) * (1 + getDiscountPercent(product) / 100)) | number:'1.2-2' }}
+                    </div>
+                  </div>
+                  <span class="cart-cta">Add to Cart</span>
+                </div>
               </div>
             </a>
           </div>
@@ -163,27 +368,58 @@
         </div>
 
         <!-- Just For You style -->
-        <div class="for-you-grid" *ngSwitchCase="'forYou'">
-          <a class="for-you-card" *ngFor="let product of getVisibleProducts(section)"
+        <div
+          class="for-you-grid"
+          *ngSwitchCase="'forYou'"
+          #forYouSection
+        >
+          <a class="for-you-card"
+             *ngFor="let product of getVisibleProducts(section); let i = index"
+             #forYouCard
+             [class.row-from-left]="isForYouRowFromLeft(i)"
+             [class.row-from-right]="!isForYouRowFromLeft(i)"
+             [class.row-in-view]="isForYouRowVisible(i)"
+             [style.--card-delay]="getForYouAnimationDelay(i)"
              [routerLink]="['/product-detail', product.productId, product.storeProductId || product.id]">
             <div class="media">
-              <span class="discount" *ngIf="getDiscountPercent(product) > 0">
-                -{{ getDiscountPercent(product) }}%
+              <span
+                class="discount"
+                *ngIf="getPromoLabel(product) as promoLabel"
+                [ngClass]="{
+                  'limited': promoLabel === 'Limited',
+                  'almost-sold': promoLabel === 'Almost Sold Out',
+                  'new-badge': promoLabel === 'New',
+                  'best-pick': promoLabel === 'Best Pick'
+                }"
+              >{{ promoLabel }}</span>
+              <span
+                class="wish-btn"
+                [class.active]="isFavorite(product)"
+                [class.is-bursting]="isHeartBursting(product)"
+                (click)="toggleFavorite($event, product)"
+              >
+                <i [class]="isFavorite(product) ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+                <span class="burst-piece" *ngFor="let _ of getHeartBurstPieces()"></span>
               </span>
               <img [src]="getImage(product)" [alt]="getTitle(product)" (error)="onImgError($event, product)">
             </div>
             <div class="meta">
-              <div class="name">{{ getTitle(product) }}</div>
-              <div class="price-row">
-                <div class="price">${{ product.price | number:'1.2-2' }}</div>
-                <div class="off" *ngIf="getDiscountPercent(product) > 0">-{{ getDiscountPercent(product) }}%</div>
-              </div>
               <div class="rating-row">
                 <span class="stars">
                   <i class="fa-solid fa-star" *ngFor="let _ of [1,2,3,4,5]; let i = index"
                      [class.muted]="i + 1 > getRating(product)"></i>
                 </span>
-                <span class="count">({{ getReviewCount(product) }})</span>
+                <span class="count">({{ getReviewCount(product) }} Reviews)</span>
+              </div>
+              <div class="name">{{ getTitle(product) }}</div>
+              <div class="price-row">
+                <div class="price-block">
+                  <div class="price">${{ product.price | number:'1.2-2' }}</div>
+                  <div class="off" *ngIf="getDiscountPercent(product) > 0">
+                    ${{ ((product.price || 0) * (1 + getDiscountPercent(product) / 100)) | number:'1.2-2' }}
+                  </div>
+                </div>
+                <span class="cart-cta">Add to Cart</span>
               </div>
             </div>
           </a>

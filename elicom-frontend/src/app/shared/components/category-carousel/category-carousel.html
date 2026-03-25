@@ -1,43 +1,84 @@
-<div class="category-slider">
+<div class="section-divider section-divider-top"></div>
 
-  <!-- PREV -->
-  <button class="arrow prev" *ngIf="enableCarousel" (click)="prev()">
-    <i class="fa-solid fa-angle-left"></i>
-  </button>
+<div class="section-3d-wrapper">
+  <div class="category-3d-title-box">
+    <h2>Explore Our Universe</h2>
+    <p class="subtitle-3d">
+      Step into premium collections curated for your lifestyle
+    </p>
+  </div>
 
-  <!-- TRACK -->
-  <div class="slider-track" [style.transform]="'translateX(-' + (currentSlide * 100) + '%)'">
+  <div class="category-3d-grid">
+    <div
+      class="category-3d-card"
+      *ngFor="let cat of featureCategories; let i = index"
+      (click)="onCategoryClick(cat)"
+    >
+      <span class="promo-3d">{{ getPromoLabel(i) }}</span>
+      <div class="img-3d-container">
+        <img
+          [src]="getCategoryImage(cat)"
+          [alt]="cat.name"
+          (error)="handleImageError($event, cat)"
+        />
+      </div>
+      <h3>{{ cat.name }}</h3>
+    </div>
+  </div>
 
-    <div class="slide" *ngFor="let slide of slides">
+  <div class="slider-container">
+    <button
+      class="nav-btn prev"
+      type="button"
+      *ngIf="enableCarousel"
+      [class.disabled]="currentSlide === 0"
+      (click)="prev()"
+    >
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
 
-      <!-- ROW 1 -->
-      <div class="row-circles">
-        <div class="circle" *ngFor="let cat of slide.slice(0, itemsPerRow)" (click)="onCategoryClick(cat)">
-          <img [src]="getCategoryImage(cat)" [alt]="cat.name" (error)="handleImageError($event, cat)">
-          <p>{{ cat.name }}</p>
+    <button
+      class="nav-btn next"
+      type="button"
+      *ngIf="enableCarousel"
+      [class.disabled]="currentSlide === slides.length - 1"
+      (click)="next()"
+    >
+      <i class="fa-solid fa-chevron-right"></i>
+    </button>
+
+    <div class="grid-wrapper">
+      <div
+        class="category-grid"
+        [style.width.%]="slides.length * 100"
+        [style.transform]="getTrackTransform()"
+      >
+        <div
+          class="slide-group"
+          *ngFor="let slide of slides"
+          [style.flex]="'0 0 ' + getSlideWidthPercent() + '%'"
+          [style.maxWidth.%]="getSlideWidthPercent()"
+          [style.grid-template-columns]="'repeat(' + itemsPerRow + ', minmax(0, 1fr))'"
+        >
+          <div
+            class="category-card"
+            *ngFor="let cat of slide"
+            (click)="onCategoryClick(cat)"
+          >
+            <div class="image-wrapper">
+              <img
+                [src]="getCategoryImage(cat)"
+                [alt]="cat.name"
+                (error)="handleImageError($event, cat)"
+              />
+            </div>
+            <span class="category-name">{{ cat.name }}</span>
+          </div>
         </div>
       </div>
-
-      <!-- ROW 2 -->
-      <div class="row-circles">
-        <div class="circle" *ngFor="let cat of slide.slice(itemsPerRow)" (click)="onCategoryClick(cat)">
-          <img [src]="getCategoryImage(cat)" [alt]="cat.name" (error)="handleImageError($event, cat)">
-          <p>{{ cat.name }}</p>
-        </div>
-      </div>
-
     </div>
 
-
   </div>
-
-  <!-- NEXT -->
-  <button class="arrow next" *ngIf="enableCarousel" (click)="next()">
-    <i class="fa-solid fa-angle-right"></i>
-  </button>
-
-  <div class="carousel-meta">
-    Slide {{ currentSlide + 1 }} / {{ slides.length }} | Total Categories: {{ categories.length }}
-  </div>
-
 </div>
+
+<div class="section-divider section-divider-bottom"></div>

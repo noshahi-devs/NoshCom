@@ -1,65 +1,69 @@
-<div class="container-fluid card-section">
+<div class="card-section">
   <div class="product-grid">
-    <div class="product-card" *ngFor="let product of visibleProducts" (click)="goToDetail(product)"
-      style="cursor: pointer;">
+    <div
+      class="product-card"
+      *ngFor="let product of visibleProducts"
+      (click)="goToDetail(product)"
+    >
+      <div class="card-shell"></div>
+      <div class="card-glow"></div>
 
-      <div class="img-wrap">
-
-        <!-- SHOP NAME ON IMAGE -->
-        <div class="shop-badge" *ngIf="showShopName">
-          {{ product.shop }}
-        </div>
-
-        <img [src]="product.image" class="product-img">
-        <img *ngIf="product.hoverImage" [src]="product.hoverImage" class="hover-img">
+      <div class="badge-tag" [class.sale]="getBadgeLabel(product) === 'SALE'">
+        {{ getBadgeLabel(product) }}
       </div>
 
-      <div class="card-body">
+      <div class="wishlist-btn" (click)="stopCardClick($event)">
+        <i class="far fa-heart"></i>
+      </div>
 
-        <div class="trends" *ngIf="showTrends && product.trends?.length">
-          <!-- <span *ngFor="let t of product.trends" class="trend-badge">{{ t }}</span> -->
-          <img [src]="product.trends" class="trend-badge">
-        </div>
+      <div class="product-img-box">
+        <img [src]="product.image" [alt]="product.title" />
 
-        <div class="title-row">
-          <span class="discount" *ngIf="showDiscount && product.discount">-{{ product.discount }}%</span>
-
-          <!-- Product Title with ellipsis and tooltip -->
-          <span class="product-title" [title]="product.title">
-            {{ product.title }}
-          </span>
-        </div>
-
-
-
-        <div class="rating" *ngIf="showRating">
-          <span *ngFor="let r of [1,2,3,4,5]; let i = index"
-            [ngClass]="i < rating ? 'fa-solid fa-star' : 'fa-regular fa-star'"></span>
-          <span class="review-count">({{ product.reviewCount }}+ Reviews)</span>
-        </div>
-
-        <div class="price-row">
-          <div>
-            <div class="price">
-              ${{ product.price }}
-              <span *ngIf="showSold">200+ Sold</span>
-            </div>
-            
+        <div class="card-actions-overlay">
+          <div class="action-btn" (click)="quickView($event, product)">
+            <i class="fas fa-eye"></i>
           </div>
-          <button class="cart-btn" (click)="addToCart($event, product)">
-            <i class="fa-solid fa-cart-shopping"></i>
+          <div class="action-btn" (click)="stopCardClick($event)">
+            <i class="fas fa-sync-alt"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-info">
+        <div class="rating" *ngIf="showRating">
+          <ng-container *ngFor="let star of [1, 2, 3, 4, 5]">
+            <i
+              class="fas fa-star"
+              [class.inactive]="star > getRating(product)"
+            ></i>
+          </ng-container>
+          <span>({{ getReviewCount(product) }} Reviews)</span>
+        </div>
+
+        <div class="product-meta-top" *ngIf="showShopName || showShipping">
+          <span class="meta-chip" *ngIf="showShopName && product.storeName">
+            {{ product.storeName }}
+          </span>
+          <span class="meta-chip muted" *ngIf="showShipping">Premium Shipping</span>
+        </div>
+
+        <h3 [title]="product.title">{{ product.title }}</h3>
+
+        <div class="product-footer">
+          <div class="price-wrap">
+            <div class="price">${{ product.price }}</div>
+            <span class="old-price" *ngIf="product.oldPrice">
+              ${{ product.oldPrice }}
+            </span>
+          </div>
+          <button class="add-to-cart" (click)="addToCart($event, product)">
+            Add to Cart
           </button>
         </div>
-
-        <div class="shipping" *ngIf="showShipping">
-          <span class="quickship"><img src="assets/images/quickship.png" alt="Shipping"> QuickShip</span>
-          <span class="freeshipping">Free Shipping</span>
-        </div>
-
       </div>
     </div>
-
   </div>
+
   <div class="view-more-wrapper" *ngIf="showViewMore">
     <button class="view-more-btn" (click)="viewMore()">
       View more <i class="fa-solid fa-angle-down"></i>
