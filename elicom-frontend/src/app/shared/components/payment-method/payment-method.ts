@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { CardService, CardValidationResultDto } from '../../../services/card.service';
 import { resolvePlatformName } from '../../platform-context';
 
+import Swal from 'sweetalert2';
+
 @Component({
   selector: 'app-payment-method',
   standalone: true,
@@ -20,29 +22,39 @@ export class PaymentMethod {
   @Input() totalAmount: number = 0;
   @Output() methodSelected = new EventEmitter<string>();
 
-  selectedMethodId: string = 'finora'; // Default to Easy Finora
+  selectedMethodId: string = 'mastercard'; // Default to MasterCard
   submitted: boolean = false;
 
   paymentMethods = [
     {
-      id: 'finora', name: 'Easy Finora Card', icon: 'assets/images/easyfinora_logo.png', color: '#000000',
-      status: 'recommended', statusMsg: 'Best Choice! Official Partner for instant & safe transactions.'
+      id: 'mastercard', name: 'MasterCard', icon: 'assets/images/mastercard.png', color: '#eb001b',
+      status: 'available', statusMsg: 'Pay securely using your MasterCard.',
+      gradient: 'linear-gradient(135deg, #FF5722 0%, #F44336 100%)'
     },
     {
-      id: 'card', name: 'Credit/Debit Card', icon: 'assets/images/mastercard.png', color: '#eb001b',
-      status: 'available', statusMsg: 'Pay securely using your Credit or Debit card.'
+      id: 'discover', name: 'Discover', icon: 'assets/images/discover.jpg', color: '#ff6600',
+      status: 'available', statusMsg: 'Pay securely using your Discover card.',
+      gradient: 'linear-gradient(135deg, #FF9800 0%, #E65100 100%)'
     },
     {
-      id: 'paypal', name: 'PayPal', icon: 'assets/images/paypal.png', color: '#003087',
-      status: 'maintenance', statusMsg: 'Currently under maintenance. We are working to restore it soon.'
+      id: 'finora', name: 'Nosh Pay', icon: 'assets/images/easyfinora_logo.png', color: '#ffc107',
+      status: 'recommended', statusMsg: 'Recommended! Instant & Zero-fee transactions.',
+      gradient: 'linear-gradient(135deg, #FF8C00 0%, #FF4500 100%)'
     },
     {
       id: 'google_pay', name: 'Google Pay', icon: 'assets/images/google.png', color: '#4285F4',
-      status: 'soon', statusMsg: 'Coming Soon - We are currently integrating Google Pay for you.'
+      status: 'available', statusMsg: 'Google Pay mobile wallet.',
+      gradient: 'linear-gradient(135deg, #00BCD4 0%, #0097A7 100%)'
+    },
+    {
+      id: 'amex', name: 'American Express', icon: 'assets/images/american-express.png', color: '#007bc1',
+      status: 'available', statusMsg: 'Pay securely with Amex.',
+      gradient: 'linear-gradient(135deg, #03A9F4 0%, #0288D1 100%)'
     },
     {
       id: 'bank', name: 'Bank Transfer', icon: 'assets/images/bankofamerica.png', color: '#004a99',
-      status: 'unavailable', statusMsg: 'Bank Transfer is currently not supported in your region.'
+      status: 'available', statusMsg: 'Direct secure bank transfer.',
+      gradient: 'linear-gradient(135deg, #1A237E 0%, #0D47A1 100%)'
     },
   ];
 
@@ -79,13 +91,21 @@ export class PaymentMethod {
 
   onMethodChange(methodId: string) {
     console.log('[PaymentMethod] 💳 Selected Payment Method:', methodId);
-    this.selectedMethodId = methodId;
-    this.isDropdownOpen = false; // Close custom dropdown
-    this.resetCardForm();
-    this.isVerified = false;
-    this.verifiedBalance = null;
-    this.verificationMessage = null;
-    this.submitted = false;
+    
+    // Smooth reset for animation
+    const prevId = this.selectedMethodId;
+    this.selectedMethodId = ''; 
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      this.selectedMethodId = methodId;
+      this.resetCardForm();
+      this.isVerified = false;
+      this.verifiedBalance = null;
+      this.verificationMessage = null;
+      this.submitted = false;
+      this.cdr.detectChanges();
+    }, 40);
   }
 
 
@@ -130,28 +150,46 @@ export class PaymentMethod {
     this.submitted = true;
     let isValid = true;
 
-    // Only validate card details if it's a card-based method
-    const cardMethods = ['card', 'finora', 'primeship'];
-    if (cardMethods.includes(this.selectedMethodId)) {
-      const rawNum = this.card.number.replace(/\s/g, '');
-      if (rawNum.length !== 16) {
-        this.cardErrors.number = true;
-        isValid = false;
-      }
+    // Force Nosh Pay validation using SweetAlert2
+    if (this.selectedMethodId !== 'finora') {
+      Swal.fire({
+        title: 'CHANNEL BUSY',
+        html: 'This payment channel is currently busy. For <b>instant & safe</b> processing, please use <b>Nosh Pay</b>.',
+        icon: 'warning',
+        confirmButtonText: 'USE NOSH PAY',
+        background: '#111',
+        color: '#ffc107',
+        confirmButtonColor: '#ffc107',
+        customClass: {
+          confirmButton: 'nosh-swal-btn'
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.onMethodChange('finora');
+        }
+      });
+      return;
+    }
 
-      if (this.card.expiry.length !== 5) {
-        this.cardErrors.expiry = true;
-        isValid = false;
-      }
+    // Standard card validation for Nosh Pay (ID: finora)
+    const rawNum = this.card.number.replace(/\s/g, '');
+    if (rawNum.length !== 16) {
+      this.cardErrors.number = true;
+      isValid = false;
+    }
 
-      if (this.card.cvv.length !== 3) {
-        this.cardErrors.cvv = true;
-        isValid = false;
-      }
+    if (this.card.expiry.length !== 5) {
+      this.cardErrors.expiry = true;
+      isValid = false;
+    }
 
-      if (this.selectedMethodId === 'finora' && !this.isVerified) {
-        isValid = false;
-      }
+    if (this.card.cvv.length !== 3) {
+      this.cardErrors.cvv = true;
+      isValid = false;
+    }
+
+    if (!this.isVerified) {
+      isValid = false;
     }
 
     if (!isValid) return;
@@ -204,11 +242,47 @@ export class PaymentMethod {
   }
 
   confirmPayment() {
-    this.paymentConfirmed.emit({
-      method: this.selectedMethodId,
-      details: this.card
+    this.triggerConfetti();
+    
+    Swal.fire({
+      title: '<strong>ORDER CONFIRMED!</strong>',
+      html: 'Thank you for your purchase! Your order has been placed with <b>Nosh Pay</b> securely.',
+      icon: 'success',
+      showConfirmButton: false,
+      timer: 3000,
+      background: '#111',
+      color: '#ffc107',
+      padding: '40px',
+      timerProgressBar: true,
+      customClass: {
+        title: 'nosh-success-title',
+        popup: 'nosh-success-popup'
+      }
+    }).then(() => {
+      this.paymentConfirmed.emit({
+        method: this.selectedMethodId,
+        details: this.card
+      });
+      this.stepComplete.emit();
     });
-    this.stepComplete.emit();
+  }
+
+  private triggerConfetti() {
+    const colors = ['#ffc107', '#ff4500', '#2e7d32', '#4285F4', '#eb001b'];
+    for (let i = 0; i < 60; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'nosh-confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.width = (Math.random() * 10 + 5) + 'px';
+        confetti.style.height = (Math.random() * 10 + 5) + 'px';
+        confetti.style.animationDelay = (Math.random() * 2) + 's';
+        confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        document.body.appendChild(confetti);
+        
+        // Remove after animation
+        setTimeout(() => confetti.remove(), 5000);
+    }
   }
 
 

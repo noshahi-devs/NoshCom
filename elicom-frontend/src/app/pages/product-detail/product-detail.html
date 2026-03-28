@@ -5,13 +5,18 @@
 
   <div *ngIf="isLoading" class="pd-loader-wrap">
     <div class="pd-loader-card">
+      <div class="pd-loader-badge">NoshCom</div>
       <div class="pd-loader-orbit">
         <span class="pd-loader-ring pd-loader-ring-1"></span>
         <span class="pd-loader-ring pd-loader-ring-2"></span>
-        <span class="pd-loader-core"></span>
+        <span class="pd-loader-core">N</span>
+        <span class="pd-loader-shine"></span>
       </div>
-      <h3>Fetching Product Details</h3>
-      <p>Preparing gallery, pricing, and seller insights...</p>
+      <h3>Getting Everything Ready</h3>
+      <p>Curating product visuals, price details, and key shopping information for you...</p>
+      <div class="pd-loader-track">
+        <span></span>
+      </div>
       <div class="pd-loader-dots">
         <span></span>
         <span></span>
@@ -32,6 +37,84 @@
       <app-product-gallery id="gallery" #gallery [productData]="productData"></app-product-gallery>
       <app-product-info [productData]="productData" (colorSelected)="gallery.setMainImage($event)"></app-product-info>
     </div>
+
+    <section class="related-products-section" *ngIf="relatedProductsLoading || relatedProducts.length > 0">
+      <div class="related-products-heading">
+        <h2>You May Like</h2>
+        <span></span>
+      </div>
+
+      <div class="related-products-grid related-products-skeleton-grid" *ngIf="relatedProductsLoading">
+        <div class="related-skeleton-card" *ngFor="let _ of relatedSkeletonCards">
+          <div class="related-skeleton-media related-shimmer"></div>
+          <div class="related-skeleton-meta">
+            <div class="related-skeleton-line related-shimmer short"></div>
+            <div class="related-skeleton-line related-shimmer title"></div>
+            <div class="related-skeleton-line related-shimmer title alt"></div>
+            <div class="related-skeleton-footer">
+              <div class="related-skeleton-price related-shimmer"></div>
+              <div class="related-skeleton-cta related-shimmer"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="related-products-grid for-you-grid gallery-grid" *ngIf="!relatedProductsLoading">
+        <a
+          class="for-you-card gallery-card row-in-view"
+          *ngFor="let product of visibleRelatedProducts; let i = index"
+          [class.row-from-left]="isRelatedRowFromLeft(i)"
+          [class.row-from-right]="!isRelatedRowFromLeft(i)"
+          [style.--card-delay]="getRelatedAnimationDelay(i)"
+          [routerLink]="['/product-detail', product.productId, product.storeProductId || product.id]"
+        >
+          <div class="media">
+            <span
+              class="discount"
+              *ngIf="getPromoLabel(product) as promoLabel"
+              [ngClass]="{
+                'limited': promoLabel === 'Limited',
+                'almost-sold': promoLabel === 'Almost Sold Out',
+                'new-badge': promoLabel === 'New',
+                'best-pick': promoLabel === 'Best Pick'
+              }"
+            >{{ promoLabel }}</span>
+            <span
+              class="wish-btn"
+              [class.active]="isFavorite(product)"
+              [class.is-bursting]="isHeartBursting(product)"
+              (click)="toggleFavorite($event, product)"
+            >
+              <i [class]="isFavorite(product) ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+              <span class="burst-piece" *ngFor="let _ of getHeartBurstPieces()"></span>
+            </span>
+            <img [src]="getImage(product)" [alt]="getTitle(product)" (error)="onImgError($event, product)">
+          </div>
+          <div class="meta">
+            <div class="rating-row">
+              <span class="stars">
+                <i class="fa-solid fa-star" *ngFor="let _ of [1,2,3,4,5]; let i = index" [class.muted]="i + 1 > getRating(product)"></i>
+              </span>
+              <span class="count">({{ getReviewCount(product) }} Reviews)</span>
+            </div>
+            <div class="name" [attr.data-full-name]="getTitle(product)">{{ getTitle(product) }}</div>
+            <div class="price-row">
+              <div class="price-block">
+                <div class="price">${{ product.price | number:'1.2-2' }}</div>
+                <div class="off" *ngIf="getDiscountPercent(product) > 0">
+                  ${{ ((product.price || 0) * (1 + getDiscountPercent(product) / 100)) | number:'1.2-2' }}
+                </div>
+              </div>
+              <span class="cart-cta">Add to Cart</span>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="related-products-more" *ngIf="hasMoreRelatedProducts">
+        <button class="related-products-btn" type="button" (click)="showMoreRelatedProducts()">View More Product</button>
+      </div>
+    </section>
 
   </div>
 

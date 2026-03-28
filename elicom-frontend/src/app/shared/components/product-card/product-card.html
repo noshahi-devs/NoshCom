@@ -12,8 +12,14 @@
         {{ getBadgeLabel(product) }}
       </div>
 
-      <div class="wishlist-btn" (click)="stopCardClick($event)">
-        <i class="far fa-heart"></i>
+      <div 
+        class="wishlist-btn" 
+        [class.active]="isFavorite(product)"
+        [class.is-bursting]="isHeartBursting(product)"
+        (click)="toggleFavorite($event, product)"
+      >
+        <i [class]="isFavorite(product) ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+        <span class="burst-piece" *ngFor="let _ of getHeartBurstPieces()"></span>
       </div>
 
       <div class="product-img-box">

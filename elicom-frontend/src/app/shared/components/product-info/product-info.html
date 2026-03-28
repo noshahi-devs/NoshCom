@@ -47,27 +47,29 @@
             </div>
         </div>
 
-        <div class="brand-row">
-            <span class="label">Brand:</span>
-            <span class="value">{{ product.brand || 'Noshahi' }}</span>
+        <div class="brand-quantity-row">
+            <div class="brand-row">
+                <span class="label">Brand:</span>
+                <span class="value">{{ product.brand || 'Noshahi' }}</span>
+            </div>
+
+            <div class="quantity-selector">
+                <div class="qty-title">Quantity:</div>
+                <div class="qty-box">
+                    <button class="qty-btn minus" (click)="decrementQty()">-</button>
+                    <input type="text" class="qty-input" [value]="quantity" readonly>
+                    <button class="qty-btn plus" (click)="incrementQty()">+</button>
+                </div>
+            </div>
         </div>
 
-    </div>
-
-    <!-- Quantity -->
-    <div class="quantity-selector">
-        <div class="qty-title" style="margin: 0;">Qty:</div>
-        <div class="qty-box">
-            <button class="qty-btn minus" (click)="decrementQty()">-</button>
-            <input type="text" class="qty-input" [value]="quantity" readonly>
-            <button class="qty-btn plus" (click)="incrementQty()">+</button>
-        </div>
     </div>
 
     <!-- Add to Cart & Favourite -->
     <div class="add-cart-section">
-        <button class="add-cart" (click)="addToCart()">
-            ADD TO CART
+        <button class="add-cart" [disabled]="isAddingToCart" (click)="addToCart()">
+            <span *ngIf="!isAddingToCart">ADD TO CART</span>
+            <div *ngIf="isAddingToCart" class="btn-loader"></div>
         </button>
         <button class="fav-btn" (click)="toggleFav()">
             <i [ngClass]="fav ? 'fa-solid fa-heart' : 'fa-regular fa-heart'" id="favIcon"></i>

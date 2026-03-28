@@ -6,7 +6,7 @@
   <title>Nosh Com</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- <link rel="shortcut icon" href="/assets/images/world-favicon.svg" type="image/x-icon"> -->
+  <link rel="icon" href="/assets/images/logo1.png" type="image/png">
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Wet+Paint&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -18,13 +18,14 @@
 <body>
   <div id="app-loader" aria-label="Loading">
     <div class="app-loader-card">
-      <div class="app-loader-orbit">
+      <div class="app-loader-badge">NoshCom</div>
+      <div class="app-loader-orbit" aria-hidden="true">
         <span class="app-loader-ring app-loader-ring-1"></span>
         <span class="app-loader-ring app-loader-ring-2"></span>
-        <img src="/assets/images/world-favicon.svg" alt="World Cart Logo" class="app-loader-center-logo">
+        <span class="app-loader-center-logo">N</span>
       </div>
-      <h3>Loading World Cart Us</h3>
-      <p>Preparing products, prices, and your personalized experience...</p>
+      <h3>Loading NoshCom</h3>
+      <p>Preparing your products, prices, and personalized experience...</p>
       <div class="app-loader-dots">
         <span></span>
         <span></span>
@@ -37,27 +38,42 @@
     #app-loader {
       position: fixed;
       inset: 0;
-      background: #f8fafc;
       display: grid;
       place-items: center;
       z-index: 9999;
-      backdrop-filter: blur(4px);
+      backdrop-filter: blur(6px);
       background:
-        radial-gradient(circle at 20% 20%, rgba(79, 70, 229, 0.12), transparent 42%),
-        radial-gradient(circle at 80% 0%, rgba(56, 189, 248, 0.12), transparent 40%),
-        rgba(248, 250, 252, 0.92);
+        radial-gradient(circle at 20% 20%, rgba(255, 193, 7, 0.16), transparent 42%),
+        radial-gradient(circle at 80% 0%, rgba(17, 17, 17, 0.08), transparent 40%),
+        rgba(255, 255, 255, 0.92);
     }
 
     .app-loader-card {
       width: min(92vw, 560px);
-      border-radius: 24px;
-      background: linear-gradient(155deg, #ffffff 0%, #f6f9ff 100%);
-      border: 1px solid #dbe4ff;
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at top right, rgba(255, 193, 7, 0.22), transparent 32%),
+        linear-gradient(180deg, #ffffff 0%, #fffdf6 100%);
+      border: 1px solid rgba(17, 17, 17, 0.08);
       box-shadow:
-        0 10px 24px rgba(15, 23, 42, 0.1),
-        0 26px 52px rgba(15, 23, 42, 0.08);
+        0 14px 28px rgba(17, 17, 17, 0.08),
+        0 26px 52px rgba(17, 17, 17, 0.12);
       padding: 34px 28px 30px;
       text-align: center;
+    }
+
+    .app-loader-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: #111111;
+      color: #ffc107;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
     }
 
     .app-loader-card h3 {
@@ -65,18 +81,13 @@
       font-size: clamp(28px, 2.3vw, 38px);
       font-weight: 900;
       line-height: 1.05;
-      letter-spacing: 0.2px;
-      background: linear-gradient(90deg, #1d4ed8, #4338ca);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
+      letter-spacing: -0.03em;
+      color: #111111;
     }
-
-
 
     .app-loader-card p {
       margin: 0;
-      color: #334155;
+      color: #3f3f3f;
       font-size: 16px;
       font-weight: 600;
     }
@@ -84,7 +95,7 @@
     .app-loader-orbit {
       width: 112px;
       height: 112px;
-      margin: 0 auto;
+      margin: 18px auto 0;
       position: relative;
       display: grid;
       place-items: center;
@@ -98,23 +109,31 @@
     }
 
     .app-loader-ring-1 {
-      border-top-color: #4f46e5;
-      border-right-color: #4f46e5;
+      border-top-color: #111111;
+      border-right-color: #ffc107;
       animation: app-spin 1.05s linear infinite;
     }
 
     .app-loader-ring-2 {
       inset: 12px;
-      border-left-color: #0ea5e9;
-      border-bottom-color: #0ea5e9;
+      border-left-color: #111111;
+      border-bottom-color: #ffc107;
       animation: app-spin-reverse 1.3s linear infinite;
     }
 
     .app-loader-center-logo {
-      height: 50px;
-      width: auto;
-      object-fit: contain;
-      filter: drop-shadow(0 0 15px rgba(79, 70, 229, 0.2));
+      width: 56px;
+      height: 56px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #111111 0%, #282828 100%);
+      color: #ffc107;
+      font-size: 27px;
+      font-weight: 900;
+      box-shadow:
+        0 16px 28px rgba(17, 17, 17, 0.2),
+        inset 0 0 0 1px rgba(255, 193, 7, 0.22);
       position: relative;
       z-index: 10;
       animation: app-pulse 1.4s ease-in-out infinite;
@@ -131,7 +150,7 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #4f46e5;
+      background: #ffc107;
       animation: app-dot 1.1s ease-in-out infinite;
     }
 

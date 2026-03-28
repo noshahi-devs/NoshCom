@@ -38,5 +38,5 @@ export class CheckoutProduct {
   }
 
   // Shipping info (single div)
-  standardShipping: string = "$3.99 (Arrives between Jan 26 - Jan 29, 66.9% are ≤ 6 business days, Est. arrival: before Valentine's)";
+  standardShipping: string = "$3.99 — Expect your package in 3-5 business days. Rest assured, your order will be handled with extra care and shipped promptly!";
 }

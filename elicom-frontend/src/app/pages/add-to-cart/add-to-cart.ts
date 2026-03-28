@@ -1,21 +1,23 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { OrderProcessHeader } from '../../shared/components/order-process-header/order-process-header';
 import { OrderProcessBreadcrumb } from '../../shared/components/order-process-breadcrumb/order-process-breadcrumb';
-import { CartItem } from '../../shared/components/cart-item/cart-item';
+import { CartItemComponent } from '../../shared/components/cart-item/cart-item';
 import { ProductCard } from '../../shared/components/product-card/product-card';
 import { ProductService, GlobalMarketplaceProduct } from '../../services/product';
 import { environment } from '../../../environments/environment';
+import { Header } from '../../shared/header/header';
+import { Footer } from '../../shared/footer/footer';
 
 @Component({
   selector: 'app-add-to-cart',
   standalone: true,
   imports: [
     CommonModule,
-    OrderProcessHeader,
+    Header,
     OrderProcessBreadcrumb,
-    CartItem,
-    ProductCard
+    CartItemComponent,
+    ProductCard,
+    Footer
   ],
   templateUrl: './add-to-cart.html',
   styleUrl: './add-to-cart.scss',
@@ -27,12 +29,27 @@ export class AddToCart implements OnInit {
   brand = 'World Cart';
   address = 'Ship to Twnhs, 2841 E Waltann Ln Unit 1';
   products: any[] = [];
-  suggestionText = 'You might like to fill it with';
+  isLoading = true;
+  skeletonCards = Array.from({ length: 12 });
+  suggestionText = 'Complete the shipment with standout picks curated for this cart';
 
   ngOnInit(): void {
+    this.isLoading = true;
     this.productService.getGlobalMarketplaceProducts().subscribe({
       next: (res) => {
-        this.products = res.map(p => ({
+        // 1. Filter Unique Products by Name
+        const seenNames = new Set<string>();
+        const uniqueProducts = res.filter(p => {
+          const name = (p.productName || '').trim().toLowerCase();
+          if (seenNames.has(name)) return false;
+          seenNames.add(name);
+          return true;
+        });
+
+        // 2. Shuffle the unique products
+        const shuffled = this.shuffleArray([...uniqueProducts]);
+
+        this.products = shuffled.map(p => ({
           ...p,
           id: p.id,
           productId: p.productId,
@@ -45,9 +62,23 @@ export class AddToCart implements OnInit {
           reviewCount: 45,
           trends: 'assets/images/trends.png'
         }));
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('[AddToCart] Failed to load suggestions:', err);
+        this.isLoading = false;
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private shuffleArray(array: any[]): any[] {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
   }
 
   getFirstImage(product: any): string {
@@ -77,7 +108,7 @@ export class AddToCart implements OnInit {
         images = imageStr;
       }
     } catch (e) {
-      images = imageStr.split(',').map((s: string) => s.trim());
+      images = imageStr?.split(',')?.map((s: string) => s.trim()) || [];
     }
 
     if (images.length === 0 || images[0] === 'string' || images[0] === '') {
@@ -123,7 +154,7 @@ export class AddToCart implements OnInit {
         images = imageStr;
       }
     } catch (e) {
-      images = imageStr.split(',').map((s: string) => s.trim());
+      images = imageStr?.split(',')?.map((s: string) => s.trim()) || [];
     }
 
     const parts = images.filter((p: string) => p !== '' && p !== 'string');

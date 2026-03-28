@@ -9,7 +9,6 @@
         <div class="name-row">
           <div class="product-name-wrap" tabindex="0" [attr.aria-label]="product.name">
             <div class="product-name">{{ product.name }}</div>
-            <div class="product-name-tooltip">{{ product.name }}</div>
           </div>
           <div class="price-box">
             <span class="current-price">${{ (product.price * product.quantity) | number:'1.2-2' }}</span>

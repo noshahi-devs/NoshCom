@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, ChangeDetectorRef, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, EventEmitter, Output, ChangeDetectorRef, inject, OnDestroy, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService, LoginDto, RegisterDto } from '../../../services/auth.service';
@@ -13,6 +13,8 @@ import { resolvePlatformName } from '../../platform-context';
 })
 export class AuthModalComponent implements OnInit, OnDestroy {
     private cdr = inject(ChangeDetectorRef);
+    private roleAnimationTimeout: any;
+    @Input() pageMode = false;
     @Output() close = new EventEmitter<void>();
     @Output() authenticated = new EventEmitter<void>();
 
@@ -24,6 +26,7 @@ export class AuthModalComponent implements OnInit, OnDestroy {
     showPassword = false;
     showConfirmPassword = false;
     isLoading = false;
+    roleAnimating = false;
     errorMessage: string = '';
     showErrorModal = false;
     errorTitle = 'Registration Not Completed';
@@ -31,11 +34,11 @@ export class AuthModalComponent implements OnInit, OnDestroy {
     // Loading Experience
     loadingMessage: string = 'Starting registration...';
     private loadingMessages = [
-        'Creating your profile...',
-        'Securing your shop...',
-        'Setting up your dashboard...',
-        'Almost there...',
-        'Finalizing details...'
+        'Creating your NoshCom profile...',
+        'Securing your account...',
+        'Preparing your dashboard...',
+        'Almost ready...',
+        'Finalizing your setup...'
     ];
     private loadingInterval: any;
 
@@ -92,6 +95,10 @@ export class AuthModalComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.stopLoadingRotation();
+        if (this.roleAnimationTimeout) {
+            clearTimeout(this.roleAnimationTimeout);
+            this.roleAnimationTimeout = null;
+        }
         // Restore scroll
         document.body.style.overflow = 'auto';
         document.documentElement.style.overflow = 'auto';
@@ -130,6 +137,24 @@ export class AuthModalComponent implements OnInit, OnDestroy {
         this.showErrorModal = false;
     }
 
+    setUserRole(role: 'customer' | 'seller') {
+        if (this.userRole === role) return;
+        this.userRole = role;
+        this.roleAnimating = false;
+
+        if (this.roleAnimationTimeout) {
+            clearTimeout(this.roleAnimationTimeout);
+        }
+
+        this.cdr.detectChanges();
+        this.roleAnimating = true;
+
+        this.roleAnimationTimeout = setTimeout(() => {
+            this.roleAnimating = false;
+            this.cdr.detectChanges();
+        }, 520);
+    }
+
     private startLoadingRotation() {
         this.stopLoadingRotation();
         let index = 0;
@@ -154,7 +179,7 @@ export class AuthModalComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         this.errorMessage = '';
         this.showErrorModal = false;
-        this.loadingMessage = 'Logging you in...';
+        this.loadingMessage = 'Signing you in to NoshCom...';
 
         const credentials: LoginDto = {
             userNameOrEmailAddress: this.signInForm.value.email,
@@ -165,6 +190,8 @@ export class AuthModalComponent implements OnInit, OnDestroy {
         this.authService.login(credentials)
             .subscribe({
                 next: () => {
+                    this.isLoading = false;
+                    this.cdr.detectChanges();
                     this.authenticated.emit();
                     this.close.emit();
                 },

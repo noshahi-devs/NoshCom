@@ -75,7 +75,7 @@
 .main-image {
     position: relative;
     width: 100%;
-    height: 480px; /* Bounded height */
+    height: 560px; /* Bounded height */
     min-height: unset;
     background: #ffffff;
     border-radius: 20px;
@@ -142,13 +142,6 @@
         }
     }
 
-    &:hover {
-        transform: translateY(-5px);
-        
-        .active-page img {
-            transform: scale(1.08);
-        }
-    }
 }
 
 /* ===== ARROWS ===== */
@@ -210,13 +203,13 @@
     }
 
     .main-image {
-        height: 400px;
+        height: 460px;
     }
 }
 
 @media (max-width: 600px) {
     .main-image {
-        height: 350px;
+        height: 380px;
         margin-left: 0px;
         border-radius: 12px;
     }

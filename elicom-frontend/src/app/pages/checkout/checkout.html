@@ -1,20 +1,6 @@
-<app-order-process-header [showLocation]="false">
-</app-order-process-header>
+<app-header></app-header>
 
 <div class="checkout-wrapper">
-  <div class="top-bar" *ngIf="showTopBar">
-    <div class="content">
-      <span class="item"><i class="check">✔</i> Free shipping</span>
-      <span class="dot">·</span>
-      <span class="item">Free Return</span>
-      <span class="dot">·</span>
-      <span class="item">500 Points if Late</span>
-      <span class="dot">·</span>
-      <span class="item">No Hidden Fees</span>
-    </div>
-  </div>
-
-  <!-- Multi-Step Stepper -->
   <app-order-process-breadcrumb [activeStep]="checkoutStep" (stepClick)="handleStepClick($event)">
   </app-order-process-breadcrumb>
 
@@ -22,7 +8,6 @@
     <div class="row">
       <div class="col-lg-8">
 
-        <!-- STEP 1: SHIPPING -->
         <div class="step-container animate-fade-in" *ngIf="checkoutStep === 1">
           <app-shipping-address (addressSaved)="handleAddressSaved()"></app-shipping-address>
 
@@ -33,7 +18,6 @@
           </div>
         </div>
 
-        <!-- STEP 2: PAYMENT -->
         <div class="step-container animate-fade-in" *ngIf="checkoutStep === 2">
           <div class="address-summary-card mb-4">
             <div class="d-flex justify-content-between align-items-center">
@@ -49,16 +33,15 @@
           <app-payment-method [totalAmount]="cartService.totalPrice"
             (paymentConfirmed)="handlePaymentConfirmed($event)"></app-payment-method>
 
-          <div class="step-actions mt-4">
+<!-- <div class="step-actions mt-4">
             <button class="btn btn-outline-secondary" (click)="checkoutStep = 1">
               <i class="pi pi-arrow-left me-2"></i> Back to Shipping
             </button>
-          </div>
+          </div> -->
         </div>
 
       </div>
 
-      <!-- Right Side: Order Summary (Always Visible) -->
       <div class="col-lg-4">
         <div class="right-column-wrapper">
           <app-checkout-summary [showPlaceOrder]="false" [disablePlaceOrder]="true" (placeOrder)="handlePlaceOrder()">

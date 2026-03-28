@@ -1,13 +1,23 @@
 <div class="breadcrumb-container">
   <div class="breadcrumb">
     <ng-container *ngFor="let step of steps; let i = index">
-      <span class="breadcrumb-step"
-            [class.active-step]="i === activeStep"
-            [class.completed-step]="i < activeStep"
-            (click)="goToStep(i)">
-        {{ step }}
-      </span>
-      <span class="separator" *ngIf="i < steps.length - 1"> &gt; </span>
+      <button class="breadcrumb-step"
+              type="button"
+              [class.active-step]="i === activeStep"
+              [class.completed-step]="i < activeStep"
+              (click)="goToStep(i)">
+        <span class="step-marker">
+          <span class="step-line step-line--left" *ngIf="i > 0"></span>
+          <span class="step-badge">
+            <i [class]="getStepIcon(step)"></i>
+          </span>
+          <span class="step-line step-line--right" *ngIf="i < steps.length - 1"></span>
+        </span>
+        <span class="step-copy">
+          <strong>{{ step }}</strong>
+          <small>Step {{ i + 1 }}</small>
+        </span>
+      </button>
     </ng-container>
   </div>
 </div>

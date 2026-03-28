@@ -2,7 +2,7 @@
   <div class="image-box">
 
     <!-- Main Image Carousel -->
-    <div class="main-image main-frame">
+    <div class="main-image main-frame" (mouseenter)="pauseCarousel()" (mouseleave)="resumeCarousel()">
       <button class="arrow left" (click)="prevImage()">
         <i class="fa-solid fa-chevron-left"></i>
       </button>

@@ -232,12 +232,13 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
+    const mergedVisibleRows = new Set([...this.forYouVisibleRows, ...nextVisibleRows]);
     const hasChanged =
-      nextVisibleRows.size !== this.forYouVisibleRows.size ||
-      [...nextVisibleRows].some((row) => !this.forYouVisibleRows.has(row));
+      mergedVisibleRows.size !== this.forYouVisibleRows.size ||
+      [...mergedVisibleRows].some((row) => !this.forYouVisibleRows.has(row));
 
     if (hasChanged) {
-      this.forYouVisibleRows = nextVisibleRows;
+      this.forYouVisibleRows = mergedVisibleRows;
       this.cdr.detectChanges();
     }
   }
@@ -261,12 +262,13 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
+    const mergedVisibleRows = new Set([...this.galleryVisibleRows, ...nextVisibleRows]);
     const hasChanged =
-      nextVisibleRows.size !== this.galleryVisibleRows.size ||
-      [...nextVisibleRows].some((row) => !this.galleryVisibleRows.has(row));
+      mergedVisibleRows.size !== this.galleryVisibleRows.size ||
+      [...mergedVisibleRows].some((row) => !this.galleryVisibleRows.has(row));
 
     if (hasChanged) {
-      this.galleryVisibleRows = nextVisibleRows;
+      this.galleryVisibleRows = mergedVisibleRows;
       this.cdr.detectChanges();
     }
   }
@@ -290,12 +292,13 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
+    const mergedVisibleRows = new Set([...this.premiumVisibleRows, ...nextVisibleRows]);
     const hasChanged =
-      nextVisibleRows.size !== this.premiumVisibleRows.size ||
-      [...nextVisibleRows].some((row) => !this.premiumVisibleRows.has(row));
+      mergedVisibleRows.size !== this.premiumVisibleRows.size ||
+      [...mergedVisibleRows].some((row) => !this.premiumVisibleRows.has(row));
 
     if (hasChanged) {
-      this.premiumVisibleRows = nextVisibleRows;
+      this.premiumVisibleRows = mergedVisibleRows;
       this.cdr.detectChanges();
     }
   }

@@ -2,56 +2,179 @@
   width: 100%;
   display: flex;
   justify-content: center;
-  background: #fff;
-  padding: 14px 0 12px;
-  border-bottom: 1px solid #eee;
-  margin-bottom: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 251, 236, 0.98));
+  padding: 20px 0 18px;
+  border-bottom: 1px solid rgba(255, 193, 7, 0.18);
+  margin-top: 18px;
+  margin-bottom: 16px;
+  box-shadow:
+    inset 0 -1px 0 rgba(17, 17, 17, 0.03),
+    0 14px 30px rgba(255, 193, 7, 0.06);
 }
 
 .breadcrumb {
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
+  align-items: flex-start;
+  justify-content: space-between;
   max-width: 1200px;
   width: 92%;
-  gap: 10px;
+  gap: 0;
+  overflow-x: auto;
+  padding: 6px 2px 4px;
 }
 
 .breadcrumb-step {
-  font-size: 14px;
-  font-weight: 500;
-  color: #9aa0a6;
-  white-space: nowrap;
+  position: relative;
+  flex: 1 1 0;
+  min-width: 150px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: transform 0.24s ease;
+  appearance: none;
+  text-align: center;
 }
 
-.breadcrumb-step.active-step {
-  color: #f85606;
-  font-weight: 700;
+.breadcrumb-step:hover {
+  transform: translateY(-3px);
 }
 
-.breadcrumb-step.completed-step {
-  color: #6b7280;
+.step-marker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  min-height: 56px;
 }
 
-.separator {
-  color: #d1d5db;
+.step-line {
+  position: absolute;
+  top: 50%;
+  height: 6px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ffe9a6 0%, #ffd451 100%);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.65);
+}
+
+.step-line--left {
+  left: 0;
+  width: calc(50% - 28px);
+}
+
+.step-line--right {
+  right: 0;
+  width: calc(50% - 28px);
+}
+
+.step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ffffff 0%, #fff6d5 100%);
+  color: #d69a00;
+  border: 2px solid rgba(255, 193, 7, 0.45);
+  box-shadow:
+    0 16px 28px rgba(255, 193, 7, 0.18),
+    inset 0 2px 0 rgba(255, 255, 255, 0.96);
+  flex-shrink: 0;
+}
+
+.step-badge i {
+  font-size: 18px;
+}
+
+.step-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.step-copy strong {
+  color: #222;
   font-size: 14px;
+  font-weight: 800;
+}
+
+.step-copy small {
+  color: #8a8a8a;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.breadcrumb-step.active-step .step-badge {
+  background: linear-gradient(180deg, #ffd24a 0%, #ffbf00 100%);
+  color: #111111;
+  border-color: rgba(255, 193, 7, 0.92);
+  box-shadow:
+    0 18px 32px rgba(255, 193, 7, 0.32),
+    0 0 0 8px rgba(255, 193, 7, 0.14);
+}
+
+.breadcrumb-step.active-step .step-copy strong {
+  color: #111111;
+}
+
+.breadcrumb-step.active-step .step-copy small {
+  color: #9d7100;
+}
+
+.breadcrumb-step.completed-step .step-badge {
+  background: linear-gradient(180deg, #fff9e8 0%, #ffe082 100%);
+  color: #111111;
+  border-color: rgba(255, 193, 7, 0.68);
+}
+
+.breadcrumb-step.completed-step .step-line--left,
+.breadcrumb-step.completed-step .step-line--right {
+  background: linear-gradient(90deg, #ffd24a 0%, #ffbf00 100%);
+}
+
+.breadcrumb-step.active-step .step-line--left {
+  background: linear-gradient(90deg, #ffd24a 0%, #ffbf00 100%);
 }
 
 @media (max-width: 768px) {
   .breadcrumb-container {
-    padding: 12px 0 8px;
+    padding: 14px 0 10px;
+    margin-top: 14px;
   }
+
   .breadcrumb {
     width: 94%;
-    gap: 8px;
+    gap: 0;
   }
+
   .breadcrumb-step {
-    font-size: 12px;
+    min-width: 132px;
+    padding: 0 8px;
   }
-  .separator {
-    font-size: 12px;
+
+  .step-badge {
+    width: 46px;
+    height: 46px;
+  }
+
+  .step-line--left,
+  .step-line--right {
+    width: calc(50% - 23px);
+  }
+
+  .step-copy strong {
+    font-size: 13px;
+  }
+
+  .step-copy small {
+    font-size: 10px;
   }
 }

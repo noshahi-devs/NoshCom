@@ -1,18 +1,15 @@
 .search-result-container {
     display: flex;
     max-width: 1600px;
-    /* Increased max-width */
-    /* Optional constraint */
     margin: 0 auto;
-    gap: 10px;
-    /* Reduced gap */
+    gap: 18px;
     background-color: #fff;
     min-height: 100vh;
+    padding: 20px 0 28px;
 }
 
 .left-pane {
     flex: 0 0 280px;
-    /* Fixed width matching sidebar */
 }
 
 .right-pane {
@@ -25,11 +22,12 @@
     display: flex;
     align-items: center;
     gap: 18px;
-    margin-top: 20px;
-    /* Adjusted spacing */
+    margin-top: 6px;
     margin-bottom: 20px;
     position: relative;
     z-index: 10;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #ececec;
 }
 
 /* Sort Box */
@@ -37,9 +35,9 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    border: 1px solid #e0e0e0;
-    padding: 7px 14px;
-    border-radius: 2px;
+    border: 1px solid #d5d9d9;
+    padding: 9px 14px;
+    border-radius: 10px;
     min-width: 220px;
     position: relative;
     box-sizing: border-box;
@@ -91,7 +89,7 @@
     width: calc(100% + 2px);
     background: #fff;
     border: 1px solid #e0e0e0;
-    box-shadow: 3px 8px 10px rgba(121, 119, 119, 0.06);
+    box-shadow: 0 10px 22px rgba(15, 17, 17, 0.08);
     opacity: 0;
     pointer-events: none;
     transform: translateY(-6px);
@@ -116,28 +114,9 @@
     font-weight: 400;
 }
 
-/* Filter Dropdown */
-.sort-box {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border: 1px solid #e0e0e0;
-    padding: 8px 14px;
-    border-radius: 4px;
-    min-width: 200px;
-    position: relative;
-    background: #fff;
-    cursor: pointer;
-    user-select: none;
-
-    &:hover {
-        border-color: #ccc;
-    }
-}
-
 .sort-label {
     font-size: 13px;
-    color: #666;
+    color: #565959;
     margin-right: auto;
 }
 
@@ -149,8 +128,8 @@
 
 .sort-value {
     font-size: 13px;
-    font-weight: 600;
-    color: #333;
+    font-weight: 700;
+    color: #0f1111;
 }
 
 .arrow {
@@ -169,9 +148,9 @@
     width: 100%;
     background: white;
     border: 1px solid #e0e0e0;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 18px rgba(15, 17, 17, 0.1);
     z-index: 50;
-    border-radius: 4px;
+    border-radius: 10px;
     margin-top: 4px;
 
     &.show {
@@ -181,10 +160,10 @@
     .opt {
         padding: 10px;
         font-size: 13px;
-        color: #333;
+        color: #0f1111;
 
         &:hover {
-            background-color: #f5f5f5;
+            background-color: #f7fafa;
         }
     }
 }
@@ -233,6 +212,7 @@
 @media (max-width: 900px) {
     .search-result-container {
         flex-direction: column;
+        padding-top: 10px;
     }
 
     .left-pane {

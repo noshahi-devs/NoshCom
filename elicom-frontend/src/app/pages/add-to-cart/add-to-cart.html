@@ -1,16 +1,69 @@
-<app-order-process-header [showLocation]="true">
-</app-order-process-header>
-<div class="addToCart-wrapper">
-  <!-- breadcrumb -->
-  <app-order-process-breadcrumb [steps]="['Cart', 'Place Order', 'Pay', 'Order Complete']"
-    [activeStep]="0"></app-order-process-breadcrumb>
+<app-header></app-header>
 
-  <app-cart-item></app-cart-item>
-</div>
+<section class="cart-stage">
+  <div class="addToCart-wrapper">
+    <section class="cart-top-strip">
+      <div class="cart-top-strip__content">
+        <span class="cart-top-strip__eyebrow">Cart Review</span>
+        <h1>Review your selected items before checkout.</h1>
+        <p>Same cart flow, but now matched to the home page palette with yellow energy, white surfaces, and bold black depth.</p>
+      </div>
 
-<div class="suggestion-product">
-  <strong>{{ suggestionText }}</strong>
-</div>
+      <div class="cart-top-strip__stats">
+        <div class="stat-pill">
+          <strong>{{ products.length || 0 }}+</strong>
+          <span>More picks ready</span>
+        </div>
+        <div class="stat-pill">
+          <strong>Fast</strong>
+          <span>Checkout flow</span>
+        </div>
+        <div class="stat-pill">
+          <strong>3D</strong>
+          <span>Visual depth</span>
+        </div>
+      </div>
+    </section>
 
-<!-- Product Cards -->
-<app-product-card [products]="products"></app-product-card>
+    <app-order-process-breadcrumb [steps]="['Cart', 'Place Order', 'Pay', 'Order Complete']"
+      [activeStep]="0"></app-order-process-breadcrumb>
+
+    <section class="cart-shell">
+      <app-cart-item></app-cart-item>
+    </section>
+  </div>
+
+  <section class="suggestion-zone">
+    <div class="suggestion-product-heading">
+      <h2>Suggested Next Moves</h2>
+      <span></span>
+    </div>
+
+    <!-- Skeleton Grid -->
+    <div class="product-suggestion-shell skeleton-grid" *ngIf="isLoading">
+      <div class="suggestion-skeleton-card" *ngFor="let _ of skeletonCards">
+        <div class="suggestion-skeleton-media suggestion-shimmer"></div>
+        <div class="suggestion-skeleton-meta">
+          <div class="suggestion-skeleton-line suggestion-shimmer short"></div>
+          <div class="suggestion-skeleton-line suggestion-shimmer title"></div>
+          <div class="suggestion-skeleton-line suggestion-shimmer title alt"></div>
+          <div class="suggestion-skeleton-footer">
+            <div class="suggestion-skeleton-price suggestion-shimmer"></div>
+            <div class="suggestion-skeleton-cta suggestion-shimmer"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="suggestion-product" *ngIf="!isLoading">
+      <strong>{{ suggestionText }}</strong>
+      <p>Add a few standout pieces to round out the shipment while the cart is still open.</p>
+    </div>
+
+    <div class="product-suggestion-shell" *ngIf="!isLoading">
+      <app-product-card [products]="products"></app-product-card>
+    </div>
+  </section>
+</section>
+
+<app-footer></app-footer>

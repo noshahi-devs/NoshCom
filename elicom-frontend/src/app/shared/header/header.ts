@@ -1,4 +1,4 @@
-import { Component, signal, ElementRef, ViewChild, inject, effect, HostListener, AfterViewChecked, OnInit } from '@angular/core';
+import { Component, signal, ElementRef, ViewChild, inject, effect, HostListener, AfterViewChecked, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router, RouterModule } from '@angular/router';
 import { CartService, CartItem } from '../../services/cart.service';
@@ -14,7 +14,8 @@ import Swal from 'sweetalert2';
   standalone: true,
   imports: [CommonModule, RouterLink, RouterModule, FormsModule, AuthModalComponent],
   templateUrl: './header.html',
-  styleUrls: ['./header.scss']
+  styleUrls: ['./header.scss'],
+  encapsulation: ViewEncapsulation.None
 })
 export class Header implements OnInit, AfterViewChecked {
   userDropdown = signal(false);
@@ -45,12 +46,22 @@ export class Header implements OnInit, AfterViewChecked {
     effect(() => {
       const trigger = this.cartService.cartAutoOpen();
       if (trigger > 0) {
-        this.openModal();
+        this.openSidebar();
+      }
+    });
+
+    // Handle body scroll when cart is open
+    effect(() => {
+      const isOpen = this.cartDropdown();
+      const els = [document.body, document.documentElement];
+      if (isOpen) {
+        els.forEach(el => el.classList.add('no-scroll'));
+      } else {
+        els.forEach(el => el.classList.remove('no-scroll'));
       }
     });
 
     // Listen to Auth Service requests to open modal
-    // We subscribe manually since effect() is for signals, or we could use toSignal if we strictly wanted signals
     this.authService.showAuthModal$.subscribe(show => {
       if (show) this.authModalOpen.set(true);
     });
@@ -83,8 +94,13 @@ export class Header implements OnInit, AfterViewChecked {
     if (Date.now() - this.lastCartOpenAt < 250) {
       return;
     }
-    // Close if click is outside cart-wrapper
-    if (!target.closest('.cart-wrapper')) {
+    
+    // Close if click is outside cart-wrapper, sidebar, and Swal dialogs
+    const isCartClick = !!target.closest('.cart-wrapper') || !!target.closest('.cart-sidebar');
+    const isOverlayClick = !!target.closest('.cart-overlay');
+    const isSwalClick = !!target.closest('.swal2-container');
+    
+    if (!isCartClick && !isOverlayClick && !isSwalClick && this.cartDropdown()) {
       this.cartDropdown.set(false);
       if (this.autoHideTimer) clearTimeout(this.autoHideTimer);
     }
@@ -109,34 +125,29 @@ export class Header implements OnInit, AfterViewChecked {
     });
   }
 
-  openModal() {
+  openSidebar() {
     this.cartDropdown.set(true);
     this.lastCartOpenAt = Date.now();
-    this.startTimer();
   }
 
   closeModal() {
     this.cartDropdown.set(false);
-    if (this.autoHideTimer) clearTimeout(this.autoHideTimer);
   }
 
-  startTimer() {
-    if (this.autoHideTimer) clearTimeout(this.autoHideTimer);
-    this.autoHideTimer = setTimeout(() => {
-      if (!this.isHovered) {
-        this.cartDropdown.set(false);
-      }
-    }, 3000);
+  proceedToCheckout() {
+    this.closeModal();
+    // Allow animation to finish or just navigate immediately
+    setTimeout(() => {
+      this.router.navigate(['/add-to-cart']);
+    }, 100);
   }
 
   onMouseEnterCart() {
-    this.isHovered = true;
-    if (this.autoHideTimer) clearTimeout(this.autoHideTimer);
+    // Logic removed for sidebar
   }
 
   onMouseLeaveCart() {
-    this.isHovered = false;
-    this.startTimer();
+    // Logic removed for sidebar
   }
 
   incrementQty(item: CartItem) {
@@ -177,11 +188,6 @@ export class Header implements OnInit, AfterViewChecked {
     if (this.navbar) {
       this.navbar.nativeElement.scrollBy({ left: this.scrollAmount, behavior: 'smooth' });
     }
-  }
-
-  // Checkbox handling methods
-  onItemCheckboxChange(item: CartItem) {
-    this.cartService.toggleItemCheckbox(item.productId, item.size, item.color);
   }
 
   onStoreCheckboxChange(storeName: string, event: Event) {

@@ -11,7 +11,7 @@ import Swal from 'sweetalert2';
   templateUrl: './cart-item.html',
   styleUrls: ['./cart-item.scss'],
 })
-export class CartItem implements AfterViewChecked {
+export class CartItemComponent implements AfterViewChecked {
   cartService = inject(CartService);
 
   ngAfterViewChecked() {
@@ -26,8 +26,9 @@ export class CartItem implements AfterViewChecked {
   }
 
   // ================= CHECKBOX METHODS =================
-  onItemCheckboxChange(item: CartItemModel) {
-    this.cartService.toggleItemCheckbox(item.productId, item.size, item.color);
+  onItemCheckboxChange(item: CartItemModel, event: Event) {
+    const checkbox = event.target as HTMLInputElement;
+    this.cartService.setItemCheckbox(item.storeProductId, checkbox.checked);
   }
 
   onStoreCheckboxChange(storeName: string, event: Event) {

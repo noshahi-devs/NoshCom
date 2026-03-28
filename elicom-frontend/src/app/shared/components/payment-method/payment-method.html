@@ -1,120 +1,112 @@
-<div class="section payment-container" [style.border-top-color]="selectedMethod.color"
-  [class]="'theme-' + selectedMethodId">
+<div class="section payment-container" [class]="'theme-' + selectedMethodId">
   <h2 class="section-title">Payment Method</h2>
 
-  <!-- Custom Premium Dropdown -->
-  <div class="method-selector">
-    <label class="field-label">Select Payment Method</label>
-    <div class="custom-dropdown" [class.active]="isDropdownOpen" (click)="isDropdownOpen = !isDropdownOpen">
-      <div class="selected-item" [style.border-color]="selectedMethod.color">
-        <div class="method-info-simple">
-          <img [src]="selectedMethod.icon" height="24">
-          <span class="method-name">{{ selectedMethod.name }}</span>
+  <!-- Premium Method Grid (Cards) -->
+  <div class="method-grid-container mb-5">
+    <div class="method-card" *ngFor="let method of paymentMethods"
+      [class.active]="selectedMethodId === method.id"
+      [style.background]="method.gradient"
+      (click)="onMethodChange(method.id)">
+      <div class="card-glass-glow"></div>
+      <div class="method-card-content">
+        <h3 class="method-card-name">{{ method.name }}</h3>
+        <div class="card-logo-wrap">
+          <img [src]="method.icon" [alt]="method.name">
         </div>
-        <i class="pi pi-chevron-down dropdown-arrow"></i>
-      </div>
-
-      <div class="dropdown-list animate-fade-in" *ngIf="isDropdownOpen">
-        <div class="dropdown-item" *ngFor="let method of paymentMethods"
-          (click)="onMethodChange(method.id); $event.stopPropagation()" [class.active]="selectedMethodId === method.id">
-          <img [src]="method.icon" height="24">
-          <span class="method-name">{{ method.name }}</span>
-          <i class="pi pi-check active-check" *ngIf="selectedMethodId === method.id"></i>
+        <div class="status-shelf">
+          <span class="status-marker">AVAILABLE</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Dynamic Payment Forms -->
-  <div class="payment-form-area mt-4 animate-fade-in"
-    *ngIf="selectedMethodId === 'card' || selectedMethodId === 'finora' || selectedMethodId === 'primeship'">
+  <!-- Persistent Payment Form -->
+  <div class="payment-form-area animate-fade-in">
     <div class="card-inputs">
-      <div class="method-info mb-3" [style.color]="selectedMethod.color"
-        [style.background-color]="selectedMethod.color + '10'">
-        <i class="pi pi-info-circle me-2"></i>
+      
+      <!-- Nosh Pay Suggestion -->
+      <div class="method-info mb-4" *ngIf="selectedMethodId === 'finora'">
+        <i class="pi pi-info-circle me-3"></i>
         <span>{{ selectedMethod.statusMsg }}</span>
       </div>
 
-      <div class="form-group mb-3">
+      <div class="form-group mb-4">
         <label class="field-label">Card Number</label>
-        <div class="input-wrapper">
+        <div class="input-wrapper" [class.error-border]="submitted && cardErrors.number">
           <i class="pi pi-credit-card"></i>
-          <input type="text" placeholder="0000 0000 0000 0000" class="form-control" [value]="card.number"
-            (input)="formatCardNumber($event)" [class.error-border]="submitted && cardErrors.number"
-            [style.focus-border-color]="selectedMethod.color">
+          <input type="text" placeholder="0000 0000 0000 0000" [value]="card.number"
+            (input)="formatCardNumber($event)">
         </div>
-        <div class="error-msg" *ngIf="submitted && cardErrors.number">Must be 16 digits</div>
+        <div class="error-msg" *ngIf="submitted && cardErrors.number">
+          <i class="pi pi-exclamation-circle"></i> Must be 16 digits
+        </div>
       </div>
 
       <div class="row">
         <div class="col-6">
-          <div class="form-group mb-3">
+          <div class="form-group mb-4">
             <label class="field-label">Expiry Date</label>
-            <input type="text" placeholder="MM/YY" class="form-control" [value]="card.expiry"
-              (input)="formatExpiry($event)" [class.error-border]="submitted && cardErrors.expiry">
-            <div class="error-msg" *ngIf="submitted && cardErrors.expiry">Invalid Date</div>
+            <div class="form-control" [class.error-border]="submitted && cardErrors.expiry">
+              <input type="text" placeholder="MM/YY" [value]="card.expiry"
+              (input)="formatExpiry($event)">
+            </div>
+            <div class="error-msg" *ngIf="submitted && cardErrors.expiry">
+              <i class="pi pi-exclamation-circle"></i> Invalid Date
+            </div>
           </div>
         </div>
         <div class="col-6">
-          <div class="form-group mb-3">
+          <div class="form-group mb-4">
             <label class="field-label">CVV</label>
-            <input type="text" placeholder="123" class="form-control" [value]="card.cvv" (input)="formatCVV($event)"
-              [class.error-border]="submitted && cardErrors.cvv">
-            <div class="error-msg" *ngIf="submitted && cardErrors.cvv">3 digits</div>
+            <div class="form-control" [class.error-border]="submitted && cardErrors.cvv">
+              <input type="text" placeholder="123" [value]="card.cvv" (input)="formatCVV($event)">
+            </div>
+            <div class="error-msg" *ngIf="submitted && cardErrors.cvv">
+              <i class="pi pi-exclamation-circle"></i> 3 digits
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="form-group mb-3">
+      <div class="form-group mb-4">
         <label class="field-label">Card Holder Name</label>
-        <input type="text" placeholder="Name on card" class="form-control" [(ngModel)]="card.holder">
+        <div class="form-control">
+          <input type="text" placeholder="Name on card" [(ngModel)]="card.holder">
+        </div>
       </div>
 
       <!-- Easy Finora Verification -->
       <div class="finora-check mt-3" *ngIf="selectedMethodId === 'finora'">
-        <div class="alert alert-info d-flex align-items-center" *ngIf="isVerified">
-          <i class="pi pi-check-circle me-2"></i>
-          <div>
-            Verified! Available Balance: <strong class="text-success">${{ verifiedBalance | number:'1.2-2' }}</strong>
+        <div class="alerts mb-3">
+          <div class="alert alert-info d-flex align-items-center animate-fade-in" *ngIf="isVerified">
+            <i class="pi pi-check-circle me-2"></i>
+            <div>
+              Verified! Available Balance: <strong class="text-success">${{ verifiedBalance | number:'1.2-2' }}</strong>
+            </div>
+          </div>
+
+          <div class="alert alert-danger animate-fade-in" *ngIf="verificationMessage">
+            <i class="pi pi-times-circle me-2"></i> {{ verificationMessage }}
+          </div>
+
+          <div class="alert alert-warning animate-fade-in" *ngIf="submitted && !isVerified && !verificationMessage">
+            <i class="pi pi-exclamation-triangle me-2"></i> Please verify your card balance before continuing.
           </div>
         </div>
 
-        <div class="alert alert-danger" *ngIf="verificationMessage">
-          {{ verificationMessage }}
-        </div>
-
-        <div class="alert alert-warning" *ngIf="submitted && !isVerified && !verificationMessage">
-          Please verify your card balance before continuing.
-        </div>
-
-        <button type="button" class="btn btn-outline-primary w-100" (click)="verifyFinora()" [disabled]="isVerifying"
-          [style.color]="selectedMethod.color" [style.border-color]="selectedMethod.color">
-          <span *ngIf="isVerifying"><i class="pi pi-spin pi-spinner"></i> Verifying...</span>
-          <span *ngIf="!isVerifying">Verify Card Balance</span>
+        <button type="button" class="btn btn-outline-primary w-100" (click)="verifyFinora()" [disabled]="isVerifying">
+          <span *ngIf="isVerifying"><i class="pi pi-spin pi-spinner me-2"></i> Verifying...</span>
+          <span *ngIf="!isVerifying"><i class="pi pi-shield me-2"></i> Verify Card Balance</span>
         </button>
       </div>
     </div>
   </div>
 
-  <div class="other-methods-msg mt-4 p-4 border rounded text-center animate-fade-in"
-    *ngIf="selectedMethodId !== 'card' && selectedMethodId !== 'finora' && selectedMethodId !== 'primeship'"
-    [style.border-color]="selectedMethod.color + '44'" [style.background-color]="selectedMethod.color + '0a'">
-    <img [src]="selectedMethod.icon" height="40" class="mb-3">
-    <div class="status-badge" [class]="selectedMethod.status" [style.background-color]="selectedMethod.color"
-      *ngIf="selectedMethod.status !== 'available'">
-      {{ selectedMethod.status | uppercase }}
-    </div>
-    <p [style.color]="selectedMethod.color" class="fw-bold mb-1">{{ selectedMethod.statusMsg }}</p>
-    <p class="text-muted small" *ngIf="isActive">
-      You will be redirected to {{ selectedMethod.name }} secure checkout page after clicking
-      <strong>Confirm & Continue</strong>.
-    </p>
-  </div>
+  <!-- Form fields are always visible above -->
 
   <div class="actions mt-4">
-    <button class="btn btn-save-payment" (click)="saveCard()" [style.background-color]="selectedMethod.color"
-      [disabled]="!isActive">
-      Confirm & Continue
+    <button class="btn btn-save-payment" (click)="saveCard()" [disabled]="!isActive">
+      Confirm Order
     </button>
   </div>
-</div>
+</div>

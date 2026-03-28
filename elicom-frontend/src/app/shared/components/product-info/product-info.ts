@@ -89,6 +89,7 @@ export class ProductInfo implements OnInit {
   quantity = 1;
   fav = false;
   showMobileCartCta = false;
+  isAddingToCart = false;
 
   // AD SLOT (API se aa sakta hai ya null)
   adBanner: { text: string; brand: string } | null = null;
@@ -194,20 +195,28 @@ export class ProductInfo implements OnInit {
   }
 
   addToCart() {
+    if (!this.productData) {
+      console.error('[ProductInfo] No productData found');
+      return;
+    }
+
     // 1. Validate Login
     if (!this.authService.isAuthenticated) {
       Swal.fire({
         icon: 'warning',
-        title: 'Login Required',
-        text: 'Please login to add items to your cart',
+        iconHtml: '<i class="fa-solid fa-user-lock"></i>',
+        title: 'Sign In Required',
+        html: 'Log in to your NoshCom account to add this product to your cart.',
         showCancelButton: true,
         confirmButtonText: 'Login Now',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#3085d6', // Brand color ideally
-        cancelButtonColor: '#d33'
+        cancelButtonText: 'Maybe Later',
+        confirmButtonColor: '#ffc107',
+        cancelButtonColor: '#111',
+        customClass: {
+          icon: 'nosh-login-alert-icon'
+        }
       }).then((result) => {
         if (result.isConfirmed) {
-          // Open global auth modal
           this.authService.openAuthModal();
         }
       });
@@ -215,12 +224,19 @@ export class ProductInfo implements OnInit {
     }
 
     // 2. Add to Cart
-    // Use the first image from gallery or a fallback for the cart thumbnail
-    const image = (this.productData?.images && this.productData.images.length > 0)
+    const image = (this.productData.images && this.productData.images.length > 0)
       ? this.getImage(this.productData.images[0])
       : this.getImage('');
 
-    console.log('[ProductInfo] Adding to cart:', this.productData, this.quantity);
+    console.log('[ProductInfo] Triggering AddToCart:', {
+      productId: this.productData.productId,
+      storeProductId: this.productData.storeProductId,
+      qty: this.quantity,
+      variant: { size: this.selectedSize, color: this.selectedColorName }
+    });
+
+    this.isAddingToCart = true;
+
     this.cartService.addToCart(
       this.productData,
       this.quantity,
@@ -228,27 +244,36 @@ export class ProductInfo implements OnInit {
       this.selectedColorName,
       image
     ).subscribe({
-      next: () => {
-        // Show success message
+      next: (res) => {
+        this.isAddingToCart = false;
+        console.log('[ProductInfo] Add success:', res);
         Swal.fire({
-          title: "Added to Cart!",
-          text: "Item has been added to your shopping bag.",
+          title: "Added to Shopping Bag",
+          text: `${this.product.title} has been successfully added.`,
           icon: "success",
-          timer: 2000,
-          showConfirmButton: false
+          timer: 2500,
+          showConfirmButton: false,
+          position: 'center', // Centered
+          backdrop: `rgba(0,0,0,0.4)`,
+          iconColor: '#ffc107',
+          customClass: {
+            title: 'premium-swal-title',
+            popup: 'premium-swal-popup'
+          }
         });
         this.showMobileCartCta = true;
       },
       error: (err) => {
+        this.isAddingToCart = false;
         console.error('[ProductInfo] Add to cart failed:', err);
         Swal.fire({
           icon: 'error',
-          title: 'Oops...',
-          text: 'Failed to sync with your account cart.',
+          title: 'Operation Failed',
+          text: err?.error?.error?.message || 'Failed to sync with your account cart.',
+          confirmButtonColor: '#ffc107'
         });
       }
     });
-    // Optionally trigger side cart here if header effect misses it
   }
 
 

@@ -9,6 +9,7 @@ export interface CartItem {
     id?: string; // Backend Guid if available
     productId: string;
     storeProductId: string;
+    storeId: string;
     storeName: string;
     name: string;
     price: number;
@@ -31,9 +32,9 @@ export class CartService {
     private storage = inject(StorageService);
     private baseUrl = `${environment.apiUrl}/api/services/app/Cart`;
 
-    // DB-backed state (no local/session cart persistence)
     private cartItems = signal<CartItem[]>([]);
     private showCartTrigger = signal<number>(0);
+    private pendingDeletes = new Set<string>(); // Track items being deleted to prevent reappearing during sync
 
     // Public exposures
     items = this.cartItems.asReadonly();
@@ -64,10 +65,11 @@ export class CartService {
             item?.image ||
             '';
 
-        return {
+        const cartItem: CartItem = {
             id: item?.id,
             productId: item?.productId || item?.storeProduct?.productId || product?.id || '',
             storeProductId: item?.storeProductId || item?.storeProduct?.id || '',
+            storeId: item?.storeId || store?.id || item?.storeProduct?.storeId || '',
             storeName: item?.storeName || store?.name || 'Unknown Store',
             name: item?.productName || item?.productTitle || product?.name || 'Product',
             price: Number(item?.price || 0),
@@ -80,6 +82,43 @@ export class CartService {
             isChecked: true,
             isFavorite: false
         };
+
+        return cartItem;
+    }
+
+    private mergeCartItems(items: CartItem[]): CartItem[] {
+        const merged = new Map<string, CartItem>();
+
+        for (const item of items) {
+            const key = [
+                item.storeProductId || item.productId,
+                item.storeName?.trim().toLowerCase() || '',
+                item.size?.trim().toLowerCase() || '',
+                item.color?.trim().toLowerCase() || ''
+            ].join('__');
+
+            const existing = merged.get(key);
+            if (!existing) {
+                merged.set(key, { ...item });
+                continue;
+            }
+
+            merged.set(key, {
+                ...existing,
+                id: existing.id || item.id,
+                name: existing.name || item.name,
+                image: existing.image || item.image,
+                quantity: existing.quantity + item.quantity,
+                // Keep the latest/valid unit price for display.
+                price: item.price || existing.price,
+                oldPrice: Math.max(existing.oldPrice || 0, item.oldPrice || 0, item.price || 0, existing.price || 0),
+                discount: Math.max(existing.discount || 0, item.discount || 0),
+                isChecked: existing.isChecked || item.isChecked,
+                isFavorite: existing.isFavorite || item.isFavorite
+            });
+        }
+
+        return Array.from(merged.values());
     }
 
     private extractImageUrl(source: any): string {
@@ -129,9 +168,22 @@ export class CartService {
             return of([]);
         }
 
+        console.log('[CartService] Refreshing cart for user:', userId);
         return this.http.get<any>(`${this.baseUrl}/GetCartItems`, { params: { userId: userId.toString() } }).pipe(
-            map((res: any) => (res?.result || []).map((x: any) => this.normalizeBackendItem(x))),
-            tap((items) => this.cartItems.set(items)),
+            map((res: any) => {
+                const results = res?.result || [];
+                const parsedItems = results.map((x: any) => this.normalizeBackendItem(x));
+                const mergedItems = this.mergeCartItems(parsedItems);
+                // Filter out any items that are pending deletion or have 0 qty
+                return mergedItems.filter(i => {
+                    const key = `${i.storeProductId}_${i.size}_${i.color}`;
+                    return i.quantity > 0 && !this.pendingDeletes.has(key);
+                });
+            }),
+            tap((items) => {
+                console.log('[CartService] Loaded items:', items.length);
+                this.cartItems.set(items);
+            }),
             catchError(err => {
                 console.error('[CartService] Failed to load cart from backend', err);
                 return throwError(() => err);
@@ -149,36 +201,50 @@ export class CartService {
 
     // MAIN ADD TO CART FUNCTION
     addToCart(product: any, quantity: number = 1, size: string = '', color: string = '', image: string = ''): Observable<any> {
+        const spid = product.storeProductId || product.id || product.productId;
+        console.log('[CartService] Adding to cart. ProductID:', spid, 'Qty:', quantity);
+
         // Backend-first persistence
         if (this.authService.isAuthenticated) {
             const userId = this.getUserId();
             const payload = {
                 userId: userId,
-                storeProductId: product.storeProductId || product.id || product.productId,
-                quantity: quantity
+                storeProductId: spid,
+                quantity: quantity,
+                size: size,
+                color: color,
+                imageUrl: image
             };
+            
+            console.log('[CartService] POST /AddToCart payload:', payload);
+            
             return this.http.post(`${this.baseUrl}/AddToCart`, payload).pipe(
                 switchMap(() => this.refreshFromBackend()),
                 tap(() => {
                     this.showCartTrigger.update(v => v + 1);
-                    console.log('[CartService] AddToCart synced with backend');
+                    console.log('[CartService] AddToCart success and refreshed');
+                }),
+                catchError(err => {
+                    console.error('[CartService] POST /AddToCart failed:', err);
+                    return throwError(() => err);
                 })
             );
         }
 
         // Guest fallback in-memory only
+        console.log('[CartService] Guest mode: adding to local signal');
         const current = this.cartItems();
-        const storeId = product.store?.storeId || product.storeProductId || product.id || '';
-        const existingIndex = current.findIndex(i => i.storeProductId === storeId && i.size === size && i.color === color);
+        const existingIndex = current.findIndex(i => i.storeProductId === spid && i.size === size && i.color === color);
 
         if (existingIndex > -1) {
             const updated = [...current];
             updated[existingIndex].quantity += quantity;
-            this.cartItems.set(updated);
+            this.cartItems.set(updated.filter(i => i.quantity > 0));
         } else {
             this.cartItems.set([...current, {
                 productId: product.productId || product.id,
-                storeProductId: storeId,
+                storeProductId: spid,
+                storeId: product.storeId || product.store?.id || '',
                 storeName: product.store?.storeName || product.storeName || 'Unknown Store',
                 name: product.title || product.productName || 'Product',
                 price: product.store?.price ?? product.price ?? 0,
@@ -208,23 +274,27 @@ export class CartService {
     }
 
     updateQuantity(productId: string, size: string, color: string, newQty: number) {
-        const item = this.cartItems().find(i => i.productId === productId && i.size === size && i.color === color);
-        if (!item) return;
+        const currentItems = this.cartItems();
+        const itemIndex = currentItems.findIndex(i => i.productId === productId && i.size === size && i.color === color);
+        if (itemIndex === -1) return;
 
-        if (!this.authService.isAuthenticated) {
-            const updated = this.cartItems().map(i =>
-                i.storeProductId === item.storeProductId ? { ...i, quantity: Math.max(newQty, 0) } : i
-            ).filter(i => i.quantity > 0);
-            this.cartItems.set(updated);
-            return;
-        }
-
+        const item = currentItems[itemIndex];
+        
         if (newQty <= 0) {
             this.removeItem(item);
             return;
         }
 
         if (newQty === item.quantity) return;
+
+        // --- Optimistic Local Update ---
+        const updatedItems = [...currentItems];
+        updatedItems[itemIndex] = { ...item, quantity: newQty };
+        this.cartItems.set(updatedItems);
+
+        if (!this.authService.isAuthenticated) {
+            return; // Already updated locally
+        }
 
         const userId = this.getUserId();
         if (!userId) return;
@@ -234,21 +304,24 @@ export class CartService {
             this.http.post(`${this.baseUrl}/AddToCart`, {
                 userId,
                 storeProductId: item.storeProductId,
-                quantity: delta
+                quantity: delta,
+                size: item.size || '',
+                color: item.color || ''
             }).pipe(
                 switchMap(() => this.refreshFromBackend())
             ).subscribe();
             return;
         }
 
-        this.http.delete(`${this.baseUrl}/RemoveFromCartByProduct`, {
-            params: { userId: userId.toString(), storeProductId: item.storeProductId }
+        // Decreasing quantity logic - calculate delta (negative)
+        const delta = newQty - item.quantity;
+        this.http.post(`${this.baseUrl}/AddToCart`, {
+            userId,
+            storeProductId: item.storeProductId,
+            quantity: delta, // Send negative delta to decrement
+            size: item.size || '',
+            color: item.color || ''
         }).pipe(
-            switchMap(() => this.http.post(`${this.baseUrl}/AddToCart`, {
-                userId,
-                storeProductId: item.storeProductId,
-                quantity: newQty
-            })),
             switchMap(() => this.refreshFromBackend())
         ).subscribe();
     }
@@ -260,16 +333,37 @@ export class CartService {
 
         if (!item) return;
 
+        const deleteKey = `${item.storeProductId}_${item.size}_${item.color}`;
+        this.pendingDeletes.add(deleteKey);
+
         // Local immediate update for responsive UI
-        this.cartItems.set(this.cartItems().filter(i => i.storeProductId !== item.storeProductId));
+        this.cartItems.set(this.cartItems().filter(i => 
+            !(i.storeProductId === item.storeProductId && i.size === item.size && i.color === item.color)
+        ));
 
         // Backend update
         if (this.authService.isAuthenticated) {
-            this.http.delete(`${this.baseUrl}/RemoveFromCartByProduct`, {
-                params: { userId: this.getUserId().toString(), storeProductId: item.storeProductId }
+            const userId = this.getUserId();
+            
+            this.http.post(`${this.baseUrl}/AddToCart`, {
+                userId: userId,
+                storeProductId: item.storeProductId,
+                quantity: -item.quantity,
+                size: item.size || '',
+                color: item.color || ''
             }).pipe(
-                switchMap(() => this.refreshFromBackend())
+                switchMap(() => this.refreshFromBackend()),
+                tap(() => {
+                    // Once refreshed and presumably synced, we can remove from pending
+                    this.pendingDeletes.delete(deleteKey);
+                }),
+                catchError(err => {
+                    this.pendingDeletes.delete(deleteKey);
+                    return throwError(() => err);
+                })
             ).subscribe();
+        } else {
+            this.pendingDeletes.delete(deleteKey);
         }
     }
 
@@ -287,12 +381,12 @@ export class CartService {
         }
     }
 
-    // Toggle logic for UI (local only)
-    toggleItemCheckbox(productId: string, size: string, color: string) {
+    // Checkbox logic should use storeProductId because size/color can be empty
+    setItemCheckbox(storeProductId: string, checked: boolean) {
         const current = this.cartItems();
         const updated = current.map(item => {
-            if (item.productId === productId && item.size === size && item.color === color) {
-                return { ...item, isChecked: !item.isChecked };
+            if (item.storeProductId === storeProductId) {
+                return { ...item, isChecked: checked };
             }
             return item;
         });

@@ -11,32 +11,13 @@ import { AuthService } from '../../services/auth.service';
   imports: [CommonModule, AuthModalComponent],
   template: `
     <div class="login-page-container">
-      <div class="auth-box">
-        <app-auth-modal (close)="onClose()" (authenticated)="onAuthenticated()"></app-auth-modal>
-      </div>
+      <app-auth-modal [pageMode]="true" (close)="onClose()" (authenticated)="onAuthenticated()"></app-auth-modal>
     </div>
   `,
   styles: [`
     .login-page-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 80vh;
-      background: #f8f9fa;
-      padding: 20px;
+      min-height: 100vh;
     }
-    .auth-box {
-      width: 100%;
-      max-width: 500px;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-      overflow: hidden;
-    }
-    /* Override modal absolute position if needed, 
-       but AuthModalComponent is likely designed as a centered modal. 
-       We might need to adjust its CSS or just use it as is if it's a fixed overlay.
-    */
   `]
 })
 export class LoginPageComponent implements OnInit {

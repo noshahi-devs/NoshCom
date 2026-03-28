@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CartService } from '../../../services/cart.service';
@@ -14,8 +14,12 @@ import Swal from 'sweetalert2';
 export class ProductCard {
   private router = inject(Router);
   private cartService = inject(CartService);
+  private cdr = inject(ChangeDetectorRef);
 
   @Input() products: any[] = [];
+
+  favoriteKeys = new Set<string>();
+  burstingFavoriteKeys = new Set<string>();
 
   // Feature toggles
   showShopName = true;
@@ -96,6 +100,44 @@ export class ProductCard {
         });
       }
     });
+  }
+
+  isFavorite(product: any): boolean {
+    return this.favoriteKeys.has(this.getProductKey(product));
+  }
+
+  isHeartBursting(product: any): boolean {
+    return this.burstingFavoriteKeys.has(this.getProductKey(product));
+  }
+
+  toggleFavorite(event: Event, product: any): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const key = this.getProductKey(product);
+    const willBeFavorite = !this.favoriteKeys.has(key);
+
+    if (willBeFavorite) {
+      this.favoriteKeys.add(key);
+      this.burstingFavoriteKeys.add(key);
+      window.setTimeout(() => {
+        this.burstingFavoriteKeys.delete(key);
+        this.cdr.detectChanges();
+      }, 900);
+    } else {
+      this.favoriteKeys.delete(key);
+      this.burstingFavoriteKeys.delete(key);
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  getHeartBurstPieces(): number[] {
+    return [1, 2, 3, 4, 5, 6];
+  }
+
+  private getProductKey(product: any): string {
+    return ((product.storeProductId || product.id || product.productId || product.title) as string).toString();
   }
 
   goToDetail(product: any) {
