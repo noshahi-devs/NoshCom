@@ -1,38 +1,99 @@
 <div class="customer-support sui-fade-in">
-    <div class="cust-page-hdr">
-        <div>
-            <div class="cust-page-eyebrow">My Account</div>
-            <h2 class="cust-page-title">Customer Service</h2>
-        </div>
-    </div>
-
-    <section class="contact-form-card">
-        <div class="form-header">
+    <section class="support-form-card">
+        <div class="form-section-header">
+            <div class="section-icon">
+                <i class="fas fa-headset"></i>
+            </div>
             <div>
-                <h4>Contact Us</h4>
-                <p class="x-small text-muted">We respond within 24 hours.</p>
+                <h2 class="section-title">Customer Support</h2>
+                <p class="section-subtitle">Share your issue and our NoshCom support team will follow up within 24 hours.</p>
             </div>
-            <span class="support-pill">Customer Service</span>
         </div>
 
-        <form class="contact-form">
-            <div class="form-row">
-                <label>Full Name</label>
-                <input type="text" placeholder="Your name" />
+        <form class="support-form" novalidate>
+            <div class="form-row row-2col">
+                <div class="form-group">
+                    <label class="field-label" for="fullName">
+                        <i class="fas fa-user label-icon"></i> Full Name
+                    </label>
+                    <div class="input-3d">
+                        <input id="fullName" type="text" placeholder="e.g. Sharjeel Noshahi" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="field-label" for="email">
+                        <i class="fas fa-envelope label-icon"></i> Email Address
+                    </label>
+                    <div class="input-3d">
+                        <input id="email" type="email" placeholder="e.g. sharjeel@email.com" />
+                    </div>
+                </div>
             </div>
-            <div class="form-row">
-                <label>Email</label>
-                <input type="email" placeholder="you@email.com" />
+
+            <div class="form-row row-2col">
+                <div class="form-group">
+                    <label class="field-label" for="orderNumber">
+                        <i class="fas fa-box label-icon"></i> Order Number
+                    </label>
+                    <div class="input-3d">
+                        <input id="orderNumber" type="text" placeholder="e.g. NSC-240315-1024" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="field-label" for="category">
+                        <i class="fas fa-layer-group label-icon"></i> Support Category
+                    </label>
+                    <div class="input-3d select-wrapper">
+                        <select id="category">
+                            <option value="" selected disabled>Select issue type...</option>
+                            <option>Order Tracking</option>
+                            <option>Shipping Delay</option>
+                            <option>Payment Problem</option>
+                            <option>Return / Refund</option>
+                            <option>Account Support</option>
+                        </select>
+                    </div>
+                </div>
             </div>
-            <div class="form-row">
-                <label>Subject</label>
-                <input type="text" placeholder="Order issue, payment, shipping..." />
+
+            <div class="form-row row-1col">
+                <div class="form-group">
+                    <label class="field-label" for="subject">
+                        <i class="fas fa-pen-to-square label-icon"></i> Subject
+                    </label>
+                    <div class="input-3d">
+                        <input id="subject" type="text" placeholder="e.g. Need help with delayed shipment" />
+                    </div>
+                </div>
             </div>
-            <div class="form-row">
-                <label>Message</label>
-                <textarea rows="4" placeholder="Tell us what happened"></textarea>
+
+            <div class="form-row row-1col">
+                <div class="form-group">
+                    <label class="field-label" for="message">
+                        <i class="fas fa-comment-dots label-icon"></i> Message
+                    </label>
+                    <div class="input-3d textarea-wrapper">
+                        <textarea id="message" rows="5" placeholder="Please describe your issue, what happened, and what kind of help you need..."></textarea>
+                    </div>
+                </div>
             </div>
-            <button type="button" class="submit-btn">Send Message</button>
+
+            <div class="form-footer">
+                <div class="security-badge">
+                    <i class="fas fa-shield-heart"></i>
+                    <div>
+                        <strong>Priority Assistance</strong>
+                        <p>Your request is reviewed by our dedicated customer care team.</p>
+                    </div>
+                </div>
+
+                <button type="button" class="save-support-btn">
+                    <i class="fas fa-paper-plane"></i>
+                    Send Support Request
+                </button>
+            </div>
         </form>
     </section>
 </div>

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, Router, RouterModule } from '@angular/router';
 import { CartService, CartItem } from '../../services/cart.service';
 import { SearchService } from '../../services/search.service';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, User } from '../../services/auth.service';
 import { CategoryService } from '../../services/category';
 import { FormsModule } from '@angular/forms';
 import { AuthModalComponent } from '../components/auth-modal/auth-modal.component';
@@ -58,6 +58,13 @@ export class Header implements OnInit, AfterViewChecked {
         els.forEach(el => el.classList.add('no-scroll'));
       } else {
         els.forEach(el => el.classList.remove('no-scroll'));
+      }
+    });
+
+    // Automatically close sidebar on route changes
+    this.router.events.subscribe(event => {
+      if (event.constructor.name === 'NavigationStart') {
+        this.closeModal();
       }
     });
 
@@ -136,10 +143,7 @@ export class Header implements OnInit, AfterViewChecked {
 
   proceedToCheckout() {
     this.closeModal();
-    // Allow animation to finish or just navigate immediately
-    setTimeout(() => {
-      this.router.navigate(['/add-to-cart']);
-    }, 100);
+    this.router.navigate(['/add-to-cart']);
   }
 
   onMouseEnterCart() {
@@ -280,5 +284,19 @@ export class Header implements OnInit, AfterViewChecked {
     this.authService.logout();
     this.userDropdown.set(false);
     this.router.navigate(['/']);
+  }
+
+  getUserDisplayName(user: User | null): string {
+    if (!user) {
+      return 'Guest';
+    }
+
+    const fullName = `${user.name || ''} ${user.surname || ''}`.trim();
+    return fullName || user.userName || user.emailAddress || 'Member';
+  }
+
+  getUserInitial(user: User | null): string {
+    const label = this.getUserDisplayName(user);
+    return label.charAt(0).toUpperCase() || 'U';
   }
 }

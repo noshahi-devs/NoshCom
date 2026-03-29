@@ -20,6 +20,7 @@ export class PaymentMethod {
   @Output() paymentConfirmed = new EventEmitter<{ method: string, details?: any }>();
   @Output() stepComplete = new EventEmitter<void>();
   @Input() totalAmount: number = 0;
+  @Input() isProcessing: boolean = false;
   @Output() methodSelected = new EventEmitter<string>();
 
   selectedMethodId: string = 'mastercard'; // Default to MasterCard
@@ -242,47 +243,11 @@ export class PaymentMethod {
   }
 
   confirmPayment() {
-    this.triggerConfetti();
-    
-    Swal.fire({
-      title: '<strong>ORDER CONFIRMED!</strong>',
-      html: 'Thank you for your purchase! Your order has been placed with <b>Nosh Pay</b> securely.',
-      icon: 'success',
-      showConfirmButton: false,
-      timer: 3000,
-      background: '#111',
-      color: '#ffc107',
-      padding: '40px',
-      timerProgressBar: true,
-      customClass: {
-        title: 'nosh-success-title',
-        popup: 'nosh-success-popup'
-      }
-    }).then(() => {
-      this.paymentConfirmed.emit({
-        method: this.selectedMethodId,
-        details: this.card
-      });
-      this.stepComplete.emit();
+    this.paymentConfirmed.emit({
+      method: this.selectedMethodId,
+      details: this.card
     });
-  }
-
-  private triggerConfetti() {
-    const colors = ['#ffc107', '#ff4500', '#2e7d32', '#4285F4', '#eb001b'];
-    for (let i = 0; i < 60; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'nosh-confetti';
-        confetti.style.left = Math.random() * 100 + 'vw';
-        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        confetti.style.width = (Math.random() * 10 + 5) + 'px';
-        confetti.style.height = (Math.random() * 10 + 5) + 'px';
-        confetti.style.animationDelay = (Math.random() * 2) + 's';
-        confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
-        document.body.appendChild(confetti);
-        
-        // Remove after animation
-        setTimeout(() => confetti.remove(), 5000);
-    }
+    this.stepComplete.emit();
   }
 
 

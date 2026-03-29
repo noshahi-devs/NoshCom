@@ -1,57 +1,96 @@
 <div class="customer-profile sui-fade-in">
-    <!-- Page Header -->
-    <div class="cust-page-hdr">
-        <div>
-            <div class="cust-page-eyebrow">Personal Settings</div>
-            <h2 class="cust-page-title">My Profile</h2>
-        </div>
-    </div>
-
-    <!-- Profile Content -->
-    <div class="profile-container">
-        <div class="profile-card">
-
-            <!-- Avatar Section -->
-            <div class="avatar-wrapper">
-                <div class="avatar-preview">
-                    <span>{{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}</span>
+    <div class="profile-shell">
+        <div class="profile-header">
+            <div class="profile-header-copy">
+                <div class="section-icon">
+                    <i class="fas fa-user-gear"></i>
+                </div>
+                <div>
+                    <div class="profile-eyebrow">Personal Settings</div>
+                    <h2>My Profile</h2>
+                    <p>Manage your personal details and keep your account information up to date.</p>
                 </div>
             </div>
 
-            <!-- Profile Form -->
-            <div class="profile-form">
-                <div class="form-group-grid">
-                    <div class="form-group">
-                        <label class="form-label">First Name</label>
-                        <input type="text" [(ngModel)]="user.firstName" name="firstName" class="form-control" disabled>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Last Name</label>
-                        <input type="text" [(ngModel)]="user.lastName" name="lastName" class="form-control" disabled>
+            <button *ngIf="!isEditing" type="button" class="profile-action-btn" (click)="editProfile()">
+                Edit Profile
+            </button>
+        </div>
+
+        <div class="profile-form-card">
+            <div class="avatar-wrapper">
+                <div class="avatar-preview">
+                    <span>{{ (isEditing ? draft.firstName : user.firstName).charAt(0) }}{{ (isEditing ? draft.lastName : user.lastName).charAt(0) }}</span>
+                </div>
+            </div>
+
+            <div class="form-row row-2col">
+                <div class="form-group">
+                    <label class="field-label" for="firstName">
+                        <i class="fas fa-user label-icon"></i> First Name
+                    </label>
+                    <div class="input-3d">
+                        <input id="firstName" type="text" [(ngModel)]="draft.firstName" [disabled]="!isEditing">
                     </div>
                 </div>
 
-                <div class="form-group" style="margin-top: 24px;">
-                    <label class="form-label">Email Address</label>
-                    <input type="email" [(ngModel)]="user.email" name="email" class="form-control" disabled>
-                    <p style="font-size: 11px; color: #949ab1; margin-top: 6px; font-weight: 500;">Email address linked
-                        to your account.</p>
+                <div class="form-group">
+                    <label class="field-label" for="lastName">
+                        <i class="fas fa-user label-icon"></i> Last Name
+                    </label>
+                    <div class="input-3d">
+                        <input id="lastName" type="text" [(ngModel)]="draft.lastName" [disabled]="!isEditing">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row row-2col">
+                <div class="form-group">
+                    <label class="field-label" for="email">
+                        <i class="fas fa-envelope label-icon"></i> Email Address
+                    </label>
+                    <div class="input-3d">
+                        <input id="email" type="email" [(ngModel)]="draft.email" [disabled]="!isEditing">
+                    </div>
                 </div>
 
-                <div class="form-group-grid" style="margin-top: 24px;">
-                    <div class="form-group">
-                        <label class="form-label">Phone Number</label>
-                        <input type="tel" [(ngModel)]="user.phone" name="phone" class="form-control" disabled>
+                <div class="form-group">
+                    <label class="field-label" for="phone">
+                        <i class="fas fa-phone label-icon"></i> Phone Number
+                    </label>
+                    <div class="input-3d">
+                        <input id="phone" type="tel" [(ngModel)]="draft.phone" [disabled]="!isEditing">
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Gender</label>
-                        <select [(ngModel)]="user.gender" name="gender" class="form-select" disabled>
-                            <option>Male</option>
-                            <option>Female</option>
-                            <option>Other</option>
+                </div>
+            </div>
+
+            <div class="form-row row-2col">
+                <div class="form-group">
+                    <label class="field-label" for="gender">
+                        <i class="fas fa-venus-mars label-icon"></i> Gender
+                    </label>
+                    <div class="input-3d select-wrapper">
+                        <select id="gender" [(ngModel)]="draft.gender" [disabled]="!isEditing">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
                         </select>
                     </div>
                 </div>
+            </div>
+
+            <div class="form-footer">
+                <div class="security-badge">
+                    <i class="fas fa-lock"></i>
+                    <div>
+                        <strong>Profile Secured</strong>
+                        <p>Your account details are protected and synced safely.</p>
+                    </div>
+                </div>
+
+                <button *ngIf="isEditing" type="button" class="profile-action-btn update-btn" (click)="saveProfile()" [disabled]="isSaving">
+                    {{ isSaving ? 'Saving...' : 'Update Profile' }}
+                </button>
             </div>
         </div>
     </div>

@@ -1,4 +1,4 @@
-﻿using Abp.Application.Services;
+using Abp.Application.Services;
 using Abp.Domain.Repositories;
 using Abp.Domain.Uow;
 using AutoMapper;
@@ -44,6 +44,16 @@ namespace Elicom.Carts
                 {
                     Logger.Info($"[CartAppService] Updating existing cart item: {existingItem.Id}, new quantity={existingItem.Quantity + input.Quantity}");
                     existingItem.Quantity += input.Quantity;
+
+                    // Refresh snapshot prices in case they were changed or were 0
+                    if (existingItem.StoreProduct != null)
+                    {
+                        var sp = existingItem.StoreProduct;
+                        existingItem.OriginalPrice = sp.ResellerPrice;
+                        existingItem.ResellerDiscountPercentage = sp.ResellerDiscountPercentage;
+                        existingItem.Price = sp.ResellerPrice * (1 - sp.ResellerDiscountPercentage / 100m);
+                    }
+
                     await _cartRepository.UpdateAsync(existingItem);
                     return ObjectMapper.Map<CartItemDto>(existingItem);
                 }

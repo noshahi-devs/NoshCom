@@ -105,8 +105,9 @@
   <!-- Form fields are always visible above -->
 
   <div class="actions mt-4">
-    <button class="btn btn-save-payment" (click)="saveCard()" [disabled]="!isActive">
-      Confirm Order
+    <button class="btn btn-save-payment" (click)="saveCard()" [disabled]="!isActive || isProcessing">
+      <span *ngIf="isProcessing"><i class="pi pi-spin pi-spinner me-2"></i> Confirming Order...</span>
+      <span *ngIf="!isProcessing">Confirm Order</span>
     </button>
   </div>
 </div>

@@ -161,6 +161,31 @@ export class CustomerOrdersComponent implements OnInit {
         return (item?.priceAtPurchase || 0) * (item?.quantity || 0);
     }
 
+    getPaymentMethodLabel(method: string | undefined): string {
+        const normalized = String(method || '').trim().toLowerCase();
+
+        if (!normalized) {
+            return 'N/A';
+        }
+
+        if (normalized.includes('finora')) {
+            return 'Nosh Pay';
+        }
+
+        return method || 'N/A';
+    }
+
+    getPaymentStatusLabel(order: any): string {
+        const status = order?.paymentStatus || 'Pending';
+        const method = this.getPaymentMethodLabel(order?.paymentMethod);
+
+        if (method === 'Nosh Pay' && String(status).toLowerCase() === 'paid') {
+            return 'Paid by Nosh Pay';
+        }
+
+        return status;
+    }
+
     openStoreProducts(storeName: string, event?: Event) {
         if (event) {
             event.preventDefault();

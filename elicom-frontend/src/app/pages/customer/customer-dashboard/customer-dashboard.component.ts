@@ -11,7 +11,7 @@ import { take } from 'rxjs';
     standalone: true,
     imports: [CommonModule, RouterModule],
     templateUrl: './customer-dashboard.component.html',
-    styleUrls: ['./customer-dashboard.component.scss']
+    styleUrl: './customer-dashboard.component.scss'
 })
 export class CustomerDashboardComponent implements OnInit {
     userName = 'prismaticadeel';
@@ -34,6 +34,30 @@ export class CustomerDashboardComponent implements OnInit {
         { label: 'Points', value: '150', unit: '' },
         { label: 'Wallet', value: '25.00', unit: '$' },
         { label: 'Gift Card', value: '0', unit: '' }
+    ];
+
+    readonly shoppingSignals = [
+        { label: 'Style Match', value: '98%', tone: 'dark' },
+        { label: 'Fast Delivery', value: '24H', tone: 'light' },
+        { label: 'Member Rewards', value: 'VIP', tone: 'outline' }
+    ];
+
+    readonly experienceNotes = [
+        {
+            title: 'Track every order',
+            description: 'Follow your package from checkout to doorstep with live progress updates.',
+            icon: 'fa-cube'
+        },
+        {
+            title: 'Manage rewards',
+            description: 'Keep your coupons, wallet balance, and loyalty points in one polished view.',
+            icon: 'fa-sparkles'
+        },
+        {
+            title: 'Jump back to shopping',
+            description: 'Move from account overview to curated discovery in a single tap.',
+            icon: 'fa-bag-shopping'
+        }
     ];
 
     constructor(
@@ -218,5 +242,51 @@ export class CustomerDashboardComponent implements OnInit {
 
     goShopping() {
         window.location.href = '/';
+    }
+
+    get totalOrders(): number {
+        return this.orderStatuses.reduce((sum, status) => sum + status.count, 0);
+    }
+
+    get activeOrders(): number {
+        return this.orderStatuses
+            .filter(status => ['Pending', 'Shipped'].includes(status.label))
+            .reduce((sum, status) => sum + status.count, 0);
+    }
+
+    get deliveredOrders(): number {
+        return this.orderStatuses.find(status => status.label === 'Delivered')?.count ?? 0;
+    }
+
+    get walletAsset() {
+        return this.assets.find(asset => asset.label === 'Wallet') ?? this.assets[0];
+    }
+
+    get pointsAsset() {
+        return this.assets.find(asset => asset.label === 'Points') ?? this.assets[0];
+    }
+
+    get completionRate(): number {
+        if (!this.totalOrders) {
+            return 0;
+        }
+
+        return Math.round((this.deliveredOrders / this.totalOrders) * 100);
+    }
+
+    get loyaltyTier(): string {
+        if (this.totalSpend >= 5000) {
+            return 'Black Elite';
+        }
+
+        if (this.totalSpend >= 2000) {
+            return 'Gold Plus';
+        }
+
+        if (this.totalSpend >= 500) {
+            return 'Rising Star';
+        }
+
+        return 'Fresh Member';
     }
 }

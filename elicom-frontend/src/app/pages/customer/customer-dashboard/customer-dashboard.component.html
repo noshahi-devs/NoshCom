@@ -1,77 +1,166 @@
 <div class="customer-dashboard sui-fade-in">
+    <section class="dashboard-hero">
+        <div class="hero-copy">
+            <div class="hero-kicker">NoshCom Customer Space</div>
+            <h1>Welcome back, {{ userName }}</h1>
+            <p>
+                Your shopping dashboard is now designed like the main storefront:
+                bright, premium, and fast to scan with live order, wallet, and rewards insight.
+            </p>
 
-    <!-- Consistent Page Header -->
-    <div class="cust-page-hdr">
-        <div>
-            <div class="cust-page-eyebrow">My Account</div>
-            <h2 class="cust-page-title">Welcome, {{ userName }}</h2>
-        </div>
-        <button class="cust-page-cta" (click)="goShopping()">Shop Now <i class="fas fa-arrow-right"></i></button>
-    </div>
-
-
-    <div class="dashboard-shell">
-
-        <div class="insight-grid">
-            <!-- My Shopping - Clickable to All Orders -->
-            <section class="card highlight" [routerLink]="['/customer/orders']">
-                <div class="card-title">
-                    <span>My Shopping</span>
-                    <span class="badge">All time</span>
+            <div class="hero-signal-row">
+                <div class="signal-pill" *ngFor="let signal of shoppingSignals" [ngClass]="signal.tone">
+                    <span>{{ signal.label }}</span>
+                    <strong>{{ signal.value }}</strong>
                 </div>
-                <div class="card-value">
-                    <span class="currency">$</span>
-                    <span>{{ totalSpend | number:'1.0-0' }}</span>
-                </div>
-                <p>Total spend across all orders</p>
-            </section>
-
-            <!-- Order Tracking - Clickable to Pending/Shipped -->
-            <section class="card tracking-card" [routerLink]="['/customer/orders/Pending']">
-                <div class="card-title">
-                    <span>Order Tracking</span>
-                    <span class="status">{{ orderStatus }}</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress" [style.width.%]="orderProgress"></div>
-                </div>
-                <ul class="steps">
-                    <li *ngFor="let step of trackingSteps; let i = index">
-                        <span class="step-dot" [class.active]="i <= currentStep">{{ i + 1 }}</span>
-                        {{ step }}
-                    </li>
-                </ul>
-            </section>
-
-            <!-- Recent Orders - Clickable to All Orders -->
-            <section class="card compact" [routerLink]="['/customer/orders']">
-                <div class="card-title">
-                    <span>Quick Info</span>
-                    <i class="fas fa-circle-info"></i>
-                </div>
-                <h5 style="font-weight: 800; margin-bottom: 8px;">Recent Activity</h5>
-                <p style="font-size: 13px; color: #6a7085;">Latest updates appear here as soon as you place an order.
-                </p>
-            </section>
-        </div>
-
-        <!-- Interactive Order Statuses -->
-        <section class="orders-card">
-            <div class="orders-header">
-                <h3>My Orders</h3>
-                <a [routerLink]="['/customer/orders']">View All <i class="fas fa-chevron-right"
-                        style="font-size: 10px;"></i></a>
             </div>
-            <div class="orders-grid">
-                <div class="order-status" *ngFor="let status of orderStatuses"
-                    [routerLink]="['/customer/orders', status.label === 'All' ? '' : status.label]">
-                    <div class="status-icon">
-                        <i class="fas {{status.icon}}"></i>
+
+            <div class="hero-actions">
+                <button class="hero-btn primary" (click)="goShopping()">
+                    Explore NoshCom
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <a class="hero-btn secondary" [routerLink]="['/customer/orders']">
+                    View Orders
+                    <i class="fas fa-box-open"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <div class="orb orb-one"></div>
+            <div class="orb orb-two"></div>
+            <div class="hero-stack">
+                <article class="floating-card spend-card" [routerLink]="['/customer/orders']">
+                    <div class="floating-label">Total Spend</div>
+                    <div class="floating-value">${{ totalSpend | number:'1.0-0' }}</div>
+                    <p>All purchases synced from your NoshCom account.</p>
+                </article>
+
+                <article class="floating-card progress-card" [routerLink]="['/customer/orders/Pending']">
+                    <div class="floating-head">
+                        <span>Live Progress</span>
+                        <strong>{{ orderStatus }}</strong>
                     </div>
-                    <div class="status-label">{{status.label}}</div>
-                    <div class="status-count-outside">{{ status.count }}</div>
+                    <div class="hero-progress">
+                        <div class="hero-progress-fill" [style.width.%]="orderProgress"></div>
+                    </div>
+                    <div class="mini-track">
+                        <span *ngFor="let step of trackingSteps; let i = index" [class.active]="i <= currentStep">
+                            {{ step }}
+                        </span>
+                    </div>
+                </article>
+
+                <article class="floating-card member-card">
+                    <div class="floating-label">Member Tier</div>
+                    <div class="member-tier">{{ loyaltyTier }}</div>
+                    <div class="member-meta">
+                        <span>{{ completionRate }}% fulfilled</span>
+                        <span>{{ activeOrders }} active orders</span>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="snapshot-grid">
+        <article class="snapshot-card primary-card" [routerLink]="['/customer/orders']">
+            <div class="snapshot-top">
+                <span>Orders placed</span>
+                <i class="fas fa-bag-shopping"></i>
+            </div>
+            <h3>{{ totalOrders }}</h3>
+            <p>Your complete order history in one premium view.</p>
+        </article>
+
+        <article class="snapshot-card glass-card" [routerLink]="['/customer/orders/Pending']">
+            <div class="snapshot-top">
+                <span>Active deliveries</span>
+                <i class="fas fa-truck-fast"></i>
+            </div>
+            <h3>{{ activeOrders }}</h3>
+            <p>Pending and shipped orders that still need your attention.</p>
+        </article>
+
+        <article class="snapshot-card glass-card">
+            <div class="snapshot-top">
+                <span>Wallet balance</span>
+                <i class="fas fa-wallet"></i>
+            </div>
+            <h3>{{ walletAsset.unit }}{{ walletAsset.value }}</h3>
+            <p>Ready for your next checkout and promotional unlock.</p>
+        </article>
+
+        <article class="snapshot-card accent-card">
+            <div class="snapshot-top">
+                <span>Reward points</span>
+                <i class="fas fa-star"></i>
+            </div>
+            <h3>{{ pointsAsset.value }}</h3>
+            <p>Points available to boost savings across upcoming orders.</p>
+        </article>
+    </section>
+
+    <section class="panel orders-panel">
+        <div class="panel-header">
+            <div>
+                <span class="panel-kicker">Orders Overview</span>
+                <h2>Status command center</h2>
+            </div>
+            <a class="panel-link" [routerLink]="['/customer/orders']">
+                Open all orders
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </div>
+
+        <div class="orders-grid">
+            <div class="order-status" *ngFor="let status of orderStatuses"
+                [routerLink]="['/customer/orders', status.label === 'All' ? '' : status.label]">
+                <div class="status-glow"></div>
+                <div class="status-icon">
+                    <i class="fas {{status.icon}}"></i>
+                </div>
+                <div class="status-label">{{status.label}}</div>
+                <div class="status-count-outside">{{ status.count }}</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel order-journey" [routerLink]="['/customer/orders/Pending']">
+        <div class="panel-header">
+            <div>
+                <span class="panel-kicker">Order Flow</span>
+                <h2>Delivery journey</h2>
+            </div>
+            <span class="panel-chip">{{ orderStatus }}</span>
+        </div>
+
+        <div class="journey-hero">
+            <div class="journey-progress-wrap">
+                <div class="journey-progress">
+                    <div class="journey-progress-fill" [style.width.%]="orderProgress"></div>
+                </div>
+                <div class="journey-progress-copy">
+                    <strong>{{ orderProgress }}% complete</strong>
+                    <span>Real-time progress for your latest NoshCom order.</span>
                 </div>
             </div>
-        </section>
-    </div>
+
+            <div class="journey-timeline">
+                <div class="journey-node" *ngFor="let step of trackingSteps; let i = index" [class.active]="i <= currentStep">
+                    <div class="journey-node-top">
+                        <div class="journey-dot">{{ i + 1 }}</div>
+                        <div class="journey-line" *ngIf="i < trackingSteps.length - 1"></div>
+                    </div>
+                    <div class="journey-node-copy">
+                        <strong>{{ step }}</strong>
+                        <span *ngIf="i < currentStep">Completed</span>
+                        <span *ngIf="i === currentStep">Current step</span>
+                        <span *ngIf="i > currentStep">Coming next</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>

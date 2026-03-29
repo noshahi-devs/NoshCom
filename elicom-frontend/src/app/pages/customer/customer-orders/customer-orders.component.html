@@ -27,62 +27,58 @@
         </div>
 
         <!-- Orders Table -->
-        <div *ngIf="!isLoading && orders.length > 0" class="co-table-responsive">
-            <table class="co-table">
-                <thead>
-                    <tr>
-                        <th>Order Details</th>
-                        <th>Created Date</th>
-                        <th>Total Amount</th>
-                        <th>Status</th>
-                        <th class="text-end">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let order of orders">
-                        <td>
-                            <div class="co-order-id-cell">
-                                <span class="co-id-hash">#</span>
-                                <span class="co-id-val">{{ getOrderNumber(order) }}</span>
-                            </div>
-                            <div class="co-order-meta" *ngIf="getOrderProductName(order) || getOrderStoreName(order)">
-                                <div class="co-order-product" *ngIf="getOrderProductName(order)">
-                                    {{ getOrderProductName(order) }}
-                                </div>
-                                <button *ngIf="getOrderStoreName(order)" type="button" class="co-store-link"
-                                    (click)="openStoreProducts(getOrderStoreName(order), $event)">
-                                    {{ getOrderStoreName(order) }}
-                                </button>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="co-date-cell">
-                                <i class="far fa-calendar-alt me-2 text-muted"></i>
-                                {{ order.creationTime | date:'mediumDate' }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="co-amount-cell">
-                                {{ order.totalAmount | currency }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="co-status-cell">
-                                <span class="co-status-pill"
-                                    [ngClass]="(order.status?.toLowerCase() || '').replace('/', '-')">
-                                    {{ order.status }}
-                                </span>
-                            </div>
-                        </td>
-                        <td class="text-end">
-                            <button class="co-action-btn" title="View Details" (click)="openOrderDetails(order.id)">
-                                <span>Details</span>
-                                <i class="fas fa-chevron-right ms-2"></i>
+        <div *ngIf="!isLoading && orders.length > 0" class="co-orders-list">
+            <article class="co-order-card" *ngFor="let order of orders">
+                <div class="co-order-top">
+                    <div class="co-order-main">
+                        <div class="co-order-id-cell">
+                            <span class="co-id-hash">#</span>
+                            <span class="co-id-val">{{ getOrderNumber(order) }}</span>
+                        </div>
+
+                        <div class="co-order-product" *ngIf="getOrderProductName(order)">
+                            {{ getOrderProductName(order) }}
+                        </div>
+
+                        <div class="co-order-meta" *ngIf="getOrderStoreName(order)">
+                            <button type="button" class="co-store-link" (click)="openStoreProducts(getOrderStoreName(order), $event)">
+                                {{ getOrderStoreName(order) }}
                             </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                        </div>
+                    </div>
+
+                    <div class="co-order-highlight">
+                        <span class="co-highlight-label">Order Total</span>
+                        <div class="co-amount-cell">{{ order.totalAmount | currency }}</div>
+                    </div>
+                </div>
+
+                <div class="co-order-bottom">
+                    <div class="co-order-facts">
+                        <div class="co-fact-chip">
+                            <span class="co-stat-label">Created</span>
+                            <div class="co-date-cell">
+                                <i class="far fa-calendar-alt"></i>
+                                <span>{{ order.creationTime | date:'mediumDate' }}</span>
+                            </div>
+                        </div>
+
+                        <div class="co-fact-chip">
+                            <span class="co-stat-label">Status</span>
+                            <span class="co-status-pill" [ngClass]="(order.status?.toLowerCase() || '').replace('/', '-')">
+                                {{ order.status }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="co-order-action">
+                        <button class="co-action-btn" title="View Details" (click)="openOrderDetails(order.id)">
+                            <span>Details</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </article>
         </div>
 
         <!-- Empty State -->
@@ -106,22 +102,6 @@
             </button>
         </div>
     </div>
-
-    <!-- Help Card -->
-    <div class="co-help-card">
-        <div class="co-help-icon">
-            <i class="fas fa-search"></i>
-        </div>
-        <div class="co-help-body">
-            <h6 class="co-help-title">Can't find your order?</h6>
-            <p class="co-help-sub">If you used guest checkout or can't see a recent order, please use our recovery tool.
-            </p>
-        </div>
-        <button class="co-find-btn" [routerLink]="['/customer/support']">
-            Find Order <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
-
 </div>
 
 <!-- Order Details Modal -->
@@ -155,8 +135,8 @@
             </div>
             <div class="co-summary-card">
                 <div class="co-summary-label">Payment</div>
-                <div class="co-summary-value">{{ selectedOrder.paymentStatus || 'Pending' }}</div>
-                <div class="co-summary-sub">Method: {{ selectedOrder.paymentMethod || 'N/A' }}</div>
+                <div class="co-summary-value">{{ getPaymentStatusLabel(selectedOrder) }}</div>
+                <div class="co-summary-sub">Method: {{ getPaymentMethodLabel(selectedOrder?.paymentMethod) }}</div>
             </div>
             <div class="co-summary-card">
                 <div class="co-summary-label">Placed On</div>

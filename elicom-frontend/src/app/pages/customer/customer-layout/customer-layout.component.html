@@ -1,38 +1,13 @@
 <div class="cust-shell">
+    <app-header></app-header>
 
-    <!-- ===== TOP HEADER ===== -->
-    <header class="cust-header">
-        <div class="cust-header-brand">
-            <button class="btn btn-link text-white d-lg-none me-2 p-0" (click)="toggleSidebar()">
-                <i class="fa-solid fa-bars fs-4"></i>
-            </button>
-            <div class="cust-header-logo">
-                <img src="/assets/images/world-favicon.svg" alt="Logo" class="cust-logo-img">
-            </div>
-            <span class="cust-header-title">World Cart Us</span>
-        </div>
-
-        <div class="cust-header-actions">
-            <!-- Backdrop for mobile -->
-            <div *ngIf="!isSidebarCollapsed" class="cust-sidebar-backdrop d-lg-none" (click)="toggleSidebar()"></div>
-            <div class="cust-header-profile">
-                <div class="cust-avatar">{{ userName.charAt(0).toUpperCase() || 'U' }}</div>
-                <div class="cust-profile-info">
-                    <span class="cust-profile-name">{{ userName || 'Customer' }}</span>
-                    <span class="cust-profile-role">Member</span>
-                </div>
-            </div>
-            <button (click)="logout()" class="cust-logout-btn" title="Logout">
-                <i class="fas fa-sign-out-alt"></i>
-            </button>
-        </div>
-    </header>
-
-    <!-- ===== BODY (sidebar + content) ===== -->
     <div class="cust-body">
+        <div *ngIf="!isSidebarCollapsed" class="cust-sidebar-backdrop d-lg-none" (click)="toggleSidebar()"></div>
+        <button class="cust-menu-fab d-lg-none" (click)="toggleSidebar()" aria-label="Open sidebar">
+            <i class="fa-solid fa-bars"></i>
+        </button>
 
-        <!-- Sidebar -->
-        <aside class="cust-sidebar" [class.show-mobile]="!isSidebarCollapsed">
+        <aside #sidebarRef class="cust-sidebar" [class.show-mobile]="!isSidebarCollapsed" [style.top.px]="sidebarStickyTop">
             <nav class="cust-nav">
                 <div *ngFor="let group of menuGroups" class="cust-nav-group">
                     <div class="cust-nav-group-label">{{ group.title }}</div>
@@ -62,10 +37,8 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="cust-content">
             <router-outlet></router-outlet>
         </main>
-
     </div>
 </div>

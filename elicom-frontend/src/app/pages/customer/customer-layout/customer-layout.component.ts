@@ -1,20 +1,23 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import Swal from 'sweetalert2';
+import { Header } from '../../../shared/header/header';
 
 @Component({
     selector: 'app-customer-layout',
     standalone: true,
-    imports: [CommonModule, RouterModule],
+    imports: [CommonModule, RouterModule, Header],
     templateUrl: './customer-layout.component.html',
-    styleUrls: ['./customer-layout.component.scss']
+    styleUrl: './customer-layout.component.scss'
 })
-export class CustomerLayoutComponent implements OnInit {
+export class CustomerLayoutComponent implements OnInit, AfterViewInit {
+    @ViewChild('sidebarRef') sidebarRef?: ElementRef<HTMLElement>;
 
     userName: string = 'Customer';
     isSidebarCollapsed: boolean = true;
+    sidebarStickyTop: number = 124;
 
     menuGroups = [
         {
@@ -43,6 +46,10 @@ export class CustomerLayoutComponent implements OnInit {
         private authService: AuthService
     ) { }
 
+    ngAfterViewInit(): void {
+        setTimeout(() => this.updateSidebarStickyTop());
+    }
+
     toggleSidebar() {
         this.isSidebarCollapsed = !this.isSidebarCollapsed;
     }
@@ -53,8 +60,15 @@ export class CustomerLayoutComponent implements OnInit {
                 this.userName = user.name
                     ? `${user.name}${user.surname ? ' ' + user.surname : ''}`
                     : (user.userName || 'Customer');
+
+                setTimeout(() => this.updateSidebarStickyTop());
             }
         });
+    }
+
+    @HostListener('window:resize')
+    onWindowResize(): void {
+        this.updateSidebarStickyTop();
     }
 
     logout() {
@@ -80,5 +94,20 @@ export class CustomerLayoutComponent implements OnInit {
                 });
             }
         });
+    }
+
+    private updateSidebarStickyTop(): void {
+        if (typeof window === 'undefined' || !this.sidebarRef?.nativeElement || window.innerWidth <= 1200) {
+            this.sidebarStickyTop = 124;
+            return;
+        }
+
+        const sidebarHeight = this.sidebarRef.nativeElement.offsetHeight;
+        const viewportHeight = window.innerHeight;
+        const minTop = 124;
+        const viewportPadding = 8;
+        const bottomLockedTop = viewportHeight - sidebarHeight - viewportPadding;
+
+        this.sidebarStickyTop = Math.max(minTop, bottomLockedTop);
     }
 }

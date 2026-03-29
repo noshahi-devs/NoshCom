@@ -151,11 +151,21 @@ export class Checkout {
         next: (res) => {
           console.log('[Checkout] \u2705 Order Placed Successfully!', res);
           this.isLoading = false;
+          this.triggerConfetti();
           Swal.fire({
+            title: '<strong>ORDER CONFIRMED!</strong>',
+            html: `Thank you for your purchase! Your order has been placed securely${this.selectedPaymentMethod === 'finora' ? ' with <b>Nosh Pay</b>' : ''}.`,
             icon: 'success',
-            title: 'Order Placed!',
-            text: 'Your order has been successfully placed.',
-            showConfirmButton: true
+            showConfirmButton: false,
+            timer: 3000,
+            background: '#111',
+            color: '#ffc107',
+            padding: '40px',
+            timerProgressBar: true,
+            customClass: {
+              title: 'nosh-success-title',
+              popup: 'nosh-success-popup'
+            }
           }).then(() => {
             this.cartService.clearCart();
             this.router.navigate(['/customer/dashboard']);
@@ -178,6 +188,24 @@ export class Checkout {
         title: 'Error',
         text: error.message
       });
+    }
+  }
+
+  private triggerConfetti() {
+    const colors = ['#ffc107', '#ff4500', '#2e7d32', '#4285F4', '#eb001b'];
+    for (let i = 0; i < 60; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'nosh-confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.width = (Math.random() * 10 + 5) + 'px';
+        confetti.style.height = (Math.random() * 10 + 5) + 'px';
+        confetti.style.animationDelay = (Math.random() * 2) + 's';
+        confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        document.body.appendChild(confetti);
+        
+        // Remove after animation
+        setTimeout(() => confetti.remove(), 5000);
     }
   }
 }

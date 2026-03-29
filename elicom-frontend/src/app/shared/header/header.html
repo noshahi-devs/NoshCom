@@ -33,8 +33,18 @@
   </div>
 
   <div class="nav-actions">
-    <div class="action-item" (click)="toggleUserMenu()">
-      <i class="far" [ngClass]="(isAuthenticated | async) ? 'fa-user-circle' : 'fa-user'"></i>
+    <div class="action-item" [class.user-indicator]="isAuthenticated | async" (click)="toggleUserMenu()">
+      <ng-container *ngIf="currentUser | async as user; else guestUserIcon">
+        <span class="user-presence-dot"></span>
+        <span class="user-avatar">{{ getUserInitial(user) }}</span>
+        <span class="user-copy">
+          <span class="user-state">Signed In</span>
+          <span class="user-name">{{ getUserDisplayName(user) }}</span>
+        </span>
+      </ng-container>
+      <ng-template #guestUserIcon>
+        <i class="far fa-user"></i>
+      </ng-template>
     </div>
 
     <div class="action-item">
@@ -44,12 +54,23 @@
 
     <div
       class="action-item cart-wrapper"
+      [class.active]="cartDropdown()"
       (mouseenter)="onMouseEnterCart()"
       (mouseleave)="onMouseLeaveCart()"
     >
       <i class="fas fa-shopping-bag" (click)="cartDropdown.set(!cartDropdown())"></i>
       <span class="badge" id="cartCount">{{ cartService.totalItems }}</span>
     </div>
+
+    <button
+      *ngIf="isAuthenticated | async"
+      type="button"
+      class="action-item logout-action"
+      (click)="logout()"
+      title="Logout"
+    >
+      <i class="fas fa-sign-out-alt"></i>
+    </button>
 
     <!-- Cart Sidebar Overlay -->
     <div class="cart-overlay" *ngIf="cartDropdown()" (click)="closeModal()"></div>

@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
     standalone: true,
     imports: [CommonModule],
     templateUrl: './customer-support.component.html',
-    styleUrls: ['./customer-support.component.scss']
+    styleUrl: './customer-support.component.scss'
 })
 export class CustomerSupportComponent implements OnInit {
     faqs = [

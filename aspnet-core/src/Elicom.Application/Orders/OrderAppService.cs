@@ -96,8 +96,23 @@ namespace Elicom.Orders
                     .ToListAsync();
             }
 
+            if (input.Items != null && input.Items.Any())
+            {
+                var inputStoreProductIds = input.Items.Select(oi => oi.StoreProductId).Where(id => id != Guid.Empty).ToList();
+                
+                if (inputStoreProductIds.Any())
+                {
+                    cartItems = cartItems.Where(ci => inputStoreProductIds.Contains(ci.StoreProductId)).ToList();
+                    Logger.Info($"[OrderAppService] Filtered cart items for selective checkout: {cartItems.Count} items remain.");
+                }
+                else
+                {
+                    Logger.Warn("[OrderAppService] Frontend sent items but they had empty StoreProductIds. Defaulting to all active cart items.");
+                }
+            }
+
             if (!cartItems.Any())
-                throw new UserFriendlyException("Cart is empty");
+                throw new UserFriendlyException("No valid items selected for order.");
 
             User user;
             using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
@@ -110,8 +125,44 @@ namespace Elicom.Orders
             if (user == null)
                 throw new UserFriendlyException("User not found.");
 
+            // Safety Check: If snapshot price is 0, attempt to use StoreProduct price as fallback
+            foreach (var ci in cartItems)
+            {
+                if (ci.Price <= 0)
+                {
+                    var inputItem = input.Items?.FirstOrDefault(i => i.StoreProductId == ci.StoreProductId);
+                    if (inputItem != null && inputItem.PriceAtPurchase > 0)
+                    {
+                        Logger.Warn($"[OrderAppService] CartItem {ci.Id} has 0 price. Overriding with frontend PriceAtPurchase: {inputItem.PriceAtPurchase}");
+                        ci.Price = inputItem.PriceAtPurchase;
+                        ci.OriginalPrice = inputItem.PriceAtPurchase; 
+                    }
+                    else if (ci.StoreProduct != null && ci.StoreProduct.ResellerPrice > 0)
+                    {
+                        Logger.Warn($"[OrderAppService] CartItem {ci.Id} has 0 price. Re-calculating from StoreProduct {ci.StoreProductId}.");
+                        var sp = ci.StoreProduct;
+                        ci.Price = sp.ResellerPrice * (1 - sp.ResellerDiscountPercentage / 100m);
+                        ci.OriginalPrice = sp.ResellerPrice;
+                        ci.ResellerDiscountPercentage = sp.ResellerDiscountPercentage;
+                    }
+                    else if (ci.StoreProduct?.Product != null)
+                    {
+                        Logger.Warn($"[OrderAppService] CartItem {ci.Id} and StoreProduct has 0 price. Re-calculating from original Product.");
+                        var p = ci.StoreProduct.Product;
+                        ci.Price = p.ResellerMaxPrice;
+                        ci.OriginalPrice = p.ResellerMaxPrice;
+                        ci.ResellerDiscountPercentage = 0;
+                    }
+                }
+            }
+
             var subTotal = cartItems.Sum(i => i.Price * i.Quantity);
             var totalAmount = subTotal + input.ShippingCost - input.Discount;
+
+            if (totalAmount <= 0)
+            {
+                throw new UserFriendlyException($"Unable to place order. Calculated Total Amount ({totalAmount}) must be greater than zero. Subtotal: {subTotal}, Shipping: {input.ShippingCost}, Discount: {input.Discount}");
+            }
 
             var sourcePlatform = string.IsNullOrWhiteSpace(input.SourcePlatform)
                 ? "SmartStore"
