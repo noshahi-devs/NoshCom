@@ -9,6 +9,7 @@ import { environment } from '../../../environments/environment';
 import { CategoryService, Category } from '../../services/category';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { SmartPricePipe } from '../../shared/pipes/smart-price.pipe';
 
 @Component({
   selector: 'app-home',
@@ -16,6 +17,7 @@ import { Router } from '@angular/router';
   imports: [
     CommonModule,
     RouterModule,
+    SmartPricePipe,
     HeroCarouselComponent,
     CategoryCarouselComponent,
     DealCardComponent
@@ -425,7 +427,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
         tone: 'warm',
         style: 'gallery',
         products: ensure(topProducts, 24),
-        initialCount: 16
+        initialCount: 15
       },
       {
         id: 'for-you',
@@ -435,7 +437,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
         tone: 'cool',
         style: 'forYou',
         products: ensure(forYou, 24),
-        initialCount: 24
+        initialCount: 20
       },
       {
         id: 'hot-drops',

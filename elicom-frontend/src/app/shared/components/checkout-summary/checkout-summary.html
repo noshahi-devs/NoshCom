@@ -17,7 +17,7 @@
           <i class="fas fa-tag row-icon"></i>
           Subtotal ({{ itemsCount }} item{{ itemsCount !== 1 ? 's' : '' }})
         </span>
-        <span class="price-val">${{ subtotal.toFixed(2) }}</span>
+        <span class="price-val">${{ subtotal | smartPrice }}</span>
       </div>
 
       <div class="price-row saving-row" *ngIf="totalSavings > 0">
@@ -25,7 +25,7 @@
           <i class="fas fa-percent row-icon green"></i>
           Discount Savings
         </span>
-        <span class="price-val green">- ${{ totalSavings.toFixed(2) }}</span>
+        <span class="price-val green">- ${{ totalSavings | smartPrice }}</span>
       </div>
 
       <div class="price-row">
@@ -33,7 +33,7 @@
           <i class="fas fa-truck row-icon"></i>
           Delivery Charges
         </span>
-        <span class="price-val orange">$0.00</span>
+        <span class="price-val orange">$0</span>
       </div>
 
       <div class="price-row">
@@ -41,7 +41,7 @@
           <i class="fas fa-building row-icon"></i>
           Platform Tax
         </span>
-        <span class="price-val gray">$0.00</span>
+        <span class="price-val gray">$0</span>
       </div>
 
       <div class="price-divider"></div>
@@ -51,14 +51,14 @@
           <i class="fas fa-wallet row-icon orange"></i>
           Grand Total
         </span>
-        <span class="price-val total-amount">${{ orderTotal.toFixed(2) }}</span>
+        <span class="price-val total-amount">${{ orderTotal | smartPrice }}</span>
       </div>
 
     </div>
 
     <div class="savings-strip" *ngIf="totalSavings > 0">
       <i class="pi pi-star-fill"></i>
-      You're saving <strong>${{ totalSavings.toFixed(2) }}</strong> on this order!
+      You're saving <strong>${{ totalSavings | smartPrice }}</strong> on this order!
     </div>
 
   </div>

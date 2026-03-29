@@ -34,7 +34,9 @@
   <div *ngIf="!isLoading && !errorHappened && productData">
     <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
     <div class="product-layout">
-      <app-product-gallery id="gallery" #gallery [productData]="productData"></app-product-gallery>
+      <div class="product-gallery-sticky">
+        <app-product-gallery id="gallery" #gallery [productData]="productData"></app-product-gallery>
+      </div>
       <app-product-info [productData]="productData" (colorSelected)="gallery.setMainImage($event)"></app-product-info>
     </div>
 
@@ -100,9 +102,9 @@
             <div class="name" [attr.data-full-name]="getTitle(product)">{{ getTitle(product) }}</div>
             <div class="price-row">
               <div class="price-block">
-                <div class="price">${{ product.price | number:'1.2-2' }}</div>
+                <div class="price">${{ product.price | smartPrice }}</div>
                 <div class="off" *ngIf="getDiscountPercent(product) > 0">
-                  ${{ ((product.price || 0) * (1 + getDiscountPercent(product) / 100)) | number:'1.2-2' }}
+                  ${{ ((product.price || 0) * (1 + getDiscountPercent(product) / 100)) | smartPrice }}
                 </div>
               </div>
               <span class="cart-cta">Add to Cart</span>

@@ -162,7 +162,7 @@
             gap: 2px;
             font-size: 38px;
             font-weight: 800;
-            color: #111;
+            color: #1565c0;
             line-height: 1;
             letter-spacing: -0.04em;
 
@@ -170,7 +170,7 @@
                 font-size: inherit;
                 line-height: 1;
                 margin-right: 0;
-                color: #e53935;
+                color: #1565c0;
             }
         }
 
@@ -1059,9 +1059,9 @@
     }
 
     .add-cart {
-        flex: 1;
+        flex: 1 1 0;
         height: 55px;
-        background: #ffc107;
+        background: linear-gradient(180deg, #ffc107 0%, #ffb300 100%);
         color: #000;
         border: none;
         border-radius: 12px;
@@ -1095,8 +1095,8 @@
         }
 
         &:hover {
-            background: #ffb300;
-            box-shadow: 0 8px 25px rgba(255, 179, 0, 0.4);
+            background: linear-gradient(180deg, #ffe082 0%, #ffd54f 100%);
+            box-shadow: 0 8px 25px rgba(255, 213, 79, 0.45);
             transform: translateY(-2px);
             
             &::before {
@@ -1109,29 +1109,53 @@
         }
     }
 
-    .fav-btn {
-        width: 55px;
+    .buy-now-btn {
+        flex: 1 1 0;
         height: 55px;
         border-radius: 12px;
-        border: 2px solid #eee;
-        background: #fff;
+        border: 2px solid #ffc107;
+        background: linear-gradient(180deg, #ffc107 0%, #ffb300 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         transition: all 0.3s ease;
-        font-size: 22px;
-        color: #999;
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        color: #111111;
+        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
 
-        &:hover {
-            border-color: #ffc107;
-            background: #fffdf5;
-            color: #ffc107;
-            transform: rotate(5deg);
+        span {
+            position: relative;
+            z-index: 2;
         }
 
-        #favIcon.fa-solid {
-            color: #ff4757;
+        &:hover:not(:disabled) {
+            background: linear-gradient(180deg, #ffe082 0%, #ffd54f 100%);
+            border-color: #ffd54f;
+            color: #111111;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 213, 79, 0.45);
+        }
+
+        &:disabled {
+            opacity: 0.72;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        &:active {
+            transform: scale(0.96);
+        }
+
+        .btn-loader {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 193, 7, 0.24);
+            border-top-color: currentColor;
+            animation: spinLoader 0.9s linear infinite;
         }
     }
 }
@@ -1230,6 +1254,12 @@
             color: #000;
             padding-right: 30px;
         }
+    }
+}
+
+@keyframes spinLoader {
+    to {
+        transform: rotate(360deg);
     }
 }
 

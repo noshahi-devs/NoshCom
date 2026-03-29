@@ -5,11 +5,12 @@ import { ProductService, ProductCardDto } from '../../../services/product';
 import { CartService } from '../../../services/cart.service';
 import Swal from 'sweetalert2';
 import { environment } from '../../../../environments/environment';
+import { SmartPricePipe } from '../../pipes/smart-price.pipe';
 
 @Component({
   selector: 'app-product-grid-new',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, SmartPricePipe],
   templateUrl: './product-grid.html',
   styleUrls: ['./product-grid.scss']
 })
@@ -21,10 +22,19 @@ export class ProductGridComponent implements OnInit, OnChanges {
 
   allProducts: ProductCardDto[] = [];
   visibleProducts: ProductCardDto[] = [];
+  filteredProductsCount = 0;
   isLoading = false;
+  isLoadingMore = false;
   skeletonItems = Array.from({ length: 10 });
+  favoriteKeys = new Set<string>();
+  burstingFavoriteKeys = new Set<string>();
 
-  visibleCount = 30; // 6 rows * 5 columns
+  private readonly initialVisibleCount = 15; // 3 rows x 5 columns
+  private readonly viewMoreStep = 10; // 2 rows x 5 columns
+  private readonly pageSize = 20;
+  private skipCount = 0;
+  private totalCount = 0;
+  visibleCount = this.initialVisibleCount;
 
   constructor(
     private productService: ProductService,
@@ -37,6 +47,7 @@ export class ProductGridComponent implements OnInit, OnChanges {
 
     if (this.products && this.products.length > 0) {
       this.allProducts = this.products;
+      this.totalCount = this.products.length;
       this.applyFilters();
       this.isLoading = false;
     } else {
@@ -47,10 +58,15 @@ export class ProductGridComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['products'] && this.products) {
       this.allProducts = this.products;
+      this.totalCount = this.products.length;
       this.applyFilters();
     }
     if (changes['filterData']) {
+      if (!this.visibleCountOverride) {
+        this.visibleCount = this.initialVisibleCount;
+      }
       this.applyFilters();
+      this.ensureEnoughFilteredProducts();
     }
   }
 
@@ -58,36 +74,96 @@ export class ProductGridComponent implements OnInit, OnChanges {
     if (this.products && this.products.length > 0) return;
 
     this.isLoading = true;
-    // Using real API for product cards
-    this.productService.getProductsForCards(0, 2000).subscribe({
-      next: (res: any) => {
-        // Handle various response shapes robustly
-        let items: ProductCardDto[] = [];
-        if (Array.isArray(res)) {
-          items = res;
-        } else if (res && Array.isArray(res.items)) {
-          items = res.items;
-        } else if (res && Array.isArray(res.result)) {
-          // fallback if result wrapper was not stripped by service
-          items = res.result;
-        }
+    this.skipCount = 0;
+    this.totalCount = 0;
+    this.allProducts = [];
 
+    this.productService.getProductsForCards(this.skipCount, this.pageSize).subscribe({
+      next: (res: any) => {
+        const items = this.extractItems(res);
+        this.totalCount = this.extractTotalCount(res, items.length);
+        this.skipCount = items.length;
         this.allProducts = items;
         this.productsLoaded.emit(this.allProducts);
         this.applyFilters();
+        this.ensureEnoughFilteredProducts();
         this.isLoading = false;
-        this.cdr.detectChanges(); // Fix NG0100
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Failed to load products', err);
-        // Fallback or empty state could be handled here
         this.isLoading = false;
       }
     });
   }
 
+  private loadMoreProducts() {
+    if (this.products && this.products.length > 0) return;
+    if (this.isLoadingMore || this.skipCount >= this.totalCount) {
+      this.applyFilters();
+      return;
+    }
+
+    this.isLoadingMore = true;
+
+    this.productService.getProductsForCards(this.skipCount, this.pageSize).subscribe({
+      next: (res: any) => {
+        const items = this.extractItems(res);
+        this.totalCount = this.extractTotalCount(res, this.totalCount || this.allProducts.length + items.length);
+        this.skipCount += items.length;
+        this.allProducts = [...this.allProducts, ...items];
+        this.productsLoaded.emit(this.allProducts);
+        this.applyFilters();
+        this.ensureEnoughFilteredProducts();
+        this.isLoadingMore = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load more products', err);
+        this.isLoadingMore = false;
+        this.applyFilters();
+      }
+    });
+  }
+
+  private extractItems(res: any): ProductCardDto[] {
+    if (Array.isArray(res)) {
+      return res;
+    }
+
+    if (res && Array.isArray(res.items)) {
+      return res.items;
+    }
+
+    if (res && res.result && Array.isArray(res.result.items)) {
+      return res.result.items;
+    }
+
+    if (res && Array.isArray(res.result)) {
+      return res.result;
+    }
+
+    return [];
+  }
+
+  private extractTotalCount(res: any, fallback: number): number {
+    if (res && typeof res.totalCount === 'number') {
+      return res.totalCount;
+    }
+
+    if (res && res.result && typeof res.result.totalCount === 'number') {
+      return res.result.totalCount;
+    }
+
+    return fallback;
+  }
+
   applyFilters() {
-    if (!this.allProducts.length) return;
+    if (!this.allProducts.length) {
+      this.filteredProductsCount = 0;
+      this.visibleProducts = [];
+      return;
+    }
 
     let filtered = [...this.allProducts];
 
@@ -159,16 +235,41 @@ export class ProductGridComponent implements OnInit, OnChanges {
       }
     }
 
+    filtered = this.mixByTitle(filtered);
+    this.filteredProductsCount = filtered.length;
     this.visibleProducts = filtered.slice(0, this.visibleCount);
   }
 
   get showViewMore(): boolean {
-    return this.visibleProducts.length < this.allProducts.length;
+    if (this.filteredProductsCount === 0) {
+      return false;
+    }
+
+    return this.visibleProducts.length < this.filteredProductsCount || this.skipCount < this.totalCount;
   }
 
   viewMore() {
-    this.visibleCount += 30; // Add 6 more rows
-    this.applyFilters(); // Re-slice
+    this.visibleCount += this.viewMoreStep;
+
+    if (!this.products && this.visibleCount > this.allProducts.length && this.skipCount < this.totalCount) {
+      this.loadMoreProducts();
+      return;
+    }
+
+    this.applyFilters();
+    this.ensureEnoughFilteredProducts();
+  }
+
+  private ensureEnoughFilteredProducts(): void {
+    if (this.visibleCountOverride || this.products) {
+      return;
+    }
+
+    if (this.filteredProductsCount >= this.visibleCount || this.skipCount >= this.totalCount || this.isLoading || this.isLoadingMore) {
+      return;
+    }
+
+    this.loadMoreProducts();
   }
 
   getFirstImage(product: any): string {
@@ -269,6 +370,139 @@ export class ProductGridComponent implements OnInit, OnChanges {
   getTitle(product: any): string {
     const t = product.title || product.productName || product.name || 'Untitled Product';
     return t.trim();
+  }
+
+  private shuffle<T>(items: T[]): T[] {
+    const copy = [...items];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  private normalizeTitleKey(product: any): string {
+    return this.getTitle(product)
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  private mixByTitle(items: ProductCardDto[]): ProductCardDto[] {
+    if (!items || items.length <= 1) return items || [];
+
+    const buckets = new Map<string, ProductCardDto[]>();
+    for (const item of items) {
+      const key = this.normalizeTitleKey(item);
+      if (!buckets.has(key)) {
+        buckets.set(key, []);
+      }
+      buckets.get(key)!.push(item);
+    }
+
+    const shuffledBuckets = this.shuffle(
+      Array.from(buckets.values()).map(bucket => this.shuffle(bucket))
+    );
+
+    const mixed: ProductCardDto[] = [];
+    let added = true;
+
+    while (added) {
+      added = false;
+      for (const bucket of shuffledBuckets) {
+        if (bucket.length) {
+          mixed.push(bucket.shift() as ProductCardDto);
+          added = true;
+        }
+      }
+    }
+
+    return mixed;
+  }
+
+  private getKey(product: any): string {
+    return (product?.__cloneId || product?.storeProductId || product?.id || product?.productId || this.getTitle(product)) as string;
+  }
+
+  getDiscountPercent(product: any): number {
+    const direct = Number(product?.resellerDiscountPercentage || 0);
+    if (direct > 0) return Math.round(direct);
+
+    const original = Number(product?.originalPrice || 0);
+    const price = Number(product?.price || 0);
+    if (original > price && original > 0) {
+      return Math.round(((original - price) / original) * 100);
+    }
+
+    return 0;
+  }
+
+  private hashSeed(value: string): number {
+    let hash = 0;
+    for (let i = 0; i < value.length; i++) {
+      hash = value.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return Math.abs(hash);
+  }
+
+  getRating(product: any): number {
+    const seed = this.hashSeed(this.getKey(product));
+    return 3.8 + (seed % 12) / 10;
+  }
+
+  getReviewCount(product: any): number {
+    const seed = this.hashSeed(this.getKey(product));
+    return 120 + (seed % 4800);
+  }
+
+  getPromoLabel(product: any): string | null {
+    const seed = this.hashSeed(this.getKey(product));
+    const promoIndex = seed % 5;
+
+    if (promoIndex === 0) return null;
+    if (promoIndex === 1) return 'New';
+    if (promoIndex === 2) return 'Limited';
+    if (promoIndex === 3) return 'Almost Sold Out';
+
+    return this.getDiscountPercent(product) > 0 ? `Sale -${this.getDiscountPercent(product)}%` : 'Best Pick';
+  }
+
+  isFavorite(product: any): boolean {
+    return this.favoriteKeys.has(this.getKey(product));
+  }
+
+  isHeartBursting(product: any): boolean {
+    return this.burstingFavoriteKeys.has(this.getKey(product));
+  }
+
+  toggleFavorite(event: Event, product: any): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const key = this.getKey(product);
+    const willBeFavorite = !this.favoriteKeys.has(key);
+
+    if (willBeFavorite) {
+      this.favoriteKeys.add(key);
+      this.burstingFavoriteKeys.add(key);
+      window.setTimeout(() => {
+        this.burstingFavoriteKeys.delete(key);
+        this.cdr.detectChanges();
+      }, 900);
+    } else {
+      this.favoriteKeys.delete(key);
+      this.burstingFavoriteKeys.delete(key);
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  getHeartBurstPieces(): number[] {
+    return [1, 2, 3, 4, 5, 6];
+  }
+
+  getAnimationDelay(index: number): string {
+    return `${Math.min(index, 11) * 70}ms`;
   }
 
   handleImageError(event: any, product: any, type: string) {

@@ -1,4 +1,4 @@
-<div class="container py-4">
+<div class="product-grid-wrap">
 
   <div class="skeleton-grid" *ngIf="isLoading">
     <div class="skeleton-card" *ngFor="let _ of skeletonItems">
@@ -16,42 +16,67 @@
   </div>
 
   <div class="product-grid" *ngIf="!isLoading && visibleProducts.length > 0">
-    <div class="product-card" *ngFor="let product of visibleProducts"
-      [routerLink]="['/product-detail', product.productId, product.storeProductId || product.id]">
-
+    <a
+      class="product-card"
+      *ngFor="let product of visibleProducts; let i = index"
+      [routerLink]="['/product-detail', product.productId, product.storeProductId || product.id]"
+      [class.row-from-left]="i % 2 === 0"
+      [class.row-from-right]="i % 2 !== 0"
+      [style.--card-delay]="getAnimationDelay(i)"
+    >
       <div class="img-wrapper">
-        <div class="badge" *ngIf="product.resellerDiscountPercentage > 0">
-          -{{ product.resellerDiscountPercentage }}%
-        </div>
-        <img [src]="getFirstImage(product)" class="product-img main-img"
+        <button
+          type="button"
+          class="wish-btn"
+          [class.active]="isFavorite(product)"
+          [class.is-bursting]="isHeartBursting(product)"
+          (click)="toggleFavorite($event, product)"
+        >
+          <i [class]="isFavorite(product) ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+          <span class="burst-piece" *ngFor="let _ of getHeartBurstPieces()"></span>
+        </button>
+
+        <img [src]="getFirstImage(product)" class="product-img main-img" [alt]="getTitle(product)"
           (error)="handleImageError($event, product, 'main')">
         <img *ngIf="getSecondImage(product)" [src]="getSecondImage(product)" class="product-img hover-img"
-          (error)="handleImageError($event, product, 'hover')">
+          [alt]="getTitle(product)" (error)="handleImageError($event, product, 'hover')">
       </div>
 
       <div class="card-body">
+        <div class="rating-row">
+          <span class="stars">
+            <i
+              class="fa-solid fa-star"
+              *ngFor="let _ of [1,2,3,4,5]; let starIndex = index"
+              [class.muted]="starIndex + 1 > getRating(product)"
+            ></i>
+          </span>
+          <span class="count">({{ getReviewCount(product) }} Reviews)</span>
+        </div>
+
         <div class="product-title">{{ getTitle(product) }}</div>
 
+        <div class="store-name" *ngIf="product.storeName">Sold by: {{ product.storeName }}</div>
+
         <div class="price-row">
-          <div>
-            <span class="price">${{ product.price | number:'1.2-2' }}</span>
+          <div class="price-block">
+            <span class="price">${{ product.price | smartPrice }}</span>
+            <span class="off" *ngIf="getDiscountPercent(product) > 0">
+              ${{ ((product.price || 0) * (1 + getDiscountPercent(product) / 100)) | smartPrice }}
+            </span>
           </div>
 
-          <button class="cart-btn" (click)="addToCart(product, $event)">
-            <i class="fa-solid fa-cart-shopping"></i>
+          <button type="button" class="cart-cta" (click)="addToCart(product, $event)">
+            Add to Cart
           </button>
         </div>
-        <div class="store-name" style="font-size: 0.75rem; color: #888; margin-top: 4px;">
-          Sold by: {{ product.storeName }}
-        </div>
       </div>
-
-    </div>
+    </a>
   </div>
 
   <div class="view-more-wrapper" *ngIf="showViewMore">
-    <button class="view-more-btn" (click)="viewMore()">
-      View more <i class="fa-solid fa-angle-down"></i>
+    <button class="view-more-btn" (click)="viewMore()" [disabled]="isLoadingMore">
+      {{ isLoadingMore ? 'Loading...' : 'View more' }} <i class="fa-solid fa-angle-down" *ngIf="!isLoadingMore"></i>
     </button>
   </div>
 </div>

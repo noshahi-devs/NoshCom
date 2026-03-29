@@ -17,8 +17,8 @@
 </div>
 
 <ng-container *ngIf="showHeaderFooter; else plainLayout">
-  <div class="app-shell" [ngClass]="{ 'header-hidden': headerHidden }">
-    <div class="app-header-wrap" [ngClass]="{ 'is-hidden': headerHidden }">
+  <div class="app-shell" [class.search-result-layout]="keepHeaderVisibleOnScroll">
+    <div class="app-header-wrap" [class.search-result-layout]="keepHeaderVisibleOnScroll">
       <app-header></app-header>
     </div>
 

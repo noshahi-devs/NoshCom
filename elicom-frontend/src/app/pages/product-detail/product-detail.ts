@@ -6,6 +6,7 @@ import { ProductGallery } from '../../shared/components/product-gallery/product-
 import { ProductInfo } from '../../shared/components/product-info/product-info';
 import { ProductService, ProductDetailDto, ProductCardDto } from '../../services/product';
 import { environment } from '../../../environments/environment';
+import { SmartPricePipe } from '../../shared/pipes/smart-price.pipe';
 
 @Component({
   selector: 'app-product-detail',
@@ -14,6 +15,7 @@ import { environment } from '../../../environments/environment';
     CommonModule,
     RouterLink,
     Breadcrumb,
+    SmartPricePipe,
     ProductGallery,
     ProductInfo
   ],

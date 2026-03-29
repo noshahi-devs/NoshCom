@@ -114,7 +114,7 @@
                   <button (click)="incrementQty(item); $event.stopPropagation()"><i class="fas fa-plus"></i></button>
                 </div>
                 <div class="item-pricing">
-                  <span class="price-val">${{ item.price * item.quantity | number:'1.2-2' }}</span>
+                  <span class="price-val">${{ (item.price * item.quantity) | smartPrice }}</span>
                   <button class="remove-btn" (click)="removeItem(item); $event.stopPropagation()">
                     <i class="far fa-trash-alt"></i>
                   </button>
@@ -135,7 +135,7 @@
         <div class="checkout-summary">
           <div class="subtotal-row">
             <span>Subtotal:</span>
-            <span class="subtotal-amount">${{ cartService.totalPrice | number:'1.2-2' }}</span>
+            <span class="subtotal-amount">${{ cartService.totalPrice | smartPrice }}</span>
           </div>
           <p class="summary-note">Shipping & taxes calculated at checkout</p>
         </div>

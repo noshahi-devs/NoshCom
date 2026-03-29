@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CartService, CartItem as CartItemModel } from '../../../services/cart.service';
 import Swal from 'sweetalert2';
+import { SmartPricePipe } from '../../pipes/smart-price.pipe';
 
 @Component({
   selector: 'app-cart-item',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, SmartPricePipe],
   templateUrl: './cart-item.html',
   styleUrls: ['./cart-item.scss'],
 })

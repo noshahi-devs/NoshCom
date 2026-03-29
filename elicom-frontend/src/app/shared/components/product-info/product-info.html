@@ -40,9 +40,9 @@
 
         <!-- Price -->
         <div class="price-container">
-            <div class="price-now"><span>$</span>{{ product.priceNow | number:'1.2-2' }}</div>
+            <div class="price-now"><span>$</span>{{ product.priceNow | smartPrice }}</div>
             <div class="price-old-and-discount" *ngIf="product.priceOld > product.priceNow">
-                <div class="price-old">${{ product.priceOld | number:'1.2-2' }}</div>
+                <div class="price-old">${{ product.priceOld | smartPrice }}</div>
                 <div class="discount-box">-{{ product.discount }}%</div>
             </div>
         </div>
@@ -65,14 +65,15 @@
 
     </div>
 
-    <!-- Add to Cart & Favourite -->
+    <!-- Add to Cart & Buy Now -->
     <div class="add-cart-section">
         <button class="add-cart" [disabled]="isAddingToCart" (click)="addToCart()">
             <span *ngIf="!isAddingToCart">ADD TO CART</span>
             <div *ngIf="isAddingToCart" class="btn-loader"></div>
         </button>
-        <button class="fav-btn" (click)="toggleFav()">
-            <i [ngClass]="fav ? 'fa-solid fa-heart' : 'fa-regular fa-heart'" id="favIcon"></i>
+        <button class="buy-now-btn" [disabled]="isAddingToCart" (click)="buyNow()">
+            <span *ngIf="!isAddingToCart">BUY NOW</span>
+            <div *ngIf="isAddingToCart" class="btn-loader"></div>
         </button>
     </div>
 

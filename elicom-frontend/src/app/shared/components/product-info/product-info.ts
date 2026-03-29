@@ -7,6 +7,8 @@ import { ProductDetailDto } from '../../../services/product';
 import { CartService } from '../../../services/cart.service';
 import Swal from 'sweetalert2';
 import { environment } from '../../../../environments/environment';
+import { Router } from '@angular/router';
+import { SmartPricePipe } from '../../pipes/smart-price.pipe';
 
 export type AccordionType = 'desc' | 'sizefit' | null;
 export type SizeTabType = 'product' | 'body';
@@ -33,7 +35,7 @@ interface SizeRow {
 @Component({
   selector: 'app-product-info',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, SmartPricePipe],
   templateUrl: './product-info.html',
   styleUrls: ['./product-info.scss']
 })
@@ -44,6 +46,7 @@ export class ProductInfo implements OnInit {
 
   private cartService = inject(CartService);
   private authService = inject(AuthService);
+  private router = inject(Router);
 
   product = {
     title: "",
@@ -270,6 +273,64 @@ export class ProductInfo implements OnInit {
           icon: 'error',
           title: 'Operation Failed',
           text: err?.error?.error?.message || 'Failed to sync with your account cart.',
+          confirmButtonColor: '#ffc107'
+        });
+      }
+    });
+  }
+
+  buyNow() {
+    if (!this.productData) {
+      console.error('[ProductInfo] No productData found');
+      return;
+    }
+
+    if (!this.authService.isAuthenticated) {
+      Swal.fire({
+        icon: 'warning',
+        iconHtml: '<i class="fa-solid fa-user-lock"></i>',
+        title: 'Sign In Required',
+        html: 'Log in to your NoshCom account to continue with Buy Now.',
+        showCancelButton: true,
+        confirmButtonText: 'Login Now',
+        cancelButtonText: 'Maybe Later',
+        confirmButtonColor: '#ffc107',
+        cancelButtonColor: '#111',
+        customClass: {
+          icon: 'nosh-login-alert-icon'
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.authService.openAuthModal();
+        }
+      });
+      return;
+    }
+
+    const image = (this.productData.images && this.productData.images.length > 0)
+      ? this.getImage(this.productData.images[0])
+      : this.getImage('');
+
+    this.isAddingToCart = true;
+
+    this.cartService.addToCart(
+      this.productData,
+      this.quantity,
+      this.selectedSize,
+      this.selectedColorName,
+      image
+    ).subscribe({
+      next: () => {
+        this.isAddingToCart = false;
+        this.router.navigate(['/checkout']);
+      },
+      error: (err) => {
+        this.isAddingToCart = false;
+        console.error('[ProductInfo] Buy now failed:', err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Operation Failed',
+          text: err?.error?.error?.message || 'Unable to continue to checkout right now.',
           confirmButtonColor: '#ffc107'
         });
       }

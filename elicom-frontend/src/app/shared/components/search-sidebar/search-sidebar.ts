@@ -25,6 +25,8 @@ export class SearchSidebar implements OnInit, OnChanges {
     searchTerm: string = '';
 
     // Price Slider
+    sliderMin = 0;
+    sliderMax = 10000;
     minPrice = 0;
     maxPrice = 10000;
     priceGap = 10;
@@ -53,13 +55,9 @@ export class SearchSidebar implements OnInit, OnChanges {
 
     ngOnChanges() {
         if (this.priceLimit) {
-            // Set slider to full range of current results if not already filtered
-            if (this.minPrice === 0 || this.minPrice < this.priceLimit.min) {
-                this.minPrice = this.priceLimit.min;
-            }
-            if (this.maxPrice === 10000 || this.maxPrice > this.priceLimit.max) {
-                this.maxPrice = this.priceLimit.max;
-            }
+            this.minPrice = Math.max(this.sliderMin, Math.min(this.minPrice, this.sliderMax - this.priceGap));
+            this.maxPrice = Math.min(this.sliderMax, Math.max(this.maxPrice, this.sliderMin + this.priceGap));
+            this.ensurePriceOrder('max');
         }
 
         // If category list changes and current selection is invalid, clear it
@@ -150,13 +148,18 @@ export class SearchSidebar implements OnInit, OnChanges {
 
     /* ================= PRICE ================= */
 
-    onPriceChange() {
-        if (this.minPrice > this.maxPrice - this.priceGap) {
-            this.minPrice = this.maxPrice - this.priceGap;
-        }
-        if (this.maxPrice < this.minPrice + this.priceGap) {
-            this.maxPrice = this.minPrice + this.priceGap;
-        }
+    onMinPriceInput(event?: Event) {
+        const inputValue = Number((event?.target as HTMLInputElement | null)?.value ?? this.minPrice);
+        this.minPrice = Math.max(this.sliderMin, Math.min(inputValue, this.sliderMax));
+        this.ensurePriceOrder('min');
+        this.updatePriceChip();
+        this.emitFilterChange();
+    }
+
+    onMaxPriceInput(event?: Event) {
+        const inputValue = Number((event?.target as HTMLInputElement | null)?.value ?? this.maxPrice);
+        this.maxPrice = Math.min(this.sliderMax, Math.max(inputValue, this.sliderMin));
+        this.ensurePriceOrder('max');
         this.updatePriceChip();
         this.emitFilterChange();
     }
@@ -169,10 +172,33 @@ export class SearchSidebar implements OnInit, OnChanges {
     }
 
     resetPrice() {
-        this.minPrice = this.priceLimit.min;
-        this.maxPrice = this.priceLimit.max;
+        this.minPrice = this.sliderMin;
+        this.maxPrice = this.sliderMax;
         // logic to remove chip handled in updatePriceChip or caller
         this.selectedFilters = this.selectedFilters.filter(f => !f.startsWith('Price:'));
+    }
+
+    getSliderLeftPercent(): number {
+        const range = Math.max(1, this.sliderMax - this.sliderMin);
+        return ((this.minPrice - this.sliderMin) / range) * 100;
+    }
+
+    getSliderRightPercent(): number {
+        const range = Math.max(1, this.sliderMax - this.sliderMin);
+        return 100 - (((this.maxPrice - this.sliderMin) / range) * 100);
+    }
+
+    private ensurePriceOrder(changedThumb: 'min' | 'max') {
+        if (changedThumb === 'min' && this.minPrice > this.maxPrice - this.priceGap) {
+            this.minPrice = this.maxPrice - this.priceGap;
+        }
+
+        if (changedThumb === 'max' && this.maxPrice < this.minPrice + this.priceGap) {
+            this.maxPrice = this.minPrice + this.priceGap;
+        }
+
+        this.minPrice = Math.max(this.sliderMin, this.minPrice);
+        this.maxPrice = Math.min(this.sliderMax, this.maxPrice);
     }
 
     private emitFilterChange() {

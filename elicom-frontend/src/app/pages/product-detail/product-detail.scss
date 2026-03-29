@@ -601,15 +601,16 @@
 }
 
 .gallery-card .price {
-  color: #111111;
+  color: #1565c0;
   font-size: 22px;
   font-weight: 900;
   line-height: 1;
   letter-spacing: -0.02em;
-  background: linear-gradient(90deg, #111 0%, #3a2a00 40%, #c28a00 52%, #111 72%);
+  background: linear-gradient(90deg, #1565c0 0%, #1e88e5 48%, #42a5f5 100%);
   background-size: 220% 100%;
   -webkit-background-clip: text;
   background-clip: text;
+  -webkit-text-fill-color: transparent;
   transition: transform 0.28s ease, background-position 0.45s ease;
   animation: priceShimmer 3.2s linear infinite;
 }
@@ -738,15 +739,19 @@
 }
 
 /* LEFT */
-app-product-gallery {
+.product-gallery-sticky {
   display: block;
   flex: 0 0 58%;
   align-self: flex-start;
   position: -webkit-sticky;
   position: sticky;
-  top: 64px;
+  top: var(--wc-sticky-top, 64px);
   margin-bottom: 60px;
   z-index: 10;
+}
+
+app-product-gallery {
+  display: block;
 }
 
 /* RIGHT */
@@ -777,9 +782,15 @@ app-product-info {
     height: 210px;
   }
 
-  app-product-gallery,
+  .product-gallery-sticky,
   app-product-info {
     flex: 0 0 100%;
+  }
+
+  .product-gallery-sticky {
+    position: static;
+    top: auto;
+    margin-bottom: 24px;
   }
 
 }

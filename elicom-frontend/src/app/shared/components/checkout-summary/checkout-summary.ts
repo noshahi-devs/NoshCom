@@ -2,11 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, Input, Output, EventEmitter } from '@angular/core';
 import { CartService, CartItem } from '../../../services/cart.service';
 import { CheckoutProduct } from '../checkout-product/checkout-product';
+import { SmartPricePipe } from '../../pipes/smart-price.pipe';
 
 @Component({
   selector: 'app-checkout-summary',
   standalone: true,
-  imports: [CommonModule, CheckoutProduct],
+  imports: [CommonModule, CheckoutProduct, SmartPricePipe],
   templateUrl: './checkout-summary.html',
   styleUrl: './checkout-summary.scss',
 })

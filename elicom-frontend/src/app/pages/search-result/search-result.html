@@ -1,60 +1,74 @@
 <div class="search-result-container">
-
-    <!-- Left Sidebar -->
-    <div class="left-pane">
-        <app-search-sidebar (filterChange)="onFilterChange($event)" [isOpen]="isSidebarOpen"
-            [categories]="availableCategories" [colors]="availableColors" [sizes]="availableSizes"
-            [types]="availableTypes" [fits]="availableFits" [lengths]="availableLengths" [priceLimit]="priceRange"
-            [loading]="isSidebarLoading">
-        </app-search-sidebar>
-        <!-- Overlay backdrop -->
-        <div class="sidebar-overlay" *ngIf="isSidebarOpen" (click)="toggleSidebar()"></div>
-    </div>
-
-    <!-- Right Content -->
     <div class="right-pane">
-
-        <!-- Mobile Filter Toggle -->
-        <div class="mobile-filter-bar" (click)="toggleSidebar()">
-            <i class="fas fa-filter"></i> Filter / Sort
-        </div>
-
-        <!-- Filter/Sort Row -->
-        <div class="filter-row">
-            <h2 *ngIf="categoryTitle" style="margin: 0; font-size: 24px;">{{ categoryTitle }}</h2>
-
-            <!-- Sort Dropdown (Moved from Sidebar) -->
-            <div class="sort-box" id="sortBox" tabindex="0" (click)="toggleSortDropdown()">
-                <div class="sort-label">Sort By</div>
-
-                <div class="sort-select">
-                    <div class="sort-value">{{ getSortLabel(filterData.sort) }}</div>
-                    <div class="arrow"></div>
+        <div class="search-top-sticky">
+            <!-- Filter/Sort Row -->
+            <div class="filter-row">
+                <div class="filter-row-copy">
+                    <h2>{{ categoryTitle || 'Browse Products' }}</h2>
+                    <p>Curated picks matched to your search and ready to explore.</p>
                 </div>
 
-                <div class="dropdown" [class.show]="showSortDropdown">
-                    <div class="opt" (click)="onSortChange('recommended')">Recommended</div>
-                    <div class="opt" (click)="onSortChange('newest')">Newest</div>
-                    <div class="opt" (click)="onSortChange('price-low')">Price: Low to High</div>
-                    <div class="opt" (click)="onSortChange('price-high')">Price: High to Low</div>
-                </div>
-            </div>
+                <div class="filter-row-controls">
+                    <div class="category-picker-wrap">
+                        <button type="button" class="category-picker" (click)="toggleCategoryModal()">
+                            <span class="picker-value">{{ selectedCategoryLabel || 'All Category' }}</span>
+                            <i class="fas" [class.fa-chevron-down]="!showCategoryModal" [class.fa-chevron-up]="showCategoryModal"></i>
+                        </button>
 
-            <!-- Chips are now managed by sidebar logic / dynamic filters -->
+                        <div class="category-modal" *ngIf="showCategoryModal">
+                            <div class="category-modal-head">
+                                <strong>Select Category</strong>
+                                <button type="button" class="category-close" (click)="closeCategoryModal()">Close</button>
+                            </div>
+                            <div class="category-modal-list">
+                                <button type="button" class="category-option" [class.active]="!selectedCategoryLabel"
+                                    (click)="selectCategory(null)">
+                                    All Category
+                                </button>
+                                <button type="button" class="category-option" *ngFor="let category of availableCategories"
+                                    [class.active]="selectedCategoryLabel === category" (click)="selectCategory(category)">
+                                    {{ category }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Chips -->
-            <!-- Chips are now managed by sidebar logic / dynamic filters -->
-            <div class="chips" *ngIf="false">
-                <div class="chip">
-                    <img src="assets/images/blackfriday_bag.png" alt="" onerror="this.style.display='none'">
-                    Black Friday
-                </div>
-                <div class="chip">
-                    <img src="assets/images/quickship.png" alt="" onerror="this.style.display='none'">
-                    QuickShip
-                </div>
-                <div class="chip trend">
-                    <img src="assets/images/trends.png" alt="" onerror="this.style.display='none'">
+                    <div class="price-field-group">
+                        <label class="price-field">
+                            <span class="price-label">Min</span>
+                            <span class="price-input-wrap">
+                                <span class="currency-sign">$</span>
+                                <input type="number" inputmode="numeric" min="0" step="1" [value]="minPriceInput"
+                                    (input)="onPriceInput('min', $event)" placeholder="0">
+                            </span>
+                        </label>
+
+                        <label class="price-field">
+                            <span class="price-label">Max</span>
+                            <span class="price-input-wrap">
+                                <span class="currency-sign">$</span>
+                                <input type="number" inputmode="numeric" min="0" step="1" [value]="maxPriceInput"
+                                    [class.invalid]="isMaxPriceInvalid"
+                                    (input)="onPriceInput('max', $event)" placeholder="10000">
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="sort-box" id="sortBox" tabindex="0" (click)="toggleSortDropdown()">
+                        <div class="sort-label">Sort By</div>
+
+                        <div class="sort-select">
+                            <div class="sort-value">{{ getSortLabel(filterData.sort) }}</div>
+                            <div class="arrow"></div>
+                        </div>
+
+                        <div class="dropdown" [class.show]="showSortDropdown">
+                            <div class="opt" (click)="onSortChange('recommended')">Recommended</div>
+                            <div class="opt" (click)="onSortChange('newest')">Newest</div>
+                            <div class="opt" (click)="onSortChange('price-low')">Price: Low to High</div>
+                            <div class="opt" (click)="onSortChange('price-high')">Price: High to Low</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -65,11 +79,14 @@
             </app-product-grid-new>
         </div>
 
-        <hr style="margin: 40px 0; border: none; border-top: 1px solid #eee;">
+        <hr style="margin: 8px 0 14px; border: none; border-top: 1px solid #eee;">
 
         <!-- Smart Suggestions Section -->
         <div class="suggestions-area">
-            <h3 style="margin-bottom: 20px; font-weight: 600;">Recommended For You</h3>
+            <div class="suggestions-heading">
+                <h3>Recommended For You</h3>
+                <span></span>
+            </div>
             <app-product-grid-new [filterData]="{ sort: 'recommended' }" [visibleCountOverride]="10">
             </app-product-grid-new>
         </div>

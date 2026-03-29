@@ -8,11 +8,12 @@ import { CategoryService } from '../../services/category';
 import { FormsModule } from '@angular/forms';
 import { AuthModalComponent } from '../components/auth-modal/auth-modal.component';
 import Swal from 'sweetalert2';
+import { SmartPricePipe } from '../pipes/smart-price.pipe';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterModule, FormsModule, AuthModalComponent],
+  imports: [CommonModule, RouterLink, RouterModule, FormsModule, AuthModalComponent, SmartPricePipe],
   templateUrl: './header.html',
   styleUrls: ['./header.scss'],
   encapsulation: ViewEncapsulation.None

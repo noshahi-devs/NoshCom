@@ -233,8 +233,8 @@ h6,
     border-radius: 28px !important;
     border: 1px solid rgba(17, 17, 17, 0.08) !important;
     background:
-        radial-gradient(circle at top right, rgba(255, 193, 7, 0.22), transparent 28%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 251, 235, 0.96)) !important;
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.32), transparent 28%),
+        linear-gradient(180deg, rgba(255, 245, 204, 0.98) 0%, rgba(255, 232, 142, 0.95) 100%) !important;
     box-shadow:
         0 18px 40px rgba(0, 0, 0, 0.16),
         0 36px 70px rgba(0, 0, 0, 0.16),
@@ -410,8 +410,8 @@ h6,
 .swal2-toast {
     border-radius: 20px !important;
     background:
-        radial-gradient(circle at top right, rgba(255, 193, 7, 0.18), transparent 28%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 251, 235, 0.95)) !important;
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.28), transparent 28%),
+        linear-gradient(180deg, rgba(255, 245, 204, 0.98) 0%, rgba(255, 232, 142, 0.94) 100%) !important;
     box-shadow:
         0 14px 28px rgba(17, 17, 17, 0.16),
         inset 0 1px 0 rgba(255, 255, 255, 0.88) !important;

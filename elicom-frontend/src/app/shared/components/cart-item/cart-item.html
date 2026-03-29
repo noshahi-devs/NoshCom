@@ -3,7 +3,7 @@
     <div class="lhs">
         <div class="top-line">
             <span class="top-line__copy"><i class="fa-solid fa-sparkles"></i> Unlock more value before checkout</span>
-            <span class="top-line__value">Save ${{ couponValue | number:'1.2-2' }}</span>
+            <span class="top-line__value">Save ${{ couponValue | smartPrice }}</span>
         </div>
 
         <div *ngIf="cartService.items().length === 0" class="empty-cart-panel">
@@ -55,7 +55,7 @@
                             <path fill-rule="evenodd" clip-rule="evenodd" d="M3.98387 9.94355V8.44355H0.5V9.94355H3.98387Z"
                                 fill="currentColor"></path>
                         </svg>
-                        <span>Spend <b>${{ remainingForFreeShipping | number:'1.2-2' }}</b> more to unlock free standard shipping.</span>
+                        <span>Spend <b>${{ remainingForFreeShipping | smartPrice }}</b> more to unlock free standard shipping.</span>
                     </div>
                     <span class="free-ship__tag">Shipping Boost</span>
                 </div>
@@ -95,9 +95,9 @@
 
                         <div class="vc-bottom-row">
                             <div class="vc-price-wrap">
-                                <span class="vc-new-price">${{ item.price | number:'1.2-2' }}</span>
+                                <span class="vc-new-price">${{ item.price | smartPrice }}</span>
                                 <span class="vc-old-price" *ngIf="item.oldPrice > item.price">
-                                    ${{ item.oldPrice | number:'1.2-2' }}
+                                    ${{ item.oldPrice | smartPrice }}
                                 </span>
                             </div>
 
@@ -146,7 +146,7 @@
             <div class="price-summary">
                 <div class="price-row">
                     <span class="label-bold">Retail Price</span>
-                    <span class="value-bold price">${{ retailPrice | number:'1.2-2' }}</span>
+                    <span class="value-bold price">${{ retailPrice | smartPrice }}</span>
                 </div>
 
                 <p class="disclaimer">
@@ -158,12 +158,12 @@
                 <div class="price-row estimated">
                     <span class="label-bold">Estimated Price</span>
                     <span class="total-price price">
-                        ${{ estimatedPrice | number:'1.2-2' }}
+                        ${{ estimatedPrice | smartPrice }}
                     </span>
                 </div>
 
                 <div class="saved-amount">
-                    Saved ${{ totalSaved | number:'1.2-2' }}
+                    Saved ${{ totalSaved | smartPrice }}
                 </div>
 
                 <button class="checkout-btn" routerLink="/checkout">

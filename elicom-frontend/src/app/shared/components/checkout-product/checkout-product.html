@@ -11,8 +11,8 @@
             <div class="product-name">{{ product.name }}</div>
           </div>
           <div class="price-box">
-            <span class="current-price">${{ (product.price * product.quantity) | number:'1.2-2' }}</span>
-            <span class="old-price" *ngIf="product.oldPrice > product.price">${{ (product.oldPrice * product.quantity) | number:'1.2-2' }}</span>
+            <span class="current-price">${{ (product.price * product.quantity) | smartPrice }}</span>
+            <span class="old-price" *ngIf="product.oldPrice > product.price">${{ (product.oldPrice * product.quantity) | smartPrice }}</span>
           </div>
         </div>
         <div class="meta-row">

@@ -2,7 +2,6 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { SearchSidebar } from '../../shared/components/search-sidebar/search-sidebar';
 import { ProductGridComponent } from '../../shared/components/product-grid/product-grid';
 import { SearchService } from '../../services/search.service';
 import { CategoryService } from '../../services/category';
@@ -11,17 +10,16 @@ import { catchError, map, of } from 'rxjs';
 @Component({
   selector: 'app-search-result',
   standalone: true,
-  imports: [CommonModule, FormsModule, SearchSidebar, ProductGridComponent],
+  imports: [CommonModule, FormsModule, ProductGridComponent],
   templateUrl: './search-result.html',
   styleUrl: './search-result.scss',
 })
 export class SearchResult implements OnInit {
   filterData: any = {};
   categoryTitle: string = '';
-  isSidebarOpen: boolean = false;
   isSidebarLoading: boolean = true;
+  showCategoryModal = false;
 
-  // Dynamic Options for Sidebar
   availableCategories: string[] = [];
   availableColors: string[] = [];
   availableSizes: string[] = [];
@@ -29,6 +27,10 @@ export class SearchResult implements OnInit {
   availableFits: string[] = [];
   availableLengths: string[] = [];
   priceRange = { min: 0, max: 10000 };
+  selectedCategoryLabel = '';
+  minPriceInput = '';
+  maxPriceInput = '';
+  isMaxPriceInvalid = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -45,12 +47,18 @@ export class SearchResult implements OnInit {
 
       if (category) {
         this.categoryTitle = category;
+        this.selectedCategoryLabel = category;
         this.filterData = { ...this.filterData, category, search: '' };
         this.searchService.setSearchTerm(category);
       } else if (query) {
         this.categoryTitle = query;
+        this.selectedCategoryLabel = '';
         this.filterData = { ...this.filterData, search: query, category: '' };
         this.searchService.setSearchTerm(query);
+      } else {
+        this.categoryTitle = '';
+        this.selectedCategoryLabel = '';
+        this.filterData = { ...this.filterData, category: '', search: '' };
       }
     });
 
@@ -128,9 +136,6 @@ export class SearchResult implements OnInit {
       this.priceRange = { min: Math.floor(min), max: Math.ceil(max) };
     }
 
-    // Logic for "Smart Suggestions" - If very few results, we might want to tell the grid
-    // to show some popular items as well. (Handled via ProductGrid's fallback or matching tags)
-
     this.cdr.detectChanges();
   }
 
@@ -139,22 +144,54 @@ export class SearchResult implements OnInit {
     return name.length > 0 ? name : null;
   }
 
-  toggleSidebar() {
-    this.isSidebarOpen = !this.isSidebarOpen;
+  toggleCategoryModal() {
+    this.showCategoryModal = !this.showCategoryModal;
   }
 
-  onFilterChange(event: any) {
-    this.filterData = { ...this.filterData, ...event };
-    // Category title might come from sidebar radio now
-    if (event.category) {
-      this.categoryTitle = event.category;
+  closeCategoryModal() {
+    this.showCategoryModal = false;
+  }
+
+  selectCategory(category: string | null) {
+    this.selectedCategoryLabel = category || '';
+    this.filterData = {
+      ...this.filterData,
+      category: category || ''
+    };
+    this.categoryTitle = category || '';
+    this.showCategoryModal = false;
+  }
+
+  onPriceInput(type: 'min' | 'max', event: Event) {
+    const input = event.target as HTMLInputElement;
+    const digitsOnly = input.value.replace(/\D/g, '');
+    input.value = digitsOnly;
+
+    if (type === 'min') {
+      this.minPriceInput = digitsOnly;
+    } else {
+      this.maxPriceInput = digitsOnly;
     }
+
+    this.applyPriceFilter();
+  }
+
+  private applyPriceFilter() {
+    const min = this.minPriceInput ? Number(this.minPriceInput) : 0;
+    const max = this.maxPriceInput ? Number(this.maxPriceInput) : 10000;
+    this.isMaxPriceInvalid = this.maxPriceInput !== '' && max < min;
+
+    this.filterData = {
+      ...this.filterData,
+      price: { min, max }
+    };
   }
 
   /* SORTING Logic */
   showSortDropdown = false;
 
-  toggleSortDropdown() {
+  toggleSortDropdown(event?: Event) {
+    event?.stopPropagation();
     this.showSortDropdown = !this.showSortDropdown;
   }
 

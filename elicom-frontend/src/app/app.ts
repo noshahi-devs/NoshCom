@@ -57,27 +57,17 @@ export class App {
     );
   }
 
+  get keepHeaderVisibleOnScroll(): boolean {
+    const rawUrl = this.currentUrl || this.router.url || window.location.pathname || '';
+    const normalizedUrl = rawUrl.split('?')[0];
+    const pathname = (window.location.pathname || '').split('?')[0];
+    return normalizedUrl.startsWith('/search-result') || pathname.startsWith('/search-result');
+  }
+
   @HostListener('window:scroll')
   onWindowScroll() {
     if (!this.showHeaderFooter) return;
-
-    const currentScrollY = window.scrollY || document.documentElement.scrollTop || 0;
-
-    if (currentScrollY <= this.hideThreshold) {
-      this.headerHidden = false;
-      this.lastScrollY = currentScrollY;
-      return;
-    }
-
-    const scrollingDown = currentScrollY > this.lastScrollY + this.deltaThreshold;
-    const scrollingUp = currentScrollY < this.lastScrollY - this.deltaThreshold;
-
-    if (scrollingDown) {
-      this.headerHidden = true;
-    } else if (scrollingUp) {
-      this.headerHidden = false;
-    }
-
-    this.lastScrollY = currentScrollY;
+    this.headerHidden = false;
+    this.lastScrollY = window.scrollY || document.documentElement.scrollTop || 0;
   }
 }

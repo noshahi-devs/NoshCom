@@ -132,11 +132,23 @@
                         <span>${{ maxPrice }}</span>
                     </div>
                     <div class="range-slider">
-                        <div class="slider-track" [style.left.%]="(minPrice / (priceLimit.max || 10000)) * 100"
-                            [style.right.%]="100 - (maxPrice / (priceLimit.max || 10000)) * 100">
+                        <div class="slider-track" [style.left.%]="getSliderLeftPercent()"
+                            [style.right.%]="getSliderRightPercent()">
                         </div>
-                        <input type="range" [min]="priceLimit.min" [max]="priceLimit.max" [(ngModel)]="minPrice" (input)="onPriceChange()">
-                        <input type="range" [min]="priceLimit.min" [max]="priceLimit.max" [(ngModel)]="maxPrice" (input)="onPriceChange()">
+                        <input
+                            type="range"
+                            [min]="sliderMin"
+                            [max]="sliderMax"
+                            [(ngModel)]="minPrice"
+                            (input)="onMinPriceInput($event)"
+                        >
+                        <input
+                            type="range"
+                            [min]="sliderMin"
+                            [max]="sliderMax"
+                            [(ngModel)]="maxPrice"
+                            (input)="onMaxPriceInput($event)"
+                        >
                     </div>
                 </div>
             </div>

@@ -899,14 +899,15 @@
 }
 
 .gallery-card .price {
-  color: #111;
+  color: #1565c0;
   font-weight: 900;
   font-size: 21px;
   letter-spacing: -0.02em;
-  background: linear-gradient(90deg, #111 0%, #3a2a00 40%, #c28a00 52%, #111 72%);
+  background: linear-gradient(90deg, #1565c0 0%, #1e88e5 48%, #42a5f5 100%);
   background-size: 220% 100%;
   -webkit-background-clip: text;
   background-clip: text;
+  -webkit-text-fill-color: transparent;
   animation: priceShimmer 3.2s linear infinite;
   transition: transform 0.28s ease, background-position 0.45s ease;
 }
@@ -1149,14 +1150,15 @@
 }
 
 .premium-card .price {
-  color: #111;
+  color: #1565c0;
   font-weight: 900;
   font-size: 21px;
   letter-spacing: -0.02em;
-  background: linear-gradient(90deg, #111 0%, #3a2a00 40%, #c28a00 52%, #111 72%);
+  background: linear-gradient(90deg, #1565c0 0%, #1e88e5 48%, #42a5f5 100%);
   background-size: 220% 100%;
   -webkit-background-clip: text;
   background-clip: text;
+  -webkit-text-fill-color: transparent;
   animation: priceShimmer 3.2s linear infinite;
   transition: transform 0.28s ease, background-position 0.45s ease;
 }
@@ -1471,14 +1473,15 @@
 }
 
 .carousel-card .price {
-  color: #111;
+  color: #1565c0;
   font-weight: 900;
   font-size: 21px;
   letter-spacing: -0.02em;
-  background: linear-gradient(90deg, #111 0%, #3a2a00 40%, #c28a00 52%, #111 72%);
+  background: linear-gradient(90deg, #1565c0 0%, #1e88e5 48%, #42a5f5 100%);
   background-size: 220% 100%;
   -webkit-background-clip: text;
   background-clip: text;
+  -webkit-text-fill-color: transparent;
   animation: priceShimmer 3.2s linear infinite;
   transition: transform 0.28s ease, background-position 0.45s ease;
 }
@@ -1826,14 +1829,15 @@
 }
 
 .for-you-card .price {
-  color: #111;
+  color: #1565c0;
   font-weight: 900;
   font-size: 21px;
   letter-spacing: -0.02em;
-  background: linear-gradient(90deg, #111 0%, #3a2a00 40%, #c28a00 52%, #111 72%);
+  background: linear-gradient(90deg, #1565c0 0%, #1e88e5 48%, #42a5f5 100%);
   background-size: 220% 100%;
   -webkit-background-clip: text;
   background-clip: text;
+  -webkit-text-fill-color: transparent;
   transition: transform 0.28s ease, background-position 0.45s ease;
   animation: priceShimmer 3.2s linear infinite;
 }
