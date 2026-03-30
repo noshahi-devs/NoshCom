@@ -7,7 +7,7 @@
             <i class="fa-solid fa-bars"></i>
         </button>
 
-        <aside #sidebarRef class="cust-sidebar" [class.show-mobile]="!isSidebarCollapsed" [style.top.px]="sidebarStickyTop">
+        <aside class="cust-sidebar" [class.show-mobile]="!isSidebarCollapsed" [style.--cust-sticky-top.px]="sidebarStickyTop">
             <nav class="cust-nav">
                 <div *ngFor="let group of menuGroups" class="cust-nav-group">
                     <div class="cust-nav-group-label">{{ group.title }}</div>

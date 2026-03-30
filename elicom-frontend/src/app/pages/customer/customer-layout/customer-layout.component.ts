@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
@@ -13,11 +13,9 @@ import { Header } from '../../../shared/header/header';
     styleUrl: './customer-layout.component.scss'
 })
 export class CustomerLayoutComponent implements OnInit, AfterViewInit {
-    @ViewChild('sidebarRef') sidebarRef?: ElementRef<HTMLElement>;
-
     userName: string = 'Customer';
     isSidebarCollapsed: boolean = true;
-    sidebarStickyTop: number = 124;
+    sidebarStickyTop: number = 0;
 
     menuGroups = [
         {
@@ -97,17 +95,16 @@ export class CustomerLayoutComponent implements OnInit, AfterViewInit {
     }
 
     private updateSidebarStickyTop(): void {
-        if (typeof window === 'undefined' || !this.sidebarRef?.nativeElement || window.innerWidth <= 1200) {
-            this.sidebarStickyTop = 124;
+        if (typeof window === 'undefined' || window.innerWidth <= 1200) {
+            this.sidebarStickyTop = 0;
             return;
         }
 
-        const sidebarHeight = this.sidebarRef.nativeElement.offsetHeight;
-        const viewportHeight = window.innerHeight;
-        const minTop = 124;
-        const viewportPadding = 8;
-        const bottomLockedTop = viewportHeight - sidebarHeight - viewportPadding;
+        const bodyElement = document.querySelector<HTMLElement>('.cust-body');
+        const bodyPaddingTop = bodyElement
+            ? Number.parseFloat(window.getComputedStyle(bodyElement).paddingTop || '0')
+            : 0;
 
-        this.sidebarStickyTop = Math.max(minTop, bottomLockedTop);
+        this.sidebarStickyTop = Number.isFinite(bodyPaddingTop) ? bodyPaddingTop : 0;
     }
 }
