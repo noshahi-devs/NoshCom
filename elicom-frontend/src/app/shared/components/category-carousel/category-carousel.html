@@ -8,22 +8,114 @@
     </p>
   </div>
 
-  <div class="category-3d-grid">
-    <div
-      class="category-3d-card"
-      *ngFor="let cat of featureCategories; let i = index"
-      (click)="onCategoryClick(cat)"
+  <div class="category-3d-grid universe-grid">
+    <article
+      class="universe-card span-3 card-graphite"
+      (click)="onCategoryClick({ name: 'Kitchen Accessories' })"
     >
-      <span class="promo-3d">{{ getPromoLabel(i) }}</span>
-      <div class="img-3d-container">
+      <span class="card-tag">HOT</span>
+      <div class="card-copy">
+        <p class="card-eyebrow">Enjoy with</p>
+        <h3>Kitchen Accessories</h3>
+        <button class="card-btn" type="button">Browse</button>
+      </div>
+      <div class="card-media">
         <img
-          [src]="getCategoryImage(cat)"
-          [alt]="cat.name"
-          (error)="handleImageError($event, cat)"
+          src="https://api.worldcartus.com/uploads/primeship-products/Category_KitchenAccessories_20260310111130.png"
+          alt="Kitchen Accessories"
         />
       </div>
-      <h3>{{ cat.name }}</h3>
-    </div>
+    </article>
+
+    <article
+      class="universe-card span-3 card-rose"
+      (click)="onCategoryClick({ name: 'Personal Care' })"
+    >
+      <span class="card-tag">NEW</span>
+      <div class="card-copy">
+        <p class="card-eyebrow">Now wear</p>
+        <h3>Personal Care</h3>
+        <button class="card-btn" type="button">Browse</button>
+      </div>
+      <div class="card-media">
+        <img
+          src="https://api.worldcartus.com/uploads/primeship-products/Category_PersonalCare_20260310065325.png"
+          alt="Personal Care"
+        />
+      </div>
+    </article>
+
+    <article
+      class="universe-card span-6 card-amber"
+      (click)="onCategoryClick({ name: 'Laptop Accessories' })"
+    >
+      <span class="card-tag">WORK</span>
+      <div class="card-copy">
+        <p class="card-eyebrow">Work devices</p>
+        <h3>Laptop Accessories</h3>
+        <button class="card-btn" type="button">Browse</button>
+      </div>
+      <div class="card-media">
+        <img
+          src="https://api.worldcartus.com/uploads/primeship-products/Category_LaptopAccessories_20260310104026.png"
+          alt="Laptop Accessories"
+        />
+      </div>
+    </article>
+
+    <article
+      class="universe-card span-6 card-indigo"
+      (click)="onCategoryClick({ name: 'Pets And Dog Food' })"
+    >
+      <span class="card-tag">BEST</span>
+      <div class="card-copy">
+        <p class="card-eyebrow">Pet world</p>
+        <h3>Pets &amp; Dog Food</h3>
+        <button class="card-btn" type="button">Browse</button>
+      </div>
+      <div class="card-media">
+        <img
+          src="https://api.worldcartus.com/uploads/primeship-products/Category_PetsAndDogFood_20260310172609.png"
+          alt="Pets and Dog Food"
+        />
+      </div>
+    </article>
+
+    <article
+      class="universe-card span-3 card-emerald"
+      (click)="onCategoryClick({ name: 'Baby Monitors' })"
+    >
+      <span class="card-tag">PLAY</span>
+      <div class="card-copy">
+        <p class="card-eyebrow">Play time</p>
+        <h3>Baby Monitors</h3>
+        <button class="card-btn" type="button">Browse</button>
+      </div>
+      <div class="card-media">
+        <img
+          src="https://api.worldcartus.com/uploads/primeship-products/Category_AdidasUnisexAlphaskin_20260311031740.png"
+          alt="Baby Monitors"
+        />
+      </div>
+    </article>
+
+    <article
+      class="universe-card span-3 card-magenta"
+      (click)="onCategoryClick({ name: 'Baby Accessories' })"
+    >
+      <span class="card-tag">LIMITED</span>
+      <div class="card-copy">
+        <p class="card-eyebrow">New drop</p>
+        <h3>Baby Accessories</h3>
+        <button class="card-btn" type="button">Browse</button>
+      </div>
+      <div class="card-media">
+        <img
+          src="https://api.worldcartus.com/uploads/primeship-products/Category_BabyAccessories_20260310151421.png"
+          alt="Baby Accessories"
+        />
+      </div>
+    </article>
   </div>
 
   <div class="slider-container">
