@@ -81,7 +81,9 @@ export class RegisterComponent implements OnInit {
         emailAddress: this.registerForm.value.email,
         password: this.registerForm.value.password,
         phoneNumber: this.registerForm.value.phone,
-        country: this.registerForm.value.country
+        country: this.registerForm.value.country,
+        isActive: true,
+        isEmailConfirmed: true
       };
 
       this.authService.registerSeller(registerData).subscribe({
@@ -91,7 +93,7 @@ export class RegisterComponent implements OnInit {
           this.cdr.detectChanges();
 
           this.toastService.showSuccess(
-            'Registration successful! Please check your email to verify your account.'
+            'Registration successful! Your account is active and verified.'
           );
 
           this.registerForm.reset();

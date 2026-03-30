@@ -1,302 +1,176 @@
-<div class="product-detail-container">
-  <div class="container" *ngIf="isLoading">
-    <div class="product-loading">
-      <div class="skeleton-line wide"></div>
-      <div class="skeleton-line medium"></div>
-
-      <div class="loading-grid">
-        <div class="loading-media">
-          <div class="skeleton-image"></div>
-          <div class="skeleton-row">
-            <div class="skeleton-thumb" *ngFor="let _ of [1,2,3,4]"></div>
-          </div>
-        </div>
-        <div class="loading-info">
-          <div class="skeleton-line wide"></div>
-          <div class="skeleton-line"></div>
-          <div class="skeleton-line short"></div>
-          <div class="skeleton-pill"></div>
-          <div class="skeleton-line medium"></div>
-          <div class="skeleton-line"></div>
-          <div class="skeleton-actions">
-            <div class="skeleton-btn"></div>
-            <div class="skeleton-btn"></div>
-          </div>
-        </div>
-      </div>
-    </div>
+<div class="nosh-powerhouse-layout">
+  <!-- Loading State -->
+  <div class="powerhouse-overlay" *ngIf="isLoading">
+    <div class="spinner-ring"></div>
   </div>
 
-  <div class="container" *ngIf="!isLoading">
-    <!-- Breadcrumb Navigation -->
-    <nav class="breadcrumb-nav">
-      <div class="breadcrumb-wrapper">
-        <a class="breadcrumb-item" routerLink="/">Home</a>
-        <i class="pi pi-chevron-right breadcrumb-separator"></i>
-        <a class="breadcrumb-item" routerLink="/categories">Categories</a>
-        <i class="pi pi-chevron-right breadcrumb-separator"></i>
-        <span class="breadcrumb-item active">{{ product?.name }}</span>
-      </div>
-    </nav>
+  <div *ngIf="!isLoading">
+    
+    <!-- Top Nav Strip -->
+    <div class="powerhouse-nav-strip">
+      <nav class="breadcrumb-trail">
+        <a routerLink="/">Home</a> <i class="fas fa-angle-right"></i>
+        <a routerLink="/categories">Categories</a> <i class="fas fa-angle-right"></i>
+        <span class="active-item" [innerHTML]="product?.name"></span>
+      </nav>
+    </div>
 
-    <!-- Main Product Section -->
-    <div class="product-main-section">
-      <div class="product-visual-section">
-        <!-- Product Images/3D Viewer -->
-        <div class="product-visual-container">
-          <!-- Images View -->
-          <div class="images-view">
-            <div class="main-image-container">
-              <img #mainImage [src]="product?.image || 'https://placehold.co/600x400/f85606/ffffff?text=Product+Image'"
-                [alt]="product?.name || 'Product'" class="main-product-image">
-              <div class="image-overlay">
-                <button class="overlay-btn" (click)="openImageInNewTab()"><i class="pi pi-search-plus"></i></button>
-                <button class="overlay-btn" (click)="openImageFullscreen()"><i class="pi pi-expand"></i></button>
-              </div>
-            </div>
-            <div class="thumbnail-strip" *ngIf="product?.images && (product?.images?.length || 0) > 1">
-              <div class="thumbnail" *ngFor="let img of product?.images; let i = index"
-                [class.active]="product?.image === img" (click)="product && selectImage(product, i)">
-                <img [src]="img" [alt]="'Product thumbnail ' + i">
-              </div>
-            </div>
+    <!-- MAIN 3-COLUMN ARCHITECTURE -->
+    <div class="powerhouse-grid-container">
 
-            <!-- Visual perks to fill space under gallery -->
-            <div class="visual-perks">
-              <div class="perk">
-                <i class="pi pi-tag"></i>
-                <span>SKU: {{ product?.sku || product?.specifications?.[0]?.value || 'N/A' }}</span>
-              </div>
-              <div class="perk">
-                <i class="pi pi-briefcase"></i>
-                <span>Brand: {{ product?.brand || 'Generic' }}</span>
-              </div>
-            </div>
+      <!-- COLUMN 1: ALIBABA GALLERY (Left) -->
+      <div class="col-gallery">
+        <div class="main-image-box">
+          <img [src]="product?.image" [alt]="product?.name" class="primary-img" (click)="openImageFullscreen()">
+          <button class="zoom-btn" (click)="openImageFullscreen()"><i class="fas fa-search-plus"></i></button>
+        </div>
+
+        <div class="thumbnail-strip" *ngIf="product?.images && (product?.images?.length || 0) > 1">
+          <div class="thumb-box" *ngFor="let img of product?.images; let i = index"
+               [class.active-thumb]="product?.image === img" (click)="product && selectImage(product, i)">
+            <img [src]="img" alt="Thumbnail">
           </div>
         </div>
       </div>
 
-      <div class="product-info-section">
-        <!-- Product Header -->
-        <div class="product-header">
-          <div class="product-metadata-top">
-            <span class="verified-purchase"><i class="pi pi-check-circle"></i> Verified Sourcing Item</span>
+
+      <!-- COLUMN 2: AMAZON SECURE INFO HUB (Center) -->
+      <div class="col-info-hub">
+        
+        <!-- Alibaba Verify Tags -->
+        <div class="verify-tags">
+          <span class="tag-trade"><i class="fas fa-shield-alt"></i> Trade Assurance</span>
+          <span class="tag-verified"><i class="fas fa-gem"></i> Verified Supplier</span>
+        </div>
+
+        <!-- Title & Rating -->
+        <h1 class="ph-product-title" [innerHTML]="product?.name"></h1>
+        
+        <div class="ph-ratings">
+          <div class="stars">
+            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
           </div>
-          <h1 class="product-title">{{ product?.name }}</h1>
-          <div class="price-section">
-            <div class="price-row">
-              <span class="price-label">Supplier Price:</span>
-              <span class="current-price">{{ product?.price | currency:'USD':'symbol':'1.2-2' }}</span>
-              <span class="original-price" *ngIf="product?.originalPrice">{{ product?.originalPrice | currency:'USD':'symbol':'1.2-2' }}</span>
-            </div>
+          <a href="#" class="rating-count">4.8 (1,284 Ratings)</a>
+          <span class="separator">|</span>
+          <span class="orders-count">10k+ Orders</span>
+        </div>
+
+        <div class="hub-divider"></div>
+
+        <!-- Daraz High-Contrast Price Block -->
+        <div class="ph-price-block">
+          <div class="price-main">{{ product?.price | currency:'USD':'symbol':'1.0-0' }}</div>
+          <div class="price-discount-row" *ngIf="product?.originalPrice">
+            <span class="price-old">{{ product?.originalPrice | currency:'USD':'symbol':'1.0-0' }}</span>
+            <span class="discount-badge">-15% OFF</span>
           </div>
         </div>
 
-        <!-- Product Options -->
-        <div class="product-options">
-          <div class="option-group" *ngIf="sizes.length > 0">
-            <label class="option-label">Size:</label>
-            <div class="size-options">
-              <button class="size-btn" *ngFor="let size of sizes" [class.active]="selectedSize === size"
-                (click)="selectedSize = size">{{ size }}</button>
-            </div>
-          </div>
+        <div class="hub-divider"></div>
 
-          <div class="option-group">
-            <label class="option-label">Color:</label>
-            <div class="option-info">Standard Color</div>
-            <div class="category-chip">
-              <i class="pi pi-tags"></i>
-              <span>Category: {{ product?.category || '—' }}</span>
-            </div>
-          </div>
-
-          <div class="option-group quantity-group">
-            <label class="option-label">Quantity:</label>
-            <div class="quantity-selector">
-              <button class="quantity-btn" (click)="decreaseQuantity()">
-                <i class="pi pi-minus"></i>
-              </button>
-              <input type="number" class="quantity-input" [(ngModel)]="quantity" min="1" max="10">
-              <button class="quantity-btn" (click)="increaseQuantity()">
-                <i class="pi pi-plus"></i>
-              </button>
-            </div>
+        <!-- Variations (Sizes) -->
+        <div class="ph-variations" *ngIf="sizes.length > 0">
+          <div class="variation-label">Variation Size: <span class="selected-text">{{ selectedSize || 'Select' }}</span></div>
+          <div class="variation-pills">
+            <button class="var-pill" *ngFor="let size of sizes"
+              [class.active]="selectedSize === size"
+              (click)="selectedSize = size">{{ size }}</button>
           </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="product-actions">
-          <button class="btn-primary-action" (click)="buyNow()">
-            <i class="pi pi-bolt"></i>
-            <span>Buy Now</span>
-          </button>
-          <button class="btn-secondary-action" (click)="addToCart()">
-            <i class="pi pi-shopping-cart"></i>
-            <span>Add to Cart</span>
-          </button>
-          <button class="btn-wishlist" (click)="addToWishlist()">
-            <i class="pi pi-heart"></i>
-          </button>
+        <!-- About this item -->
+        <div class="ph-about-item">
+          <h3 class="about-title">About this item</h3>
+          <ul class="about-list">
+            <li><i class="fas fa-check"></i> High-quality premium manufacturing standards.</li>
+            <li><i class="fas fa-check"></i> Verified sourcing from Noshahibaba Trade Hub.</li>
+            <li><i class="fas fa-check"></i> Backed by universal AES-256 secure escrow protection.</li>
+            <li><i class="fas fa-check"></i> 100% replacement guarantee on logistics damages.</li>
+          </ul>
         </div>
 
-        <!-- Product Features (Seller Optimized) -->
-        <div class="product-features">
-          <div class="feature-item">
-            <i class="pi pi-box feature-icon"></i>
-            <div class="feature-content">
-              <span class="feature-title">Bulk Sourcing</span>
-              <span class="feature-desc">Optimized for high-volume orders</span>
+      </div>
+
+
+      <!-- COLUMN 3: DARAZ/AMAZON BUY BOX (Right) -->
+      <div class="col-buy-box">
+        <div class="buy-card">
+          
+          <h5 class="stock-status text-success">In Stock</h5>
+
+          <div class="qty-selector">
+            <label>Qty:</label>
+            <div class="qty-controls">
+              <button (click)="decreaseQuantity()"><i class="fas fa-minus"></i></button>
+              <input type="number" [(ngModel)]="quantity" readonly>
+              <button (click)="increaseQuantity()"><i class="fas fa-plus"></i></button>
             </div>
           </div>
-          <div class="feature-item">
-            <i class="pi pi-verified feature-icon"></i>
-            <div class="feature-content">
-              <span class="feature-title">Authentic Origin</span>
-              <span class="feature-desc">Sourced directly from verified vendors</span>
+
+          <div class="buy-actions">
+            <button class="btn-primary-buy" (click)="buyNow()">
+              Buy Now
+            </button>
+            <button class="btn-secondary-cart" (click)="addToCart()">
+              Add to Cart
+            </button>
+          </div>
+
+          <div class="delivery-estimate">
+            <h4 class="est-title">Delivery</h4>
+            <div class="est-row">
+              <i class="fas fa-plane"></i>
+              <span>Delivery within <strong>5-7 Days</strong></span>
+            </div>
+            <div class="est-row">
+              <i class="fas fa-truck"></i>
+              <span>Standard Logistics <strong>$12.99</strong></span>
             </div>
           </div>
-          <div class="feature-item">
-            <i class="pi pi-shield feature-icon"></i>
-            <div class="feature-content">
-              <span class="feature-title">Prime Protection</span>
-              <span class="feature-desc">Secure transactions and logistics</span>
+
+          <div class="seller-info">
+            <div class="s-row"><span>Dispatched from</span> <strong>Noshahibaba FS</strong></div>
+            <div class="s-row"><span>Sold by</span> <strong>Verified Factory Direct</strong></div>
+            <div class="s-row"><span>Returns</span> <strong>Eligible through Escrow</strong></div>
+          </div>
+
+          <div class="wishlist-action">
+            <button class="btn-wishlist-txt" (click)="addToWishlist()"><i class="far fa-heart"></i> Add to List</button>
+          </div>
+
+        </div>
+      </div>
+
+    </div> <!-- /powerhouse-grid -->
+
+    <!-- DETAILS & SPECS DESK -->
+    <div class="powerhouse-details-section">
+      <div class="details-container">
+        <h2 class="section-heading">Product Overview</h2>
+        <div class="html-desc-box" [innerHTML]="product?.fullDescription || product?.description"></div>
+      </div>
+    </div>
+
+    <!-- RELATED GRID -->
+    <div class="powerhouse-related" *ngIf="relatedProducts.length > 0">
+      <h2 class="section-heading">Customers who viewed this item also viewed</h2>
+      
+      <div class="ph-carousel-grid">
+        <div class="ph-card" *ngFor="let p of relatedProducts" (click)="onRelatedProductClick(p)">
+          <div class="ph-card-img">
+            <img [src]="p.image" [alt]="p.name">
+          </div>
+          <div class="ph-card-body">
+            <div class="ph-card-title" [innerHTML]="p.name"></div>
+            <div class="ph-card-rating">
+              <i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star-half-alt text-warning"></i>
+              <span>(120)</span>
             </div>
+            <div class="ph-card-price">{{ p.price | currency:'USD':'symbol':'1.0-0' }}</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Product Details Tabs -->
-    <div class="product-details-section">
-      <div class="details-tabs">
-        <button class="details-tab" [class.active]="activeTab === 'description'" (click)="activeTab = 'description'">
-          <i class="pi pi-info-circle"></i>
-          <span>Product Overview</span>
-        </button>
-        <button class="details-tab" [class.active]="activeTab === 'specifications'"
-          (click)="activeTab = 'specifications'">
-          <i class="pi pi-list"></i>
-          <span>Specifications</span>
-        </button>
-      </div>
-
-      <div class="details-content">
-        <!-- Product Details Tab -->
-        <div class="tab-pane" *ngIf="activeTab === 'description'">
-          <div class="product-details-content">
-            <div class="details-header">
-              <h3>Product Description</h3>
-              <p>{{ product?.fullDescription || product?.description }}</p>
-            </div>
-
-            <!-- Product Gallery -->
-            <div class="product-gallery" *ngIf="galleryItems.length > 0">
-              <h4>Product Gallery</h4>
-              <div class="gallery-grid">
-                <div class="gallery-item" *ngFor="let item of galleryItems; let i = index" (click)="selectGalleryImage(item.image, i)">
-                  <img [src]="item.image" [alt]="item.title">
-                  <div class="gallery-overlay">
-                    <span>{{ item.title }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Key Features -->
-            <div class="key-features" *ngIf="keyFeatures.length > 0">
-              <h4>Key Features</h4>
-              <div class="features-grid">
-                <div class="feature-card" *ngFor="let feature of keyFeatures">
-                  <i class="pi" [class]="feature.icon"></i>
-                  <span>{{ feature.text }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Specifications Tab -->
-        <div class="tab-pane" *ngIf="activeTab === 'specifications'">
-          <div class="specifications-content">
-            <h3>Technical Specifications</h3>
-            <div class="spec-grid">
-              <div class="spec-item" *ngFor="let spec of specs">
-                <div class="spec-label">{{ spec.key }}</div>
-                <div class="spec-value">{{ spec.value }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Related Products Section -->
-    <div class="related-products-section" *ngIf="isLoadingRelated">
-      <div class="section-header">
-        <h3>You Might Also Like</h3>
-        <span class="view-all-btn loading">Loading</span>
-      </div>
-
-      <div class="related-skeleton-grid">
-        <div class="related-skeleton-card" *ngFor="let _ of [1,2,3,4,5,6,7,8,9,10,11,12]">
-          <div class="skeleton media"></div>
-          <div class="skeleton line small"></div>
-          <div class="skeleton line"></div>
-          <div class="skeleton line price"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="related-products-section" *ngIf="!isLoadingRelated && relatedProducts.length > 0">
-      <div class="section-header">
-        <h3>You Might Also Like</h3>
-        <a href="#" class="view-all-btn" [class.loading]="isLoadingMore"
-          (click)="toggleViewAll(); $event.preventDefault()">
-          <span *ngIf="!showAllProducts">View All Products</span>
-          <span *ngIf="showAllProducts">Show Less</span>
-        </a>
-      </div>
-
-      <div class="related-products-grid">
-        <div class="related-product-card" *ngFor="let p of relatedProducts" (click)="onRelatedProductClick(p)">
-          <div class="related-product-image">
-            <!-- Image Carousel -->
-            <div class="image-carousel">
-              <div class="carousel-container">
-                <img [src]="p.image" [alt]="p.name" class="main-carousel-image">
-                <div class="carousel-thumbnails" *ngIf="p.images && p.images.length > 1">
-                  <div class="thumbnail-dot" *ngFor="let img of p.images; let i = index" [class.active]="i === 0"
-                    (click)="$event.stopPropagation(); selectImage(p, i)">
-                    <img [src]="img" [alt]="'Thumbnail ' + (i + 1)">
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="discount-badge" *ngIf="p.discount">{{ p.discount }}% OFF</div>
-          </div>
-
-          <div class="related-product-info">
-            <h6 class="related-product-name">{{ p.name }}</h6>
-            <div class="related-product-price">
-              <span class="current-price">{{ p.price | currency:'USD':'symbol':'1.2-2' }}</span>
-              <span class="original-price" *ngIf="p.originalPrice">{{ p.originalPrice | currency:'USD':'symbol':'1.2-2' }}</span>
-            </div>
-            <div class="related-product-rating"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Show More/Less Section -->
-      <div class="text-center" *ngIf="!showAllProducts && relatedProducts.length >= maxProductsToShow">
-        <button class="btn-show-more" (click)="loadAllRelatedProducts()">
-          <span *ngIf="!isLoadingMore">Show More Products</span>
-          <span *ngIf="isLoadingMore">Loading...</span>
-          <i class="pi pi-chevron-down" *ngIf="!isLoadingMore"></i>
-          <i class="pi pi-spin pi-spinner" *ngIf="isLoadingMore"></i>
-        </button>
-      </div>
-    </div>
   </div>
 </div>

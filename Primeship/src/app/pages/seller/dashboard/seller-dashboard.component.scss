@@ -4,8 +4,8 @@
   max-width: 100%;
   min-height: 100vh;
 
-  --primary: #F85606;
-  --primary-gradient: linear-gradient(135deg, #F85606 0%, #FF8B52 100%);
+  --primary: #10B981;
+  --primary-gradient: linear-gradient(135deg, #10B981 0%, #34D399 100%);
   /* Lighter panel treatment to avoid the dark-gray feel */
   --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
   --glass-border: rgba(15, 23, 42, 0.06);
@@ -407,7 +407,7 @@
 .action-card:hover {
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(135deg, #f85606, #ff8b52) border-box;
+    linear-gradient(135deg, #10B981, #34D399) border-box;
   transform: translateY(-4px);
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
   border-width: 3px; /* subtle highlight on hover */
@@ -653,7 +653,7 @@
   background: rgba(255, 255, 255, 0.94);
   transform: translateX(5px) translateY(-2px);
   box-shadow: 0 22px 44px rgba(15, 23, 42, 0.20);
-  border-image: linear-gradient(135deg, #f85606, #ff8b52) 1;
+  border-image: linear-gradient(135deg, #10B981, #34D399) 1;
 }
 
 .order-info {
@@ -897,7 +897,7 @@
     .analytics-icon {
       width: 50px;
       height: 50px;
-      background: linear-gradient(135deg, #F85606 0%, #FF8B52 100%);
+      background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
       border-radius: 12px;
       display: flex;
       align-items: center;
@@ -1019,7 +1019,7 @@
         font-size: 0.8rem;
 
         i {
-          color: #F85606;
+          color: #10B981;
         }
       }
     }

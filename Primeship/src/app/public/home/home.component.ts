@@ -84,34 +84,33 @@ export class HomeComponent implements OnInit, OnDestroy {
   activeTab = 0;
   heroSlides: HeroSlide[] = [
     {
-      kicker: 'Premium Picks for UK Sellers',
-      title: 'Power Your Store',
-      highlight: 'With Primeship',
-      subtitle: 'Curated essentials, fast fulfillment, and margin-friendly pricing for growing stores.',
-      primaryCta: 'Shop Now',
-      secondaryCta: 'View Collections',
-      image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=900&h=600'
+      kicker: '',
+      title: 'Present<br/>Your Products',
+      highlight: 'to Millions',
+      subtitle: '',
+      primaryCta: 'Open a Shop Now',
+      secondaryCta: '',
+      image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1920&h=600'
     },
     {
-      kicker: 'Weekly Mega Deals',
-      title: 'Top Trending',
-      highlight: 'Home Essentials',
-      subtitle: 'Bestselling products updated weekly, ready to ship across the UK.',
+      kicker: '',
+      title: 'Source Top<br/>Trending',
+      highlight: 'Global Inventories',
+      subtitle: '',
       primaryCta: 'Explore Deals',
-      secondaryCta: 'See New Drops',
-      image: 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=900&h=600'
+      secondaryCta: '',
+      image: 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=1920&h=600'
     },
     {
-      kicker: 'Seller Favorites',
-      title: 'Upgrade Your',
-      highlight: 'Product Line',
-      subtitle: 'Verified quality, strong margins, and quick restock for high-demand categories.',
+      kicker: '',
+      title: 'Scale Your<br/>Operations',
+      highlight: 'Globally',
+      subtitle: '',
       primaryCta: 'Browse Catalog',
-      secondaryCta: 'View Popular',
-      image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&h=600'
+      secondaryCta: '',
+      image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1920&h=600'
     }
   ];
-
   heroSideBanners: SideBanner[] = [
     {
       kicker: 'Up to 40% Off',

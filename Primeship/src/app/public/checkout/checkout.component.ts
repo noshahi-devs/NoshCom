@@ -50,28 +50,28 @@ export class CheckoutComponent implements OnInit {
   confettiPieces = Array(100).fill(0);
 
   paymentMethods = [
-    { id: 'mastercard', name: 'Master Card', icon: 'pi pi-credit-card', logoSrc: 'assets/brands/mastercard.svg' },
-    { id: 'discover', name: 'Discover', icon: 'pi pi-credit-card', logoSrc: 'assets/brands/discover.svg' },
-    { id: 'amex', name: 'American Express', icon: 'pi pi-credit-card', logoSrc: 'assets/brands/amex.svg' },
-    { id: 'finora', name: 'Easy Finora Card', icon: 'pi pi-id-card', logoSrc: 'assets/brands/easy-finora.svg' }
+    { id: 'mastercard', name: 'Master Card', icon: 'fab fa-cc-mastercard', logoSrc: 'assets/brands/mastercard.svg' },
+    { id: 'discover', name: 'Discover', icon: 'fab fa-cc-mastercard', logoSrc: 'assets/brands/discover.svg' },
+    { id: 'amex', name: 'American Express', icon: 'fab fa-cc-mastercard', logoSrc: 'assets/brands/amex.svg' },
+    { id: 'finora', name: 'Easy Finora Card', icon: 'fas fa-id-card', logoSrc: 'assets/brands/easy-finora.svg' }
   ];
   unavailablePaymentConfig: Record<string, { title: string; text: string; color: string; icon: 'info' | 'warning' | 'error' }> = {
     mastercard: {
       title: 'Master Card Unavailable',
       text: 'Master Card payments are not available yet. Please use Easy Finora Card to place your order.',
-      color: '#FF5F00',
+      color: '#10B981',
       icon: 'warning'
     },
     discover: {
       title: 'Discover Unavailable',
       text: 'Discover payments are not available yet. Please use Easy Finora Card to place your order.',
-      color: '#FF6600',
+      color: '#10B981',
       icon: 'info'
     },
     amex: {
       title: 'American Express Unavailable',
       text: 'American Express payments are not available yet. Please use Easy Finora Card to place your order.',
-      color: '#016FD0',
+      color: '#10B981',
       icon: 'error'
     }
   };
@@ -387,7 +387,7 @@ export class CheckoutComponent implements OnInit {
         const cfg = this.unavailablePaymentConfig[selectedMethod] || {
           title: 'Payment Method Unavailable',
           text: `${methodName} is not available yet. Please use Easy Finora Card to place your order.`,
-          color: '#F85606',
+          color: '#10B981',
           icon: 'warning' as const
         };
         Swal.fire({
@@ -434,7 +434,7 @@ export class CheckoutComponent implements OnInit {
         const cfg = this.unavailablePaymentConfig[selectedMethod] || {
           title: 'Payment Method Unavailable',
           text: `${methodName} is not available yet. Please use Easy Finora Card to place your order.`,
-          color: '#F85606',
+          color: '#10B981',
           icon: 'warning' as const
         };
         Swal.fire({

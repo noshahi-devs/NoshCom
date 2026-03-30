@@ -56,7 +56,7 @@ export class ReturnsPolicyComponent { }
         <div class="support-options mt-5">
           <div class="option p-4 border rounded mb-3">
             <h3>Email Support</h3>
-            <p>support@primeship.com</p>
+            <p>support@noshahibaba.com</p>
           </div>
           <div class="option p-4 border rounded">
             <h3>WhatsApp Support</h3>

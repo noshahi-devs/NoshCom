@@ -203,6 +203,14 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
             ...this.resolveDisplayPrices(p),
             reviewCount: Math.floor(Math.random() * 20) + 5
           }));
+
+        // ADDING THREE MORE DUMMY PRODUCTS FOR A RICHER UI
+        this.relatedProducts.push(
+          { name: 'Minimalist Ceramic Vase', price: 45.99, image: 'https://images.unsplash.com/photo-1578500494198-246f612d3b3d?auto=format&fit=crop&w=400&h=400', reviewCount: 88, slug: 'item' },
+          { name: 'Artisan Woven Basket', price: 29.50, image: 'https://images.unsplash.com/photo-1620189507195-68309c04c4d0?auto=format&fit=crop&w=400&h=400', reviewCount: 42, slug: 'item' },
+          { name: 'Nordic Velvet Cushion', price: 34.00, image: 'https://images.unsplash.com/photo-1584347719230-0582522eeded?auto=format&fit=crop&w=400&h=400', reviewCount: 156, slug: 'item' }
+        );
+
         this.isLoadingRelated = false;
         this.cdr.detectChanges();
 

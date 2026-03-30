@@ -3,15 +3,32 @@
 
 <head>
   <meta charset="utf-8">
-  <title>Primeship UK</title>
+  <title>Noshahibaba.com | Global Wholesale Sourcing</title>
   <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/svg+xml" href="/assets/images/prime-favicon.svg">
   <link rel="shortcut icon" type="image/svg+xml" href="/assets/images/prime-favicon.svg">
+  
+  <!-- Icon Libraries -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 
 <body>
   <app-root></app-root>
+  <script>
+    // Initialize Lucide after any DOM changes if needed
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    });
+  </script>
 </body>
 
 </html>

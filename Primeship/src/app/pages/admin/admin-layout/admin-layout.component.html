@@ -1,28 +1,27 @@
 <div class="app-container">
 
-  <!-- 3D Sidebar -->
-  <div class="sidebar-3d" id="sidebar" [class.collapsed]="sidebarCollapsed" [class.show]="mobileSidebarOpen">
+  <!-- 3D Sidebar (Alabaster Series) -->
+  <aside class="sidebar-3d" id="sidebar" [class.collapsed]="sidebarCollapsed" [class.show]="mobileSidebarOpen">
     <div class="sidebar-header">
       <div class="logo-section">
         <img src="/assets/images/Prime-Ship-UK-header.svg" alt="Prime Ship Logo" class="logo-sidebar-img">
       </div>
     </div>
 
-    <!-- User Profile -->
+    <!-- User Profile Glass Card -->
     <div class="user-profile">
       <div class="user-avatar">
-        <div class="avatar-icon">👤</div>
+        <i class="fas fa-user-tie"></i>
         <div class="status-indicator online"></div>
       </div>
       <div class="user-info">
         <h4>{{ profileDisplayName }}</h4>
-        <p>{{ isAdminView ? 'Platform Owner' : 'Verified Partner' }}</p>
+        <p class="role-badge">{{ isAdminView ? 'Platform Owner' : 'Verified Partner' }}</p>
       </div>
     </div>
 
-    <!-- Navigation -->
+    <!-- Navigation Hub -->
     <nav class="sidebar-nav">
-
       <!-- Admin Section -->
       <div class="menu-section" *ngIf="isAdminView">
         <h5 class="menu-title">Control Center</h5>
@@ -35,30 +34,28 @@
           </li>
           <li class="nav-item" routerLinkActive="active">
             <a routerLink="/admin/products" class="nav-link">
-              <i class="fas fa-box nav-icon"></i>
+              <i class="fas fa-box-open nav-icon"></i>
               <span class="nav-text">Products</span>
             </a>
           </li>
           <li class="nav-item" routerLinkActive="active">
             <a routerLink="/admin/categories" class="nav-link">
-              <i class="fas fa-tags nav-icon"></i>
+              <i class="fas fa-layer-group nav-icon"></i>
               <span class="nav-text">Categories</span>
             </a>
           </li>
-
           <li class="nav-item" routerLinkActive="active">
             <a routerLink="/admin/orders" class="nav-link">
-              <i class="fas fa-shopping-cart nav-icon"></i>
+              <i class="fas fa-shipping-fast nav-icon"></i>
               <span class="nav-text">All Orders</span>
             </a>
           </li>
           <li class="nav-item" routerLinkActive="active">
             <a routerLink="/admin/customers" class="nav-link">
-              <i class="fas fa-store nav-icon"></i>
+              <i class="fas fa-users-cog nav-icon"></i>
               <span class="nav-text">Users</span>
             </a>
           </li>
-
         </ul>
       </div>
 
@@ -68,98 +65,104 @@
         <ul class="nav-list">
           <li class="nav-item" routerLinkActive="active">
             <a routerLink="/seller/dashboard" class="nav-link">
-              <i class="fas fa-chart-line nav-icon"></i>
+              <i class="fas fa-tachometer-alt nav-icon"></i>
               <span class="nav-text">Dashboard</span>
             </a>
           </li>
           <li class="nav-item">
             <a routerLink="/shop" class="nav-link">
-              <i class="fas fa-search nav-icon"></i>
+              <i class="fas fa-shopping-basket nav-icon"></i>
               <span class="nav-text">Browse Products</span>
             </a>
           </li>
           <li class="nav-item" routerLinkActive="active">
             <a routerLink="/seller/orders" class="nav-link">
-              <i class="fas fa-shopping-bag nav-icon"></i>
+              <i class="fas fa-clipboard-list nav-icon"></i>
               <span class="nav-text">My Purchases</span>
             </a>
           </li>
         </ul>
       </div>
     </nav>
-  </div>
+  </aside>
 
-  <!-- Main Content Area -->
+  <!-- Main Depth Content -->
   <div class="main-content" [class.sidebar-collapsed]="sidebarCollapsed">
 
-    <!-- 3D Header -->
+    <!-- 3D Emerald Header -->
     <header class="header-3d">
       <div class="header-content">
         <div class="header-left">
           <button
             class="sidebar-toggle-btn"
-            [class.seller-toggle-btn]="isSellerView"
             id="sidebarToggle"
             (click)="onSidebarToggle()"
             [attr.aria-label]="isSellerView ? 'Toggle seller sidebar' : 'Toggle admin sidebar'">
-            <i class="fas fa-bars toggle-icon"></i>
+            <i class="fas fa-indent" [style.transform]="sidebarCollapsed ? 'rotate(180deg)' : ''"></i>
           </button>
+          
           <div class="search-container" *ngIf="isAdminView">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-input" placeholder="Search products, orders, customers...">
+            <input type="text" class="search-input" placeholder="Search orders, SKU, customers...">
           </div>
         </div>
 
         <div class="header-right">
           <button class="notification-btn" (click)="showNotifications()">
-            <i class="fas fa-bell notification-icon"></i>
+            <i class="fas fa-bell"></i>
             <span class="notification-badge">3</span>
           </button>
 
-          <div class="user-menu-dropdown">
+          <div class="user-menu-dropdown-wrapper">
             <div class="user-menu-btn" id="userMenuBtn">
               <div class="user-avatar-small">
-                <i class="fas fa-user"></i>
+                <i class="fas fa-user-shield"></i>
               </div>
               <span class="user-name">{{ headerProfileLabel }}</span>
+              <i class="fas fa-chevron-down small"></i>
             </div>
 
-            <!-- Dropdown Menu -->
+            <!-- 3D Dropdown Menu -->
             <div class="user-dropdown-menu" id="userDropdown">
               <div class="dropdown-header">
                 <div class="dropdown-avatar">
-                  <i class="fas fa-user"></i>
+                   <i class="fas fa-id-badge"></i>
                 </div>
                 <div class="dropdown-user-info">
                   <h4>{{ profileDisplayName }}</h4>
                   <p>{{ userEmail }}</p>
                 </div>
               </div>
-              <div class="dropdown-divider"></div>
-              <button type="button" class="dropdown-item" (click)="openProfile()">
-                <i class="fas fa-user"></i>
-                <span>Profile</span>
-              </button>
-              <div class="dropdown-divider"></div>
-              <button type="button" class="dropdown-item logout" (click)="logout()">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Logout</span>
-              </button>
+              
+              <div class="dropdown-list">
+                <button type="button" class="dropdown-item" (click)="openProfile()">
+                  <i class="fas fa-user-circle"></i>
+                  <span>Profile Settings</span>
+                </button>
+                <div class="dropdown-divider"></div>
+                <button type="button" class="dropdown-item logout" (click)="logout()">
+                  <i class="fas fa-power-off"></i>
+                  <span>Sign Out</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </header>
-    <!-- Page Content -->
+
+    <!-- Page Content Stage -->
     <main class="page-content">
       <router-outlet></router-outlet>
     </main>
 
-    <!-- Footer -->
+    <!-- Minimal 3D Footer -->
     <footer class="footer-3d">
-      <div class="footer-content">
-        <div class="footer-copyright">
-          &copy; 2026 Prime Ship - Sourcing Excellence
+      <div class="container footer-content">
+        <p>&copy; 2026 Noshahibaba Global. Sourcing Excellence.</p>
+        <div class="footer-links-3d">
+          <a routerLink="/help">Support</a>
+          <a routerLink="/terms">Legal</a>
         </div>
       </div>
     </footer>

@@ -4,7 +4,7 @@
     <div class="minimal-cat-header" *ngIf="categoryTitle">
       <nav class="breadcrumb-nav">
         <a routerLink="/home">Home</a>
-        <i class="pi pi-angle-right"></i>
+        <i class="fas fa-chevron-right tiny"></i>
         <span>{{ categoryTitle }}</span>
       </nav>
       <div class="title-row">
@@ -34,11 +34,11 @@
             <span class="inner-label">Max Price</span>
             <div class="price-pill-group">
               <button *ngFor="let point of pricePoints" class="pill"
-                [class.active]="filtersForm.get('maxPrice')?.value === point" (click)="setPricePoint(point)">
-                ${{ point }}
+                [class.active]="filtersForm.get('maxPrice')?.value === point" (click)="$event.preventDefault(); setPricePoint(point)">
+                ${{ point | number }}
               </button>
               <button class="pill" [class.active]="filtersForm.get('maxPrice')?.value >= 10000000"
-                (click)="setPricePoint(10000000)">
+                (click)="$event.preventDefault(); setPricePoint(10000000)">
                 All
               </button>
             </div>
@@ -46,7 +46,7 @@
         </div>
 
         <button class="minimal-reset-btn" (click)="clearFilters()" title="Reset all filters">
-          <i class="pi pi-refresh"></i>
+          <i class="fas fa-sync-alt"></i>
           <span>Reset</span>
         </button>
       </div>
@@ -54,12 +54,12 @@
 
     <!-- Main Content Layout -->
     <div class="main-content-layout">
-      <!-- Left Sidebar -->
+      <!-- Left Sidebar (Alabaster Glass) -->
       <aside class="left-sidebar d-none d-lg-block">
-        <div class="sidebar-filters">
+        <div class="sidebar-filters animate-up">
           <div class="filter-group">
             <h5 class="filter-title">
-              <i class="pi pi-th-large"></i>
+              <i class="fas fa-th-large"></i>
               <span>Categories</span>
             </h5>
             <div class="category-menu">
@@ -83,13 +83,10 @@
               <div class="loader-ring"></div>
               <div class="loader-ring"></div>
               <div class="loader-ring"></div>
-              <i class="pi pi-compass loader-icon"></i>
+              <i class="fas fa-gem loader-icon"></i>
             </div>
             <div class="loader-text-wrap">
               <p class="loader-msg">{{ loadingMessage }}</p>
-              <div class="loader-progress">
-                <div class="progress-bar"></div>
-              </div>
             </div>
           </div>
 
@@ -97,7 +94,7 @@
           <!-- Empty State -->
           <div class="empty-state-card" *ngIf="!isLoading && filteredProducts.length === 0">
             <div class="empty-icon-box">
-              <i class="pi pi-search"></i>
+              <i class="fas fa-search"></i>
             </div>
             <h3>No Products Found</h3>
             <p>We couldn't find any items matching your selected filters or search terms.</p>
@@ -108,13 +105,13 @@
           <div class="grid-layout" *ngIf="!isLoading && filteredProducts.length > 0">
             <!-- Bulk Action Header -->
             <div class="bulk-actions">
-              <label class="select-all-box" for="selectAll">
-                <input type="checkbox" id="selectAll" (change)="toggleAllProducts($event)" [checked]="isAllSelected">
+              <label class="select-all-box">
+                <input type="checkbox" (change)="toggleAllProducts($event)" [checked]="isAllSelected">
                 <span>Select All Products</span>
               </label>
 
               <button class="btn-bulk-add" *ngIf="selectedProducts.size > 0" (click)="addSelectedToCart()">
-                <i class="pi pi-shopping-bag"></i>
+                <i class="fas fa-shopping-bag"></i>
                 <span>Add {{ selectedProducts.size }} Items to Cart</span>
               </button>
             </div>
@@ -130,14 +127,12 @@
                   </div>
 
                   <div class="product-info">
-                    <span class="brand-label" *ngIf="product.brand"
-                      style="display:block; color: #f85606; font-size: 0.85rem; font-weight: 600; margin-bottom: 2px;">{{
-                      product.brand }}</span>
-                    <h3 class="product-name" style="margin-top: 0;">{{ product.name }}</h3>
+                    <span class="brand-label" *ngIf="product.brand">{{ product.brand }}</span>
+                    <h3 class="product-name">{{ product.name }}</h3>
                     <div class="price-row">
-                      <span class="price">{{ product.price | currency:'USD':'symbol':'1.2-2' }}</span>
+                      <span class="price">{{ product.price | currency:'USD':'symbol':'1.0-0' }}</span>
                       <button class="add-cart-mini" (click)="$event.stopPropagation(); addToCart(product)">
-                        <i class="pi pi-plus"></i>
+                        <i class="fas fa-plus"></i>
                       </button>
                     </div>
                   </div>
@@ -149,7 +144,7 @@
 
         <!-- Simple Pagination -->
         <div class="pagination-footer" *ngIf="!isLoading && filteredProducts.length > 0">
-          <p>Showing {{ filteredProducts.length }} products</p>
+          <p>Showing {{ filteredProducts.length }} products across Noshahibaba Global</p>
         </div>
       </section>
     </div>
