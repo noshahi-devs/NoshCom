@@ -65,6 +65,10 @@
     animation: none;
 }
 
+.auth-modal-container.signing-in {
+    cursor: progress;
+}
+
 @keyframes authModalEnter {
     from {
         transform: translateY(18px) scale(0.98);
@@ -282,12 +286,11 @@
 
 .auth-shell.page-mode {
     width: min(1220px, 100%);
-    min-height: calc(100vh - 2 * clamp(22px, 3vw, 34px));
     margin: 0 auto;
     display: grid;
     grid-template-columns: minmax(320px, 0.95fr) minmax(420px, 0.85fr);
     gap: clamp(22px, 3vw, 34px);
-    align-items: stretch;
+    align-items: start;
 }
 
 .auth-hero {
@@ -304,6 +307,9 @@
         0 30px 80px rgba(0, 0, 0, 0.35);
     color: #fff;
     transform-style: preserve-3d;
+    align-self: stretch;
+    min-height: 0;
+    height: 100%;
 }
 
 .auth-hero::before,
@@ -362,8 +368,8 @@
 
 .hero-stack {
     position: relative;
-    margin-top: 42px;
-    min-height: 280px;
+    margin-top: 32px;
+    min-height: 240px;
 }
 
 .hero-card {
@@ -431,7 +437,7 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 14px;
-    margin-top: 28px;
+    margin-top: 20px;
 }
 
 .hero-stats div {
@@ -479,6 +485,11 @@
 .auth-view {
     display: flex;
     flex-direction: column;
+}
+
+.auth-view.is-signing-in form {
+    pointer-events: none;
+    opacity: 0.92;
 }
 
 .auth-heading {
@@ -840,6 +851,29 @@ h2 {
         opacity: 0.6;
         cursor: not-allowed;
         box-shadow: none;
+    }
+}
+
+.btn-loader {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-spinner {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 193, 7, 0.4);
+    border-top-color: #ffc107;
+    border-right-color: #111;
+    animation: btnSpin 0.8s linear infinite;
+}
+
+@keyframes btnSpin {
+    to {
+        transform: rotate(360deg);
     }
 }
 

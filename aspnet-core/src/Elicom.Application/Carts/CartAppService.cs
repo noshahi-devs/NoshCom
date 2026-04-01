@@ -45,6 +45,19 @@ namespace Elicom.Carts
                     Logger.Info($"[CartAppService] Updating existing cart item: {existingItem.Id}, new quantity={existingItem.Quantity + input.Quantity}");
                     existingItem.Quantity += input.Quantity;
 
+                    if (existingItem.Quantity <= 0)
+                    {
+                        Logger.Info($"[CartAppService] Quantity <= 0. Removing cart item: {existingItem.Id}");
+                        await _cartRepository.DeleteAsync(existingItem);
+                        return new CartItemDto
+                        {
+                            Id = existingItem.Id,
+                            UserId = existingItem.UserId,
+                            StoreProductId = existingItem.StoreProductId,
+                            Quantity = 0
+                        };
+                    }
+
                     // Refresh snapshot prices in case they were changed or were 0
                     if (existingItem.StoreProduct != null)
                     {
@@ -59,6 +72,11 @@ namespace Elicom.Carts
                 }
 
                 Logger.Info($"[CartAppService] Adding new item to cart: UserId={input.UserId}, StoreProductId={input.StoreProductId}");
+
+                if (input.Quantity <= 0)
+                {
+                    throw new Abp.UI.UserFriendlyException("Quantity must be greater than zero.");
+                }
 
                 // 2. Fetch StoreProduct
                 var storeProduct = await _storeProductRepository

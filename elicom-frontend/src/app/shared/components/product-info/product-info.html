@@ -67,13 +67,19 @@
 
     <!-- Add to Cart & Buy Now -->
     <div class="add-cart-section">
-        <button class="add-cart" [disabled]="isAddingToCart" (click)="addToCart()">
-            <span *ngIf="!isAddingToCart">ADD TO CART</span>
-            <div *ngIf="isAddingToCart" class="btn-loader"></div>
+        <button class="add-cart" [disabled]="isActionBusy" (click)="addToCart()">
+            <span *ngIf="!isAddToCartBusy">ADD TO CART</span>
+            <span *ngIf="isAddToCartBusy" class="btn-loader-wrap">
+                <span class="btn-loader"></span>
+                <span>{{ isResumingAfterLogin ? 'RESUMING...' : 'ADDING...' }}</span>
+            </span>
         </button>
-        <button class="buy-now-btn" [disabled]="isAddingToCart" (click)="buyNow()">
-            <span *ngIf="!isAddingToCart">BUY NOW</span>
-            <div *ngIf="isAddingToCart" class="btn-loader"></div>
+        <button class="buy-now-btn" [disabled]="isActionBusy" (click)="buyNow()">
+            <span *ngIf="!isBuyNowBusy">BUY NOW</span>
+            <span *ngIf="isBuyNowBusy" class="btn-loader-wrap">
+                <span class="btn-loader"></span>
+                <span>{{ isResumingAfterLogin ? 'RESUMING...' : 'PROCESSING...' }}</span>
+            </span>
         </button>
     </div>
 

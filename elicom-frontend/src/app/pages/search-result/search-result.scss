@@ -3,7 +3,7 @@
     margin: 0 auto;
     background-color: #fff;
     min-height: 100vh;
-    padding: 16px 8px 28px;
+    padding: 8px 8px 28px;
 }
 
 .right-pane {
@@ -11,12 +11,12 @@
 }
 
 .search-top-sticky {
-    position: sticky;
-    top: var(--wc-sticky-top, 92px);
+    position: static;
+    top: auto;
     z-index: 30;
     background: #ffffff;
-    padding: 44px 0 12px;
-    margin-bottom: 28px;
+    padding: 8px 0 10px;
+    margin-bottom: 16px;
 }
 
 .filter-row {
@@ -339,8 +339,9 @@
     }
 
     .search-top-sticky {
-        top: var(--wc-sticky-top, 84px);
-        padding-top: 0;
+        top: auto;
+        padding: 6px 0 8px;
+        margin-bottom: 14px;
     }
 
     .filter-row-controls {

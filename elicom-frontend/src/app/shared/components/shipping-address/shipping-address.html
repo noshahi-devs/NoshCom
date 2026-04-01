@@ -23,8 +23,8 @@
         </label>
         <div class="input-3d select-wrapper" [class.error-state]="invalid('location')">
           <select id="location" [value]="fields.location" (change)="set('location',$event)" (blur)="touch('location')">
-            <option value="" disabled>🌍 Select your country...</option>
-            <option *ngFor="let c of countries" [value]="c.name">{{ c.name }}</option>
+            <option value="" disabled [selected]="!fields.location">🌍 Select your country...</option>
+            <option *ngFor="let c of countries" [value]="c.name" [selected]="c.name === fields.location">{{ c.name }}</option>
           </select>
           <span class="select-arrow"><i class="pi pi-chevron-down"></i></span>
         </div>

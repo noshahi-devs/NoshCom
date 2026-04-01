@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, Output, EventEmitter, inject } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -9,6 +9,7 @@ import Swal from 'sweetalert2';
 import { environment } from '../../../../environments/environment';
 import { Router } from '@angular/router';
 import { SmartPricePipe } from '../../pipes/smart-price.pipe';
+import { Subscription } from 'rxjs';
 
 export type AccordionType = 'desc' | 'sizefit' | null;
 export type SizeTabType = 'product' | 'body';
@@ -39,7 +40,7 @@ interface SizeRow {
   templateUrl: './product-info.html',
   styleUrls: ['./product-info.scss']
 })
-export class ProductInfo implements OnInit {
+export class ProductInfo implements OnInit, OnDestroy {
 
   @Input() productData?: ProductDetailDto;
   @Output() colorSelected = new EventEmitter<string>();
@@ -93,6 +94,11 @@ export class ProductInfo implements OnInit {
   fav = false;
   showMobileCartCta = false;
   isAddingToCart = false;
+  isResumingAfterLogin = false;
+  activeAction: 'add_to_cart' | 'buy_now' | null = null;
+  private pendingLoginAction: 'add_to_cart' | 'buy_now' | null = null;
+  private wasAuthenticated = false;
+  private authStateSub?: Subscription;
 
   // AD SLOT (API se aa sakta hai ya null)
   adBanner: { text: string; brand: string } | null = null;
@@ -140,6 +146,26 @@ export class ProductInfo implements OnInit {
   }
 
   ngOnInit(): void {
+    this.wasAuthenticated = this.authService.isAuthenticated;
+    this.authStateSub = this.authService.isAuthenticated$.subscribe(isAuth => {
+      if (!this.wasAuthenticated && isAuth && this.pendingLoginAction) {
+        const action = this.pendingLoginAction;
+        this.pendingLoginAction = null;
+        setTimeout(() => {
+          // After login from gated CTA, keep user on product page and open cart flow.
+          if (action === 'buy_now') {
+            this.addProductToCart(false);
+            return;
+          }
+          this.addToCart();
+        }, 60);
+      } else if (!isAuth && !this.pendingLoginAction && !this.isAddingToCart) {
+        this.isResumingAfterLogin = false;
+        this.activeAction = null;
+      }
+      this.wasAuthenticated = isAuth;
+    });
+
     if (this.productData) {
       this.product = {
         title: this.productData.title,
@@ -180,6 +206,10 @@ export class ProductInfo implements OnInit {
     };
   }
 
+  ngOnDestroy(): void {
+    this.authStateSub?.unsubscribe();
+  }
+
   // METHODS
   selectSize(size: string) {
     this.selectedSize = size;
@@ -205,24 +235,69 @@ export class ProductInfo implements OnInit {
 
     // 1. Validate Login
     if (!this.authService.isAuthenticated) {
-      Swal.fire({
-        icon: 'warning',
-        iconHtml: '<i class="fa-solid fa-user-lock"></i>',
-        title: 'Sign In Required',
-        html: 'Log in to your NoshCom account to add this product to your cart.',
-        showCancelButton: true,
-        confirmButtonText: 'Login Now',
-        cancelButtonText: 'Maybe Later',
-        confirmButtonColor: '#ffc107',
-        cancelButtonColor: '#111',
-        customClass: {
-          icon: 'nosh-login-alert-icon'
-        }
-      }).then((result) => {
-        if (result.isConfirmed) {
-          this.authService.openAuthModal();
-        }
-      });
+      this.promptLoginForAction('add_to_cart', 'Log in to your NoshCom account to add this product to your cart.');
+      return;
+    }
+
+    this.addProductToCart(false);
+  }
+
+  buyNow() {
+    if (!this.productData) {
+      console.error('[ProductInfo] No productData found');
+      return;
+    }
+
+    if (!this.authService.isAuthenticated) {
+      this.promptLoginForAction('buy_now', 'Log in to your NoshCom account to continue with Buy Now.');
+      return;
+    }
+
+    this.addProductToCart(true);
+  }
+
+  private promptLoginForAction(action: 'add_to_cart' | 'buy_now', message: string) {
+    Swal.fire({
+      icon: 'warning',
+      iconHtml: '<i class="fa-solid fa-user-lock"></i>',
+      title: 'Sign In Required',
+      html: message,
+      showCancelButton: true,
+      confirmButtonText: 'Login Now',
+      cancelButtonText: 'Maybe Later',
+      confirmButtonColor: '#ffc107',
+      cancelButtonColor: '#111',
+      customClass: {
+        icon: 'nosh-login-alert-icon'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.activeAction = action;
+        this.isResumingAfterLogin = true;
+        this.pendingLoginAction = action;
+        this.authService.openAuthModal();
+      } else {
+        this.activeAction = null;
+        this.isResumingAfterLogin = false;
+        this.pendingLoginAction = null;
+      }
+    });
+  }
+
+  get isActionBusy(): boolean {
+    return this.isAddingToCart || this.isResumingAfterLogin;
+  }
+
+  get isAddToCartBusy(): boolean {
+    return this.activeAction === 'add_to_cart' && this.isActionBusy;
+  }
+
+  get isBuyNowBusy(): boolean {
+    return this.activeAction === 'buy_now' && this.isActionBusy;
+  }
+
+  private addProductToCart(redirectToCheckout: boolean) {
+    if (!this.productData) {
       return;
     }
 
@@ -231,13 +306,17 @@ export class ProductInfo implements OnInit {
       ? this.getImage(this.productData.images[0])
       : this.getImage('');
 
-    console.log('[ProductInfo] Triggering AddToCart:', {
-      productId: this.productData.productId,
-      storeProductId: this.productData.storeProductId,
-      qty: this.quantity,
-      variant: { size: this.selectedSize, color: this.selectedColorName }
-    });
+    if (!redirectToCheckout) {
+      console.log('[ProductInfo] Triggering AddToCart:', {
+        productId: this.productData.productId,
+        storeProductId: this.productData.storeProductId,
+        qty: this.quantity,
+        variant: { size: this.selectedSize, color: this.selectedColorName }
+      });
+    }
 
+    this.activeAction = redirectToCheckout ? 'buy_now' : 'add_to_cart';
+    this.isResumingAfterLogin = false;
     this.isAddingToCart = true;
 
     this.cartService.addToCart(
@@ -249,6 +328,14 @@ export class ProductInfo implements OnInit {
     ).subscribe({
       next: (res) => {
         this.isAddingToCart = false;
+        this.isResumingAfterLogin = false;
+        this.activeAction = null;
+
+        if (redirectToCheckout) {
+          this.router.navigate(['/checkout']);
+          return;
+        }
+
         console.log('[ProductInfo] Add success:', res);
         Swal.fire({
           title: "Added to Shopping Bag",
@@ -268,69 +355,24 @@ export class ProductInfo implements OnInit {
       },
       error: (err) => {
         this.isAddingToCart = false;
+        this.isResumingAfterLogin = false;
+        this.activeAction = null;
+        if (redirectToCheckout) {
+          console.error('[ProductInfo] Buy now failed:', err);
+          Swal.fire({
+            icon: 'error',
+            title: 'Operation Failed',
+            text: err?.error?.error?.message || 'Unable to continue to checkout right now.',
+            confirmButtonColor: '#ffc107'
+          });
+          return;
+        }
+
         console.error('[ProductInfo] Add to cart failed:', err);
         Swal.fire({
           icon: 'error',
           title: 'Operation Failed',
           text: err?.error?.error?.message || 'Failed to sync with your account cart.',
-          confirmButtonColor: '#ffc107'
-        });
-      }
-    });
-  }
-
-  buyNow() {
-    if (!this.productData) {
-      console.error('[ProductInfo] No productData found');
-      return;
-    }
-
-    if (!this.authService.isAuthenticated) {
-      Swal.fire({
-        icon: 'warning',
-        iconHtml: '<i class="fa-solid fa-user-lock"></i>',
-        title: 'Sign In Required',
-        html: 'Log in to your NoshCom account to continue with Buy Now.',
-        showCancelButton: true,
-        confirmButtonText: 'Login Now',
-        cancelButtonText: 'Maybe Later',
-        confirmButtonColor: '#ffc107',
-        cancelButtonColor: '#111',
-        customClass: {
-          icon: 'nosh-login-alert-icon'
-        }
-      }).then((result) => {
-        if (result.isConfirmed) {
-          this.authService.openAuthModal();
-        }
-      });
-      return;
-    }
-
-    const image = (this.productData.images && this.productData.images.length > 0)
-      ? this.getImage(this.productData.images[0])
-      : this.getImage('');
-
-    this.isAddingToCart = true;
-
-    this.cartService.addToCart(
-      this.productData,
-      this.quantity,
-      this.selectedSize,
-      this.selectedColorName,
-      image
-    ).subscribe({
-      next: () => {
-        this.isAddingToCart = false;
-        this.router.navigate(['/checkout']);
-      },
-      error: (err) => {
-        this.isAddingToCart = false;
-        console.error('[ProductInfo] Buy now failed:', err);
-        Swal.fire({
-          icon: 'error',
-          title: 'Operation Failed',
-          text: err?.error?.error?.message || 'Unable to continue to checkout right now.',
           confirmButtonColor: '#ffc107'
         });
       }

@@ -101,6 +101,11 @@ export class ShippingAddress {
     if (byLocation) {
       this.selectedCountry = byLocation;
     }
+
+    // Default phone to selected country dial code if empty
+    if (!this.fields.phone && this.selectedCountry?.dial_code) {
+      this.fields.phone = this.selectedCountry.dial_code;
+    }
   }
 
   /* ================= HELPERS ================= */
@@ -110,6 +115,7 @@ export class ShippingAddress {
     this.fields[field] = value;
 
     if (field === 'location') {
+      const prevDial = this.selectedCountry?.dial_code || '';
       // Reset state/city when country changes
       this.fields.state = '';
       this.fields.city = '';
@@ -117,6 +123,14 @@ export class ShippingAddress {
       this.states = [];
       this.touch('state');
       this.touch('city');
+
+      const byLocation = this.countries.find(c => c.name === value);
+      if (byLocation) {
+        this.selectedCountry = byLocation;
+        if (!this.fields.phone || (prevDial && this.fields.phone.startsWith(prevDial))) {
+          this.fields.phone = this.selectedCountry.dial_code;
+        }
+      }
 
       // Update states dropdown if available for this country
       if (value === 'United States') {
@@ -143,8 +157,11 @@ export class ShippingAddress {
     const dialCode = event.target.value;
     const country = this.countries.find(c => c.dial_code === dialCode);
     if (country) {
+      const prevDial = this.selectedCountry?.dial_code || '';
       this.selectedCountry = country;
-      // Update phone
+      if (!this.fields.phone || (prevDial && this.fields.phone.startsWith(prevDial))) {
+        this.fields.phone = this.selectedCountry.dial_code;
+      }
     }
   }
 

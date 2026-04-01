@@ -116,6 +116,33 @@ export class Checkout {
           ? 'finora'
           : this.selectedPaymentMethod!;
 
+      const cartItems = (this.cartService.items() || []);
+      const checkedItems = cartItems.filter(item => item.isChecked && Number(item.quantity) > 0);
+      const fallbackItems = checkedItems.length > 0
+        ? checkedItems
+        : cartItems.filter(item => Number(item.quantity) > 0);
+      const normalizedCheckoutItems = fallbackItems.map(item => {
+        const safePrice = Number(item.price) > 0 ? Number(item.price) : Number(item.oldPrice) || 0;
+        return {
+          storeProductId: item.storeProductId,
+          storeId: item.storeId,
+          quantity: Number(item.quantity) || 1,
+          priceAtPurchase: safePrice,
+          productName: item.name,
+          storeName: item.storeName
+        };
+      });
+
+      if (!normalizedCheckoutItems.length) {
+        this.isLoading = false;
+        Swal.fire({
+          icon: 'warning',
+          title: 'No Items Selected',
+          text: 'Your cart does not have any valid item to place order.'
+        });
+        return;
+      }
+
       const orderInput: CreateOrderDto = {
         userId: resolvedUserId,
         paymentMethod: normalizedPaymentMethod,
@@ -133,16 +160,7 @@ export class Checkout {
         cardNumber: this.selectedPaymentDetails?.number?.replace(/\s/g, ''),
         cvv: this.selectedPaymentDetails?.cvv,
         expiryDate: this.selectedPaymentDetails?.expiry,
-        items: (this.cartService.items() || [])
-          .filter(item => item.isChecked)
-          .map(item => ({
-            storeProductId: item.storeProductId,
-            storeId: item.storeId,
-            quantity: item.quantity,
-            priceAtPurchase: item.price,
-            productName: item.name,
-            storeName: item.storeName
-          }))
+        items: normalizedCheckoutItems
       };
 
       console.log('[Checkout] \uD83D\uDCB3 Placing Order with Payload:', orderInput);

@@ -34,11 +34,20 @@ export class CartService {
 
     private cartItems = signal<CartItem[]>([]);
     private showCartTrigger = signal<number>(0);
+    private consumedCartTrigger = 0;
     private pendingDeletes = new Set<string>(); // Track items being deleted to prevent reappearing during sync
 
     // Public exposures
     items = this.cartItems.asReadonly();
     cartAutoOpen = this.showCartTrigger.asReadonly();
+
+    consumeAutoOpenTrigger(trigger: number): boolean {
+        if (trigger <= 0 || trigger === this.consumedCartTrigger) {
+            return false;
+        }
+        this.consumedCartTrigger = trigger;
+        return true;
+    }
 
     constructor() {
         if (this.authService.isAuthenticated) {

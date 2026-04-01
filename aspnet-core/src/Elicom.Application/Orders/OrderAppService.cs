@@ -111,6 +111,14 @@ namespace Elicom.Orders
                 }
             }
 
+            // Ignore any invalid/zero-quantity rows to avoid zero totals.
+            var beforeQtyFilter = cartItems.Count;
+            cartItems = cartItems.Where(ci => ci.Quantity > 0).ToList();
+            if (beforeQtyFilter != cartItems.Count)
+            {
+                Logger.Warn($"[OrderAppService] Removed {beforeQtyFilter - cartItems.Count} cart items with non-positive quantity.");
+            }
+
             if (!cartItems.Any())
                 throw new UserFriendlyException("No valid items selected for order.");
 
@@ -125,38 +133,97 @@ namespace Elicom.Orders
             if (user == null)
                 throw new UserFriendlyException("User not found.");
 
-            // Safety Check: If snapshot price is 0, attempt to use StoreProduct price as fallback
-            foreach (var ci in cartItems)
-            {
-                if (ci.Price <= 0)
+            var inputItemsByStoreProductId = (input.Items ?? new List<Elicom.OrderItems.Dto.OrderItemDto>())
+                .Where(i => i.StoreProductId != Guid.Empty)
+                .GroupBy(i => i.StoreProductId)
+                .ToDictionary(g => g.Key, g => g.First());
+            var firstValidInputPrice = (input.Items ?? new List<Elicom.OrderItems.Dto.OrderItemDto>())
+                .Where(i => i.PriceAtPurchase > 0)
+                .Select(i => i.PriceAtPurchase)
+                .FirstOrDefault();
+            Logger.Info($"[OrderAppService] Create input items: {(input.Items?.Count ?? 0)}, mapped IDs: {inputItemsByStoreProductId.Count}, first valid input price: {firstValidInputPrice}");
+
+            var totalCartItemsBeforeSanitization = cartItems.Count;
+            var checkoutRows = cartItems
+                .Where(ci => ci.StoreProduct != null && ci.StoreProduct.Store != null && ci.StoreProduct.Product != null)
+                .Select(ci =>
                 {
-                    var inputItem = input.Items?.FirstOrDefault(i => i.StoreProductId == ci.StoreProductId);
-                    if (inputItem != null && inputItem.PriceAtPurchase > 0)
+                    inputItemsByStoreProductId.TryGetValue(ci.StoreProductId, out var inputItem);
+
+                    var quantity = ci.Quantity > 0
+                        ? ci.Quantity
+                        : (inputItem?.Quantity > 0 ? inputItem.Quantity : 0);
+
+                    decimal resolvedUnitPrice = ci.Price;
+                    decimal resolvedOriginalPrice = ci.OriginalPrice;
+                    decimal resolvedDiscount = ci.ResellerDiscountPercentage;
+
+                    if (resolvedUnitPrice <= 0 && inputItem != null && inputItem.PriceAtPurchase > 0)
                     {
-                        Logger.Warn($"[OrderAppService] CartItem {ci.Id} has 0 price. Overriding with frontend PriceAtPurchase: {inputItem.PriceAtPurchase}");
-                        ci.Price = inputItem.PriceAtPurchase;
-                        ci.OriginalPrice = inputItem.PriceAtPurchase; 
+                        resolvedUnitPrice = inputItem.PriceAtPurchase;
+                        if (resolvedOriginalPrice <= 0)
+                        {
+                            resolvedOriginalPrice = inputItem.PriceAtPurchase;
+                        }
                     }
-                    else if (ci.StoreProduct != null && ci.StoreProduct.ResellerPrice > 0)
+
+                    if (resolvedUnitPrice <= 0 && ci.StoreProduct != null)
                     {
-                        Logger.Warn($"[OrderAppService] CartItem {ci.Id} has 0 price. Re-calculating from StoreProduct {ci.StoreProductId}.");
                         var sp = ci.StoreProduct;
-                        ci.Price = sp.ResellerPrice * (1 - sp.ResellerDiscountPercentage / 100m);
-                        ci.OriginalPrice = sp.ResellerPrice;
-                        ci.ResellerDiscountPercentage = sp.ResellerDiscountPercentage;
+                        var calculated = sp.ResellerPrice * (1 - sp.ResellerDiscountPercentage / 100m);
+                        resolvedUnitPrice = calculated > 0 ? calculated : sp.ResellerPrice;
+                        if (resolvedOriginalPrice <= 0)
+                        {
+                            resolvedOriginalPrice = sp.ResellerPrice;
+                        }
+                        if (resolvedDiscount <= 0)
+                        {
+                            resolvedDiscount = sp.ResellerDiscountPercentage;
+                        }
                     }
-                    else if (ci.StoreProduct?.Product != null)
+
+                    if (resolvedUnitPrice <= 0 && ci.StoreProduct?.Product != null)
                     {
-                        Logger.Warn($"[OrderAppService] CartItem {ci.Id} and StoreProduct has 0 price. Re-calculating from original Product.");
                         var p = ci.StoreProduct.Product;
-                        ci.Price = p.ResellerMaxPrice;
-                        ci.OriginalPrice = p.ResellerMaxPrice;
-                        ci.ResellerDiscountPercentage = 0;
+                        resolvedUnitPrice = p.ResellerMaxPrice;
+                        if (resolvedOriginalPrice <= 0)
+                        {
+                            resolvedOriginalPrice = p.ResellerMaxPrice;
+                        }
                     }
-                }
+
+                    if (resolvedUnitPrice <= 0 && firstValidInputPrice > 0)
+                    {
+                        resolvedUnitPrice = firstValidInputPrice;
+                        if (resolvedOriginalPrice <= 0)
+                        {
+                            resolvedOriginalPrice = firstValidInputPrice;
+                        }
+                    }
+
+                    return new
+                    {
+                        CartItem = ci,
+                        Quantity = quantity,
+                        UnitPrice = resolvedUnitPrice,
+                        OriginalPrice = resolvedOriginalPrice > 0 ? resolvedOriginalPrice : resolvedUnitPrice,
+                        Discount = resolvedDiscount
+                    };
+                })
+                .Where(r => r.Quantity > 0 && r.UnitPrice > 0)
+                .ToList();
+
+            if (checkoutRows.Count != totalCartItemsBeforeSanitization)
+            {
+                Logger.Warn($"[OrderAppService] Checkout sanitization removed {totalCartItemsBeforeSanitization - checkoutRows.Count} invalid cart rows.");
             }
 
-            var subTotal = cartItems.Sum(i => i.Price * i.Quantity);
+            if (!checkoutRows.Any())
+            {
+                throw new UserFriendlyException("Unable to place order. No valid priced cart items found for checkout.");
+            }
+
+            var subTotal = checkoutRows.Sum(i => i.UnitPrice * i.Quantity);
             var totalAmount = subTotal + input.ShippingCost - input.Discount;
 
             if (totalAmount <= 0)
@@ -234,7 +301,7 @@ namespace Elicom.Orders
                 await _walletManager.DepositAsync(PlatformAdminId, totalAmount, $"ESC-{DateTime.Now:yyyyMMddHHmmss}", $"Escrow Hold for Orders {DateTime.Now:yyyyMMddHHmmss}");
             }
             var createdOrders = new List<Order>();
-            var storeGroups = cartItems.GroupBy(ci => ci.StoreProduct.StoreId).ToList();
+            var storeGroups = checkoutRows.GroupBy(ci => ci.CartItem.StoreProduct.StoreId).ToList();
             decimal allocatedShipping = 0m;
             decimal allocatedDiscount = 0m;
 
@@ -242,7 +309,7 @@ namespace Elicom.Orders
             {
                 var group = storeGroups[i];
                 var isLast = i == storeGroups.Count - 1;
-                var groupSubTotal = group.Sum(ci => ci.Price * ci.Quantity);
+                var groupSubTotal = group.Sum(ci => ci.UnitPrice * ci.Quantity);
 
                 decimal groupShipping;
                 decimal groupDiscount;
@@ -300,24 +367,24 @@ namespace Elicom.Orders
                     var orderItem = new OrderItem
                     {
                         OrderId = order.Id,
-                        StoreProductId = ci.StoreProductId,
-                        ProductId = ci.StoreProduct.ProductId,
+                        StoreProductId = ci.CartItem.StoreProductId,
+                        ProductId = ci.CartItem.StoreProduct.ProductId,
                         Quantity = ci.Quantity,
-                        PriceAtPurchase = ci.Price,
+                        PriceAtPurchase = ci.UnitPrice,
                         OriginalPrice = ci.OriginalPrice,
-                        DiscountPercentage = ci.ResellerDiscountPercentage,
-                        ProductName = ci.StoreProduct.Product.Name,
-                        StoreName = ci.StoreProduct.Store.Name
+                        DiscountPercentage = ci.Discount,
+                        ProductName = ci.CartItem.StoreProduct.Product.Name,
+                        StoreName = ci.CartItem.StoreProduct.Store.Name
                     };
 
                     await _orderItemRepository.InsertAsync(orderItem);
                     order.OrderItems.Add(orderItem);
                 }
 
-                foreach (var supplierGroup in group.GroupBy(ci => ci.StoreProduct.Product.SupplierId))
+                foreach (var supplierGroup in group.GroupBy(ci => ci.CartItem.StoreProduct.Product.SupplierId))
                 {
                     var supplierId = supplierGroup.Key.GetValueOrDefault();
-                    var storeOwnerId = supplierGroup.First().StoreProduct.Store.OwnerId;
+                    var storeOwnerId = supplierGroup.First().CartItem.StoreProduct.Store.OwnerId;
                     var supplierOrder = new SupplierOrder
                     {
                         SupplierId = supplierId,
@@ -325,7 +392,7 @@ namespace Elicom.Orders
                         OrderId = order.Id,
                         ReferenceCode = $"SUP-{DateTime.Now:yyyyMMddHHmmss}-{supplierId}",
                         Status = "Purchased",
-                        TotalPurchaseAmount = supplierGroup.Sum(ci => ResolveSupplierPrice(ci.StoreProduct.Product) * ci.Quantity),
+                        TotalPurchaseAmount = supplierGroup.Sum(ci => ResolveSupplierPrice(ci.CartItem.StoreProduct.Product) * ci.Quantity),
                         CustomerName = user.Name,
                         ShippingAddress = input.ShippingAddress,
                         SourcePlatform = order.SourcePlatform,
@@ -336,9 +403,9 @@ namespace Elicom.Orders
                     {
                         supplierOrder.Items.Add(new SupplierOrderItem
                         {
-                            ProductId = ci.StoreProduct.ProductId,
+                            ProductId = ci.CartItem.StoreProduct.ProductId,
                             Quantity = ci.Quantity,
-                            PurchasePrice = ResolveSupplierPrice(ci.StoreProduct.Product)
+                            PurchasePrice = ResolveSupplierPrice(ci.CartItem.StoreProduct.Product)
                         });
                     }
 
@@ -348,7 +415,7 @@ namespace Elicom.Orders
                 await _backgroundJobManager.EnqueueAsync<OrderEmailJob, OrderEmailJobArgs>(new OrderEmailJobArgs { OrderId = order.Id });
             }
 
-            foreach (var ci in cartItems)
+            foreach (var ci in checkoutRows.Select(x => x.CartItem).Distinct())
             {
                 await _cartItemRepository.DeleteAsync(ci.Id);
             }

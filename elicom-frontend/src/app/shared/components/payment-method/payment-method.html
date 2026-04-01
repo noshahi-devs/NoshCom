@@ -93,21 +93,29 @@
             <i class="pi pi-exclamation-triangle me-2"></i> Please verify your card balance before continuing.
           </div>
         </div>
-
-        <button type="button" class="btn btn-outline-primary w-100" (click)="verifyFinora()" [disabled]="isVerifying">
-          <span *ngIf="isVerifying"><i class="pi pi-spin pi-spinner me-2"></i> Verifying...</span>
-          <span *ngIf="!isVerifying"><i class="pi pi-shield me-2"></i> Verify Card Balance</span>
-        </button>
       </div>
     </div>
   </div>
 
   <!-- Form fields are always visible above -->
 
-  <div class="actions mt-4">
-    <button class="btn btn-save-payment" (click)="saveCard()" [disabled]="!isActive || isProcessing">
-      <span *ngIf="isProcessing"><i class="pi pi-spin pi-spinner me-2"></i> Confirming Order...</span>
-      <span *ngIf="!isProcessing">Confirm Order</span>
-    </button>
+  <div class="actions mt-4" [class.dual-actions]="selectedMethodId === 'finora'">
+    <ng-container *ngIf="selectedMethodId === 'finora'; else singleAction">
+      <button type="button" class="btn btn-outline-primary verify-btn" (click)="verifyFinora()" [disabled]="isVerifying">
+        <span *ngIf="isVerifying"><i class="pi pi-spin pi-spinner me-2"></i> Verifying...</span>
+        <span *ngIf="!isVerifying"><i class="pi pi-shield me-2"></i> Verify Card Balance</span>
+      </button>
+
+      <button class="btn btn-save-payment" (click)="saveCard()" [disabled]="!isActive || isProcessing">
+        <span *ngIf="isProcessing"><i class="pi pi-spin pi-spinner me-2"></i> Confirming Order...</span>
+        <span *ngIf="!isProcessing">Confirm Order</span>
+      </button>
+    </ng-container>
+    <ng-template #singleAction>
+      <button class="btn btn-save-payment" (click)="saveCard()" [disabled]="!isActive || isProcessing">
+        <span *ngIf="isProcessing"><i class="pi pi-spin pi-spinner me-2"></i> Confirming Order...</span>
+        <span *ngIf="!isProcessing">Confirm Order</span>
+      </button>
+    </ng-template>
   </div>
-</div>
+</div>

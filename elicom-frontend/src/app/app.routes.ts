@@ -9,8 +9,8 @@ import { AuthGuard } from './guards/auth.guard';
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'product-detail/:productId/:storeProductId', component: ProductDetail },
-  { path: 'add-to-cart', component: AddToCart },
-  { path: 'checkout', component: Checkout },
+  { path: 'add-to-cart', component: AddToCart, canActivate: [AuthGuard] },
+  { path: 'checkout', component: Checkout, canActivate: [AuthGuard] },
   { path: 'search-result', component: SearchResult },
   { path: 'corporate/our-impact', loadComponent: () => import('./pages/corporate/our-impact/our-impact.component').then(m => m.OurImpactComponent) },
   { path: 'corporate/:pageId', loadComponent: () => import('./pages/corporate/corporate-page.component').then(m => m.CorporatePageComponent) },

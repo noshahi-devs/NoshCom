@@ -1,7 +1,7 @@
 <div class="auth-modal-overlay" [class.page-mode]="pageMode">
-    <div class="auth-modal-container" [class.page-mode]="pageMode" (click)="$event.stopPropagation()">
+    <div class="auth-modal-container" [class.page-mode]="pageMode" [class.signing-in]="isSigningIn" (click)="$event.stopPropagation()">
 
-        <button class="close-btn" (click)="onClose()" [disabled]="isLoading">&times;</button>
+        <button class="close-btn" (click)="onClose()" [disabled]="isLoading || isSigningIn">&times;</button>
 
         <div *ngIf="isLoading" class="three-d-loading-container">
             <div class="scene">
@@ -58,7 +58,7 @@
             </aside>
 
             <section class="auth-panel">
-                <div *ngIf="view === 'signin'" class="auth-view">
+                <div *ngIf="view === 'signin'" class="auth-view" [class.is-signing-in]="isSigningIn">
                     <div class="auth-heading">
                         <span class="auth-kicker">Welcome Back</span>
                         <h2>Sign In</h2>
@@ -93,8 +93,12 @@
                             <a href="javascript:void(0)" class="forgot-password">Forgot Password?</a>
                         </div>
 
-                        <button type="submit" class="primary-btn" [disabled]="signInForm.invalid || isLoading">
-                            Log In
+                        <button type="submit" class="primary-btn" [disabled]="signInForm.invalid || isSigningIn">
+                            <span *ngIf="!isSigningIn">Log In</span>
+                            <span *ngIf="isSigningIn" class="btn-loader">
+                                <span class="btn-spinner" aria-hidden="true"></span>
+                                Logging in...
+                            </span>
                         </button>
                     </form>
 

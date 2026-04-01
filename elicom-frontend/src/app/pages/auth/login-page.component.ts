@@ -11,7 +11,12 @@ import { AuthService } from '../../services/auth.service';
   imports: [CommonModule, AuthModalComponent],
   template: `
     <div class="login-page-container">
-      <app-auth-modal [pageMode]="true" (close)="onClose()" (authenticated)="onAuthenticated()"></app-auth-modal>
+      <app-auth-modal
+        *ngIf="!(isAuthenticated$ | async)"
+        [pageMode]="true"
+        (close)="onClose()"
+        (authenticated)="onAuthenticated()"
+      ></app-auth-modal>
     </div>
   `,
   styles: [`
@@ -25,6 +30,7 @@ export class LoginPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private storeService = inject(StoreService);
   private authService = inject(AuthService);
+  isAuthenticated$ = this.authService.isAuthenticated$;
 
   ngOnInit(): void {
     if (this.authService.isAuthenticated) {

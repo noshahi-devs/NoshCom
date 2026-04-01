@@ -185,7 +185,7 @@
 </nav>
 
 <app-auth-modal
-  *ngIf="authModalOpen()"
-  (close)="authModalOpen.set(false)"
-  (authenticated)="authService.navigateToDashboard()"
+  *ngIf="authModalOpen() && !(isAuthenticated | async)"
+  (close)="onAuthModalClose()"
+  (authenticated)="onAuthAuthenticated()"
 ></app-auth-modal>

@@ -59,6 +59,7 @@ export class AuthService {
 
     private _showAuthModal = new BehaviorSubject<boolean>(false);
     showAuthModal$ = this._showAuthModal.asObservable();
+    private pendingReturnUrl: string | null = null;
 
     constructor(
         private http: HttpClient,
@@ -83,7 +84,24 @@ export class AuthService {
     // Actually, let's just use the URL pattern as before for simplicity and robustness in this file.
 
     openAuthModal() {
+        if (this.isAuthenticated) {
+            return;
+        }
         this._showAuthModal.next(true);
+    }
+
+    closeAuthModal() {
+        this._showAuthModal.next(false);
+    }
+
+    setPostLoginRedirect(url: string) {
+        this.pendingReturnUrl = url || null;
+    }
+
+    consumePostLoginRedirect(): string | null {
+        const url = this.pendingReturnUrl;
+        this.pendingReturnUrl = null;
+        return url;
     }
 
     // --- Auth Actions ---
@@ -196,6 +214,13 @@ export class AuthService {
         }
 
         // 2. Return URL for others (Customers/Sellers)
+        const pendingReturnUrl = this.consumePostLoginRedirect();
+        if (pendingReturnUrl) {
+            console.log('Redirecting to pendingReturnUrl:', pendingReturnUrl);
+            this.router.navigateByUrl(pendingReturnUrl);
+            return;
+        }
+
         const urlTree = this.router.parseUrl(this.router.url);
         const returnUrl = urlTree.queryParams['returnUrl'];
 

@@ -14,6 +14,7 @@ import { resolvePlatformName } from '../../platform-context';
 export class AuthModalComponent implements OnInit, OnDestroy {
     private cdr = inject(ChangeDetectorRef);
     private roleAnimationTimeout: any;
+    private scrollLocked = false;
     @Input() pageMode = false;
     @Output() close = new EventEmitter<void>();
     @Output() authenticated = new EventEmitter<void>();
@@ -26,6 +27,7 @@ export class AuthModalComponent implements OnInit, OnDestroy {
     showPassword = false;
     showConfirmPassword = false;
     isLoading = false;
+    isSigningIn = false;
     roleAnimating = false;
     errorMessage: string = '';
     showErrorModal = false;
@@ -87,10 +89,13 @@ export class AuthModalComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        // More aggressive scroll lock for both html and body
-        document.body.style.overflow = 'hidden';
-        document.documentElement.style.overflow = 'hidden';
-        document.body.style.position = 'relative'; // Helps on some mobile browsers
+        if (!this.pageMode) {
+            // More aggressive scroll lock for both html and body
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.position = 'relative'; // Helps on some mobile browsers
+            this.scrollLocked = true;
+        }
     }
 
     ngOnDestroy() {
@@ -99,10 +104,12 @@ export class AuthModalComponent implements OnInit, OnDestroy {
             clearTimeout(this.roleAnimationTimeout);
             this.roleAnimationTimeout = null;
         }
-        // Restore scroll
-        document.body.style.overflow = 'auto';
-        document.documentElement.style.overflow = 'auto';
-        document.body.style.position = '';
+        if (this.scrollLocked) {
+            // Restore scroll
+            document.body.style.overflow = 'auto';
+            document.documentElement.style.overflow = 'auto';
+            document.body.style.position = '';
+        }
     }
 
     passwordMatchValidator(g: FormGroup) {
@@ -176,7 +183,8 @@ export class AuthModalComponent implements OnInit, OnDestroy {
     onSignIn() {
         if (this.signInForm.invalid) return;
 
-        this.isLoading = true;
+        this.isSigningIn = true;
+        this.signInForm.disable({ emitEvent: false });
         this.errorMessage = '';
         this.showErrorModal = false;
         this.loadingMessage = 'Signing you in to NoshCom...';
@@ -190,14 +198,13 @@ export class AuthModalComponent implements OnInit, OnDestroy {
         this.authService.login(credentials)
             .subscribe({
                 next: () => {
-                    this.isLoading = false;
-                    this.cdr.detectChanges();
+                    this.finishSignIn();
+                    this.authService.closeAuthModal();
                     this.authenticated.emit();
                     this.close.emit();
                 },
                 error: (err) => {
                     console.error('Login failed', err);
-                    this.isLoading = false;
 
                     if (err.error?.error?.message) {
                         this.errorMessage = err.error.error.message;
@@ -208,12 +215,8 @@ export class AuthModalComponent implements OnInit, OnDestroy {
                     else {
                         this.errorMessage = 'Invalid email or password. Please try again.';
                     }
-                    this.cdr.detectChanges();
+                    this.finishSignIn();
                 }
-            })
-            .add(() => {
-                this.isLoading = false;
-                this.cdr.detectChanges();
             });
     }
 
@@ -283,6 +286,7 @@ export class AuthModalComponent implements OnInit, OnDestroy {
     }
 
     onClose() {
+        this.authService.closeAuthModal();
         this.close.emit();
     }
 
@@ -304,6 +308,12 @@ export class AuthModalComponent implements OnInit, OnDestroy {
     goToLoginFromError() {
         this.showErrorModal = false;
         this.view = 'signin';
+        this.cdr.detectChanges();
+    }
+
+    private finishSignIn() {
+        this.isSigningIn = false;
+        this.signInForm.enable({ emitEvent: false });
         this.cdr.detectChanges();
     }
 

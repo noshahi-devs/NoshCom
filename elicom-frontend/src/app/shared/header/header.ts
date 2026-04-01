@@ -46,7 +46,7 @@ export class Header implements OnInit, AfterViewChecked {
     // Listen for new items added to cart to auto-open the modal
     effect(() => {
       const trigger = this.cartService.cartAutoOpen();
-      if (trigger > 0) {
+      if (this.cartService.consumeAutoOpenTrigger(trigger)) {
         this.openSidebar();
       }
     });
@@ -71,7 +71,19 @@ export class Header implements OnInit, AfterViewChecked {
 
     // Listen to Auth Service requests to open modal
     this.authService.showAuthModal$.subscribe(show => {
-      if (show) this.authModalOpen.set(true);
+      if (show && !this.authService.isAuthenticated) {
+        this.authModalOpen.set(true);
+      } else if (!show) {
+        this.authModalOpen.set(false);
+      }
+    });
+
+    // Auto-close auth modal if user becomes authenticated
+    this.authService.isAuthenticated$.subscribe(isAuth => {
+      if (isAuth) {
+        this.authModalOpen.set(false);
+        this.authService.closeAuthModal();
+      }
     });
   }
 
@@ -285,6 +297,16 @@ export class Header implements OnInit, AfterViewChecked {
     this.authService.logout();
     this.userDropdown.set(false);
     this.router.navigate(['/']);
+  }
+
+  onAuthModalClose() {
+    this.authModalOpen.set(false);
+    this.authService.closeAuthModal();
+  }
+
+  onAuthAuthenticated() {
+    this.authModalOpen.set(false);
+    this.authService.closeAuthModal();
   }
 
   getUserDisplayName(user: User | null): string {
