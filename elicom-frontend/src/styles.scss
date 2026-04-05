@@ -1,8 +1,11 @@
 /* Shein Inspired Design System */
 :root {
-    --sui-primary: #000000;
-    --sui-secondary: #222222;
-    --sui-text-muted: #767676;
+    /* Color scheme aligned to NoshCom purple palette */
+    --sui-primary: #7c5cff; /* main accent */
+    --sui-primary-dark: #6248e9;
+    --sui-primary-light: #a892ff;
+    --sui-secondary: #1c1d24; /* body text */
+    --sui-text-muted: #6a7085;
     --sui-border: #e5e5e5;
     --sui-bg-light: #f6f6f6;
     --sui-danger: #fe3b30;
@@ -79,8 +82,8 @@ h6,
 }
 
 .sui-btn-primary:hover {
-    background-color: #333;
-    border-color: #333;
+    background-color: var(--sui-primary-dark);
+    border-color: var(--sui-primary-dark);
 }
 
 .sui-btn-outline {

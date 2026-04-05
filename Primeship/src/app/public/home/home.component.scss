@@ -13,6 +13,290 @@
   --badge-green: #22C55E; // slightly bright for the badge
 }
 
+.landing-header {
+  width: 100%;
+  border-bottom: 1px solid #E5E5E5;
+}
+
+.header-partner-bar {
+  background: #7B189F;
+  color: #FFF;
+}
+
+.header-partner-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  flex-wrap: wrap;
+}
+
+.brand-links,
+.utility-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: center;
+}
+
+.brand-link,
+.utility-link {
+  color: #FFF;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.brand-link {
+  opacity: 0.95;
+}
+
+.utility-link {
+  opacity: 0.8;
+}
+
+.utility-link:hover,
+.brand-link:hover {
+  opacity: 1;
+}
+
+.header-main {
+  background: #FFF;
+  padding: 18px 0 14px;
+}
+
+.header-main-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  min-width: 180px;
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 28px;
+  font-weight: 900;
+  color: #7B189F;
+  text-decoration: none;
+}
+
+.logo-mark {
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #8d2ec3 0%, #7a127b 100%);
+  color: #FFF;
+  font-size: 20px;
+}
+
+.header-search {
+  flex: 1;
+  min-width: 320px;
+}
+
+.search-form {
+  display: flex;
+  width: 100%;
+  max-width: 740px;
+  height: 54px;
+  background: #FFF;
+  border: 1px solid #E5E5E5;
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.search-form input {
+  flex: 1;
+  border: none;
+  padding: 0 24px;
+  font-size: 16px;
+  color: #111827;
+  outline: none;
+}
+
+.search-form button {
+  background: #7B189F;
+  border: none;
+  width: 62px;
+  color: #FFF;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-form button i {
+  font-size: 18px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  white-space: nowrap;
+}
+
+.header-action-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  color: #111827;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.header-action-item:hover {
+  background: rgba(123, 24, 159, 0.08);
+}
+
+.header-action-item i {
+  font-size: 18px;
+  color: #7B189F;
+}
+
+.header-secondary-nav {
+  background: #FFF;
+  border-top: 1px solid #E5E5E5;
+}
+
+.header-secondary-inner {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  padding: 0 0 0 0;
+}
+
+.secondary-links {
+  display: flex;
+  gap: 22px;
+  padding: 14px 0;
+  flex-wrap: nowrap;
+}
+
+.secondary-links a {
+  color: #111827;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 14px;
+  opacity: 0.85;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.secondary-links a:hover {
+  color: #7B189F;
+  opacity: 1;
+}
+
+.header-promo-bar {
+  background: #7B189F;
+  color: #FFF;
+  border-top: 1px solid #6c0f95;
+}
+
+.promo-inner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.promo-arrow {
+  font-size: 18px;
+}
+
+@media (max-width: 1024px) {
+  .header-main-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-search {
+    width: 100%;
+  }
+
+  .header-actions {
+    justify-content: flex-end;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-partner-inner,
+  .header-main-inner,
+  .header-secondary-inner,
+  .promo-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .brand-links,
+  .utility-links,
+  .secondary-links {
+    justify-content: center;
+  }
+
+  .search-form {
+    max-width: 100%;
+  }
+
+  .secondary-links,
+  .brand-links,
+  .utility-links {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .header-main-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-brand {
+    width: 100%;
+  }
+
+  .header-search {
+    width: 100%;
+  }
+
+  .header-actions {
+    justify-content: flex-end;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .banner-link {
+    font-size: 12px;
+  }
+
+  .logo-link {
+    font-size: 24px;
+  }
+}
+
 .container {
   max-width: 1300px;
   margin: 0 auto;

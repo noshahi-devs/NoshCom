@@ -1,6 +1,7 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { CartService } from '../../core/services/cart.service';
 import { WishlistService } from '../../core/services/wishlist.service';
 import { PublicService } from '../../core/services/public.service';
@@ -73,12 +74,45 @@ interface MiniCategory {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, CurrencyPipe],
+  imports: [CommonModule, RouterLink, FormsModule, CurrencyPipe],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit, OnDestroy {
   @ViewChild('categoryTrack') categoryTrack?: ElementRef<HTMLDivElement>;
+
+  searchQuery = '';
+  brandLinks = [
+    { label: 'Wayfair', href: '/' },
+    { label: 'ALLMODERN', href: '/allmodern' },
+    { label: 'BIRCH LN', href: '/birch-ln' },
+    { label: 'JOSS & MAIN', href: '/joss-main' },
+    { label: 'PERIGOLD', href: '/perigold' }
+  ];
+
+  utilityLinks = [
+    { label: 'Rewards', href: '/rewards' },
+    { label: 'Financing', href: '/financing' },
+    { label: 'Professional', href: '/professional' },
+    { label: 'Fast & Free Shipping Over $35*', href: '/shipping' }
+  ];
+
+  navCategories = [
+    { label: 'Furniture', href: '/furniture' },
+    { label: 'Outdoor', href: '/outdoor' },
+    { label: 'Bedding & Bath', href: '/bedding-bath' },
+    { label: 'Rugs', href: '/rugs' },
+    { label: 'Decor & Pillows', href: '/decor-pillows' },
+    { label: 'Lighting', href: '/lighting' },
+    { label: 'Organization', href: '/organization' },
+    { label: 'Kitchen', href: '/kitchen' },
+    { label: 'Baby & Kids', href: '/baby-kids' },
+    { label: 'Home Improvement', href: '/home-improvement' },
+    { label: 'Appliances', href: '/appliances' },
+    { label: 'Pet', href: '/pet' },
+    { label: 'Holiday', href: '/holiday' },
+    { label: 'Sale', href: '/sale' }
+  ];
 
   heroIndex = 0;
   activeTab = 0;
@@ -196,6 +230,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     private publicService: PublicService,
     private categoryService: CategoryService
   ) { }
+
+  onSearch(event: Event): void {
+    event.preventDefault();
+    const query = this.searchQuery?.trim();
+    if (!query) {
+      return;
+    }
+    this.router.navigate(['/home'], { queryParams: { q: query } });
+  }
 
   ngOnInit(): void {
     this.startHeroAutoPlay();

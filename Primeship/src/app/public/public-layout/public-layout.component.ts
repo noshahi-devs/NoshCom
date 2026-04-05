@@ -19,69 +19,49 @@ declare var lucide: any;
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, CurrencyPipe, FormsModule, ReactiveFormsModule],
   template: `
     <div class="nosh-shell">
-      <!-- Skygarden Utility Top Bar -->
-      <div class="top-util-bar" *ngIf="!isAuthPage">
-        <div class="container-header">
-           <div class="top-util-flex">
-              <div class="top-util-left">
-                <a href="#" class="util-link">Language: EN</a>
-                <span class="sep"></span>
-                <a href="#" class="util-link">Ship to: United States</a>
-              </div>
-              <div class="top-util-right">
-                <a [attr.href]="merchantPortalHref" (click)="openMerchantPortal($event)" class="util-link highlight">Sell on Noshahibaba</a>
-                <a routerLink="/help" class="util-link">Help & Contact</a>
-              </div>
-           </div>
-        </div>
-      </div>
-
-      <!-- Skygarden Main Header -->
-      <header class="main-header" [class.sticky]="isScrolled" *ngIf="!isAuthPage">
-        <div class="container-header">
-          <div class="header-main-flex">
-            <!-- Logo Section -->
-            <div class="header-logo-section">
-              <a routerLink="/" class="logo">
-                <span class="logo-text">Noshahi<span>baba</span></span>
+      <header class="eliship-header" *ngIf="!isAuthPage">
+        <div class="header-main-bar">
+          <div class="container-header header-main-flex">
+            <div class="logo-section">
+              <a routerLink="/home" class="logo eliship-logo">
+                <span class="logo-mark">E</span>
+                <span class="logo-text">Eliship</span>
               </a>
             </div>
 
-            <!-- Categories Dropdown Button -->
-            <div class="header-cat-section" (mouseenter)="showNavCategories = true" (mouseleave)="showNavCategories = false">
-              <button class="cat-btn">
-                CATEGORIES <i class="fas fa-chevron-down ms-2"></i>
-              </button>
-              <div class="cat-dropdown-menu" [class.show]="showNavCategories">
-                <div class="cat-grid">
-                  <div class="cat-item" *ngFor="let cat of navCategories" [routerLink]="['/category', cat.slug]" (click)="showNavCategories = false">
-                    {{ cat.name }}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Long Search Bar -->
-            <div class="header-search-section">
+            <div class="search-section">
               <div class="search-box">
-                <input type="text" [(ngModel)]="searchTerm" placeholder="Search for products, categories or shops" (keyup.enter)="onSearch()">
+                <input type="text" [(ngModel)]="searchTerm" placeholder="Find anything home..." (keyup.enter)="onSearch()" />
                 <button class="search-icon-btn" (click)="onSearch()"><i class="fas fa-search"></i></button>
               </div>
             </div>
 
-            <!-- User Actions -->
-            <div class="header-action-section">
+            <div class="action-section">
                <a *ngIf="!authService.isAuthenticated()" routerLink="/auth/login" class="action-link">
-                  Log In <i class="far fa-user-circle ms-2 scale-12"></i>
-               </a>
-               <a *ngIf="authService.isAuthenticated()" [routerLink]="getPortalUrl()" class="action-link">
-                  {{ userName.split(' ')[0] }} <i class="fas fa-user-circle ms-2 scale-12"></i>
+                  <i class="far fa-user-circle"></i>
+                  <span>Account</span>
                </a>
                <a routerLink="/cart" class="action-link cart-trigger">
-                  Cart <i class="fas fa-shopping-cart ms-2 scale-12"></i>
+                  <i class="fas fa-shopping-cart"></i>
+                  <span>Cart</span>
                   <span class="badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
                </a>
             </div>
+          </div>
+        </div>
+
+        <div class="header-nav-bar">
+          <div class="container-header nav-bar-inner">
+            <div class="category-links">
+              <a *ngFor="let cat of categoryNavLinks" [routerLink]="['/category', cat.slug]" class="category-link">{{ cat.label }}</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="promo-bar">
+          <div class="container-header promo-inner">
+            <span>UP TO 70% OFF | 5 DAYS OF DEALS</span>
+            <span class="promo-arrow">→</span>
           </div>
         </div>
       </header>
@@ -231,13 +211,92 @@ declare var lucide: any;
     .header-search-section { flex: 1; margin: 0 15px; display: flex; align-items: center; }
     .search-box { display: flex; background: #FFF; border-radius: 8px; overflow: hidden; height: 48px; width: 100%; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     .search-box input { flex: 1; border: none; padding: 0 20px; font-size: 15px; font-weight: 500; outline: none; }
-    .search-icon-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; color: #444; border: none; font-size: 18px; cursor: pointer; &:hover { color: var(--primary); } }
+    .search-icon-btn { position: relative; background: transparent; color: #444; border: none; font-size: 18px; cursor: pointer; &:hover { color: var(--primary); } }
 
     /* User Actions Section */
     .header-action-section { display: flex; align-items: center; gap: 20px; flex-shrink: 0; }
-    .action-link { text-decoration: none; color: #FFF; font-weight: 700; font-size: 14px; display: flex; align-items: center; transition: 0.2s; &:hover { color: var(--primary); } }
+    .action-link { text-decoration: none; color: #FFF; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 10px; transition: 0.2s; padding: 12px 14px; border-radius: 999px; background: rgba(255,255,255,0.08); }
+    .action-link:hover { background: rgba(255,255,255,0.15); }
     .scale-12 { font-size: 1.3rem; }
     .cart-trigger { position: relative; .badge { position: absolute; top: -8px; right: -10px; background: var(--primary); color: #FFF; font-size: 11px; font-weight: 900; padding: 2px 6px; border-radius: 12px; line-height: 1; border: 2px solid var(--header-bg); } }
+
+    .eliship-header { background: #FFF; }
+    .header-brand-bar { background: #7B189F; color: #FFF; }
+    .brand-bar-inner { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 10px 0; flex-wrap: nowrap; }
+    .brand-links, .utility-links { display: flex; flex-wrap: nowrap; gap: 24px; align-items: center; }
+    .brand-link, .utility-link { color: #FFF; font-size: 12px; font-weight: 800; text-decoration: none; text-transform: uppercase; letter-spacing: 0.12em; white-space: nowrap; }
+    .brand-link.active { opacity: 1; }
+    .utility-link { opacity: 0.9; }
+    .utility-link:hover { opacity: 1; }
+
+    .header-main-bar { padding: 10px 0 12px; }
+    .header-main-flex { display: grid; grid-template-columns: auto minmax(320px, 1fr) auto; align-items: center; gap: 32px; }
+    .logo-section { flex-shrink: 0; margin-left: 40px; }
+    .eliship-logo { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: #7B189F; font-size: 28px; font-weight: 900; letter-spacing: -0.05em; }
+    .logo-mark { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 16px; background: linear-gradient(135deg, #8d2ec3 0%, #7a127b 100%); color: #FFF; font-size: 18px; font-weight: 800; }
+    .logo-text { letter-spacing: -0.8px; color: #7B189F; }
+
+    .search-section { width: 100%; display: flex; align-items: center; justify-content: center; }
+    .search-box { display: flex; width: 100%; max-width: 680px; height: 56px; border-radius: 10px; background: #FFF; border: 1px solid #D1D5DB; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08); overflow: hidden; }
+    .search-box input { flex: 1; border: none; padding: 0 28px; font-size: 16px; font-weight: 500; outline: none; color: #111827; }
+    .search-box input::placeholder { color: #9CA3AF; }
+    .search-icon-btn { width: 72px; border: none; background: #7B189F; color: #FFF; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; border-radius: 0 10px 10px 0; padding: 0 12px; }
+    .search-icon-btn:focus { outline: none; }
+
+    .action-section { display: flex; align-items: center; gap: 16px; justify-content: flex-end; margin-right: 20px; }
+    .action-link { text-decoration: none; color: #111827; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 999px; background: transparent; }
+    .action-link:hover { color: #7B189F; }
+    .action-link i { color: #7B189F; font-size: 18px; }
+    .cart-trigger { position: relative; }
+    .cart-trigger .badge { position: absolute; top: -5px; right: -8px; background: #F43F5E; color: #FFF; font-size: 11px; font-weight: 900; padding: 2px 6px; border-radius: 12px; line-height: 1; border: 2px solid #FFF; }
+
+    .category-links { display: flex; gap: 22px; flex-wrap: nowrap; overflow-x: auto; padding: 10px 0; align-items: center; }
+    .category-link { color: #111827; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; opacity: 0.92; transition: opacity 0.2s ease, color 0.2s ease; }
+    .category-link:hover { color: #7B189F; opacity: 1; }
+    .header-nav-bar { border-top: 1px solid #E5E7EB; border-bottom: 1px solid #E5E7EB; }
+    .nav-bar-inner { overflow-x: auto; }
+
+    .promo-bar { background: #7B189F; color: #FFF; }
+    .promo-inner { display: flex; justify-content: center; align-items: center; gap: 10px; min-height: 44px; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; }
+    .promo-arrow { font-size: 18px; }
+
+    .search-box::-webkit-scrollbar,
+    .category-links::-webkit-scrollbar { display: none; }
+
+    @media (max-width: 1200px) {
+      .header-main-flex { grid-template-columns: auto 1fr auto; }
+      .brand-bar-inner, .category-links { gap: 16px; }
+      .search-box { max-width: 100%; }
+    }
+
+    @media (max-width: 992px) {
+      .header-main-flex { grid-template-columns: 1fr; gap: 16px; }
+      .action-section { justify-content: flex-start; width: 100%; }
+      .search-box { max-width: 100%; }
+    }
+
+    @media (max-width: 768px) {
+      .brand-bar-inner, .header-main-flex, .nav-bar-inner, .promo-inner { flex-wrap: wrap; justify-content: center; }
+      .brand-links, .utility-links, .category-links { justify-content: center; gap: 12px; }
+      .header-main-flex { grid-template-columns: 1fr; }
+      .action-link { width: 100%; justify-content: center; }
+    }
+
+    @media (max-width: 1024px) {
+      .brand-bar-inner,
+      .header-main-flex,
+      .nav-bar-inner,
+      .promo-inner { flex-wrap: wrap; justify-content: center; }
+      .search-box { min-width: 100%; }
+      .category-links { justify-content: center; }
+    }
+
+    @media (max-width: 768px) {
+      .brand-links, .utility-links, .category-links { gap: 12px; }
+      .header-main-flex { flex-direction: column; align-items: stretch; }
+      .action-section { justify-content: space-between; }
+      .action-link { width: 100%; justify-content: center; }
+    }
 
     /* Content Area */
     .nosh-main { flex: 1; }
@@ -301,6 +360,23 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
   categories: CategoryLookupDto[] = [];
   searchTerm = '';
   selectedCategorySlug = '';
+
+  categoryNavLinks = [
+    { label: 'Furniture', slug: 'furniture' },
+    { label: 'Outdoor', slug: 'outdoor' },
+    { label: 'Bedding & Bath', slug: 'bedding-bath' },
+    { label: 'Rugs', slug: 'rugs' },
+    { label: 'Decor & Pillows', slug: 'decor-pillows' },
+    { label: 'Lighting', slug: 'lighting' },
+    { label: 'Organization', slug: 'organization' },
+    { label: 'Kitchen', slug: 'kitchen' },
+    { label: 'Baby & Kids', slug: 'baby-kids' },
+    { label: 'Home Improvement', slug: 'home-improvement' },
+    { label: 'Appliances', slug: 'appliances' },
+    { label: 'Pet', slug: 'pet' },
+    { label: 'Holiday', slug: 'holiday' },
+    { label: 'Sale', slug: 'sale' }
+  ];
 
   private fallbackCategories: CategoryLookupDto[] = [
     { id: 'pc', name: 'Personal Care', slug: 'personal-care' },
