@@ -1,0 +1,49 @@
+<div class="account-page">
+  <div class="account-head">
+    <h2>Review My Purchases</h2>
+    <p>Rate and review items you purchased. Reviews are saved in this browser.</p>
+  </div>
+
+  <div *ngIf="isLoading" class="state">Loading...</div>
+
+  <div *ngIf="!isLoading && items.length === 0" class="state">
+    No delivered items found yet.
+  </div>
+
+  <div class="review-list" *ngIf="!isLoading && items.length > 0">
+    <div class="review-card" *ngFor="let item of items">
+      <div class="top">
+        <img *ngIf="item.image" [src]="item.image" alt="" />
+        <div class="meta">
+          <div class="name">{{ item.name }}</div>
+          <div class="sub">
+            <span *ngIf="item.orderRef">Order: {{ item.orderRef }}</span>
+            <span *ngIf="item.orderDate"> • {{ item.orderDate | date:'mediumDate' }}</span>
+          </div>
+          <button type="button" class="link" (click)="openProduct(item)">View product</button>
+        </div>
+      </div>
+
+      <ng-container *ngIf="drafts[item.key] as draft">
+        <div class="stars">
+          <button type="button" class="star" [class.on]="draft.rating >= 1" (click)="setRating(item, 1)">★</button>
+          <button type="button" class="star" [class.on]="draft.rating >= 2" (click)="setRating(item, 2)">★</button>
+          <button type="button" class="star" [class.on]="draft.rating >= 3" (click)="setRating(item, 3)">★</button>
+          <button type="button" class="star" [class.on]="draft.rating >= 4" (click)="setRating(item, 4)">★</button>
+          <button type="button" class="star" [class.on]="draft.rating >= 5" (click)="setRating(item, 5)">★</button>
+        </div>
+
+        <textarea [(ngModel)]="draft.comment" rows="3" placeholder="Write your review (optional)"></textarea>
+
+        <div class="actions">
+          <button type="button" class="primary" (click)="save(item)">Save review</button>
+          <button *ngIf="saved[item.key]" type="button" class="danger" (click)="remove(item)">Delete</button>
+        </div>
+      </ng-container>
+
+      <div class="saved" *ngIf="saved[item.key]">
+        Saved: {{ saved[item.key].createdAt | date:'medium' }}
+      </div>
+    </div>
+  </div>
+</div>

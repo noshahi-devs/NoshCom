@@ -5,11 +5,15 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ProfileComponent } from './profile.component';
 import { OrdersComponent } from './orders.component';
 import { SettingsComponent } from './settings.component';
+import { ReviewPurchasesComponent } from './review-purchases.component';
+import { RecentlyViewedComponent } from './recently-viewed.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'profile', pathMatch: 'full' },
   { path: 'profile', component: ProfileComponent },
   { path: 'orders', component: OrdersComponent },
+  { path: 'reviews', component: ReviewPurchasesComponent },
+  { path: 'recently-viewed', component: RecentlyViewedComponent },
   { path: 'settings', component: SettingsComponent }
 ];
 
@@ -17,7 +21,9 @@ const routes: Routes = [
   declarations: [
     ProfileComponent,
     OrdersComponent,
-    SettingsComponent
+    SettingsComponent,
+    ReviewPurchasesComponent,
+    RecentlyViewedComponent
   ],
   imports: [
     CommonModule,

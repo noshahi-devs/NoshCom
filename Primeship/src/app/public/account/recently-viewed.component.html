@@ -1,0 +1,25 @@
+<div class="rv-page">
+  <div class="rv-head">
+    <div>
+      <h2>Recently Viewed</h2>
+      <p>Items you opened recently (saved in this browser).</p>
+    </div>
+    <button type="button" class="clear" (click)="clear()" [disabled]="items.length === 0">Clear</button>
+  </div>
+
+  <div class="empty" *ngIf="items.length === 0">
+    Nothing here yet. Open a product to start building this list.
+  </div>
+
+  <div class="grid" *ngIf="items.length > 0">
+    <button type="button" class="card" *ngFor="let item of items" (click)="open(item)">
+      <img *ngIf="item.image" [src]="item.image" alt="" />
+      <div class="name">{{ item.name }}</div>
+      <div class="meta">
+        <span *ngIf="item.price != null">{{ item.price | number:'1.2-2' }}</span>
+        <span *ngIf="item.viewedAt"> • {{ item.viewedAt | date:'short' }}</span>
+      </div>
+    </button>
+  </div>
+</div>
+

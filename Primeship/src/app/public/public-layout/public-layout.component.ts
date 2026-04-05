@@ -18,7 +18,7 @@ declare var lucide: any;
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, CurrencyPipe, FormsModule, ReactiveFormsModule],
   template: `
-    <div class="nosh-shell">
+    <div class="nosh-shell" (click)="closeAccountDropdown()">
       <header class="eliship-header" *ngIf="!isAuthPage">
         <div class="header-main-bar">
           <div class="container-header header-main-flex">
@@ -37,21 +37,127 @@ declare var lucide: any;
             </div>
 
             <div class="action-section">
-               <a *ngIf="!authService.isAuthenticated()" routerLink="/auth/login" class="action-link">
-                  <i class="far fa-user-circle"></i>
-                  <span>Account</span>
-               </a>
+               <div class="account-wrap" (click)="$event.stopPropagation()">
+                 <button type="button" class="action-link account-trigger" (click)="toggleAccountDropdown($event)">
+                    <svg class="action-icon account-icon" viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+                      <path d="M14 4.5a9.5 9.5 0 109.5 9.5A9.51 9.51 0 0014 4.5zM9.26 21.05v-2.17a3.37 3.37 0 013.36-3.36h2.74a3.37 3.37 0 013.36 3.36v2.19a8.47 8.47 0 01-9.48 0zM14 14.5a2.5 2.5 0 112.5-2.5 2.5 2.5 0 01-2.5 2.5zm5.73 5.76v-1.38a4.37 4.37 0 00-3.44-4.26A3.45 3.45 0 0017.5 12a3.5 3.5 0 00-7 0 3.45 3.45 0 001.21 2.62 4.37 4.37 0 00-3.44 4.26v1.38a8.5 8.5 0 1111.46 0z"></path>
+                    </svg>
+                    <span>Account</span>
+                 </button>
+
+                 <div class="account-dropdown" *ngIf="showAccountDropdown" (click)="$event.stopPropagation()" role="menu" aria-label="Account menu">
+                   <div class="account-dd-header">
+                     Welcome, <span class="account-dd-name">{{ userName || 'Guest' }}</span>
+                   </div>
+
+                   <div class="account-dd-group">
+                     <a routerLink="/account/profile" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
+                       <i class="far fa-user"></i>
+                       <span>My Account</span>
+                     </a>
+                     <a routerLink="/account/orders" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
+                       <i class="fas fa-box"></i>
+                       <span>My Orders</span>
+                     </a>
+                     <a routerLink="/wishlist" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
+                       <i class="far fa-heart"></i>
+                       <span>Lists</span>
+                     </a>
+                     <a routerLink="/account/reviews" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
+                       <i class="far fa-star"></i>
+                       <span>Review My Purchases</span>
+                     </a>
+                     <a routerLink="/account/recently-viewed" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
+                       <i class="far fa-clock"></i>
+                       <span>Recently Viewed</span>
+                     </a>
+                     <a routerLink="/contact-support" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
+                       <i class="far fa-life-ring"></i>
+                       <span>Help & Contact</span>
+                     </a>
+
+                     <div class="account-dd-sep"></div>
+
+                     <a routerLink="/design-services" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
+                       <i class="fas fa-pencil-ruler"></i>
+                       <span>Design Services</span>
+                     </a>
+                     <a routerLink="/gift-card" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
+                       <i class="fas fa-gift"></i>
+                       <span>Gift Card</span>
+                     </a>
+                     <a routerLink="/rewards" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
+                       <i class="fas fa-award"></i>
+                       <span>Rewards</span>
+                     </a>
+                     <a routerLink="/credit-card" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
+                       <i class="far fa-credit-card"></i>
+                       <span>Credit Card</span>
+                     </a>
+                     <a routerLink="/financing" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
+                       <i class="fas fa-hand-holding-usd"></i>
+                       <span>Financing</span>
+                     </a>
+                     <a routerLink="/cash-registry" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
+                       <i class="fas fa-cash-register"></i>
+                       <span>Cash Registry</span>
+                     </a>
+
+                     <div class="account-dd-footer">
+                       <ng-container *ngIf="authService.isAuthenticated(); else signedOutCtas">
+                         <span>On a public or shared device?</span>
+                         <button type="button" class="account-dd-signout" (click)="signOut()">Sign Out</button>
+                       </ng-container>
+                       <ng-template #signedOutCtas>
+                         <span>On a public or shared device?</span>
+                         <div class="account-dd-ctas">
+                           <a routerLink="/auth/login" class="account-dd-cta" (click)="closeAccountDropdown()">Sign In</a>
+                           <a routerLink="/auth/register" class="account-dd-cta" (click)="closeAccountDropdown()">Create Account</a>
+                         </div>
+                       </ng-template>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+
                <a routerLink="/cart" class="action-link cart-trigger">
-                  <i class="fas fa-shopping-cart"></i>
+                  <svg class="action-icon" focusable="false" viewBox="2 2 24 24" aria-hidden="true">
+                    <path d="M21 15.54a.51.51 0 00.49-.38l2-8a.51.51 0 00-.1-.43.49.49 0 00-.39-.19H8.28L8 4.9a.51.51 0 00-.49-.4H5a.5.5 0 000 1h2.05L9 15l-2.36 4.74a.53.53 0 000 .49.5.5 0 00.42.23H21a.5.5 0 00.5-.5.5.5 0 00-.5-.5H7.89l1.92-3.92zm1.34-8l-1.73 7H9.92l-1.43-7zM10 21a1 1 0 101 1 1 1 0 00-1-1zM18 21a1 1 0 101 1 1 1 0 00-1-1z"></path>
+                  </svg>
                   <span>Cart</span>
                   <span class="badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
-               </a>
+                </a>
             </div>
           </div>
         </div>
 
         <div class="header-nav-bar">
           <div class="container-header nav-bar-inner">
+            <div class="feature-links" aria-label="Primary navigation">
+              <ng-container *ngFor="let link of headerFeatureLinks">
+                <a
+                  *ngIf="!link.external"
+                  [routerLink]="link.routerLink"
+                  [queryParams]="link.queryParams"
+                  class="feature-link"
+                  [class.verified]="link.key === 'verified'"
+                >
+                  <i *ngIf="link.icon" [class]="link.icon"></i>
+                  {{ link.label }}
+                </a>
+                <a
+                  *ngIf="link.external"
+                  [href]="link.href"
+                  class="feature-link"
+                  [class.verified]="link.key === 'verified'"
+                  [attr.target]="link.target || null"
+                  [attr.rel]="link.target === '_blank' ? 'noopener noreferrer' : null"
+                >
+                  <i *ngIf="link.icon" [class]="link.icon"></i>
+                  {{ link.label }}
+                </a>
+              </ng-container>
+            </div>
             <div class="category-links">
               <a *ngFor="let cat of categoryNavLinks" [routerLink]="['/category', cat.slug]" class="category-link">{{ cat.label }}</a>
             </div>
@@ -244,15 +350,38 @@ declare var lucide: any;
     .search-icon-btn:focus { outline: none; }
 
     .action-section { display: flex; align-items: center; gap: 16px; justify-content: flex-end; margin-right: 20px; }
-    .action-link { text-decoration: none; color: #111827; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 999px; background: transparent; }
+    .action-link { text-decoration: none; color: #111827; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 999px; background: transparent; border: none; cursor: pointer; font-family: inherit; }
     .action-link:hover { color: #7B189F; }
-    .action-link i { color: #7B189F; font-size: 18px; }
+    .action-icon { width: 26px; height: 26px; display: inline-block; flex: 0 0 auto; fill: #111827; }
+    .account-icon { width: 32px; height: 32px; }
+    .account-wrap { position: relative; display: inline-flex; align-items: center; }
+    .account-trigger { user-select: none; }
+
+    .account-dropdown { position: absolute; top: calc(100% + 10px); right: 0; width: 290px; background: #FFF; border: 1px solid #E5E7EB; border-radius: 12px; box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18); padding: 10px; z-index: 2000; }
+    .account-dd-header { font-size: 18px; font-weight: 700; padding: 10px 10px 12px; color: #111827; border-bottom: 1px solid #E5E7EB; }
+    .account-dd-name { font-weight: 800; }
+    .account-dd-group { padding: 6px 2px 2px; }
+    .account-dd-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 10px; border-radius: 10px; color: #111827; text-decoration: none; font-size: 14px; font-weight: 600; background: transparent; border: none; cursor: pointer; text-align: left; font-family: inherit; }
+    .account-dd-item i { width: 18px; text-align: center; color: #111827; opacity: 0.85; font-size: 15px; }
+    .account-dd-item:hover { background: #F3F4F6; }
+    .account-dd-sep { height: 1px; background: #E5E7EB; margin: 8px 8px; }
+    .account-dd-footer { border-top: 1px solid #E5E7EB; margin-top: 10px; padding: 10px 10px 6px; font-size: 12px; color: #6B7280; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .account-dd-signout { border: none; background: transparent; color: #111827; font-weight: 700; cursor: pointer; padding: 0; text-decoration: underline; }
+    .account-dd-ctas { display: inline-flex; gap: 10px; align-items: center; }
+    .account-dd-cta { color: #111827; font-weight: 800; text-decoration: underline; cursor: pointer; }
+
     .cart-trigger { position: relative; }
     .cart-trigger .badge { position: absolute; top: -5px; right: -8px; background: #F43F5E; color: #FFF; font-size: 11px; font-weight: 900; padding: 2px 6px; border-radius: 12px; line-height: 1; border: 2px solid #FFF; }
 
-    .category-links { display: flex; gap: 22px; flex-wrap: nowrap; overflow-x: auto; padding: 10px 0; align-items: center; }
+    .category-links { display: flex; gap: 22px; flex-wrap: nowrap; overflow-x: auto; padding: 10px 0; align-items: center; justify-content: center; width: 100%; }
     .category-link { color: #111827; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; opacity: 0.92; transition: opacity 0.2s ease, color 0.2s ease; }
     .category-link:hover { color: #7B189F; opacity: 1; }
+
+    .feature-links { display: flex; gap: 22px; flex-wrap: nowrap; overflow-x: auto; padding: 10px 0; align-items: center; justify-content: center; width: 100%; }
+    .feature-link { color: #111827; font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap; opacity: 0.95; transition: opacity 0.2s ease, color 0.2s ease; display: inline-flex; align-items: center; gap: 8px; }
+    .feature-link:hover { color: #7B189F; opacity: 1; }
+    .feature-link.verified { color: #7B189F; }
+    .feature-link i { font-size: 14px; }
     .header-nav-bar { border-top: 1px solid #E5E7EB; border-bottom: 1px solid #E5E7EB; }
     .nav-bar-inner { overflow-x: auto; }
 
@@ -261,6 +390,7 @@ declare var lucide: any;
     .promo-arrow { font-size: 18px; }
 
     .search-box::-webkit-scrollbar,
+    .feature-links::-webkit-scrollbar,
     .category-links::-webkit-scrollbar { display: none; }
 
     @media (max-width: 1200px) {
@@ -360,6 +490,7 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
   categories: CategoryLookupDto[] = [];
   searchTerm = '';
   selectedCategorySlug = '';
+  showAccountDropdown = false;
 
   categoryNavLinks = [
     { label: 'Furniture', slug: 'furniture' },
@@ -376,6 +507,26 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
     { label: 'Pet', slug: 'pet' },
     { label: 'Holiday', slug: 'holiday' },
     { label: 'Sale', slug: 'sale' }
+  ];
+
+  headerFeatureLinks: Array<{
+    key: 'verified' | 'new-arrivals' | 'best-sellers' | 'collaborations' | 'shop-by-room' | 'inspiration' | 'outdoor-shop' | 'services';
+    label: string;
+    icon?: string;
+    external?: boolean;
+    href?: string;
+    target?: '_blank' | '_self';
+    routerLink?: any[] | string;
+    queryParams?: Record<string, any>;
+  }> = [
+    { key: 'verified', label: 'Verified', icon: 'fas fa-shield-alt', routerLink: ['/verified'] },
+    { key: 'new-arrivals', label: 'New Arrivals', routerLink: ['/shop'], queryParams: { sortBy: 'newest' } },
+    { key: 'best-sellers', label: 'Best Sellers', routerLink: ['/shop'], queryParams: { sortBy: 'chart' } },
+    { key: 'collaborations', label: 'Collaborations', routerLink: ['/collaborations'] },
+    { key: 'shop-by-room', label: 'Shop by Room', routerLink: ['/shop-by-room'] },
+    { key: 'inspiration', label: 'Inspiration', routerLink: ['/inspiration'] },
+    { key: 'outdoor-shop', label: 'The Outdoor Shop', routerLink: ['/category', 'outdoor'] },
+    { key: 'services', label: 'Services', routerLink: ['/services'] }
   ];
 
   private fallbackCategories: CategoryLookupDto[] = [
@@ -491,6 +642,20 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
     } else {
       this.router.navigate(['/shop'], { queryParams });
     }
+  }
+
+  toggleAccountDropdown(event?: Event): void {
+    event?.preventDefault();
+    this.showAccountDropdown = !this.showAccountDropdown;
+  }
+
+  closeAccountDropdown(): void {
+    this.showAccountDropdown = false;
+  }
+
+  signOut(): void {
+    this.closeAccountDropdown();
+    this.authService.logout();
   }
 
   toggleLanguage() {

@@ -11,6 +11,7 @@ import { Product } from '../../core/models';
 import { AuthService } from '../../core/services/auth.service';
 import { CartService } from '../../core/services/cart.service';
 import { ToastService } from '../../core/services/toast.service';
+import { RecentlyViewedService } from '../../core/services/recently-viewed.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -65,6 +66,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private cartService: CartService,
     private toastService: ToastService,
+    private recentlyViewedService: RecentlyViewedService,
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef
   ) { }
@@ -173,6 +175,15 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       brand,
       sku
     };
+
+    this.recentlyViewedService.add({
+      id: String(id),
+      name,
+      slug: dto.slug || '',
+      sku,
+      image: mainImage,
+      price
+    });
 
     this.isLoading = false;
     this.cdr.detectChanges();

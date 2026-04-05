@@ -16,6 +16,19 @@ import { AuthGuard } from './core/guards/auth.guard';
 import { PublicLayoutComponent } from './public/public-layout/public-layout.component';
 import { AdminLayoutComponent } from './pages/admin/admin-layout/admin-layout.component';
 import { AboutUsComponent, ReturnsPolicyComponent, ContactSupportComponent, TrackOrderComponent } from './public/pages/info-pages.component';
+import {
+  VerifiedComponent,
+  CollaborationsComponent,
+  ShopByRoomComponent,
+  InspirationComponent,
+  ServicesComponent,
+  DesignServicesComponent,
+  GiftCardComponent,
+  RewardsComponent,
+  CreditCardComponent,
+  FinancingComponent,
+  CashRegistryComponent
+} from './public/pages/feature-pages.component';
 
 export const routes: Routes = [
   {
@@ -84,6 +97,50 @@ export const routes: Routes = [
       {
         path: 'track-order',
         loadComponent: () => import('./public/pages/track-order/track-order.component').then(c => c.TrackOrderComponent)
+      },
+      {
+        path: 'verified',
+        component: VerifiedComponent
+      },
+      {
+        path: 'collaborations',
+        component: CollaborationsComponent
+      },
+      {
+        path: 'shop-by-room',
+        component: ShopByRoomComponent
+      },
+      {
+        path: 'inspiration',
+        component: InspirationComponent
+      },
+      {
+        path: 'services',
+        component: ServicesComponent
+      },
+      {
+        path: 'design-services',
+        component: DesignServicesComponent
+      },
+      {
+        path: 'gift-card',
+        component: GiftCardComponent
+      },
+      {
+        path: 'rewards',
+        component: RewardsComponent
+      },
+      {
+        path: 'credit-card',
+        component: CreditCardComponent
+      },
+      {
+        path: 'financing',
+        component: FinancingComponent
+      },
+      {
+        path: 'cash-registry',
+        component: CashRegistryComponent
       }
     ]
   },
