@@ -18,8 +18,33 @@ declare var lucide: any;
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, CurrencyPipe, FormsModule, ReactiveFormsModule],
   template: `
-    <div class="nosh-shell" (click)="closeAccountDropdown()">
+    <div class="nosh-shell" (click)="closeOverlays()">
       <header class="eliship-header" *ngIf="!isAuthPage">
+        <div class="marketing-banner">
+          <div class="container-header marketing-inner">
+            <div class="marketing-left">
+              <a routerLink="/home" class="marketing-logo">
+                <span class="marketing-logo-mark">E</span>
+                <span class="marketing-logo-text">Eliship</span>
+              </a>
+
+              <div class="marketing-stores" aria-label="Eliship stores">
+                <a [routerLink]="['/shop']" [queryParams]="{ q: 'AllModern' }" class="marketing-store">AllModern</a>
+                <a [routerLink]="['/shop']" [queryParams]="{ q: 'Birch Lane' }" class="marketing-store">Birch Lane</a>
+                <a [routerLink]="['/shop']" [queryParams]="{ q: 'Joss & Main' }" class="marketing-store">Joss & Main</a>
+                <a [routerLink]="['/shop']" [queryParams]="{ q: 'Perigold' }" class="marketing-store">Perigold</a>
+              </div>
+            </div>
+
+            <div class="marketing-right" aria-label="Marketing links">
+              <a routerLink="/rewards" class="marketing-action">Rewards</a>
+              <a routerLink="/financing" class="marketing-action">Financing</a>
+              <a href="#" class="marketing-action" (click)="openMerchantPortal($event)">Professional</a>
+              <button type="button" class="free-ship-btn" (click)="showFreeShipping()">Fast & Free Shipping Over $35*</button>
+            </div>
+          </div>
+        </div>
+
         <div class="header-main-bar">
           <div class="container-header header-main-flex">
             <div class="logo-section">
@@ -112,21 +137,48 @@ declare var lucide: any;
                          <span>On a public or shared device?</span>
                          <div class="account-dd-ctas">
                            <a routerLink="/auth/login" class="account-dd-cta" (click)="closeAccountDropdown()">Sign In</a>
-                           <a routerLink="/auth/register" class="account-dd-cta" (click)="closeAccountDropdown()">Create Account</a>
                          </div>
                        </ng-template>
                      </div>
                    </div>
                  </div>
-               </div>
+                </div>
 
-               <a routerLink="/cart" class="action-link cart-trigger">
-                  <svg class="action-icon" focusable="false" viewBox="2 2 24 24" aria-hidden="true">
-                    <path d="M21 15.54a.51.51 0 00.49-.38l2-8a.51.51 0 00-.1-.43.49.49 0 00-.39-.19H8.28L8 4.9a.51.51 0 00-.49-.4H5a.5.5 0 000 1h2.05L9 15l-2.36 4.74a.53.53 0 000 .49.5.5 0 00.42.23H21a.5.5 0 00.5-.5.5.5 0 00-.5-.5H7.89l1.92-3.92zm1.34-8l-1.73 7H9.92l-1.43-7zM10 21a1 1 0 101 1 1 1 0 00-1-1zM18 21a1 1 0 101 1 1 1 0 00-1-1z"></path>
-                  </svg>
-                  <span>Cart</span>
-                  <span class="badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
-                </a>
+                <a routerLink="/cart" class="action-link cart-trigger" (click)="onCartClick($event)">
+                   <svg class="action-icon" focusable="false" viewBox="2 2 24 24" aria-hidden="true">
+                     <path d="M21 15.54a.51.51 0 00.49-.38l2-8a.51.51 0 00-.1-.43.49.49 0 00-.39-.19H8.28L8 4.9a.51.51 0 00-.49-.4H5a.5.5 0 000 1h2.05L9 15l-2.36 4.74a.53.53 0 000 .49.5.5 0 00.42.23H21a.5.5 0 00.5-.5.5.5 0 00-.5-.5H7.89l1.92-3.92zm1.34-8l-1.73 7H9.92l-1.43-7zM10 21a1 1 0 101 1 1 1 0 00-1-1zM18 21a1 1 0 101 1 1 1 0 00-1-1z"></path>
+                   </svg>
+                   <span>Cart</span>
+                   <span class="badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
+                 </a>
+
+                <div class="cart-modal-backdrop" *ngIf="showCartPopup" (click)="closeCartPopup()" aria-hidden="true"></div>
+                <div class="cart-modal" *ngIf="showCartPopup" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Cart popup">
+                  <div class="cart-modal-header">
+                    <div class="cart-modal-title">In Your Cart</div>
+                    <button type="button" class="cart-modal-close" (click)="closeCartPopup()" aria-label="Close">×</button>
+                  </div>
+                  <div class="cart-modal-body">
+                    <div class="cart-empty-title">Oh-no! Looks like your cart is empty.</div>
+                    <div class="cart-empty-sub">Here are some options to get you started:</div>
+
+                    <div class="cart-empty-options">
+                      <button type="button" class="cart-empty-option" (click)="goToCartFromPopup()">
+                        <span class="cart-empty-icon">
+                          <i class="fas fa-shopping-cart"></i>
+                        </span>
+                        <span>View your saved items in <span class="cart-empty-link">Cart</span></span>
+                      </button>
+
+                      <button type="button" class="cart-empty-option" (click)="goToDailySalesFromPopup()">
+                        <span class="cart-empty-icon">
+                          <i class="fas fa-tag"></i>
+                        </span>
+                        <span>Start saving with <span class="cart-empty-link">Daily Sales</span></span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
             </div>
           </div>
         </div>
@@ -172,102 +224,179 @@ declare var lucide: any;
         </div>
       </header>
 
+      <section class="promo-carousel" *ngIf="!isAuthPage && !isHomePage" (click)="$event.stopPropagation()" aria-label="Promotions carousel">
+        <div class="promo-carousel-inner">
+          <button type="button" class="promo-carousel-nav prev" (click)="prevPromo($event)" aria-label="Previous promotion">
+            <span class="promo-carousel-nav-ico" aria-hidden="true">
+              <svg focusable="false" viewBox="0 0 24 24" role="img" aria-label="Previous Slide">
+                <title>Previous Slide</title>
+                <path d="M9.5 4.5c.13 0 .26.05.35.15l7 7c.2.2.2.51 0 .71l-7 7c-.2.2-.51.2-.71 0s-.2-.51 0-.71L15.79 12 9.14 5.35c-.2-.2-.2-.51 0-.71.1-.1.23-.15.35-.15z"></path>
+              </svg>
+            </span>
+          </button>
+
+          <div class="promo-carousel-viewport">
+            <div class="promo-carousel-track" [style.transform]="'translateX(-' + (promoIndex * 100) + '%)'">
+              <a
+                *ngFor="let slide of promoSlides; let i = index"
+                class="promo-carousel-slide"
+                [class.active]="i === promoIndex"
+                [routerLink]="slide.routerLink"
+                [queryParams]="slide.queryParams"
+              >
+                <ng-container *ngIf="slide.video; else promoImage">
+                  <video class="promo-carousel-media" autoplay muted loop playsinline preload="metadata" [attr.poster]="slide.poster || null">
+                    <source [src]="slide.video" type="video/mp4" />
+                  </video>
+                </ng-container>
+                <ng-template #promoImage>
+                  <img class="promo-carousel-media" [src]="slide.image" [alt]="slide.alt" loading="lazy" />
+                </ng-template>
+              </a>
+            </div>
+          </div>
+
+          <button type="button" class="promo-carousel-nav next" (click)="nextPromo($event)" aria-label="Next promotion">
+            <span class="promo-carousel-nav-ico" aria-hidden="true">
+              <svg focusable="false" viewBox="0 0 24 24" role="img" aria-label="Next Slide">
+                <title>Next Slide</title>
+                <path d="M9.5 4.5c.13 0 .26.05.35.15l7 7c.2.2.2.51 0 .71l-7 7c-.2.2-.51.2-.71 0s-.2-.51 0-.71L15.79 12 9.14 5.35c-.2-.2-.2-.51 0-.71.1-.1.23-.15.35-.15z"></path>
+              </svg>
+            </span>
+          </button>
+
+          <div class="promo-carousel-dots" aria-hidden="true">
+            <button
+              type="button"
+              class="promo-carousel-dot"
+              *ngFor="let _ of promoSlides; let i = index"
+              [class.active]="i === promoIndex"
+              (click)="goToPromo(i, $event)"
+            ></button>
+          </div>
+        </div>
+      </section>
+
       <!-- Content Area -->
       <main class="nosh-main">
         <router-outlet></router-outlet>
       </main>
 
-      <!-- Global Noshahibaba Footer -->
-      <footer class="nosh-footer-canvas" *ngIf="!isAuthPage">
-        <div class="container-footer">
-          <div class="footer-plate">
-            
-            <div class="plate-inner">
-              <!-- Premium Newsletter Banner -->
-              <div class="newsletter-banner">
-                <div class="nl-content">
-                  <h2>Subscribe to our Newsletter</h2>
-                  <p>Enter your email address to receive the latest global sourcing updates, wholesale campaigns, and exclusive Noshahibaba offers.</p>
-                  
-                  <div class="nl-form-group">
-                    <input type="email" placeholder="Enter your email address">
-                    <button class="btn-nl-subscribe">Subscribe</button>
-                  </div>
-                  <div class="nl-consent">
-                     <i class="fas fa-check-square"></i> I accept the terms of data processing according to strict privacy protocols.
-                  </div>
-                </div>
-                <div class="nl-visual">
-                  <!-- Sleek e-commerce/3d logistics box graphic -->
-                  <img src="https://cdn-icons-png.flaticon.com/512/4129/4129437.png" alt="Logistics 3D Graphic">
-                </div>
-              </div>
+      <!-- Floating Help Widget -->
+      <div class="help-fab-wrap" *ngIf="!isAuthPage" (click)="$event.stopPropagation()">
+        <button type="button" class="help-fab" (click)="toggleHelpWidget($event)" aria-label="Help">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="help-fab-ico">
+            <path d="M8 10.5h8M8 13.5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <path d="M20 12a7 7 0 0 1-7 7H9l-3.2 2.2a.7.7 0 0 1-1.1-.6V19A7 7 0 1 1 20 12Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+          </svg>
+        </button>
 
-              <!-- Footer Links Matrix (5 Columns) -->
-              <div class="footer-links-grid">
-                <div class="f-col">
-                  <h4>Categories</h4>
-                  <ul>
-                    <li><a routerLink="/shop">Personal Care</a></li>
-                    <li><a routerLink="/shop">Electronics</a></li>
-                    <li><a routerLink="/shop">Apparel & Fashion</a></li>
-                    <li><a routerLink="/shop">Home & Garden</a></li>
-                  </ul>
-                </div>
-                <div class="f-col">
-                  <h4>Corporate</h4>
-                  <ul>
-                    <li><a routerLink="/about-us">About Us</a></li>
-                    <li><a routerLink="/about-us">Our Network</a></li>
-                    <li><a routerLink="/about-us">Certifications</a></li>
-                    <li><a routerLink="/about-us">Partners</a></li>
-                  </ul>
-                </div>
-                <div class="f-col">
-                  <h4>Support Hub</h4>
-                  <ul>
-                    <li><a routerLink="/track">Order Tracking</a></li>
-                    <li><a routerLink="/help">Logistics Options</a></li>
-                    <li><a routerLink="/returns">Delivery & Returns</a></li>
-                    <li><a routerLink="/help">Trade Assurance</a></li>
-                  </ul>
-                </div>
-                <div class="f-col">
-                  <h4>Legal & Compliance</h4>
-                  <ul>
-                    <li><a routerLink="/help">FAQ</a></li>
-                    <li><a routerLink="/about-us">Privacy Policy</a></li>
-                    <li><a routerLink="/about-us">Terms of Use</a></li>
-                    <li><a routerLink="/about-us">Data Security</a></li>
-                  </ul>
-                </div>
-                <div class="f-col f-col-cert">
-                  <!-- Certification Badges Mockup -->
-                  <div class="cert-placeholder">Guven<br>Damgasi</div>
-                  <div class="cert-placeholder dark">ETBIS Reg.</div>
-                </div>
-              </div>
+        <div class="help-popover" *ngIf="showHelpWidget" role="dialog" aria-label="Help" (click)="$event.stopPropagation()">
+          <div class="help-popover-top">
+            <div class="help-popover-title">Help</div>
+            <button type="button" class="help-popover-close" aria-label="Close" (click)="closeHelpWidget($event)">×</button>
+          </div>
+
+          <div class="help-popover-body">
+            <div class="help-popover-headline">We're here to help.</div>
+            <div class="help-popover-sub">How can we assist you today?</div>
+
+            <div class="help-popover-actions">
+              <button type="button" class="help-popover-pill" (click)="goToLiveShopping($event)">Live Shopping Assistance</button>
+              <button type="button" class="help-popover-pill" (click)="goToCustomerService($event)">Customer Service Help</button>
             </div>
 
-            <!-- Dark Green Bottom Bar -->
-            <div class="footer-bottom-bar">
-              <div class="f-bottom-left">
-                Copyright © 2026 Noshahibaba Matrix. All rights reserved.
+            <div class="help-popover-sep"></div>
+
+            <div class="help-popover-links">
+              <a routerLink="/account/orders" (click)="closeHelpWidget($event)">My Orders</a>
+              <a routerLink="/contact-support" (click)="closeHelpWidget($event)">Help Center</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Global Eliship Footer -->
+      <footer class="wf-footer" *ngIf="!isAuthPage">
+        <hr class="wf-footer-hr" />
+
+        <div class="wf-footer-wrap">
+          <div class="container-footer wf-footer-inner">
+            <section class="wf-footer-grid" aria-label="Footer navigation">
+              <section class="wf-footer-col">
+                <h2 class="wf-footer-title">About Us</h2>
+                <ul class="wf-footer-list">
+                  <li><a routerLink="/about-us">About Eliship</a></li>
+                  <li><a routerLink="/rewards">Eliship Rewards</a></li>
+                  <li><a href="#" (click)="openMerchantPortal($event)">Eliship Professional</a></li>
+                  <li><a routerLink="/design-services">Design Services</a></li>
+                  <li><a routerLink="/gift-card">Gift Cards</a></li>
+                  <li><a routerLink="/cash-registry">Eliship Cash Registry</a></li>
+                  <li><a routerLink="/credit-card">Eliship Credit Card</a></li>
+                  <li><a routerLink="/financing">Eliship Financing</a></li>
+                  <li><a routerLink="/shop" [queryParams]="{ sortBy: 'newest' }">New Arrivals</a></li>
+                  <li><a routerLink="/shop" [queryParams]="{ sortBy: 'chart' }">Best Sellers</a></li>
+                  <li><a routerLink="/collaborations">Collaborations</a></li>
+                  <li><a routerLink="/verified">Verified</a></li>
+                </ul>
+              </section>
+
+              <section class="wf-footer-col">
+                <h2 class="wf-footer-title">Customer Service</h2>
+                <ul class="wf-footer-list">
+                  <li><a routerLink="/account/orders">My Orders</a></li>
+                  <li><a routerLink="/account/profile">My Account</a></li>
+                  <li><a routerLink="/track-order">Track My Order</a></li>
+                  <li><a routerLink="/returns-policy">Return Policy</a></li>
+                  <li><a routerLink="/contact-support">Help Center</a></li>
+                  <li><a routerLink="/inspiration">Ideas & Advice</a></li>
+                  <li><a routerLink="/services">Services</a></li>
+                </ul>
+              </section>
+
+              <section class="wf-footer-col">
+                <h2 class="wf-footer-title">Contact Us</h2>
+
+                <div class="wf-contact-actions">
+                  <button type="button" class="wf-contact-btn" (click)="goQuickHelp()">
+                    <span class="wf-contact-ico"><i class="far fa-clock"></i></span>
+                    <span>Quick Help</span>
+                  </button>
+                  <button type="button" class="wf-contact-btn" (click)="showCallUs()">
+                    <span class="wf-contact-ico"><i class="fas fa-phone-alt"></i></span>
+                    <span>Call Us</span>
+                  </button>
+                </div>
+
+                <div class="wf-hours-block">
+                  <h3 class="wf-hours-title">Customer Service</h3>
+                  <p class="wf-hours-text">Open. Closes at 10:00 PM PKT.</p>
+                  <button type="button" class="wf-hours-btn" (click)="showWeeklyHours('Customer Service')">Weekly Hours</button>
+                </div>
+
+                <div class="wf-hours-block">
+                  <h3 class="wf-hours-title">Shopping Assistance</h3>
+                  <p class="wf-hours-text">Open. Closes at 6:00 PM PKT.</p>
+                  <button type="button" class="wf-hours-btn" (click)="showWeeklyHours('Shopping Assistance')">Weekly Hours</button>
+                </div>
+              </section>
+            </section>
+
+            <div class="wf-footer-bottom" aria-label="Footer bottom">
+              <div class="wf-footer-copy">Copyright © 2026 Eliship. All rights reserved.</div>
+              <div class="wf-footer-social">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
               </div>
-              <div class="f-bottom-center social-icons">
-                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-youtube"></i></a>
-                <a href="#"><i class="fab fa-linkedin-in"></i></a>
-              </div>
-              <div class="f-bottom-right payment-badges">
+              <div class="wf-footer-pay">
                 <i class="fab fa-cc-mastercard"></i>
                 <i class="fab fa-cc-visa"></i>
                 <span class="ssl-badge"><i class="fas fa-shield-alt"></i> 256 Bit SSL Encryption</span>
               </div>
             </div>
-
           </div>
         </div>
       </footer>
@@ -287,6 +416,25 @@ declare var lucide: any;
     .nosh-shell { font-family: 'Poppins', sans-serif; background: #FFF; min-height: 100vh; display: flex; flex-direction: column; }
     .container-header { max-width: 1400px; margin: 0 auto; padding: 0 20px; width: 100%; }
     .container-footer { max-width: 1300px; margin: 0 auto; padding: 0 20px; width: 100%; }
+
+    .marketing-banner { background: #7B189F; color: #FFF; }
+    .marketing-inner { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 10px 40px; flex-wrap: nowrap; }
+    .marketing-left { display: flex; align-items: center; gap: 18px; min-width: 0; }
+    .marketing-logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: #FFF; flex: 0 0 auto; }
+    .marketing-logo-mark { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(255,255,255,0.16); color: #FFF; font-size: 14px; font-weight: 800; }
+    .marketing-logo-text { font-weight: 900; letter-spacing: -0.02em; }
+
+    .marketing-stores { display: flex; gap: 18px; align-items: center; flex-wrap: nowrap; overflow-x: auto; }
+    .marketing-store { color: #FFF; text-decoration: none; font-size: 13px; font-weight: 600; white-space: nowrap; opacity: 0.95; border-bottom: 1px solid transparent; }
+    .marketing-store:hover { opacity: 1; border-bottom-color: rgba(255,255,255,0.75); }
+
+    .marketing-right { display: flex; align-items: center; gap: 0; flex: 0 0 auto; }
+    .marketing-right > * { padding: 0 12px; }
+    .marketing-right > *:not(:first-child) { border-left: 1px solid rgba(255,255,255,0.55); }
+
+    .marketing-action { color: #FFF; text-decoration: none; font-size: 13px; font-weight: 600; white-space: nowrap; border-bottom: none; }
+    .marketing-action:hover { opacity: 0.95; }
+    .free-ship-btn { border: none; background: transparent; color: #FFF; font-size: 13px; font-weight: 600; cursor: pointer; padding: 0; text-decoration: none; white-space: nowrap; }
 
     /* Utility Top Bar */
     .top-util-bar { background: #000; padding: 6px 0; font-size: 13px; font-weight: 700; color: var(--text-gray); }
@@ -365,19 +513,36 @@ declare var lucide: any;
     .account-dd-item i { width: 18px; text-align: center; color: #111827; opacity: 0.85; font-size: 15px; }
     .account-dd-item:hover { background: #F3F4F6; }
     .account-dd-sep { height: 1px; background: #E5E7EB; margin: 8px 8px; }
-    .account-dd-footer { border-top: 1px solid #E5E7EB; margin-top: 10px; padding: 10px 10px 6px; font-size: 12px; color: #6B7280; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .account-dd-footer { border-top: 1px solid #E5E7EB; margin-top: 10px; padding: 10px 10px 6px; font-size: 12px; color: #6B7280; display: flex; align-items: center; justify-content: flex-start; gap: 6px; }
+    .account-dd-footer > span { flex: 0 1 auto; }
     .account-dd-signout { border: none; background: transparent; color: #111827; font-weight: 700; cursor: pointer; padding: 0; text-decoration: underline; }
-    .account-dd-ctas { display: inline-flex; gap: 10px; align-items: center; }
-    .account-dd-cta { color: #111827; font-weight: 800; text-decoration: underline; cursor: pointer; }
+    .account-dd-ctas { display: inline-flex; gap: 10px; align-items: center; flex: 0 0 auto; }
+    .account-dd-cta { color: #111827; font-weight: 800; text-decoration: underline; cursor: pointer; white-space: nowrap; }
 
     .cart-trigger { position: relative; }
     .cart-trigger .badge { position: absolute; top: -5px; right: -8px; background: #F43F5E; color: #FFF; font-size: 11px; font-weight: 900; padding: 2px 6px; border-radius: 12px; line-height: 1; border: 2px solid #FFF; }
+
+    .cart-modal-backdrop { position: fixed; inset: 0; background: rgba(17, 24, 39, 0.35); z-index: 2500; }
+    .cart-modal { position: fixed; top: 110px; right: 24px; width: 420px; max-width: calc(100vw - 32px); background: #FFF; border: 1px solid #E5E7EB; border-radius: 14px; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22); z-index: 2600; overflow: hidden; }
+    .cart-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #E5E7EB; }
+    .cart-modal-title { font-weight: 900; font-size: 20px; color: #111827; }
+    .cart-modal-close { border: none; background: transparent; font-size: 22px; line-height: 1; cursor: pointer; color: #6B7280; padding: 0 6px; }
+    .cart-modal-close:hover { color: #111827; }
+    .cart-modal-body { padding: 16px; }
+    .cart-empty-title { font-size: 22px; font-weight: 900; color: #111827; margin: 8px 0 6px; }
+    .cart-empty-sub { color: #4B5563; font-weight: 600; margin-bottom: 14px; }
+    .cart-empty-options { display: grid; gap: 10px; }
+    .cart-empty-option { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 12px; border: 1px solid #E5E7EB; border-radius: 12px; background: #FFF; cursor: pointer; text-align: left; font-weight: 700; color: #111827; }
+    .cart-empty-option:hover { background: #F9FAFB; border-color: #D1D5DB; }
+    .cart-empty-icon { width: 40px; height: 40px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; background: rgba(123, 24, 159, 0.12); color: #7B189F; flex: 0 0 auto; }
+    .cart-empty-icon i { font-size: 18px; }
+    .cart-empty-link { color: #7B189F; text-decoration: underline; }
 
     .category-links { display: flex; gap: 22px; flex-wrap: nowrap; overflow-x: auto; padding: 10px 0; align-items: center; justify-content: center; width: 100%; }
     .category-link { color: #111827; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; opacity: 0.92; transition: opacity 0.2s ease, color 0.2s ease; }
     .category-link:hover { color: #7B189F; opacity: 1; }
 
-    .feature-links { display: flex; gap: 22px; flex-wrap: nowrap; overflow-x: auto; padding: 10px 0; align-items: center; justify-content: center; width: 100%; }
+    .feature-links { display: flex; gap: 22px; flex-wrap: nowrap; overflow-x: auto; padding: 10px 0; align-items: center; justify-content: center; width: 100%; border-bottom: 1px solid #E5E7EB; }
     .feature-link { color: #111827; font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap; opacity: 0.95; transition: opacity 0.2s ease, color 0.2s ease; display: inline-flex; align-items: center; gap: 8px; }
     .feature-link:hover { color: #7B189F; opacity: 1; }
     .feature-link.verified { color: #7B189F; }
@@ -388,6 +553,30 @@ declare var lucide: any;
     .promo-bar { background: #7B189F; color: #FFF; }
     .promo-inner { display: flex; justify-content: center; align-items: center; gap: 10px; min-height: 44px; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; }
     .promo-arrow { font-size: 18px; }
+
+    .promo-carousel { background: #FFF; border-bottom: 1px solid #E5E7EB; }
+    .promo-carousel-inner { position: relative; width: 100%; margin: 0; padding: 0; }
+    .promo-carousel-viewport { border-radius: 0; overflow: hidden; border-top: 1px solid #E5E7EB; border-bottom: 1px solid #E5E7EB; background: #111827; }
+    .promo-carousel-track { display: flex; width: 100%; transition: transform 420ms ease; }
+    .promo-carousel-slide { min-width: 100%; height: 320px; position: relative; display: block; text-decoration: none; color: inherit; }
+    .promo-carousel-media { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .promo-carousel-overlay { position: absolute; inset: 0; display: flex; align-items: center; padding: 18px 18px; background: linear-gradient(90deg, rgba(17, 24, 39, 0.58) 0%, rgba(17, 24, 39, 0.14) 60%, rgba(17, 24, 39, 0) 100%); }
+    .promo-carousel-text { max-width: 520px; color: #FFF; }
+    .promo-carousel-kicker { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.92; margin-bottom: 6px; }
+    .promo-carousel-title { font-size: 30px; font-weight: 900; line-height: 1.05; margin-bottom: 10px; }
+    .promo-carousel-cta { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,0.95); color: #111827; font-size: 12px; font-weight: 900; width: fit-content; }
+
+    .promo-carousel-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 999px; border: 1px solid #E5E7EB; background: rgba(255, 255, 255, 0.98); color: #111827; cursor: pointer; z-index: 2; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18); }
+    .promo-carousel-nav:hover { background: #FFF; }
+    .promo-carousel-nav.prev { left: 14px; }
+    .promo-carousel-nav.next { right: 14px; }
+    .promo-carousel-nav-ico { display: inline-flex; align-items: center; justify-content: center; }
+    .promo-carousel-nav-ico svg { width: 22px; height: 22px; display: block; fill: currentColor; }
+    .promo-carousel-nav.prev svg { transform: rotate(180deg); }
+
+    .promo-carousel-dots { display: inline-flex; gap: 6px; justify-content: center; width: 100%; padding: 12px 0 16px; }
+    .promo-carousel-dot { width: 8px; height: 8px; border-radius: 999px; border: none; background: #D1D5DB; cursor: pointer; }
+    .promo-carousel-dot.active { background: #7B189F; width: 18px; }
 
     .search-box::-webkit-scrollbar,
     .feature-links::-webkit-scrollbar,
@@ -403,6 +592,8 @@ declare var lucide: any;
       .header-main-flex { grid-template-columns: 1fr; gap: 16px; }
       .action-section { justify-content: flex-start; width: 100%; }
       .search-box { max-width: 100%; }
+      .marketing-inner { flex-wrap: wrap; justify-content: center; }
+      .marketing-right { flex-wrap: wrap; justify-content: center; }
     }
 
     @media (max-width: 768px) {
@@ -410,6 +601,9 @@ declare var lucide: any;
       .brand-links, .utility-links, .category-links { justify-content: center; gap: 12px; }
       .header-main-flex { grid-template-columns: 1fr; }
       .action-link { width: 100%; justify-content: center; }
+      .marketing-inner { padding-left: 16px; padding-right: 16px; }
+      .promo-carousel-slide { height: 220px; }
+      .promo-carousel-title { font-size: 22px; }
     }
 
     @media (max-width: 1024px) {
@@ -431,51 +625,69 @@ declare var lucide: any;
     /* Content Area */
     .nosh-main { flex: 1; }
 
-    /* Premium Rounded Footer Matrix */
-    .nosh-footer-canvas { background: var(--header-bg); padding: 30px 0 0; position: relative; width: 100%; margin-top: auto; }
-    .footer-plate { background: #FFFFFF; max-width: 1300px; margin: 0 auto; border-radius: 30px 30px 0 0; overflow: hidden; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); }
-    .plate-inner { padding: 30px 40px 10px; }
-    
-    /* Newsletter Banner */
-    .newsletter-banner { background: linear-gradient(135deg, #FFFFFF 0%, #F5EAE0 100%); border-radius: 12px; padding: 15px 30px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; position: relative; overflow: hidden; border: 1px solid #EAE0D5; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
-    .nl-content { max-width: 500px; z-index: 2; position: relative; }
-    .nl-content h2 { font-size: 20px; font-weight: 900; color: #3A4E48; margin: 0 0 6px; letter-spacing: -0.5px; }
-    .nl-content p { font-size: 12px; color: #5B6B65; margin-bottom: 12px; line-height: 1.4; font-weight: 500; }
-    
-    .nl-form-group { display: flex; gap: 10px; margin-bottom: 8px; }
-    .nl-form-group input { flex: 1; padding: 10px 15px; border: 1px solid #DDD; background: #FFF; border-radius: 6px; font-size: 13px; font-weight: 500; outline: none; }
-    .nl-form-group input::placeholder { color: #AAA; }
-    .btn-nl-subscribe { background: var(--header-bg); color: #FFF; border: none; padding: 0 20px; border-radius: 6px; font-weight: 800; font-size: 13px; cursor: pointer; transition: 0.3s; &:hover { background: var(--primary); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(16,185,129,0.3); } }
-    
-    .nl-consent { font-size: 11px; color: #7F8A85; display: flex; align-items: center; gap: 6px; font-weight: 500; }
-    .nl-consent i { color: #A3B5AE; font-size: 12px; }
-    
-    .nl-visual { position: absolute; right: 30px; top: 50%; transform: translateY(-50%); width: 90px; z-index: 1; pointer-events: none; }
-    .nl-visual img { width: 100%; height: auto; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.15)); transform: scale(1.1); }
+    /* Wayfair-style Footer */
+    .wf-footer { margin-top: auto; background: #F9FAFB; color: #111827; }
+    .wf-footer-hr { border: none; border-top: 1px solid #E5E7EB; margin: 0; }
+    .wf-footer-wrap { background: #F9FAFB; }
+    .wf-footer-inner { padding: 26px 20px 22px; }
 
-    /* Footer Links Matrix */
-    .footer-links-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 25px; }
-    .f-col h4 { font-size: 15px; font-weight: 800; color: #111; margin-bottom: 16px; text-transform: none; }
-    .f-col ul { list-style: none; padding: 0; margin: 0; }
-    .f-col li { margin-bottom: 10px; }
-    .f-col a { color: #555; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; position: relative; }
-    .f-col a:hover { color: var(--primary); padding-left: 5px; }
-    
-    .f-col-cert { display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-end; gap: 12px; }
-    .cert-placeholder { width: 100px; height: 45px; border: 1.5px dashed #CCC; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #888; text-align: center; line-height: 1.2; }
-    .cert-placeholder.dark { border-color: #333; color: #333; }
+    .wf-footer-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; align-items: start; }
+    .wf-footer-col { min-width: 0; }
+    .wf-footer-title { margin: 0 0 12px; font-size: 20px; font-weight: 900; color: #111827; }
+    .wf-footer-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+    .wf-footer-list a { color: #111827; text-decoration: none; font-size: 12px; font-weight: 600; }
+    .wf-footer-list a:hover { text-decoration: underline; }
 
-    /* Gray Bottom Bar */
-    .footer-bottom-bar { background: #F3F4F6; border-top: 1px solid #E5E7EB; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; color: var(--header-bg); font-size: 13px; font-weight: 700; border-radius: 0; }
-    .f-bottom-center a { color: var(--header-bg); background: #E5E7EB; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; margin: 0 5px; transition: 0.3s; font-size: 14px; &:hover { background: var(--header-bg); color: #FFF; transform: translateY(-3px); } }
-    .payment-badges { display: flex; align-items: center; gap: 12px; font-size: 24px; color: var(--header-bg); }
-    .ssl-badge { border: 1.5px solid rgba(6,78,59,0.2); border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; background: rgba(6,78,59,0.05); color: var(--header-bg); }
+    .wf-contact-actions { display: grid; justify-items: start; gap: 8px; margin-bottom: 12px; }
+    .wf-contact-btn { width: min(190px, 100%); border: 2px solid #E5E7EB; background: #FFF; border-radius: 10px; padding: 8px 10px; min-height: 56px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; color: #111827; font-weight: 600; font-size: 12px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .wf-contact-btn:hover { background: #F3F4F6; }
+    .wf-contact-ico { width: 24px; height: 24px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; background: rgba(123, 24, 159, 0.10); color: #7B189F; flex: 0 0 auto; }
+
+    .wf-hours-block { margin-top: 14px; }
+    .wf-hours-title { margin: 0 0 6px; font-size: 14px; font-weight: 900; color: #111827; }
+    .wf-hours-text { margin: 0 0 8px; color: #6B7280; font-size: 12px; font-weight: 600; }
+    .wf-hours-btn { border: 1px solid #E5E7EB; background: #FFF; border-radius: 999px; padding: 8px 12px; font-weight: 800; font-size: 11px; cursor: pointer; color: #111827; }
+    .wf-hours-btn:hover { background: #F3F4F6; }
+
+    .wf-footer-bottom { margin-top: 22px; padding-top: 16px; border-top: 1px solid #E5E7EB; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .wf-footer-copy { color: #6B7280; font-size: 12px; font-weight: 700; }
+    .wf-footer-social { display: inline-flex; align-items: center; gap: 8px; }
+    .wf-footer-social a { color: #111827; background: #E5E7EB; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; transition: 0.2s; }
+    .wf-footer-social a:hover { background: #111827; color: #FFF; }
+    .wf-footer-pay { display: inline-flex; align-items: center; gap: 12px; font-size: 22px; color: #111827; }
+
+    /* Floating Help */
+    .help-fab-wrap { position: fixed; right: 24px; bottom: 24px; z-index: 2700; }
+    .help-fab { width: 52px; height: 52px; border-radius: 999px; border: 2px solid #7B189F; background: #FFF; color: #7B189F; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 18px 36px rgba(15, 23, 42, 0.18); }
+    .help-fab:hover { background: rgba(123, 24, 159, 0.06); }
+    .help-fab-ico { width: 26px; height: 26px; display: block; }
+
+    .help-popover { position: absolute; right: 0; bottom: 66px; width: 320px; max-width: calc(100vw - 32px); background: #FFF; border: 1px solid #E5E7EB; border-radius: 14px; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22); overflow: hidden; }
+    .help-popover-top { display: flex; align-items: center; justify-content: center; padding: 12px 12px; border-bottom: 1px solid #E5E7EB; position: relative; }
+    .help-popover-title { font-weight: 900; color: #111827; }
+    .help-popover-close { position: absolute; right: 10px; top: 8px; border: none; background: transparent; font-size: 22px; line-height: 1; cursor: pointer; color: #6B7280; padding: 4px 6px; }
+    .help-popover-close:hover { color: #111827; }
+
+    .help-popover-body { padding: 18px 18px 16px; }
+    .help-popover-headline { font-size: 20px; font-weight: 900; color: #111827; margin-bottom: 2px; }
+    .help-popover-sub { color: #111827; font-weight: 600; opacity: 0.9; margin-bottom: 14px; }
+
+    .help-popover-actions { display: grid; gap: 12px; margin-bottom: 14px; }
+    .help-popover-pill { width: fit-content; max-width: 100%; border: 2px solid #7B189F; background: #FFF; color: #7B189F; border-radius: 999px; padding: 10px 16px; font-weight: 800; cursor: pointer; }
+    .help-popover-pill:hover { background: rgba(123, 24, 159, 0.06); }
+
+    .help-popover-sep { height: 1px; background: #E5E7EB; margin: 14px 0 12px; }
+    .help-popover-links { display: grid; gap: 10px; }
+    .help-popover-links a { color: #7B189F; font-weight: 800; text-decoration: underline; cursor: pointer; }
 
     @media (max-width: 1024px) {
-      .footer-links-grid { grid-template-columns: repeat(2, 1fr); }
-      .nl-visual { opacity: 0.3; right: -50px; }
-      .newsletter-banner, .plate-inner, .footer-bottom-bar { padding: 30px; }
-      .footer-bottom-bar { flex-direction: column; gap: 20px; text-align: center; }
+      .wf-footer-grid { grid-template-columns: 1fr; }
+      .wf-footer-bottom { justify-content: center; text-align: center; }
+    }
+
+    @media (max-width: 768px) {
+      .help-fab-wrap { right: 14px; bottom: 14px; }
+      .help-popover { bottom: 62px; width: 300px; }
     }
   `]
 })
@@ -485,12 +697,56 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
   showCategoryDropdown = false;
   showNavCategories = false;
   isAuthPage = false;
+  isHomePage = false;
   cartCount = 0;
   userName = 'Guest';
   categories: CategoryLookupDto[] = [];
   searchTerm = '';
   selectedCategorySlug = '';
   showAccountDropdown = false;
+  showCartPopup = false;
+  showHelpWidget = false;
+  promoIndex = 0;
+
+  promoSlides: Array<{
+    kicker: string;
+    title: string;
+    cta: string;
+    routerLink: any[] | string;
+    queryParams?: Record<string, any>;
+    image?: string;
+    alt: string;
+    video?: string;
+    poster?: string;
+  }> = [
+    {
+      kicker: 'UP TO 70% OFF',
+      title: '5 Days of Deals',
+      cta: 'Shop Daily Sales',
+      routerLink: ['/shop'],
+      queryParams: { sortBy: 'discount' },
+      video: 'https://secure.img1-fg.wfcdn.com/dm/video/de3b1f89-5bb5-49f1-870f-a49d4cc07e25/wfus_5dod_etm_desktop.mp4',
+      poster: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1920&h=520',
+      alt: 'Daily sales promotion'
+    },
+    {
+      kicker: 'JUST DROPPED',
+      title: 'New Arrivals',
+      cta: 'Browse New',
+      routerLink: ['/shop'],
+      queryParams: { sortBy: 'newest' },
+      image: 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=1920&h=520',
+      alt: 'New arrivals'
+    },
+    {
+      kicker: 'TRENDING',
+      title: 'Verified Picks',
+      cta: 'Explore Verified',
+      routerLink: ['/verified'],
+      image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1920&h=520',
+      alt: 'Verified picks'
+    }
+  ];
 
   categoryNavLinks = [
     { label: 'Furniture', slug: 'furniture' },
@@ -553,6 +809,10 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
   ) { }
 
   ngOnInit(): void {
+    // Set initial route-dependent flags (NavigationEnd may have fired before this component was constructed)
+    this.isAuthPage = this.router.url.includes('/auth/login') || this.router.url.includes('/auth/register');
+    this.isHomePage = this.router.url === '/home' || this.router.url.startsWith('/home?') || this.router.url === '/';
+
     this.cartService.cartItems$.subscribe(() => {
       this.cartCount = this.cartService.getCartCount();
     });
@@ -578,8 +838,10 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
 
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
-    ).subscribe(() => {
-      this.isAuthPage = this.router.url.includes('/auth/login') || this.router.url.includes('/auth/register');
+    ).subscribe((event) => {
+      const url = (event as NavigationEnd).urlAfterRedirects || this.router.url;
+      this.isAuthPage = url.includes('/auth/login') || url.includes('/auth/register');
+      this.isHomePage = url === '/home' || url.startsWith('/home?') || url === '/';
       this.syncCategoryWithUrl();
       this.scrollToTop();
     });
@@ -653,9 +915,120 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
     this.showAccountDropdown = false;
   }
 
+  closeCartPopup(): void {
+    this.showCartPopup = false;
+  }
+
+  closeHelpWidget(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.showHelpWidget = false;
+  }
+
+  closeOverlays(): void {
+    this.closeAccountDropdown();
+    this.closeCartPopup();
+    this.showHelpWidget = false;
+  }
+
+  onCartClick(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (this.cartCount > 0) {
+      this.router.navigate(['/cart']);
+      return;
+    }
+
+    this.showCartPopup = true;
+  }
+
+  goToCartFromPopup(): void {
+    this.closeCartPopup();
+    this.router.navigate(['/cart']);
+  }
+
+  goToDailySalesFromPopup(): void {
+    this.closeCartPopup();
+    this.router.navigate(['/shop'], { queryParams: { sortBy: 'discount' } });
+  }
+
+  toggleHelpWidget(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.showHelpWidget = !this.showHelpWidget;
+  }
+
+  goToLiveShopping(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.showHelpWidget = false;
+    this.router.navigate(['/contact-support']);
+  }
+
+  goToCustomerService(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.showHelpWidget = false;
+    this.router.navigate(['/contact-support']);
+  }
+
+  prevPromo(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    if (!this.promoSlides.length) return;
+    this.promoIndex = (this.promoIndex - 1 + this.promoSlides.length) % this.promoSlides.length;
+  }
+
+  nextPromo(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    if (!this.promoSlides.length) return;
+    this.promoIndex = (this.promoIndex + 1) % this.promoSlides.length;
+  }
+
+  goToPromo(index: number, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    if (index < 0 || index >= this.promoSlides.length) return;
+    this.promoIndex = index;
+  }
+
   signOut(): void {
     this.closeAccountDropdown();
     this.authService.logout();
+  }
+
+  showFreeShipping(): void {
+    Swal.fire({
+      title: 'Fast & Free Shipping',
+      text: 'Free shipping applies on eligible items over $35. Delivery times vary by seller and location.',
+      icon: 'info'
+    });
+  }
+
+  goQuickHelp(): void {
+    this.router.navigate(['/contact-support']);
+  }
+
+  showCallUs(): void {
+    Swal.fire({
+      title: 'Call Us',
+      html: '<div style="text-align:left"><div style="font-weight:800;color:#111827;margin-bottom:6px">Customer Service</div><div style="color:#374151">+44 123 456 7890</div><div style="color:#6B7280;margin-top:10px">Available hours are shown in the footer.</div></div>',
+      icon: 'info'
+    });
+  }
+
+  showWeeklyHours(team: string): void {
+    const hours = team === 'Shopping Assistance'
+      ? 'Mon–Sun: 9:00 AM – 6:00 PM (PKT)'
+      : 'Mon–Sun: 9:00 AM – 10:00 PM (PKT)';
+
+    Swal.fire({
+      title: `${team} Hours`,
+      text: hours,
+      icon: 'info'
+    });
   }
 
   toggleLanguage() {

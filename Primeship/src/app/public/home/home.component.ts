@@ -15,7 +15,9 @@ interface HeroSlide {
   subtitle: string;
   primaryCta: string;
   secondaryCta: string;
-  image: string;
+  image?: string;
+  video?: string;
+  poster?: string;
 }
 
 interface SideBanner {
@@ -124,6 +126,16 @@ export class HomeComponent implements OnInit, OnDestroy {
       subtitle: '',
       primaryCta: 'Open a Shop Now',
       secondaryCta: '',
+      video: 'https://secure.img1-fg.wfcdn.com/dm/video/de3b1f89-5bb5-49f1-870f-a49d4cc07e25/wfus_5dod_etm_desktop.mp4',
+      poster: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1920&h=600'
+    },
+    {
+      kicker: '',
+      title: 'Present<br/>Your Products',
+      highlight: 'to Millions',
+      subtitle: '',
+      primaryCta: 'Open a Shop Now',
+      secondaryCta: '',
       image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1920&h=600'
     },
     {
@@ -209,6 +221,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   dealsPrimary: DealItem[] = [];
   dealsSecondary: DealItem[] = [];
   dealsJustForYou: DealItem[] = [];
+  allProducts: DealItem[] = [];
+
+  // Wayfair-style 3-up recommendation panels
+  keepShoppingQuery = 'mattresses';
+  wfKeepShoppingProducts: DealItem[] = [];
+  wfDealsProducts: DealItem[] = [];
+  wfVerifiedProducts: DealItem[] = [];
 
   dealTimer = { hours: 12, minutes: 45, seconds: 30 };
   visibleDealsCount = 8;
@@ -252,6 +271,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.dealsPrimary = [];
     this.dealsSecondary = [];
     this.dealsJustForYou = [];
+    this.allProducts = [];
     this.activeTab = 0;
     this.visibleDealsCount = 8;
     this.visibleDealsSecondaryCount = 8;
@@ -260,46 +280,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.isLoadingDeals = true;
     this.isLoadingMiniCategories = true;
 
-    // 1. Load Categories for Tabs
-    this.publicService.getCategories().subscribe({
-      next: (cats) => {
-        this.isLoadingCategories = false;
-        if (cats && cats.length > 0) {
-        // Create tabs for the first 3-5 categories
-        this.categoryTabs = [];
-        this.activeTab = 0;
-        const topCats = cats.slice(0, 5);
-
-        topCats.forEach(cat => {
-          this.publicService.getProductsByCategory(cat.slug).subscribe(products => {
-            if (products && products.length > 0) {
-              const mapped = products.map(p => {
-                const originalPrice = p.resellerMaxPrice ?? (p as any).ResellerMaxPrice ?? p.price ?? 0;
-                const discount = p.discountPercentage ?? (p as any).DiscountPercentage ?? 0;
-                const salePrice = discount > 0 ? (originalPrice - (originalPrice * discount / 100)) : originalPrice;
-
-                return {
-                  name: p.name,
-                  category: cat.name,
-                  price: salePrice > 0 ? salePrice : (originalPrice > 0 ? originalPrice : 0),
-                  image: this.getParsedImage(p.images),
-                  id: p.id,
-                  slug: p.slug
-                };
-              });
-              this.categoryTabs.push({
-                title: cat.name,
-                products: this.shuffle(mapped)
-              });
-            }
-          });
-        });
-      }
-    },
-      error: () => {
-        this.isLoadingCategories = false;
-      }
-    });
+    // 1. Categories tabs are disabled (user requested removing category table UI)
+    this.isLoadingCategories = false;
 
     // 2. Load Real Deals for Carousels
     this.publicService.getProducts('', 0, 120).subscribe({
@@ -327,11 +309,14 @@ export class HomeComponent implements OnInit, OnDestroy {
             slug: p.slug
           };
         });
+          this.allProducts = mapped;
+
           const mixed = this.mixByKey(mapped, deal => deal.category || 'Featured');
           const [primary, secondary, justForYou] = this.splitDeals(mixed, 3);
           this.dealsPrimary = primary;
           this.dealsSecondary = secondary;
           this.dealsJustForYou = justForYou;
+          this.buildWfPanels();
         }
       },
       error: () => {
@@ -340,41 +325,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
 
     // 3. Load Mini Categories
-    this.publicService.getCategories().subscribe({
-      next: (cats) => {
-        const miniCats = this.shuffle(cats).slice(0, 3); // Random 3 categories each load
-        if (miniCats.length > 0) {
-          this.miniCategories = [];
-          miniCats.forEach(cat => {
-            this.publicService.getProductsByCategory(cat.slug).subscribe(items => {
-              this.miniCategories.push({
-                title: cat.name,
-                slug: cat.slug,
-                items: this.shuffle(items).slice(0, 4).map(it => {
-                  const originalPrice = it.resellerMaxPrice ?? (it as any).ResellerMaxPrice ?? it.price ?? 0;
-                  const discount = it.discountPercentage ?? (it as any).DiscountPercentage ?? 0;
-                  const salePrice = discount > 0 ? (originalPrice - (originalPrice * discount / 100)) : originalPrice;
-
-                  return {
-                    title: it.name,
-                    price: salePrice > 0 ? salePrice : (originalPrice > 0 ? originalPrice : 0),
-                    image: this.getParsedImage(it.images),
-                    id: it.id,
-                    slug: it.slug
-                  };
-                })
-              });
-              this.isLoadingMiniCategories = false;
-            });
-          });
-        } else {
-          this.isLoadingMiniCategories = false;
-        }
-      },
-      error: () => {
-        this.isLoadingMiniCategories = false;
-      }
-    });
+    // (Disabled for now - user requested removing the categories table UI)
+    this.isLoadingMiniCategories = false;
   }
 
   private getParsedImage(images: string | string[]): string {
@@ -470,6 +422,39 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   setDefaultImage(event: Event): void {
     (event.target as HTMLImageElement).src = 'assets/images/placeholder.jpg';
+  }
+
+  private buildWfPanels(): void {
+    const all = [...this.dealsPrimary, ...this.dealsSecondary, ...this.dealsJustForYou];
+
+    const uniqById = (items: DealItem[]) => {
+      const seen = new Set<string>();
+      const result: DealItem[] = [];
+      for (const item of items) {
+        const key = item.id || item.slug || item.name;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        result.push(item);
+      }
+      return result;
+    };
+
+    const keepMatches = uniqById(all.filter(p => (p.name || '').toLowerCase().includes(this.keepShoppingQuery.toLowerCase())));
+    const keepFilled = uniqById([...keepMatches, ...all]);
+
+    const dealsMatches = uniqById(all.filter(p => (p.discount || '').toLowerCase().includes('%') || (p.discount || '').toLowerCase().includes('sale')));
+    const dealsFilled = uniqById([...dealsMatches, ...all]);
+
+    const verifiedFilled = uniqById([...(this.dealsSecondary.length ? this.dealsSecondary : []), ...all]);
+
+    this.wfKeepShoppingProducts = keepFilled.slice(0, 4);
+    this.wfDealsProducts = dealsFilled.slice(0, 4);
+    this.wfVerifiedProducts = verifiedFilled.slice(0, 4);
+  }
+
+  getWfTag(panel: 'keep' | 'deals' | 'verified', index: number): string {
+    if (panel === 'deals' && index === 2) return '5% Off Coupon';
+    return '5 Days of Deals';
   }
 
   ngOnDestroy(): void {

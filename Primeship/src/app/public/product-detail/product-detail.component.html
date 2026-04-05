@@ -62,7 +62,6 @@
           <div class="price-main">{{ product?.price | currency:'USD':'symbol':'1.0-0' }}</div>
           <div class="price-discount-row" *ngIf="product?.originalPrice">
             <span class="price-old">{{ product?.originalPrice | currency:'USD':'symbol':'1.0-0' }}</span>
-            <span class="discount-badge">-15% OFF</span>
           </div>
         </div>
 

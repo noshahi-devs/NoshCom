@@ -40,14 +40,16 @@
 
 .contact-grid {
     display: grid;
-    grid-template-columns: 1fr 1.5fr;
+    grid-template-columns: 1fr;
     gap: 60px;
+    justify-items: center;
 }
 
 .contact-methods {
     display: flex;
     flex-direction: column;
     gap: 30px;
+    width: min(720px, 100%);
 
     .method-card {
         background: white;
@@ -188,13 +190,5 @@
 @media (max-width: 900px) {
     .contact-grid {
         grid-template-columns: 1fr;
-    }
-
-    .premium-form .form-row {
-        grid-template-columns: 1fr;
-    }
-
-    .contact-form-card {
-        padding: 40px 30px;
     }
 }

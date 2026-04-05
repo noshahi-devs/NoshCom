@@ -3,26 +3,42 @@
         <div class="hero-carousel-wrapper" tabindex="0" (keydown)="onHeroKey($event)">
             <div class="hero-slide" *ngFor="let slide of heroSlides; let i = index" 
                  [class.active]="i === heroIndex">
-                <img [src]="slide.image" alt="Hero Background" class="hero-bg-img">
-                <div class="hero-overlay"></div>
-                <div class="container hero-slide-inner">
-                    <div class="hero-text-content">
-                        <h1 class="hero-main-title">
-                            <span [innerHTML]="slide.title"></span><br>
-                            <span>{{ slide.highlight }}</span>
-                        </h1>
-                        <div class="hero-cta-group">
-                            <button class="btn-skygarden-outline" routerLink="/shop">
-                                {{ slide.primaryCta }} <i class="fas fa-chevron-right ms-2"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <video
+                    *ngIf="slide.video; else heroImage"
+                    class="hero-bg-video"
+                    [attr.poster]="slide.poster || slide.image || null"
+                    autoplay
+                    muted
+                    loop
+                    playsinline
+                    preload="metadata"
+                >
+                    <source [src]="slide.video" type="video/mp4" />
+                </video>
+                <ng-template #heroImage>
+                    <img [src]="slide.image" alt="Hero Background" class="hero-bg-img">
+                </ng-template>
             </div>
             
             <!-- Navigation Arrows -->
-            <button class="carousel-nav prev" (click)="prevHero()"><i class="fas fa-chevron-left"></i></button>
-            <button class="carousel-nav next" (click)="nextHero()"><i class="fas fa-chevron-right"></i></button>
+            <button type="button" class="carousel-nav prev" (click)="prevHero()" aria-label="Previous Slide">
+                <span class="carousel-nav-ico" aria-hidden="true">
+                    <svg focusable="false" viewBox="2 2 24 24" aria-hidden="true">
+                        <path
+                            d="M21.46 14.19a.5.5 0 000-.38.36.36 0 00-.11-.16l-6-6a.49.49 0 00-.7.7l5.14 5.15H7a.5.5 0 000 1h12.79l-5.14 5.15a.48.48 0 000 .7.48.48 0 00.7 0l6-6a.36.36 0 00.11-.16z"
+                        ></path>
+                    </svg>
+                </span>
+            </button>
+            <button type="button" class="carousel-nav next" (click)="nextHero()" aria-label="Next Slide">
+                <span class="carousel-nav-ico" aria-hidden="true">
+                    <svg focusable="false" viewBox="2 2 24 24" aria-hidden="true">
+                        <path
+                            d="M21.46 14.19a.5.5 0 000-.38.36.36 0 00-.11-.16l-6-6a.49.49 0 00-.7.7l5.14 5.15H7a.5.5 0 000 1h12.79l-5.14 5.15a.48.48 0 000 .7.48.48 0 00.7 0l6-6a.36.36 0 00.11-.16z"
+                        ></path>
+                    </svg>
+                </span>
+            </button>
 
             <!-- Minimal Dot Pagination -->
             <div class="hero-dots">
@@ -33,75 +49,76 @@
         </div>
     </section>
 
-    <!-- Skygarden Feature Strip (3D Icons) -->
-    <section class="home-feature-strip">
-        <div class="container feature-container">
-            <div class="feature-item">
-                <div class="feature-icon"><img src="https://cdn-icons-png.flaticon.com/512/3063/3063822.png" alt="Delivery"></div>
-                <div class="feature-text">
-                    <h6>Global Priority Delivery</h6>
-                    <p>On All Noshahibaba Orders</p>
-                </div>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon"><img src="https://cdn-icons-png.flaticon.com/512/2830/2830284.png" alt="Payment"></div>
-                <div class="feature-text">
-                    <h6>Secure Payment Matrix</h6>
-                    <p>Escrow Protection & Invoicing</p>
-                </div>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon"><img src="https://cdn-icons-png.flaticon.com/512/3135/3135664.png" alt="Support"></div>
-                <div class="feature-text">
-                    <h6>24/7 Expert Support</h6>
-                    <p>Wholesale Verified Concierge</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Deals of the Month (Skygarden Style) -->
-    <section class="home-deals-section" *ngIf="!isLoadingDeals && dealsPrimary.length > 0">
+    <!-- Wayfair-style 3-up panels -->
+    <section class="wf-home-panels" *ngIf="!isLoadingDeals && (wfKeepShoppingProducts.length || wfDealsProducts.length || wfVerifiedProducts.length)">
         <div class="container">
-            <h2 class="section-title">Deals of the Month</h2>
-            
-            <div class="deals-grid">
-                <div class="deal-card" *ngFor="let deal of visibleDeals" (click)="goToProduct(deal)">
-                    <div class="deal-badge-emerald">{{ deal.discount }}</div>
-                    <div class="card-media">
-                        <img [src]="deal.image" [alt]="deal.name" (error)="setDefaultImage($event)">
-                    </div>
-                    <div class="card-body">
-                        <h3>{{ deal.name }}</h3>
-                        <div class="price-row">
-                            <span class="sale-price">{{ deal.price | currency:'USD':'symbol':'1.0-0' }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="load-more-center" *ngIf="canLoadMoreDeals">
-                <button class="btn-emerald-outline" (click)="loadMoreDeals()">Explore More Categories</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Clean Mini Categories Grid -->
-    <section class="home-mini-categories" *ngIf="!isLoadingMiniCategories && miniCategories.length > 0">
-        <div class="container">
-            <div class="mini-category-wrapper">
-                <div class="mini-group" *ngFor="let group of miniCategories">
-                    <div class="mini-group-header">
-                        <h3>{{ group.title }}</h3>
-                        <a [routerLink]="['/category', group.slug]" class="view-all-link">View All <i class="fas fa-arrow-right"></i></a>
-                    </div>
-                    <div class="mini-group-body">
-                        <div class="mini-item" *ngFor="let item of group.items" (click)="goToProduct(item)">
-                            <img [src]="item.image" [alt]="item.title" (error)="setDefaultImage($event)">
-                            <div class="mini-info">
-                                <span class="mini-title">{{ item.title }}</span>
-                                <span class="mini-price">{{ item.price | currency:'USD':'symbol':'1.0-0' }}</span>
+            <div class="wf-panel-grid">
+                <div class="wf-panel">
+                    <a class="wf-panel-head" [routerLink]="['/shop']" [queryParams]="{ q: keepShoppingQuery }">
+                        <h2 class="wf-panel-h2">
+                            keep shopping for {{ keepShoppingQuery }}
+                            <svg focusable="false" viewBox="2 2 24 24" aria-hidden="true" class="wf-panel-arrow-ico">
+                                <path d="M21.46 14.19a.5.5 0 000-.38.36.36 0 00-.11-.16l-6-6a.49.49 0 00-.7.7l5.14 5.15H7a.5.5 0 000 1h12.79l-5.14 5.15a.48.48 0 000 .7.48.48 0 00.7 0l6-6a.36.36 0 00.11-.16z"></path>
+                            </svg>
+                        </h2>
+                    </a>
+                    <div class="wf-panel-cards">
+                        <div class="wf-mini-card" *ngFor="let p of wfKeepShoppingProducts; let i = index" (click)="goToProduct(p)">
+                            <div class="wf-card-media">
+                                <img [src]="p.image" [alt]="p.name" (error)="setDefaultImage($event)" />
                             </div>
+                            <span class="wf-verified-badge" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
+                            <button type="button" class="wf-heart" (click)="toggleWishlist(p, $event)" aria-label="Add to wishlist">
+                                <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+                            </button>
+                            <span class="wf-mini-tag">{{ getWfTag('keep', i) }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wf-panel">
+                    <a class="wf-panel-head" [routerLink]="['/shop']" [queryParams]="{ sortBy: 'discount' }">
+                        <h2 class="wf-panel-h2">
+                            up to 70% OFF: 5 Days of Deals
+                            <svg focusable="false" viewBox="2 2 24 24" aria-hidden="true" class="wf-panel-arrow-ico">
+                                <path d="M21.46 14.19a.5.5 0 000-.38.36.36 0 00-.11-.16l-6-6a.49.49 0 00-.7.7l5.14 5.15H7a.5.5 0 000 1h12.79l-5.14 5.15a.48.48 0 000 .7.48.48 0 00.7 0l6-6a.36.36 0 00.11-.16z"></path>
+                            </svg>
+                        </h2>
+                    </a>
+                    <div class="wf-panel-cards">
+                        <div class="wf-mini-card" *ngFor="let p of wfDealsProducts; let i = index" (click)="goToProduct(p)">
+                            <div class="wf-card-media">
+                                <img [src]="p.image" [alt]="p.name" (error)="setDefaultImage($event)" />
+                            </div>
+                            <span class="wf-verified-badge" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
+                            <button type="button" class="wf-heart" (click)="toggleWishlist(p, $event)" aria-label="Add to wishlist">
+                                <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+                            </button>
+                            <span class="wf-mini-tag">{{ getWfTag('deals', i) }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wf-panel">
+                    <a class="wf-panel-head" routerLink="/verified">
+                        <h2 class="wf-panel-h2">
+                            Verified items for you
+                            <span class="wf-info" aria-hidden="true"><i class="fas fa-info-circle"></i></span>
+                            <svg focusable="false" viewBox="2 2 24 24" aria-hidden="true" class="wf-panel-arrow-ico">
+                                <path d="M21.46 14.19a.5.5 0 000-.38.36.36 0 00-.11-.16l-6-6a.49.49 0 00-.7.7l5.14 5.15H7a.5.5 0 000 1h12.79l-5.14 5.15a.48.48 0 000 .7.48.48 0 00.7 0l6-6a.36.36 0 00.11-.16z"></path>
+                            </svg>
+                        </h2>
+                    </a>
+                    <div class="wf-panel-cards">
+                        <div class="wf-mini-card" *ngFor="let p of wfVerifiedProducts; let i = index" (click)="goToProduct(p)">
+                            <div class="wf-card-media">
+                                <img [src]="p.image" [alt]="p.name" (error)="setDefaultImage($event)" />
+                            </div>
+                            <span class="wf-verified-badge" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
+                            <button type="button" class="wf-heart" (click)="toggleWishlist(p, $event)" aria-label="Add to wishlist">
+                                <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+                            </button>
+                            <span class="wf-mini-tag">{{ getWfTag('verified', i) }}</span>
                         </div>
                     </div>
                 </div>
@@ -109,53 +126,26 @@
         </div>
     </section>
 
-    <!-- Recommended / Just For You (Skygarden Style) -->
-    <section class="home-recommended-section" *ngIf="!isLoadingDeals && dealsJustForYou.length > 0">
+    <!-- All Products -->
+    <section class="home-all-products" *ngIf="!isLoadingDeals && allProducts.length > 0">
         <div class="container">
-            <h2 class="section-title">Recommended For You</h2>
+            <h2 class="section-title">All Products</h2>
             
-            <div class="deals-grid">
-                <div class="deal-card" *ngFor="let deal of visibleJustForYou" (click)="goToProduct(deal)">
-                    <div class="deal-badge-emerald" *ngIf="deal.discount && deal.discount !== '0%'">{{ deal.discount }}</div>
-                    <div class="card-media">
-                        <img [src]="deal.image" [alt]="deal.name" (error)="setDefaultImage($event)">
+             <div class="deals-grid">
+                 <div class="deal-card" *ngFor="let p of allProducts" (click)="goToProduct(p)">
+                     <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
+                         <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+                     </button>
+                     <div class="card-media">
+                        <img [src]="p.image" [alt]="p.name" (error)="setDefaultImage($event)">
                     </div>
                     <div class="card-body">
-                        <span class="deal-cat">{{ deal.category }}</span>
-                        <h3>{{ deal.name }}</h3>
+                        <h3>{{ p.name }}</h3>
                         <div class="price-row">
-                            <span class="sale-price">{{ deal.price | currency:'USD':'symbol':'1.2-0' }}</span>
+                            <span class="sale-price">{{ p.price | currency:'USD':'symbol':'1.0-0' }}</span>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="load-more-center" *ngIf="canLoadMoreJustForYou && visibleJustForYou.length > 0">
-                <button class="btn-emerald-outline" (click)="loadMoreJustForYou()">Explore More Products</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Categories Marquee (Only on Homepage) -->
-    <section class="home-category-marquee">
-        <div class="marquee-wrapper">
-            <div class="site-footer-marquee-item__stack">
-                <!-- Repeating the categories array manually for seamless infinity scroll -->
-                <ng-container *ngFor="let i of [1,2,3]">
-                    <div class="marquee-card" *ngFor="let cat of [
-                        {name: 'Personal Care', icon: 'fa-heart'},
-                        {name: 'Consumer Electronics', icon: 'fa-laptop'},
-                        {name: 'Apparel & Accessories', icon: 'fa-tshirt'},
-                        {name: 'Home & Garden', icon: 'fa-leaf'},
-                        {name: 'Beauty & Personal Care', icon: 'fa-spa'},
-                        {name: 'Sports & Entertainment', icon: 'fa-basketball-ball'},
-                        {name: 'Machinery & Tools', icon: 'fa-cogs'},
-                        {name: 'Automotive', icon: 'fa-car'}
-                    ]">
-                        <i class="fas" [ngClass]="cat.icon"></i>
-                        <span>{{ cat.name }}</span>
-                    </div>
-                </ng-container>
             </div>
         </div>
     </section>
