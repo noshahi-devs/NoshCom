@@ -1,52 +1,38 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuthModalComponent } from '../../shared/components/auth-modal/auth-modal.component';
-import { StoreService } from '../../services/store.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [CommonModule, AuthModalComponent],
-  template: `
-    <div class="login-page-container">
-      <app-auth-modal
-        *ngIf="!(isAuthenticated$ | async)"
-        [pageMode]="true"
-        (close)="onClose()"
-        (authenticated)="onAuthenticated()"
-      ></app-auth-modal>
-    </div>
-  `,
-  styles: [`
-    .login-page-container {
-      min-height: 100vh;
-    }
-  `]
+  imports: [CommonModule],
+  template: ``
 })
 export class LoginPageComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  private storeService = inject(StoreService);
   private authService = inject(AuthService);
-  isAuthenticated$ = this.authService.isAuthenticated$;
 
   ngOnInit(): void {
     if (this.authService.isAuthenticated) {
       this.onAuthenticated();
+      return;
     }
+
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    this.authService.openAuthModal();
+    this.router.navigate(['/'], {
+      replaceUrl: true,
+      queryParams: returnUrl ? { returnUrl } : undefined
+    });
   }
 
   onClose() {
-    // Only navigate to home if they weren't authenticated (just closing the modal/page)
-    if (!this.authService.isAuthenticated) {
-      this.router.navigate(['/']);
-    }
+    this.router.navigate(['/'], { replaceUrl: true });
   }
 
   onAuthenticated() {
-    console.log('User authenticated at Login Page');
     this.authService.navigateToDashboard();
   }
 }

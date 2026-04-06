@@ -284,7 +284,7 @@ export class Header implements OnInit, AfterViewChecked {
       this.router.navigate(['/customer/dashboard']);
     } else {
       // If not logged in, open login modal
-      this.authModalOpen.set(true);
+      this.authService.openAuthModal();
     }
   }
 
