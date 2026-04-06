@@ -11,12 +11,12 @@
 }
 
 .search-top-sticky {
-    position: static;
-    top: auto;
+    position: static !important;
+    top: auto !important;
     z-index: 30;
     background: #ffffff;
-    padding: 8px 0 10px;
-    margin-bottom: 16px;
+    padding: 12px 0 10px;
+    margin-bottom: 28px;
 }
 
 .filter-row {
@@ -339,7 +339,8 @@
     }
 
     .search-top-sticky {
-        top: auto;
+        position: static !important;
+        top: auto !important;
         padding: 6px 0 8px;
         margin-bottom: 14px;
     }

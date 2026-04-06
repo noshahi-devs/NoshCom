@@ -3,7 +3,6 @@ import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from
 import { AuthService } from '../services/auth.service';
 import { StoreService } from '../services/store.service';
 import { Observable, of, map, catchError } from 'rxjs';
-import Swal from 'sweetalert2';
 
 @Injectable({
     providedIn: 'root'
@@ -18,25 +17,9 @@ export class AuthGuard implements CanActivate {
 
         if (!this.authService.isAuthenticated) {
             this.authService.setPostLoginRedirect(state.url);
-            this.router.navigate(['/']);
-
-            Swal.fire({
-                icon: 'warning',
-                iconHtml: '<i class="fa-solid fa-user-lock"></i>',
-                title: 'Sign In Required',
-                html: 'Log in to your NoshCom account to continue.',
-                showCancelButton: true,
-                confirmButtonText: 'Login Now',
-                cancelButtonText: 'Maybe Later',
-                confirmButtonColor: '#ffc107',
-                cancelButtonColor: '#111',
-                customClass: {
-                    icon: 'nosh-login-alert-icon'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    this.authService.openAuthModal();
-                }
+            this.authService.openAuthModal();
+            this.router.navigate(['/'], {
+                queryParams: { returnUrl: state.url }
             });
             return false;
         }

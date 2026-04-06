@@ -296,12 +296,12 @@
 .auth-hero {
     position: relative;
     overflow: hidden;
-    padding: clamp(28px, 4vw, 42px);
+    min-height: 100%;
     border-radius: 36px;
     background:
-        radial-gradient(circle at top right, rgba(255, 193, 7, 0.2), transparent 26%),
-        linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
-    border: 1px solid rgba(255, 255, 255, 0.12);
+        linear-gradient(180deg, rgba(9, 15, 26, 0.08) 0%, rgba(9, 15, 26, 0.18) 100%),
+        url('/assets/images/my-wallet.webp') center/cover no-repeat;
+    border: 1px solid rgba(255, 255, 255, 0.14);
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.12),
         0 30px 80px rgba(0, 0, 0, 0.35);
@@ -321,49 +321,61 @@
 }
 
 .auth-hero::before {
-    width: 220px;
-    height: 220px;
-    right: -50px;
-    top: -50px;
-    background: radial-gradient(circle, rgba(255, 193, 7, 0.24), transparent 70%);
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(180deg, rgba(8, 12, 20, 0.2) 0%, rgba(8, 12, 20, 0.62) 58%, rgba(8, 12, 20, 0.82) 100%),
+        linear-gradient(120deg, rgba(13, 19, 31, 0.72) 8%, rgba(13, 19, 31, 0.1) 48%, rgba(13, 19, 31, 0.55) 100%);
 }
 
-.auth-hero::after {
-    width: 170px;
-    height: 170px;
-    left: -45px;
-    bottom: 20px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.12), transparent 70%);
+.video-overlay {
+    position: relative;
+    z-index: 1;
+    min-height: 100%;
+    display: flex;
+    align-items: flex-end;
+    padding: clamp(28px, 4vw, 44px);
 }
 
-.auth-hero-badge {
+.overlay-content {
+    display: grid;
+    gap: 16px;
+    max-width: 360px;
+}
+
+.brand-logo {
+    width: 76px;
+    height: 76px;
+    border-radius: 24px;
     display: inline-flex;
-    padding: 8px 14px;
-    border-radius: 999px;
-    background: rgba(255, 193, 7, 0.14);
-    border: 1px solid rgba(255, 193, 7, 0.28);
-    color: #ffc107;
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+    font-size: 30px;
+    color: #ffffff;
 }
 
-.auth-hero h3 {
-    margin: 22px 0 14px;
-    max-width: 460px;
-    font-size: clamp(34px, 4vw, 54px);
-    line-height: 0.98;
+.overlay-content h1 {
+    margin: 0;
+    font-size: clamp(40px, 5vw, 60px);
+    line-height: 0.95;
     font-weight: 900;
     letter-spacing: -0.05em;
+    color: #ffffff;
+    text-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
 }
 
-.auth-hero p {
+.brand-tagline {
     margin: 0;
-    max-width: 500px;
-    color: rgba(255, 255, 255, 0.76);
-    font-size: 16px;
+    max-width: 320px;
+    font-size: 17px;
     line-height: 1.7;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
 }
 
 .hero-stack {
@@ -1150,11 +1162,7 @@ h2 {
     }
 
     .auth-hero {
-        min-height: auto;
-    }
-
-    .hero-stack {
-        min-height: 220px;
+        min-height: 320px;
     }
 }
 
@@ -1179,18 +1187,6 @@ h2 {
         font-size: 28px;
     }
 
-    .hero-card-main,
-    .hero-card-tilt {
-        position: relative;
-        top: auto;
-        left: auto;
-        right: auto;
-        width: 100%;
-        transform: none;
-        margin-bottom: 14px;
-    }
-
-    .hero-stats,
     .form-row,
     .reg-error-actions {
         grid-template-columns: 1fr;
@@ -1213,5 +1209,22 @@ h2 {
 
     .phone-input-group {
         flex-direction: column;
+    }
+
+    .video-overlay {
+        min-height: 320px;
+        align-items: flex-end;
+    }
+
+    .brand-logo {
+        width: 64px;
+        height: 64px;
+        border-radius: 20px;
+        font-size: 26px;
+    }
+
+    .brand-tagline {
+        max-width: none;
+        font-size: 15px;
     }
 }

@@ -103,7 +103,6 @@ export class AuthService {
         this.pendingReturnUrl = null;
         return url;
     }
-
     // --- Auth Actions ---
 
     login(credentials: LoginDto): Observable<any> {
@@ -198,9 +197,8 @@ export class AuthService {
         console.log('Navigating to dashboard...');
         const user = this._currentUser.value;
         if (!this.isAuthenticated || !user) {
-            console.log('Not authenticated, going to login');
-            const isPrimeShip = resolvePlatformName() === 'PrimeShip';
-            this.router.navigate([isPrimeShip ? '/primeship/auth' : '/smartstore/auth']);
+            console.log('Not authenticated, opening auth modal');
+            this.openAuthModal();
             return;
         }
 
