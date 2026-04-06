@@ -54,18 +54,18 @@
         <div class="container">
             <div class="wf-panel-grid">
                 <div class="wf-panel">
-                    <a class="wf-panel-head" [routerLink]="['/shop']" [queryParams]="{ q: keepShoppingQuery }">
+                    <button class="wf-panel-head wf-panel-head-button" type="button" (click)="openKeepShoppingModal()">
                         <h2 class="wf-panel-h2">
                             keep shopping for {{ keepShoppingQuery }}
                             <svg focusable="false" viewBox="2 2 24 24" aria-hidden="true" class="wf-panel-arrow-ico">
                                 <path d="M21.46 14.19a.5.5 0 000-.38.36.36 0 00-.11-.16l-6-6a.49.49 0 00-.7.7l5.14 5.15H7a.5.5 0 000 1h12.79l-5.14 5.15a.48.48 0 000 .7.48.48 0 00.7 0l6-6a.36.36 0 00.11-.16z"></path>
                             </svg>
                         </h2>
-                    </a>
+                    </button>
                     <div class="wf-panel-cards">
                         <div class="wf-mini-card" *ngFor="let p of wfKeepShoppingProducts; let i = index" (click)="goToProduct(p)">
                             <div class="wf-card-media">
-                                <img [src]="p.image" [alt]="p.name" (error)="setDefaultImage($event)" />
+                                <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
                             </div>
                             <span class="wf-verified-badge" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
                             <button type="button" class="wf-heart" (click)="toggleWishlist(p, $event)" aria-label="Add to wishlist">
@@ -88,7 +88,7 @@
                     <div class="wf-panel-cards">
                         <div class="wf-mini-card" *ngFor="let p of wfDealsProducts; let i = index" (click)="goToProduct(p)">
                             <div class="wf-card-media">
-                                <img [src]="p.image" [alt]="p.name" (error)="setDefaultImage($event)" />
+                                <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
                             </div>
                             <span class="wf-verified-badge" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
                             <button type="button" class="wf-heart" (click)="toggleWishlist(p, $event)" aria-label="Add to wishlist">
@@ -112,7 +112,7 @@
                     <div class="wf-panel-cards">
                         <div class="wf-mini-card" *ngFor="let p of wfVerifiedProducts; let i = index" (click)="goToProduct(p)">
                             <div class="wf-card-media">
-                                <img [src]="p.image" [alt]="p.name" (error)="setDefaultImage($event)" />
+                                <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
                             </div>
                             <span class="wf-verified-badge" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
                             <button type="button" class="wf-heart" (click)="toggleWishlist(p, $event)" aria-label="Add to wishlist">
@@ -129,23 +129,261 @@
     <!-- All Products -->
     <section class="home-all-products" *ngIf="!isLoadingDeals && allProducts.length > 0">
         <div class="container">
-            <h2 class="section-title">All Products</h2>
-            
-             <div class="deals-grid">
-                 <div class="deal-card" *ngFor="let p of allProducts" (click)="goToProduct(p)">
-                     <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
-                         <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
-                     </button>
-                     <div class="card-media">
-                        <img [src]="p.image" [alt]="p.name" (error)="setDefaultImage($event)">
-                    </div>
-                    <div class="card-body">
-                        <h3>{{ p.name }}</h3>
-                        <div class="price-row">
-                            <span class="sale-price">{{ p.price | currency:'USD':'symbol':'1.0-0' }}</span>
-                        </div>
-                    </div>
+            <div class="rec-header">
+              <h2 class="section-title">Recommended for you</h2>
+            </div>
+
+            <div class="rec-shell">
+              <button type="button" class="rec-btn rec-btn-left" (click)="scrollRecommended('left')" aria-label="Scroll left">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+
+              <div class="rec-scroll" #recList>
+                <div class="deal-card rec-card" *ngFor="let p of allProducts" (click)="goToProduct(p)">
+                  <span class="deal-verified" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
+                  <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
+                      <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+                  </button>
+                  <div class="card-media">
+                    <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                  </div>
                 </div>
+              </div>
+
+              <button type="button" class="rec-btn rec-btn-right" (click)="scrollRecommended('right')" aria-label="Scroll right">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+
+            <div class="deal-banner">
+              <img
+                src="https://assets.wfcdn.com/im/33896598/resize-h250-w2000%5Ecompr-r85/4219/421983025/big_outdoor_sale_up_to_50%25_off._421983025.jpg"
+                srcset="https://assets.wfcdn.com/im/33896598/resize-h250-w2000%5Ecompr-r85/4219/421983025/big_outdoor_sale_up_to_50%25_off._421983025.jpg 960w, https://assets.wfcdn.com/im/73018347/resize-h200-w710%5Ecompr-r85/4219/421983018/big_outdoor_sale_up_to_50%25_off._421983018.jpg 1w"
+                alt="Big Outdoor Sale up to 50% off."
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+
+            <div class="rec-header">
+              <h2 class="section-title">24-hours ONLY: deals of the day</h2>
+            </div>
+
+            <div class="rec-shell">
+              <button type="button" class="rec-btn rec-btn-left" (click)="scrollDealsRow('left')" aria-label="Scroll left">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+
+              <div class="rec-scroll" #dealList>
+                <div class="deal-card rec-card" *ngFor="let p of allProducts" (click)="goToProduct(p)">
+                  <span class="deal-verified" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
+                  <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
+                      <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+                  </button>
+                  <div class="card-media">
+                    <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                  </div>
+                </div>
+              </div>
+
+              <button type="button" class="rec-btn rec-btn-right" (click)="scrollDealsRow('right')" aria-label="Scroll right">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+
+            <div class="deal-banner">
+              <img
+                src="https://assets.wfcdn.com/im/33896598/resize-h250-w2000%5Ecompr-r85/4219/421983025/big_outdoor_sale_up_to_50%25_off._421983025.jpg"
+                srcset="https://assets.wfcdn.com/im/33896598/resize-h250-w2000%5Ecompr-r85/4219/421983025/big_outdoor_sale_up_to_50%25_off._421983025.jpg 960w, https://assets.wfcdn.com/im/73018347/resize-h200-w710%5Ecompr-r85/4219/421983018/big_outdoor_sale_up_to_50%25_off._421983018.jpg 1w"
+                alt="Big Outdoor Sale up to 50% off."
+                loading="lazy"
+                decoding="async"
+              />
             </div>
         </div>
+    </section>
+
+    <section class="home-collections" *ngIf="collectionItems.length">
+        <div class="container">
+          <div class="rec-shell">
+            <button type="button" class="rec-btn rec-btn-left" (click)="scrollCollections('left')" aria-label="Scroll left">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <div class="rec-scroll collections-scroll" #collList>
+              <button class="collection-circle" *ngFor="let c of collectionItems" (click)="goToProduct(c)" aria-label="{{ c.name }}">
+                <div class="circle-thumb">
+                  <img [src]="c.image" [alt]="c.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                </div>
+              </button>
+            </div>
+
+            <button type="button" class="rec-btn rec-btn-right" (click)="scrollCollections('right')" aria-label="Scroll right">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+      </div>
+    </section>
+
+    <section class="home-banner-final">
+      <div class="container">
+        <div class="deal-banner">
+          <img
+            src="https://assets.wfcdn.com/im/13670107/scale-h504-w1780%5Ecompr-r85/4186/418678984/default_name.jpg"
+            srcset="https://assets.wfcdn.com/im/11564949/scale-h177-w624%5Ecompr-r85/4186/418678984/default_name.jpg 624w, https://assets.wfcdn.com/im/20650821/scale-h354-w1248%5Ecompr-r85/4186/418678984/default_name.jpg 1248w, https://assets.wfcdn.com/im/33249130/scale-h267-w944%5Ecompr-r85/4186/418678984/default_name.jpg 944w, https://assets.wfcdn.com/im/31634763/scale-h534-w1888%5Ecompr-r85/4186/418678984/default_name.jpg 1888w, https://assets.wfcdn.com/im/15169319/scale-h500-w1764%5Ecompr-r85/4186/418678984/default_name.jpg 1764w, https://assets.wfcdn.com/im/34192577/scale-h1000-w3528%5Ecompr-r85/4186/418678984/default_name.jpg 3528w"
+            sizes="(min-width:1780px) 1780px, (min-width:960px) 100vw, (min-width:640px) 100vw, 100vw"
+            alt="PICKS FROM $25, small-space styles, make the most of every outdoor inch, find your fit."
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="home-featured-cats">
+      <div class="container">
+        <div class="featured-inner">
+        <div class="featured-heading">Handpicked categories</div>
+        <div class="featured-grid">
+          <a class="featured-card" [routerLink]="['/category', 'baby-accessories']">
+            <div class="featured-img">
+              <img src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=1000&q=80" alt="Baby accessories" loading="lazy" decoding="async">
+            </div>
+            <div class="featured-title">Baby accessories</div>
+          </a>
+          <a class="featured-card" [routerLink]="['/category', 'electronics']">
+            <div class="featured-img">
+              <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=1000&q=80" alt="Electronics" loading="lazy" decoding="async">
+            </div>
+            <div class="featured-title">Electronics</div>
+          </a>
+          <a class="featured-card" [routerLink]="['/category', 'kitchen-accessories']">
+            <div class="featured-img">
+              <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1000&q=80" alt="Kitchen accessories" loading="lazy" decoding="async">
+            </div>
+            <div class="featured-title">Kitchen accessories</div>
+          </a>
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-product-grid" *ngIf="!isLoadingDeals && allProducts.length">
+      <div class="container">
+        <div class="rec-shell squares-shell">
+          <button type="button" class="rec-btn rec-btn-left" (click)="scrollProducts('left')" aria-label="Scroll left">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+
+          <div class="product-grid" #prodList>
+            <div class="deal-card rec-card prod-card" *ngFor="let p of allProducts | slice:0:8" (click)="goToProduct(p)">
+              <span class="deal-verified" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
+              <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
+                  <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+              </button>
+              <span class="deal-tag">5 Days of Deals</span>
+              <div class="card-media">
+                <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="rec-btn rec-btn-right" (click)="scrollProducts('right')" aria-label="Scroll right">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-video-banner">
+      <div class="container">
+        <div class="video-wrap">
+          <video preload="metadata" muted playsinline autoplay loop>
+            <source src="https://secure.img1-fg.wfcdn.com/dm/video/647f687e-543e-4613-8d2d-3a01ee66fac5/WFUS_Summer2026_GTM_Onsite_SpringCleaning_HomeFor_LHP_Banner_Desktop.mp4" type="video/mp4">
+          </video>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-featured-cats secondary">
+      <div class="container">
+        <div class="featured-inner">
+          <div class="featured-heading">Storage & organization</div>
+          <div class="featured-grid secondary-grid">
+            <a class="featured-card" [routerLink]="['/category', 'handmade']">
+              <div class="featured-img">
+                <img src="https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=1200&q=80" alt="Handmade" loading="lazy" decoding="async">
+              </div>
+              <div class="featured-title">Handmade</div>
+            </a>
+            <a class="featured-card" [routerLink]="['/category', 'home-decor']">
+              <div class="featured-img">
+                <img src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1200&q=80" alt="Home decor" loading="lazy" decoding="async">
+              </div>
+              <div class="featured-title">Home decor</div>
+            </a>
+            <a class="featured-card" [routerLink]="['/category', 'home-improvement']">
+              <div class="featured-img">
+                <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=80" alt="Home improvement" loading="lazy" decoding="async">
+              </div>
+              <div class="featured-title">Home improvement</div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-magic-cards">
+      <div class="container">
+        <div class="magic-heading">Shop by interest</div>
+        <div class="magic-grid">
+          <a class="magic-card" [routerLink]="['/category', 'bedding-bath']">
+            <div class="magic-img">
+              <img src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1400&q=80" alt="Bedding and bath" loading="lazy" decoding="async">
+            </div>
+            <div class="magic-title">Bedding and bath</div>
+          </a>
+
+          <a class="magic-card" [routerLink]="['/category', 'sports-outdoors']">
+            <div class="magic-img">
+              <img src="https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?auto=format&fit=crop&w=1400&q=80" alt="Sports and outdoors" loading="lazy" decoding="async">
+            </div>
+            <div class="magic-title">Sports and out doors</div>
+          </a>
+
+          <a class="magic-card" [routerLink]="['/category', 'watches-jewelry']">
+            <div class="magic-img">
+              <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1400&q=80" alt="Watches and jewelry" loading="lazy" decoding="async">
+            </div>
+            <div class="magic-title">Watches and jewelery</div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-square-carousel" *ngIf="allProducts.length">
+      <div class="container">
+        <div class="rec-shell squares-shell">
+          <button type="button" class="rec-btn rec-btn-left" (click)="scrollSquares2('left')" aria-label="Scroll left">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+
+          <div class="square-grid" #squareList2>
+            <div class="square-card" *ngFor="let p of allProducts | slice:0:8" (click)="goToProduct(p)">
+              <span class="deal-verified" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
+              <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
+                  <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+              </button>
+              <span class="deal-tag">5 Days of Deals</span>
+              <div class="card-media">
+                <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="rec-btn rec-btn-right" (click)="scrollSquares2('right')" aria-label="Scroll right">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
     </section>

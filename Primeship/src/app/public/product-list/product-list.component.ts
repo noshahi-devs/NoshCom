@@ -52,6 +52,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
   filtersForm: FormGroup;
   searchTerm = '';
   sortBy = 'newest';
+  isDiscountPage = false;
   currentCategorySlug = '';
   pricePoints = [10, 50, 100, 200, 300, 400, 500];
 
@@ -93,11 +94,12 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
           const slug = params.get('slug') || '';
           const q = queryParams.get('q') || '';
-          const sort = queryParams.get('sortBy') || 'newest';
+          const sort = (queryParams.get('sortBy') || 'newest').toLowerCase();
 
           this.currentCategorySlug = slug;
           this.searchTerm = q;
           this.sortBy = sort;
+          this.isDiscountPage = sort === 'discount';
 
           // Sync form UI instantly
           this.filtersForm.patchValue({ category: slug, sortBy: sort }, { emitEvent: false });

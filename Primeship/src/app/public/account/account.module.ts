@@ -21,15 +21,15 @@ const routes: Routes = [
   declarations: [
     ProfileComponent,
     OrdersComponent,
-    SettingsComponent,
-    ReviewPurchasesComponent,
-    RecentlyViewedComponent
+    SettingsComponent
   ],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    ReviewPurchasesComponent,
+    RecentlyViewedComponent
   ]
 })
 export class AccountModule { }

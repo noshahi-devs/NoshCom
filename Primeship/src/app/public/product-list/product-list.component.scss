@@ -4,6 +4,30 @@
   min-height: 100vh;
 }
 
+.deals-heading {
+  margin: 0 0 24px 0;
+  h1 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0;
+  }
+}
+
+.deal-banner-block {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 16px 0 8px 0;
+
+  img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    display: block;
+    box-shadow: var(--shadow-3d-sm);
+  }
+}
+
 /* --- MINIMAL CATEGORY HEADER --- */
 .minimal-cat-header {
   margin-bottom: 50px;

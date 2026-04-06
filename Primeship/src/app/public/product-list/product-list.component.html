@@ -1,7 +1,7 @@
 <div class="product-list-container">
   <div class="container">
     <!-- Modern Minimal Category Header -->
-    <div class="minimal-cat-header" *ngIf="categoryTitle">
+    <div class="minimal-cat-header" *ngIf="categoryTitle && !isDiscountPage">
       <nav class="breadcrumb-nav">
         <a routerLink="/home">Home</a>
         <i class="fas fa-chevron-right tiny"></i>
@@ -17,8 +17,12 @@
       </div>
     </div>
 
+    <div class="deals-heading" *ngIf="isDiscountPage">
+      <h1>24-hours ONLY: deals of the day</h1>
+    </div>
+
     <!-- Premium Filters Bar -->
-    <div class="filters-section" [formGroup]="filtersForm">
+    <div class="filters-section" *ngIf="!isDiscountPage" [formGroup]="filtersForm">
       <div class="filters-row">
         <div class="filter-main-controls">
           <div class="filter-group">
@@ -117,26 +121,36 @@
             </div>
 
             <div class="row">
-              <div class="grid-item" *ngFor="let product of filteredProducts">
-                <div class="product-card" [class.selected]="selectedProducts.has(product.id)"
-                  (click)="onProductClick(product)">
+              <ng-container *ngFor="let product of filteredProducts; let i = index">
+                <div class="grid-item">
+                  <div class="product-card" [class.selected]="selectedProducts.has(product.id)"
+                    (click)="onProductClick(product)">
 
-                  <div class="product-image">
-                    <img [src]="product.image" [alt]="product.name" (error)="handleImageError($event, product.name)">
-                  </div>
+                    <div class="product-image">
+                      <img [src]="product.image" [alt]="product.name" (error)="handleImageError($event, product.name)">
+                    </div>
 
-                  <div class="product-info">
-                    <span class="brand-label" *ngIf="product.brand">{{ product.brand }}</span>
-                    <h3 class="product-name">{{ product.name }}</h3>
-                    <div class="price-row">
-                      <span class="price">{{ product.price | currency:'USD':'symbol':'1.0-0' }}</span>
-                      <button class="add-cart-mini" (click)="$event.stopPropagation(); addToCart(product)">
-                        <i class="fas fa-plus"></i>
-                      </button>
+                    <div class="product-info">
+                      <span class="brand-label" *ngIf="product.brand">{{ product.brand }}</span>
+                      <h3 class="product-name">{{ product.name }}</h3>
+                      <div class="price-row">
+                        <span class="price">{{ product.price | currency:'USD':'symbol':'1.0-0' }}</span>
+                        <button class="add-cart-mini" (click)="$event.stopPropagation(); addToCart(product)">
+                          <i class="fas fa-plus"></i>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+                <div *ngIf="isDiscountPage && i === 3" class="deal-banner-block">
+                  <img
+                    src="https://assets.wfcdn.com/im/33107122/resize-h461-w2000%5Ecompr-r85/4169/416973129/wayfair_verified._your_shortcut_to_the_good_stuff._shop_picks_that_passed_our_10-point_quality_inspection._416973129.jpg"
+                    srcset="https://assets.wfcdn.com/im/33107122/resize-h461-w2000%5Ecompr-r85/4169/416973129/wayfair_verified._your_shortcut_to_the_good_stuff._shop_picks_that_passed_our_10-point_quality_inspection._416973129.jpg 960w, https://assets.wfcdn.com/im/06682370/resize-h350-w825%5Ecompr-r85/4169/416973167/wayfair_verified._your_shortcut_to_the_good_stuff._shop_picks_that_passed_our_10-point_quality_inspection._416973167.jpg 1w"
+                    alt="Wayfair Verified banner"
+                    loading="lazy"
+                  />
+                </div>
+              </ng-container>
             </div>
           </div>
         </div>

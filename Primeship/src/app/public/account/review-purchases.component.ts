@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { OrderService } from '../../core/services/order.service';
@@ -20,7 +22,8 @@ interface ReviewablePurchaseItem {
 
 @Component({
   selector: 'app-review-purchases',
-  standalone: false,
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './review-purchases.component.html',
   styleUrls: ['./review-purchases.component.scss']
 })

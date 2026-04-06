@@ -58,18 +58,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Subtle 3D Depth Divider Header */
-  &::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #10B981, #34D399, #10B981);
-    z-index: 2000;
-  }
-
   scroll-behavior: smooth;
 
   /* Premium Slim Scrollbar */

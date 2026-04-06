@@ -81,6 +81,11 @@ interface MiniCategory {
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit, OnDestroy {
+  @ViewChild('recList') recList?: ElementRef<HTMLDivElement>;
+  @ViewChild('dealList') dealList?: ElementRef<HTMLDivElement>;
+  @ViewChild('collList') collList?: ElementRef<HTMLDivElement>;
+  @ViewChild('prodList') prodList?: ElementRef<HTMLDivElement>;
+  @ViewChild('squareList2') squareList2?: ElementRef<HTMLDivElement>;
   @ViewChild('categoryTrack') categoryTrack?: ElementRef<HTMLDivElement>;
 
   searchQuery = '';
@@ -235,6 +240,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   visibleDealsSecondaryCount = 8;
   visibleJustForYouCount = 12;
   readonly EXTRA_DEALS_PER_LOAD = 4;
+  selectedCategory = '';
   isLoadingCategories = false;
   isLoadingDeals = false;
   isLoadingMiniCategories = false;
@@ -284,7 +290,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.isLoadingCategories = false;
 
     // 2. Load Real Deals for Carousels
-    this.publicService.getProducts('', 0, 120).subscribe({
+    this.publicService.getProducts('', 0, 60).subscribe({
       next: (products) => {
         this.isLoadingDeals = false;
         if (products && products.length > 0) {
@@ -309,7 +315,7 @@ export class HomeComponent implements OnInit, OnDestroy {
             slug: p.slug
           };
         });
-          this.allProducts = mapped;
+          this.allProducts = mapped.slice(0, 40);
 
           const mixed = this.mixByKey(mapped, deal => deal.category || 'Featured');
           const [primary, secondary, justForYou] = this.splitDeals(mixed, 3);
@@ -457,6 +463,44 @@ export class HomeComponent implements OnInit, OnDestroy {
     return '5 Days of Deals';
   }
 
+  openKeepShoppingModal(): void {
+    Swal.fire({
+      title: `Keep shopping for ${this.keepShoppingQuery}`,
+      html: `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;align-items:start">
+          ${this.wfKeepShoppingProducts
+            .slice(0, 6)
+            .map(
+              p => `
+                <div style="border:1px solid #E5E7EB;border-radius:10px;overflow:hidden;box-shadow:0 8px 20px rgba(15,23,42,0.08);">
+                  <div style="width:100%;padding-bottom:100%;position:relative;background:#f8fafb;">
+                    <img src="${p.image}" alt="${p.name}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" loading="lazy" />
+                  </div>
+                  <div style="padding:10px;text-align:center;">
+                    <div style="font-weight:700;font-size:13px;color:#111;">${p.name || 'Product'}</div>
+                    <div style="font-weight:800;font-size:14px;color:#0f172a;">${p.price ? '$' + p.price.toFixed(0) : ''}</div>
+                  </div>
+                  <div style="background:#8C0028;color:#fff;font-weight:700;font-size:11px;padding:6px 10px;border-radius:0 10px 0 0;">5 Days of Deals</div>
+                </div>`
+            )
+            .join('')}
+        </div>
+      `,
+      width: 900,
+      confirmButtonText: 'View more',
+      confirmButtonColor: '#8C0028',
+      showCloseButton: true,
+      customClass: {
+        popup: 'keep-shopping-modal'
+      }
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.router.navigate(['/shop'], { queryParams: { q: this.keepShoppingQuery } });
+      }
+    });
+  }
+
+
   ngOnDestroy(): void {
     if (this.heroTimerId) {
       clearInterval(this.heroTimerId);
@@ -493,6 +537,46 @@ export class HomeComponent implements OnInit, OnDestroy {
   get canLoadMoreJustForYou(): boolean {
     return this.visibleJustForYouCount < this.dealsJustForYou.length;
   }
+
+  scrollRecommended(dir: 'left' | 'right'): void {
+    const el = this.recList?.nativeElement;
+    if (!el) return;
+    const delta = dir === 'left' ? -320 : 320;
+    el.scrollBy({ left: delta, behavior: 'smooth' });
+  }
+
+  scrollDealsRow(dir: 'left' | 'right'): void {
+    const el = this.dealList?.nativeElement;
+    if (!el) return;
+    const delta = dir === 'left' ? -320 : 320;
+    el.scrollBy({ left: delta, behavior: 'smooth' });
+  }
+
+  scrollCollections(dir: 'left' | 'right'): void {
+    const el = this.collList?.nativeElement;
+    if (!el) return;
+    const delta = dir === 'left' ? -320 : 320;
+    el.scrollBy({ left: delta, behavior: 'smooth' });
+  }
+
+  get collectionItems(): DealItem[] {
+    return this.allProducts.slice(0, 12);
+  }
+
+  scrollProducts(dir: 'left' | 'right'): void {
+    const el = this.prodList?.nativeElement;
+    if (!el) return;
+    const delta = dir === 'left' ? -360 : 360;
+    el.scrollBy({ left: delta, behavior: 'smooth' });
+  }
+
+  scrollSquares2(dir: 'left' | 'right'): void {
+    const el = this.squareList2?.nativeElement;
+    if (!el) return;
+    const delta = dir === 'left' ? -300 : 300;
+    el.scrollBy({ left: delta, behavior: 'smooth' });
+  }
+
 
   selectTab(index: number): void {
     this.activeTab = index;

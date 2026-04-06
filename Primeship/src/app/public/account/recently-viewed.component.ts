@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { RecentlyViewedItem, RecentlyViewedService } from '../../core/services/recently-viewed.service';
 
 @Component({
   selector: 'app-recently-viewed',
-  standalone: false,
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './recently-viewed.component.html',
   styleUrls: ['./recently-viewed.component.scss']
 })

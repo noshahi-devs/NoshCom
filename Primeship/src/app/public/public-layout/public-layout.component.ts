@@ -224,7 +224,7 @@ declare var lucide: any;
         </div>
       </header>
 
-      <section class="promo-carousel" *ngIf="!isAuthPage && !isHomePage" (click)="$event.stopPropagation()" aria-label="Promotions carousel">
+      <section class="promo-carousel" *ngIf="!isAuthPage && !isHomePage && !isShopPage" (click)="$event.stopPropagation()" aria-label="Promotions carousel">
         <div class="promo-carousel-inner">
           <button type="button" class="promo-carousel-nav prev" (click)="prevPromo($event)" aria-label="Previous promotion">
             <span class="promo-carousel-nav-ico" aria-hidden="true">
@@ -698,6 +698,7 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
   showNavCategories = false;
   isAuthPage = false;
   isHomePage = false;
+  isShopPage = false;
   cartCount = 0;
   userName = 'Guest';
   categories: CategoryLookupDto[] = [];
@@ -812,6 +813,7 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
     // Set initial route-dependent flags (NavigationEnd may have fired before this component was constructed)
     this.isAuthPage = this.router.url.includes('/auth/login') || this.router.url.includes('/auth/register');
     this.isHomePage = this.router.url === '/home' || this.router.url.startsWith('/home?') || this.router.url === '/';
+    this.isShopPage = this.router.url.startsWith('/shop');
 
     this.cartService.cartItems$.subscribe(() => {
       this.cartCount = this.cartService.getCartCount();
@@ -842,6 +844,7 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
       const url = (event as NavigationEnd).urlAfterRedirects || this.router.url;
       this.isAuthPage = url.includes('/auth/login') || url.includes('/auth/register');
       this.isHomePage = url === '/home' || url.startsWith('/home?') || url === '/';
+      this.isShopPage = url.startsWith('/shop');
       this.syncCategoryWithUrl();
       this.scrollToTop();
     });
