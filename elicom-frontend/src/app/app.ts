@@ -1,6 +1,6 @@
 import { Component, HostListener, inject } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd, NavigationStart, NavigationCancel, NavigationError } from '@angular/router';
-import { NgClass, NgIf } from '@angular/common';
+import { NgIf } from '@angular/common';
 import { Header } from './shared/header/header';
 import { Footer } from './shared/footer/footer';
 import { AppPageLoaderService } from './services/app-page-loader.service';
@@ -8,7 +8,7 @@ import { AppPageLoaderService } from './services/app-page-loader.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NgIf, NgClass, Header, Footer],
+  imports: [RouterOutlet, NgIf, Header, Footer],
   templateUrl: './app.html',
 })
 export class App {

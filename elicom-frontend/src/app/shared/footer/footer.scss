@@ -39,7 +39,15 @@ footer::after {
   font-weight: 800;
 }
 
-.logo span {
+.logo i {
+  color: var(--primary, #ffc107);
+}
+
+.logo-primary {
+  color: var(--white, #ffffff);
+}
+
+.logo-accent {
   color: var(--primary, #ffc107);
 }
 

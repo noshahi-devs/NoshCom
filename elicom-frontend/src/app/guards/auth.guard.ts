@@ -47,9 +47,9 @@ export class AuthGuard implements CanActivate {
                         // Handle both wrapped { result: ... } and unwrapped responses
                         const store = res?.result || res;
                         if (store && store.id) {
-                            return true; // Store exists, allow access
+                            return true; // Store exists (approved or pending), allow access
                         } else {
-                            console.log('No store found, redirecting to store creation');
+                            console.log('No approved store found, redirecting to store creation');
                             this.router.navigate(['/seller/store-creation']);
                             return false;
                         }

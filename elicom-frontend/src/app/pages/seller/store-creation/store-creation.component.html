@@ -1,398 +1,323 @@
-<div class="top-actions">
-    <button type="button" class="btn-logout" (click)="logout()">
-        <i class="fas fa-sign-out-alt"></i> <span class="logout-label">Logout</span>
-    </button>
-</div>
-<div class="wizard-container" [class.full-width-step]="currentStep === 7">
-    <!-- Progress Indicator -->
-
-    <div class="progress-steps">
-        <div class="step-item" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
-            <div class="step-icon">1</div>
-            <div class="step-label">Identity</div>
-        </div>
-        <div class="step-item" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
-            <div class="step-icon">2</div>
-            <div class="step-label">Details</div>
-        </div>
-        <div class="step-item" [class.active]="currentStep === 3" [class.completed]="currentStep > 3">
-            <div class="step-icon">3</div>
-            <div class="step-label">Personal</div>
-        </div>
-        <div class="step-item" [class.active]="currentStep === 4" [class.completed]="currentStep > 4">
-            <div class="step-icon">4</div>
-            <div class="step-label">Residence</div>
-        </div>
-        <div class="step-item" [class.active]="currentStep === 5" [class.completed]="currentStep > 5">
-            <div class="step-icon">5</div>
-            <div class="step-label">Verification</div>
-        </div>
-        <div class="step-item" [class.active]="currentStep === 6" [class.completed]="currentStep > 6">
-            <div class="step-icon">6</div>
-            <div class="step-label">Documents</div>
-        </div>
-        <div class="step-item" [class.active]="currentStep === 7">
-            <div class="step-icon"><i class="fas fa-check"></i></div>
-            <div class="step-label">Finish</div>
-        </div>
+<div class="wizard-shell" [class.full-width-step]="currentStep === 7">
+    <div class="top-actions">
+        <button type="button" class="ghost-btn" (click)="goToHome()">
+            <i class="fas fa-house"></i>
+            <span>Home</span>
+        </button>
+        <button type="button" class="danger-btn" (click)="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+        </button>
     </div>
 
-    <!-- Wizard Card -->
-    <div class="wizard-card" [class.compact-view]="currentStep === 7">
-        <form [formGroup]="storeForm">
-            <!-- Step 1: Store Identity -->
-            <div *ngIf="currentStep === 1" class="step-content">
-                <div class="step-header text-center">
-                    <div class="world-card-icon">
-                        <i class="fas fa-globe-americas"></i>
-                    </div>
-                    <h2 class="header-3d">Store Identity</h2>
-                    <p class="sub-header-3d">Tell us the name of your new shopping world.</p>
-                </div>
-                <div class="form-group">
-                    <label>Store Name <span class="text-danger">*</span></label>
-                    <input type="text" formControlName="name" class="form-control" placeholder="Success Mart"
-                        [class.is-invalid]="storeForm.get('name')?.invalid && storeForm.get('name')?.touched">
-                    <div class="error-text" *ngIf="storeForm.get('name')?.invalid && storeForm.get('name')?.touched">
-                        Store name is required (min 3 characters).
-                    </div>
-                </div>
+    <section class="wizard-hero">
+        <div class="hero-copy">
+            <span class="hero-kicker">Seller Onboarding</span>
+            <h1>Create Seller Store</h1>
+            <p>Set up your store with a guided flow that keeps your current validation and backend save process exactly the same.</p>
+        </div>
+        <div class="hero-orb" aria-hidden="true">
+            <div class="orb-core"></div>
+            <div class="orb-ring orb-ring-one"></div>
+            <div class="orb-ring orb-ring-two"></div>
+            <div class="orb-chip orb-chip-one">Brand</div>
+            <div class="orb-chip orb-chip-two">KYC</div>
+            <div class="orb-chip orb-chip-three">Launch</div>
+        </div>
+    </section>
+
+    <section class="stepper-card">
+        <div class="stepper-rail"></div>
+
+        <button type="button" class="step-node" [class.active]="currentStep === 1" [class.completed]="currentStep > 1" (click)="goToStep(1)">
+            <span class="step-bubble"><i class="fas fa-store"></i></span>
+            <span class="step-caption">Identity</span>
+        </button>
+        <button type="button" class="step-node" [class.active]="currentStep === 2" [class.completed]="currentStep > 2" (click)="goToStep(2)">
+            <span class="step-bubble"><i class="fas fa-note-sticky"></i></span>
+            <span class="step-caption">Details</span>
+        </button>
+        <button type="button" class="step-node" [class.active]="currentStep === 3" [class.completed]="currentStep > 3" (click)="goToStep(3)">
+            <span class="step-bubble"><i class="fas fa-user"></i></span>
+            <span class="step-caption">Personal</span>
+        </button>
+        <button type="button" class="step-node" [class.active]="currentStep === 4" [class.completed]="currentStep > 4" (click)="goToStep(4)">
+            <span class="step-bubble"><i class="fas fa-location-dot"></i></span>
+            <span class="step-caption">Residence</span>
+        </button>
+        <button type="button" class="step-node" [class.active]="currentStep === 5" [class.completed]="currentStep > 5" (click)="goToStep(5)">
+            <span class="step-bubble"><i class="fas fa-id-card"></i></span>
+            <span class="step-caption">Verification</span>
+        </button>
+        <button type="button" class="step-node" [class.active]="currentStep === 6" [class.completed]="currentStep > 6" (click)="goToStep(6)">
+            <span class="step-bubble"><i class="fas fa-file-arrow-up"></i></span>
+            <span class="step-caption">Documents</span>
+        </button>
+        <button type="button" class="step-node" [class.active]="currentStep === 7" (click)="goToStep(7)">
+            <span class="step-bubble"><i class="fas fa-check"></i></span>
+            <span class="step-caption">Finish</span>
+        </button>
+    </section>
+
+    <div class="form-stage" [class.review-mode]="currentStep === 7">
+        <form class="form-shell" [formGroup]="storeForm">
+            <div class="helper-link" *ngIf="visibleGroup !== 3">
+                <button type="button" class="hint-link" (click)="fillSampleForStep()">
+                    Sample Help Text: Use demo values to complete this step quickly
+                </button>
+            </div>
+            <div class="section-head" *ngIf="currentStep === 7">
+                <span class="section-kicker">Final Step</span>
+                <h2>Review And Launch</h2>
+                <p>Check your details once more before sending them to the backend.</p>
             </div>
 
-            <!-- Step 2: Store Details -->
-            <div *ngIf="currentStep === 2" class="step-content">
-                <div class="step-header text-center">
-                    <div class="world-card-icon">
-                        <i class="fas fa-id-card"></i>
+            <div *ngIf="visibleGroup === 1" class="multi-step-stack">
+                <section id="step-1" class="step-form-card step-col-left" [class.active]="isStepActive(1)" [class.unlocked]="isStepUnlocked(1)" [class.locked]="!isStepUnlocked(1)" [class.completed]="currentStep > 1">
+                    <div class="step-form-head">
+                        <span class="section-kicker">Step 1</span>
+                        <h2>Store Identity</h2>
+                        <p>Choose the public name customers will see first.</p>
                     </div>
-                    <h2 class="header-3d">Store Details</h2>
-                    <p class="sub-header-3d">Describe your business to your future customers.</p>
-                </div>
-                <div class="form-group">
-                    <label>Short Catchy Description <span class="text-danger">*</span></label>
-                    <input type="text" formControlName="shortDescription" class="form-control"
-                        placeholder="e.g. Premium handcrafted jewelry"
-                        [class.is-invalid]="storeForm.get('shortDescription')?.invalid && storeForm.get('shortDescription')?.touched">
-                    <div class="error-text"
-                        *ngIf="storeForm.get('shortDescription')?.invalid && storeForm.get('shortDescription')?.touched">
-                        Tagline is required (max 200 characters).
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Full Story (Long Description) <span class="text-danger">*</span></label>
-                    <textarea formControlName="longDescription" class="form-control" rows="3"
-                        placeholder="Tell the world about what you offer..."
-                        [class.is-invalid]="storeForm.get('longDescription')?.invalid && storeForm.get('longDescription')?.touched"></textarea>
-                    <div class="error-text"
-                        *ngIf="storeForm.get('longDescription')?.invalid && storeForm.get('longDescription')?.touched">
-                        Long description is required.
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Support Email <span class="text-danger">*</span></label>
-                    <input type="email" formControlName="supportEmail" class="form-control"
-                        placeholder="contact@yourstore.com"
-                        [class.is-invalid]="storeForm.get('supportEmail')?.invalid && storeForm.get('supportEmail')?.touched">
-                    <div class="error-text"
-                        *ngIf="storeForm.get('supportEmail')?.invalid && storeForm.get('supportEmail')?.touched">
-                        Valid support email is required.
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Instagram Username (Optional)</label>
-                            <input type="text" formControlName="instagram" class="form-control" placeholder="@username">
+                    <div class="field-stack">
+                        <div class="field-card">
+                            <label>Store Name <span class="required">*</span></label>
+                            <input type="text" formControlName="name" class="field-control" placeholder="Your store name" [attr.disabled]="!isStepUnlocked(1) ? true : null"
+                                [class.is-invalid]="storeForm.get('name')?.invalid && storeForm.get('name')?.touched">
+                            <div class="error-text" *ngIf="storeForm.get('name')?.invalid && storeForm.get('name')?.touched">Store name is required (min 3 characters).</div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>WhatsApp Number (Optional)</label>
-                            <input type="text" formControlName="whatsapp" class="form-control" placeholder="+923xx...">
-                        </div>
+                    <div class="step-card-actions">
+                        <button type="button" class="nav-btn nav-btn-primary" (click)="nextWithinGroup(1)">Next Step</button>
                     </div>
-                </div>
-            </div>
+                </section>
 
-            <!-- KYC Form Group Wrapper -->
-            <div formGroupName="kyc">
-                <!-- Step 3: KYC Personal -->
-                <div *ngIf="currentStep === 3" class="step-content">
-                    <div class="step-header text-center">
-                        <div class="world-card-icon">
-                            <i class="fas fa-user-circle"></i>
-                        </div>
-                        <h2 class="header-3d">Personal Info</h2>
-                        <p class="sub-header-3d">Basic identification details for verification.</p>
+                <section id="step-2" class="step-form-card step-col-right step-span-2" [class.active]="isStepActive(2)" [class.unlocked]="isStepUnlocked(2)" [class.locked]="!isStepUnlocked(2)" [class.completed]="currentStep > 2">
+                    <div class="step-form-head">
+                        <span class="section-kicker">Step 2</span>
+                        <h2>Store Details</h2>
+                        <p>Describe what makes your business worth visiting.</p>
                     </div>
-                    <div class="form-group">
-                        <label>Full Legal Name <span class="text-danger">*</span></label>
-                        <input type="text" formControlName="fullName" class="form-control"
-                            placeholder="e.g. Muhammad Ali Khan"
-                            [class.is-invalid]="storeForm.get('kyc.fullName')?.invalid && storeForm.get('kyc.fullName')?.touched">
-                        <div class="error-text"
-                            *ngIf="storeForm.get('kyc.fullName')?.invalid && storeForm.get('kyc.fullName')?.touched">
-                            Full name is required.
+                    <div class="field-stack">
+                        <div class="field-card">
+                            <label>Short Catchy Description <span class="required">*</span></label>
+                            <input type="text" formControlName="shortDescription" class="field-control" placeholder="Short description" [attr.disabled]="!isStepUnlocked(2) ? true : null"
+                                [class.is-invalid]="storeForm.get('shortDescription')?.invalid && storeForm.get('shortDescription')?.touched">
+                            <div class="error-text" *ngIf="storeForm.get('shortDescription')?.invalid && storeForm.get('shortDescription')?.touched">Tagline is required (max 200 characters).</div>
+                        </div>
+                        <div class="field-card">
+                            <label>Full Story (Long Description) <span class="required">*</span></label>
+                            <textarea formControlName="longDescription" class="field-control field-control-area" rows="4" placeholder="Full description" [attr.disabled]="!isStepUnlocked(2) ? true : null"
+                                [class.is-invalid]="storeForm.get('longDescription')?.invalid && storeForm.get('longDescription')?.touched"></textarea>
+                            <div class="error-text" *ngIf="storeForm.get('longDescription')?.invalid && storeForm.get('longDescription')?.touched">Long description is required.</div>
+                        </div>
+                        <div class="field-grid field-grid-two">
+                            <div class="field-card">
+                                <label>Support Email <span class="required">*</span></label>
+                                <input type="email" formControlName="supportEmail" class="field-control" placeholder="Support email" [attr.disabled]="!isStepUnlocked(2) ? true : null"
+                                    [class.is-invalid]="storeForm.get('supportEmail')?.invalid && storeForm.get('supportEmail')?.touched">
+                                <div class="error-text" *ngIf="storeForm.get('supportEmail')?.invalid && storeForm.get('supportEmail')?.touched">Valid support email is required.</div>
+                            </div>
+                            <div class="field-card">
+                                <label>Instagram Username</label>
+                                <input type="text" formControlName="instagram" class="field-control" placeholder="Instagram username" [attr.disabled]="!isStepUnlocked(2) ? true : null">
+                            </div>
+                        </div>
+                        <div class="field-card">
+                            <label>WhatsApp Number</label>
+                            <input type="text" formControlName="whatsapp" class="field-control" placeholder="WhatsApp number" [attr.disabled]="!isStepUnlocked(2) ? true : null">
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Date of Birth <span class="text-danger">*</span></label>
-                                <input type="date" formControlName="dob" class="form-control"
-                                    [class.is-invalid]="storeForm.get('kyc.dob')?.invalid && storeForm.get('kyc.dob')?.touched">
-                                <div class="error-text"
-                                    *ngIf="storeForm.get('kyc.dob')?.invalid && storeForm.get('kyc.dob')?.touched">
-                                    Date of birth is required.
+                    <div class="step-card-actions">
+                        <button type="button" class="nav-btn nav-btn-primary" (click)="nextWithinGroup(2)">Next Step</button>
+                    </div>
+                </section>
+
+                <div formGroupName="kyc" class="multi-step-stack kyc-stack step-col-left">
+                    <section id="step-3" class="step-form-card step-col-left" [class.active]="isStepActive(3)" [class.unlocked]="isStepUnlocked(3)" [class.locked]="!isStepUnlocked(3)" [class.completed]="currentStep > 3">
+                        <div class="step-form-head">
+                            <span class="section-kicker">Step 3</span>
+                            <h2>Personal Information</h2>
+                            <p>Add the verified owner details exactly as they should be recorded.</p>
+                        </div>
+                        <div class="field-stack">
+                            <div class="field-card">
+                                <label>Full Legal Name <span class="required">*</span></label>
+                                <input type="text" formControlName="fullName" class="field-control" placeholder="Full legal name" [attr.disabled]="!isStepUnlocked(3) ? true : null"
+                                    [class.is-invalid]="storeForm.get('kyc.fullName')?.invalid && storeForm.get('kyc.fullName')?.touched">
+                                <div class="error-text" *ngIf="storeForm.get('kyc.fullName')?.invalid && storeForm.get('kyc.fullName')?.touched">Full name is required.</div>
+                            </div>
+                            <div class="field-grid field-grid-two">
+                                <div class="field-card">
+                                    <label>Date of Birth <span class="required">*</span></label>
+                                    <input type="date" formControlName="dob" class="field-control" [attr.disabled]="!isStepUnlocked(3) ? true : null"
+                                        [class.is-invalid]="storeForm.get('kyc.dob')?.invalid && storeForm.get('kyc.dob')?.touched">
+                                    <div class="error-text" *ngIf="storeForm.get('kyc.dob')?.invalid && storeForm.get('kyc.dob')?.touched">Date of birth is required.</div>
+                                </div>
+                                <div class="field-card">
+                                    <label>Phone Number <span class="required">*</span></label>
+                                    <input type="text" formControlName="phone" class="field-control" placeholder="Phone number" [attr.disabled]="!isStepUnlocked(3) ? true : null"
+                                        [class.is-invalid]="storeForm.get('kyc.phone')?.invalid && storeForm.get('kyc.phone')?.touched">
+                                    <div class="error-text" *ngIf="storeForm.get('kyc.phone')?.invalid && storeForm.get('kyc.phone')?.touched">Phone number is required.</div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Phone Number <span class="text-danger">*</span></label>
-                                <input type="text" formControlName="phone" class="form-control"
-                                    placeholder="e.g. +923001234567"
-                                    [class.is-invalid]="storeForm.get('kyc.phone')?.invalid && storeForm.get('kyc.phone')?.touched">
-                                <div class="error-text"
-                                    *ngIf="storeForm.get('kyc.phone')?.invalid && storeForm.get('kyc.phone')?.touched">
-                                    Phone number is required.
-                                </div>
-                            </div>
+                        <div class="step-card-actions">
+                            <button type="button" class="nav-btn nav-btn-primary" (click)="nextWithinGroup(3)">Next Step</button>
                         </div>
-                    </div>
+                    </section>
                 </div>
+            </div>
 
-                <!-- Step 4: KYC Residence -->
-                <div *ngIf="currentStep === 4" class="step-content">
-                    <div class="step-header text-center">
-                        <div class="world-card-icon">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </div>
-                        <h2 class="header-3d">Residence</h2>
-                        <p class="sub-header-3d">Where are you operating from?</p>
+            <div *ngIf="visibleGroup === 2" class="multi-step-stack" formGroupName="kyc">
+                <section id="step-4" class="step-form-card step-col-left step-span-2" [class.active]="isStepActive(4)" [class.unlocked]="isStepUnlocked(4)" [class.locked]="!isStepUnlocked(4)" [class.completed]="currentStep > 4">
+                    <div class="step-form-head">
+                        <span class="section-kicker">Step 4</span>
+                        <h2>Residence</h2>
+                        <p>Tell us where your store operations are based.</p>
                     </div>
-                    <div class="form-group">
-                        <label>Issue Country <span class="text-danger">*</span></label>
-                        <select formControlName="issueCountry" class="form-control"
-                            [class.is-invalid]="storeForm.get('kyc.issueCountry')?.invalid && storeForm.get('kyc.issueCountry')?.touched">
-                            <option value="" disabled selected>-- Select your country --</option>
-                            <option *ngFor="let country of countries" [value]="country.code">{{country.name}}</option>
-                        </select>
-                        <div class="error-text"
-                            *ngIf="storeForm.get('kyc.issueCountry')?.invalid && storeForm.get('kyc.issueCountry')?.touched">
-                            Issue country is required.
+                    <div class="field-stack">
+                        <div class="field-card">
+                            <label>Issue Country <span class="required">*</span></label>
+                            <select formControlName="issueCountry" class="field-control" [attr.disabled]="!isStepUnlocked(4) ? true : null"
+                                [class.is-invalid]="storeForm.get('kyc.issueCountry')?.invalid && storeForm.get('kyc.issueCountry')?.touched">
+                                <option value="" disabled selected>-- Select your country --</option>
+                                <option *ngFor="let country of countries" [value]="country.code">{{ country.name }}</option>
+                            </select>
+                            <div class="error-text" *ngIf="storeForm.get('kyc.issueCountry')?.invalid && storeForm.get('kyc.issueCountry')?.touched">Issue country is required.</div>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Residential Address <span class="text-danger">*</span></label>
-                        <textarea formControlName="address" class="form-control" rows="2"
-                            placeholder="Full home or office address"
-                            [class.is-invalid]="storeForm.get('kyc.address')?.invalid && storeForm.get('kyc.address')?.touched"></textarea>
-                        <div class="error-text"
-                            *ngIf="storeForm.get('kyc.address')?.invalid && storeForm.get('kyc.address')?.touched">
-                            Address is required.
+                        <div class="field-card">
+                            <label>City <span class="required">*</span></label>
+                            <input type="text" formControlName="city" class="field-control" placeholder="City" [attr.disabled]="!isStepUnlocked(4) ? true : null"
+                                [class.is-invalid]="storeForm.get('kyc.city')?.invalid && storeForm.get('kyc.city')?.touched">
+                            <div class="error-text" *ngIf="storeForm.get('kyc.city')?.invalid && storeForm.get('kyc.city')?.touched">City is required.</div>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Zip/Post Code <span class="text-danger">*</span></label>
-                        <input type="text" formControlName="zipCode" class="form-control" placeholder="e.g. 75500"
-                            [class.is-invalid]="storeForm.get('kyc.zipCode')?.invalid && storeForm.get('kyc.zipCode')?.touched">
-                        <div class="error-text"
-                            *ngIf="storeForm.get('kyc.zipCode')?.invalid && storeForm.get('kyc.zipCode')?.touched">
-                            Zip/Postal code is required.
+                        <div class="field-card">
+                            <label>Residential Address <span class="required">*</span></label>
+                            <textarea formControlName="address" class="field-control field-control-area" rows="3" placeholder="Street address" [attr.disabled]="!isStepUnlocked(4) ? true : null"
+                                [class.is-invalid]="storeForm.get('kyc.address')?.invalid && storeForm.get('kyc.address')?.touched"></textarea>
+                            <div class="error-text" *ngIf="storeForm.get('kyc.address')?.invalid && storeForm.get('kyc.address')?.touched">Address is required.</div>
+                        </div>
+                        <div class="field-card">
+                            <label>Zip/Post Code <span class="required">*</span></label>
+                            <input type="text" formControlName="zipCode" class="field-control" placeholder="Postal code" [attr.disabled]="!isStepUnlocked(4) ? true : null"
+                                [class.is-invalid]="storeForm.get('kyc.zipCode')?.invalid && storeForm.get('kyc.zipCode')?.touched">
+                            <div class="error-text" *ngIf="storeForm.get('kyc.zipCode')?.invalid && storeForm.get('kyc.zipCode')?.touched">Zip/Postal code is required.</div>
                         </div>
                     </div>
-                </div>
+                    <div class="step-card-actions">
+                        <button type="button" class="nav-btn nav-btn-primary" (click)="nextWithinGroup(4)">Next Step</button>
+                    </div>
+                </section>
 
-                <!-- Step 5: KYC Identity -->
-                <div *ngIf="currentStep === 5" class="step-content">
-                    <div class="step-header text-center">
-                        <div class="world-card-icon">
-                            <i class="fas fa-fingerprint"></i>
-                        </div>
-                        <h2 class="header-3d">Identity Verification</h2>
-                        <p class="sub-header-3d">Identity document information (ID, Passport, SSN).</p>
+                <section id="step-5" class="step-form-card step-col-right" [class.active]="isStepActive(5)" [class.unlocked]="isStepUnlocked(5)" [class.locked]="!isStepUnlocked(5)" [class.completed]="currentStep > 5">
+                    <div class="step-form-head">
+                        <span class="section-kicker">Step 5</span>
+                        <h2>Identity Verification</h2>
+                        <p>Add the key document details we need for approval.</p>
                     </div>
-                    <div class="form-group">
-                        <label>Identity Number <span class="text-danger">*</span></label>
-                        <input type="text" formControlName="cnic" class="form-control"
-                            placeholder="e.g. 42101-1234567-1 or Passport No."
-                            [class.is-invalid]="storeForm.get('kyc.cnic')?.invalid && storeForm.get('kyc.cnic')?.touched">
-                        <div class="error-text"
-                            *ngIf="storeForm.get('kyc.cnic')?.invalid && storeForm.get('kyc.cnic')?.touched">
-                            ID number is required.
+                    <div class="field-grid field-grid-two">
+                        <div class="field-card">
+                            <label>Identity Number <span class="required">*</span></label>
+                            <input type="text" formControlName="cnic" class="field-control" placeholder="ID number" [attr.disabled]="!isStepUnlocked(5) ? true : null"
+                                [class.is-invalid]="storeForm.get('kyc.cnic')?.invalid && storeForm.get('kyc.cnic')?.touched">
+                            <div class="error-text" *ngIf="storeForm.get('kyc.cnic')?.invalid && storeForm.get('kyc.cnic')?.touched">ID number is required.</div>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Document Expiry Date <span class="text-danger">*</span></label>
-                        <input type="date" formControlName="expiryDate" class="form-control"
-                            [class.is-invalid]="storeForm.get('kyc.expiryDate')?.invalid && storeForm.get('kyc.expiryDate')?.touched">
-                        <div class="error-text"
-                            *ngIf="storeForm.get('kyc.expiryDate')?.invalid && storeForm.get('kyc.expiryDate')?.touched">
-                            Expiry date is required.
+                        <div class="field-card">
+                            <label>Document Expiry Date <span class="required">*</span></label>
+                            <input type="date" formControlName="expiryDate" class="field-control" [attr.disabled]="!isStepUnlocked(5) ? true : null"
+                                [class.is-invalid]="storeForm.get('kyc.expiryDate')?.invalid && storeForm.get('kyc.expiryDate')?.touched">
+                            <div class="error-text" *ngIf="storeForm.get('kyc.expiryDate')?.invalid && storeForm.get('kyc.expiryDate')?.touched">Expiry date is required.</div>
                         </div>
                     </div>
-                </div>
+                    <div class="step-card-actions">
+                        <button type="button" class="nav-btn nav-btn-primary" (click)="nextWithinGroup(5)">Next Step</button>
+                    </div>
+                </section>
 
-                <!-- Step 6: KYC Documents -->
-                <div *ngIf="currentStep === 6" class="step-content">
-                    <div class="step-header text-center">
-                        <div class="world-card-icon">
-                            <i class="fas fa-file-upload"></i>
-                        </div>
-                        <h2 class="header-3d">Document Upload</h2>
-                        <p class="sub-header-3d">Upload clear photos of your identity document.</p>
+                <section id="step-6" class="step-form-card step-col-right" [class.active]="isStepActive(6)" [class.unlocked]="isStepUnlocked(6)" [class.locked]="!isStepUnlocked(6)" [class.completed]="currentStep > 6">
+                    <div class="step-form-head">
+                        <span class="section-kicker">Step 6</span>
+                        <h2>Document Upload</h2>
+                        <p>Upload clean front and back images for faster review.</p>
                     </div>
-                    <div class="id-upload-grid">
-                        <!-- Card Front Upload -->
-                        <div class="id-card-upload">
-                            <span class="upload-label">Card Front</span>
-                            <label for="frontFile" class="image-preview"
-                                [ngClass]="{'invalid-upload': storeForm.get('kyc.frontImage')?.invalid && storeForm.get('kyc.frontImage')?.touched}">
+                    <div class="upload-grid">
+                        <div class="upload-card">
+                            <span class="upload-title">Card Front</span>
+                            <label for="frontFile" class="upload-preview" [class.invalid-upload]="storeForm.get('kyc.frontImage')?.invalid && storeForm.get('kyc.frontImage')?.touched">
                                 <img [src]="frontPreview" alt="ID Front">
+                                <span class="upload-overlay">Change Front Image</span>
                             </label>
-                            <input type="file" id="frontFile" style="display: none;"
-                                (change)="onFileSelected($event, 'frontImage')" accept="image/*">
-                            <div class="error-text"
-                                *ngIf="storeForm.get('kyc.frontImage')?.invalid && storeForm.get('kyc.frontImage')?.touched">
-                                Front image is required.
-                            </div>
+                            <input type="file" id="frontFile" hidden (change)="onFileSelected($event, 'frontImage')" accept="image/*" [attr.disabled]="!isStepUnlocked(6) ? true : null">
+                            <div class="error-text" *ngIf="storeForm.get('kyc.frontImage')?.invalid && storeForm.get('kyc.frontImage')?.touched">Front image is required.</div>
                         </div>
-                        <!-- Card Back Upload -->
-                        <div class="id-card-upload">
-                            <span class="upload-label">Card Back</span>
-                            <label for="backFile" class="image-preview"
-                                [ngClass]="{'invalid-upload': storeForm.get('kyc.backImage')?.invalid && storeForm.get('kyc.backImage')?.touched}">
+                        <div class="upload-card">
+                            <span class="upload-title">Card Back</span>
+                            <label for="backFile" class="upload-preview" [class.invalid-upload]="storeForm.get('kyc.backImage')?.invalid && storeForm.get('kyc.backImage')?.touched">
                                 <img [src]="backPreview" alt="ID Back">
+                                <span class="upload-overlay">Change Back Image</span>
                             </label>
-                            <input type="file" id="backFile" style="display: none;"
-                                (change)="onFileSelected($event, 'backImage')" accept="image/*">
-                            <div class="error-text"
-                                *ngIf="storeForm.get('kyc.backImage')?.invalid && storeForm.get('kyc.backImage')?.touched">
-                                Back image is required.
-                            </div>
+                            <input type="file" id="backFile" hidden (change)="onFileSelected($event, 'backImage')" accept="image/*" [attr.disabled]="!isStepUnlocked(6) ? true : null">
+                            <div class="error-text" *ngIf="storeForm.get('kyc.backImage')?.invalid && storeForm.get('kyc.backImage')?.touched">Back image is required.</div>
                         </div>
                     </div>
-                    <p class="upload-hint"><i class="fas fa-info-circle"></i> Visible edges and clear text ensure faster
-                        approval.</p>
-                </div>
+                    <div class="step-card-actions">
+                        <button type="button" class="nav-btn nav-btn-primary" (click)="nextWithinGroup(6)">Next Step</button>
+                    </div>
+                </section>
             </div>
 
-            <!-- Step 7: Final Review (Vibrant 5D Compact Sheet) -->
-            <div *ngIf="currentStep === 7" class="step-content finish-step">
-                <div class="step-header text-center">
-                    <div class="success-icon">
-                        <i class="fas fa-rocket"></i>
+            <div *ngIf="visibleGroup === 3" class="review-grid">
+                <button type="button" class="review-card" (click)="goToStep(1)">
+                    <span class="review-card-title">Store Profile</span>
+                    <span class="review-line"><strong>Name</strong><span>{{ storeForm.value.name || 'N/A' }}</span></span>
+                    <span class="review-line"><strong>Email</strong><span>{{ storeForm.value.supportEmail || 'N/A' }}</span></span>
+                    <span class="review-line"><strong>Instagram</strong><span>{{ storeForm.value.instagram || 'N/A' }}</span></span>
+                </button>
+                <button type="button" class="review-card" (click)="goToStep(2)">
+                    <span class="review-card-title">Business Story</span>
+                    <span class="review-block">{{ storeForm.value.shortDescription || 'N/A' }}</span>
+                    <span class="review-block review-block-muted">{{ storeForm.value.longDescription || 'N/A' }}</span>
+                </button>
+                <button type="button" class="review-card" (click)="goToStep(3)">
+                    <span class="review-card-title">Personal Details</span>
+                    <span class="review-line"><strong>Name</strong><span>{{ storeForm.value.kyc?.fullName || 'N/A' }}</span></span>
+                    <span class="review-line"><strong>DOB</strong><span>{{ storeForm.value.kyc?.dob | date:'mediumDate' }}</span></span>
+                    <span class="review-line"><strong>Phone</strong><span>{{ storeForm.value.kyc?.phone || 'N/A' }}</span></span>
+                </button>
+                <button type="button" class="review-card" (click)="goToStep(4)">
+                    <span class="review-card-title">Residence</span>
+                    <span class="review-line"><strong>Country</strong><span>{{ storeForm.value.kyc?.issueCountry || 'N/A' }}</span></span>
+                    <span class="review-line"><strong>Zip</strong><span>{{ storeForm.value.kyc?.zipCode || 'N/A' }}</span></span>
+                    <span class="review-block review-block-muted">{{ storeForm.value.kyc?.address || 'N/A' }}</span>
+                </button>
+                <button type="button" class="review-card" (click)="goToStep(5)">
+                    <span class="review-card-title">Verification</span>
+                    <span class="review-line"><strong>ID Number</strong><span>{{ storeForm.value.kyc?.cnic || 'N/A' }}</span></span>
+                    <span class="review-line"><strong>Expiry</strong><span>{{ storeForm.value.kyc?.expiryDate | date:'mediumDate' }}</span></span>
+                </button>
+                <button type="button" class="review-card" (click)="goToStep(6)">
+                    <span class="review-card-title">Documents</span>
+                    <div class="review-docs">
+                        <div class="review-doc"><img [src]="frontPreview" alt="Front preview"></div>
+                        <div class="review-doc"><img [src]="backPreview" alt="Back preview"></div>
                     </div>
-                    <h2 class="header-3d">Review & Launch</h2>
-                    <p class="sub-header-3d">Everything looks great! Take a final look at your store profile.</p>
-                </div>
-
-                <div class="compact-doc-grid">
-                    <!-- Store Identity -->
-                    <div class="compact-card accent-indigo" (click)="goToStep(1)">
-                        <div class="card-header">
-                            <h6>Store Profile</h6>
-                            <div class="header-icon-wrap"><i class="fas fa-store"></i></div>
-                        </div>
-                        <div class="info-item"><strong>Name</strong> <span>{{storeForm.value.name}}</span></div>
-                        <div class="info-item"><strong>Email</strong> <span>{{storeForm.value.supportEmail}}</span>
-                        </div>
-                        <div class="info-item"><strong>Instagram</strong> <span>{{storeForm.value.instagram ||
-                                'N/A'}}</span></div>
-                        <div class="info-item"><strong>WhatsApp</strong> <span>{{storeForm.value.whatsapp ||
-                                'N/A'}}</span></div>
-                    </div>
-
-                    <!-- Business Story -->
-                    <div class="compact-card accent-violet" (click)="goToStep(2)">
-                        <div class="card-header">
-                            <h6>Business Story</h6>
-                            <div class="header-icon-wrap"><i class="fas fa-feather-alt"></i></div>
-                        </div>
-                        <div class="info-item"><strong>Tagline</strong> <span>{{storeForm.value.shortDescription ||
-                                'N/A'}}</span></div>
-                        <div class="story-text-box">
-                            {{storeForm.value.longDescription || 'N/A'}}
-                        </div>
-                    </div>
-
-                    <!-- Owner Details -->
-                    <div class="compact-card accent-emerald" (click)="goToStep(3)">
-                        <div class="card-header">
-                            <h6>Owner Details</h6>
-                            <div class="header-icon-wrap"><i class="fas fa-user-tie"></i></div>
-                        </div>
-                        <div class="info-item"><strong>Name</strong> <span>{{storeForm.value.kyc?.fullName}}</span>
-                        </div>
-                        <div class="info-item"><strong>DOB</strong> <span>{{storeForm.value.kyc?.dob |
-                                date:'mediumDate'}}</span></div>
-                        <div class="info-item"><strong>Phone</strong> <span>{{storeForm.value.kyc?.phone}}</span></div>
-                    </div>
-
-                    <!-- Location -->
-                    <div class="compact-card accent-amber" (click)="goToStep(4)">
-                        <div class="card-header">
-                            <h6>Operating From</h6>
-                            <div class="header-icon-wrap"><i class="fas fa-map-marked-alt"></i></div>
-                        </div>
-                        <div class="info-item"><strong>Country</strong>
-                            <span>{{storeForm.value.kyc?.issueCountry}}</span>
-                        </div>
-                        <div class="info-item"><strong>Zip</strong> <span>{{storeForm.value.kyc?.zipCode}}</span></div>
-                        <div class="info-item"><strong>Address</strong> <span
-                                class="text-truncate">{{storeForm.value.kyc?.address}}</span></div>
-                    </div>
-
-                    <!-- Legal Documents -->
-                    <div class="compact-card accent-rose" (click)="goToStep(5)">
-                        <div class="card-header">
-                            <h6>ID Documents</h6>
-                            <div class="header-icon-wrap"><i class="fas fa-fingerprint"></i></div>
-                        </div>
-                        <div class="info-item"><strong>ID Number</strong> <span>{{storeForm.value.kyc?.cnic}}</span>
-                        </div>
-                        <div class="doc-photo-row mt-3">
-                            <div class="mini-doc" (click)="goToStep(6); $event.stopPropagation()">
-                                <img *ngIf="storeForm.value.kyc?.frontImage" [src]="storeForm.value.kyc?.frontImage">
-                                <div *ngIf="!storeForm.value.kyc?.frontImage" class="no-doc">Front</div>
-                            </div>
-                            <div class="mini-doc" (click)="goToStep(6); $event.stopPropagation()">
-                                <img *ngIf="storeForm.value.kyc?.backImage" [src]="storeForm.value.kyc?.backImage">
-                                <div *ngIf="!storeForm.value.kyc?.backImage" class="no-doc">Back</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- System Status (Combined with Action) -->
-                    <div class="compact-card status-card">
-                        <div class="card-header">
-                            <h6>System Health</h6>
-                            <div class="header-icon-wrap"><i class="fas fa-server"></i></div>
-                        </div>
-                        <div class="status-content">
-                            <div class="status-pill verified">
-                                <i class="fas fa-check-double"></i> Profile Valid
-                            </div>
-                            <div class="status-pill pending mt-3">
-                                <i class="fas fa-hourglass-half"></i> KYC Pending
-                            </div>
-                            <p class="small text-muted mt-3 mb-0" style="font-weight: 500;">Launching initiates the
-                                manual verification queue.</p>
-                        </div>
-                    </div>
-                </div>
+                </button>
             </div>
 
-            <!-- Footer -->
-            <div class="wizard-footer">
-                <button type="button" class="btn btn-prev" *ngIf="currentStep > 1" (click)="prevStep()">Back</button>
-                <div class="spacer"></div>
-                <button type="button" class="btn btn-next" [disabled]="isLoading" (click)="nextStep()">
+            <div class="wizard-footer" *ngIf="visibleGroup === 2">
+                <button type="button" class="nav-btn nav-btn-secondary" (click)="goToPreviousGroup()">Back</button>
+            </div>
+
+            <div class="wizard-footer" *ngIf="visibleGroup === 3">
+                <button type="button" class="nav-btn nav-btn-secondary" (click)="goToPreviousGroup()">Back</button>
+                <span class="footer-spacer"></span>
+                <button type="button" class="nav-btn nav-btn-primary" [disabled]="isLoading" (click)="nextStep()">
                     <i *ngIf="isLoading" class="fas fa-spinner fa-spin"></i>
-                    {{ currentStep === totalSteps ? (isLoading ? 'Launching...' : 'Launch Store') : 'Continue' }}
+                    {{ isLoading ? 'Launching...' : 'Launch Store' }}
                 </button>
             </div>
         </form>
     </div>
 </div>
+

@@ -176,40 +176,45 @@
     <ng-container *ngIf="currentStore">
         <!-- Pending Approval Overlay -->
         <div class="pending-approval-overlay" *ngIf="!currentStore.status">
-            <div class="glass-card text-center">
-                <div class="pulse-icon">
-                    <i class="fas fa-hourglass-half"></i>
+            <div class="review-shell">
+                <span class="review-badge">Application Review</span>
+                <div class="review-orb">
+                    <div class="orb-core">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <div class="orb-ring"></div>
+                    <div class="orb-ring orb-ring-alt"></div>
                 </div>
-                <h2 class="fw-bold text-white mb-3">Application Under Review</h2>
-                <p class="text-white opacity-75 mb-4">
-                    Thank you for applying to <strong>World Cart</strong>. <br>
-                    Our team is currently reviewing your store details and identity documents.
+                <h2>Store Application Under Review</h2>
+                <p>
+                    Thanks for submitting your store to <strong>NoshCom</strong>. We are validating your store profile
+                    and identity documents to keep our marketplace safe for all buyers.
                 </p>
-                <div class="status-steps mb-4">
-                    <div class="status-step-item completed">
+
+                <div class="review-steps">
+                    <div class="review-step completed">
                         <i class="fas fa-check-circle"></i>
                         <span>Submitted</span>
                     </div>
-                    <div class="status-step-divider"></div>
-                    <div class="status-step-item active">
+                    <div class="review-step active">
                         <i class="fas fa-search"></i>
                         <span>Reviewing</span>
                     </div>
-                    <div class="status-step-divider"></div>
-                    <div class="status-step-item">
+                    <div class="review-step">
                         <i class="fas fa-rocket"></i>
                         <span>Launch</span>
                     </div>
                 </div>
-                <p class="small text-white opacity-50 mb-0">
-                    Review usually takes 24-48 hours. <br>
-                    Need help? <a href="mailto:support@worldcart.com"
-                        class="text-white text-decoration-underline">Contact
-                        Support</a>
-                </p>
-                <div class="mt-4">
-                    <button (click)="logout()" class="btn btn-outline-light rounded-pill px-4">
-                        <i class="fas fa-sign-out-alt me-2"></i>Sign Out
+
+                <div class="review-meta">
+                    <span>Estimated review time: 24-48 hours</span>
+                    <span>Need help? <a href="mailto:support@noshcom.com">Contact Support</a></span>
+                </div>
+
+                <div class="review-actions">
+                    <button (click)="logout()" class="review-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Sign Out
                     </button>
                 </div>
             </div>

@@ -20,6 +20,7 @@ export class StoreCreationComponent {
     private router = inject(Router);
 
     currentStep = 1;
+    visibleGroup: 1 | 2 | 3 = 1;
     totalSteps = 7;
     storeForm: FormGroup;
     isLoading = false;
@@ -74,6 +75,7 @@ export class StoreCreationComponent {
                 cnic: ['', Validators.required],
                 expiryDate: ['', Validators.required],
                 issueCountry: ['', Validators.required],
+                city: ['', Validators.required],
                 dob: ['', Validators.required],
                 phone: ['', Validators.required],
                 address: ['', Validators.required],
@@ -91,6 +93,48 @@ export class StoreCreationComponent {
 
     logout() {
         this.authService.logout();
+    }
+
+    goToHome() {
+        this.router.navigate(['/']);
+    }
+
+    get canContinueFirstGroup(): boolean {
+        return this.areStepsValid([1, 2, 3]) && this.currentStep >= 3;
+    }
+
+    get canContinueSecondGroup(): boolean {
+        return this.areStepsValid([4, 5, 6]) && this.currentStep >= 6;
+    }
+
+    goToNextGroup() {
+        if (this.visibleGroup === 1 && this.canContinueFirstGroup) {
+            this.visibleGroup = 2;
+            this.currentStep = 4;
+            this.scrollToStep(4);
+            return;
+        }
+
+        if (this.visibleGroup === 2 && this.canContinueSecondGroup) {
+            this.visibleGroup = 3;
+            this.currentStep = 7;
+            this.scrollToTop();
+        }
+    }
+
+    goToPreviousGroup() {
+        if (this.visibleGroup === 2) {
+            this.visibleGroup = 1;
+            this.currentStep = 3;
+            this.scrollToStep(3);
+            return;
+        }
+
+        if (this.visibleGroup === 3) {
+            this.visibleGroup = 2;
+            this.currentStep = 6;
+            this.scrollToStep(6);
+        }
     }
 
     nextStep() {
@@ -113,9 +157,109 @@ export class StoreCreationComponent {
     }
 
     goToStep(step: number) {
-        if (step >= 1 && step <= this.totalSteps) {
+        if (step >= 1 && step <= this.totalSteps && step <= this.currentStep) {
+            this.visibleGroup = this.getGroupForStep(step);
             this.currentStep = step;
+            this.scrollToStep(step);
         }
+    }
+
+    isStepUnlocked(step: number): boolean {
+        return step <= this.currentStep;
+    }
+
+    isStepActive(step: number): boolean {
+        return step === this.currentStep;
+    }
+
+    canMoveNextFrom(step: number): boolean {
+        return this.currentStep === step && this.isStepValid(step);
+    }
+
+    nextWithinGroup(step: number) {
+        if (step > this.currentStep) {
+            Swal.fire(
+                'Complete Previous Steps',
+                'Please complete the previous step(s) before moving forward.',
+                'warning'
+            );
+            return;
+        }
+
+        if (step < this.currentStep) {
+            this.validateStep(step);
+            return;
+        }
+
+        const stepValid = this.validateStep(step);
+        if (!stepValid) {
+            return;
+        }
+
+        const groupEndStep = this.getGroupEndStep(step);
+        if (step < groupEndStep) {
+            this.currentStep = step + 1;
+            this.scrollToStep(this.currentStep);
+            return;
+        }
+
+        const group = this.getGroupForStep(step);
+        if (group === 1 && this.canContinueFirstGroup) {
+            this.goToNextGroup();
+        } else if (group === 2 && this.canContinueSecondGroup) {
+            this.goToNextGroup();
+        }
+    }
+
+    private areStepsValid(steps: number[]): boolean {
+        return steps.every(step => this.isStepValid(step));
+    }
+
+    private getGroupForStep(step: number): 1 | 2 | 3 {
+        if (step <= 3) return 1;
+        if (step <= 6) return 2;
+        return 3;
+    }
+
+    private getGroupEndStep(step: number): number {
+        const group = this.getGroupForStep(step);
+        if (group === 1) return 3;
+        if (group === 2) return 6;
+        return 7;
+    }
+
+    private scrollToStep(step: number) {
+        if (step === 7) {
+            this.scrollToTop();
+            return;
+        }
+
+        requestAnimationFrame(() => {
+            const el = document.getElementById(`step-${step}`);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    }
+
+    private scrollToTop() {
+        requestAnimationFrame(() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    private isStepValid(step: number): boolean {
+        const stepFields: { [key: number]: string[] } = {
+            1: ['name'],
+            2: ['shortDescription', 'longDescription', 'supportEmail'],
+            3: ['kyc.fullName', 'kyc.dob', 'kyc.phone'],
+            4: ['kyc.issueCountry', 'kyc.city', 'kyc.address', 'kyc.zipCode'],
+            5: ['kyc.cnic', 'kyc.expiryDate'],
+            6: ['kyc.frontImage', 'kyc.backImage']
+        };
+
+        const fields = stepFields[step] || [];
+        return fields.every(path => !this.storeForm.get(path)?.invalid);
     }
 
     triggerFileSelect(inputId: string) {
@@ -150,16 +294,66 @@ export class StoreCreationComponent {
     }
 
     private validateCurrentStep(): boolean {
+        return this.validateStep(this.currentStep);
+    }
+
+    fillSampleForStep() {
+        const sample = {
+            1: () =>
+                this.storeForm.patchValue({
+                    name: 'Success Mart'
+                }),
+            2: () =>
+                this.storeForm.patchValue({
+                    shortDescription: 'Premium handcrafted essentials',
+                    longDescription: 'We curate premium handmade goods with reliable delivery across Pakistan.',
+                    supportEmail: 'support@successmart.com',
+                    instagram: '@successmart',
+                    whatsapp: '+923001234567'
+                }),
+            3: () =>
+                this.storeForm.patchValue({
+                    kyc: {
+                        fullName: 'Muhammad Ali Khan',
+                        dob: '1990-06-15',
+                        phone: '+923001234567'
+                    }
+                }),
+            4: () =>
+                this.storeForm.patchValue({
+                    kyc: {
+                        issueCountry: 'PAK',
+                        city: 'Karachi',
+                        address: 'Suite 12, Block 7, Gulshan-e-Iqbal',
+                        zipCode: '75500'
+                    }
+                }),
+            5: () =>
+                this.storeForm.patchValue({
+                    kyc: {
+                        cnic: '42101-1234567-1',
+                        expiryDate: '2030-12-31'
+                    }
+                })
+        };
+
+        const filler = (sample as Record<number, () => void>)[this.currentStep];
+        if (filler) {
+            filler();
+        }
+    }
+
+    private validateStep(step: number): boolean {
         const stepFields: { [key: number]: string[] } = {
             1: ['name'],
             2: ['shortDescription', 'longDescription', 'supportEmail'],
             3: ['kyc.fullName', 'kyc.dob', 'kyc.phone'],
-            4: ['kyc.issueCountry', 'kyc.address', 'kyc.zipCode'],
+            4: ['kyc.issueCountry', 'kyc.city', 'kyc.address', 'kyc.zipCode'],
             5: ['kyc.cnic', 'kyc.expiryDate'],
             6: ['kyc.frontImage', 'kyc.backImage']
         };
 
-        const fields = stepFields[this.currentStep] || [];
+        const fields = stepFields[step] || [];
         fields.forEach(path => this.storeForm.get(path)?.markAsTouched());
 
         const invalid = fields.some(path => this.storeForm.get(path)?.invalid);
@@ -192,6 +386,7 @@ export class StoreCreationComponent {
 
         this.storeService.createStore(payload).subscribe({
             next: (res) => {
+                this.isLoading = false;
                 Swal.fire({
                     icon: 'success',
                     title: 'Store Created!',

@@ -1,12 +1,12 @@
 import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { sheinCriticalStyles } from './our-impact.styles';
 
 @Component({
   selector: 'app-our-impact',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './our-impact.component.html',
   styleUrls: ['./our-impact.component.scss'],
   encapsulation: ViewEncapsulation.None

@@ -272,7 +272,7 @@ export class Header implements OnInit, AfterViewChecked {
       }
 
       if (this.authService.isSeller()) {
-        this.router.navigate(['/seller/dashboard']);
+        this.authService.navigateToDashboard();
         return;
       }
 

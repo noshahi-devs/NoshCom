@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HeroCarouselComponent } from '../../shared/components/hero-carousel/hero-carousel';
 import { CategoryCarouselComponent } from '../../shared/components/category-carousel/category-carousel';
-import { DealCardComponent } from '../../shared/components/deal-card/deal-card';
 import { ProductService, ProductCardDto } from '../../services/product';
 import { environment } from '../../../environments/environment';
 import { CategoryService, Category } from '../../services/category';
@@ -19,8 +18,7 @@ import { SmartPricePipe } from '../../shared/pipes/smart-price.pipe';
     RouterModule,
     SmartPricePipe,
     HeroCarouselComponent,
-    CategoryCarouselComponent,
-    DealCardComponent
+    CategoryCarouselComponent
   ],
   templateUrl: './home.html',
   styleUrls: ['./home.scss']
@@ -77,12 +75,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    if (this.authService.isAuthenticated) {
-      if (this.authService.isAdmin() || this.authService.isSeller()) {
-        this.authService.navigateToDashboard();
-        return;
-      }
-    }
     this.loadProducts();
     this.loadCategories();
   }
