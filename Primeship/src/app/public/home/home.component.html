@@ -570,13 +570,22 @@
       <div class="container">
         <div class="deal-banner rewards-banner">
           <img
-            alt="Wayfair Rewards Members Only: Unbeatable savings on kitchen staples. Join Now. Up to 25% off."
-            src="https://assets.wfcdn.com/im/658072/resize-h288-w2000%5Ecompr-r85/3939/393921033/wayfair_rewards_members_only%3A_unbeatable_savings_on_kitchen_staples._join_now._up_to_25%25_off._393921033.jpg"
-            srcset="https://assets.wfcdn.com/im/658072/resize-h288-w2000%5Ecompr-r85/3939/393921033/wayfair_rewards_members_only%3A_unbeatable_savings_on_kitchen_staples._join_now._up_to_25%25_off._393921033.jpg 960w, https://assets.wfcdn.com/im/33679134/resize-h337-w825%5Ecompr-r85/3939/393921114/wayfair_rewards_members_only%3A_unbeatable_savings_on_kitchen_staples%2C_up_to_25%25_off%2C_join_now._393921114.jpg 1w"
+            class="rewards-banner-bg"
+            src="https://images.pexels.com/photos/8285755/pexels-photo-8285755.jpeg?auto=compress&cs=tinysrgb&w=2000"
+            srcset="https://images.pexels.com/photos/8285755/pexels-photo-8285755.jpeg?auto=compress&cs=tinysrgb&w=960 960w, https://images.pexels.com/photos/8285755/pexels-photo-8285755.jpeg?auto=compress&cs=tinysrgb&w=1400 1400w, https://images.pexels.com/photos/8285755/pexels-photo-8285755.jpeg?auto=compress&cs=tinysrgb&w=2000 2000w"
+            sizes="(min-width:1400px) 1400px, 100vw"
+            alt="Rewards banner background."
             loading="lazy"
             decoding="async"
             (error)="setDefaultImage($event)"
           />
+          <div class="rewards-banner-overlay" aria-hidden="true"></div>
+          <div class="rewards-banner-content">
+            <span class="rewards-eyebrow">Rewards</span>
+            <h3 class="rewards-title">Join our Rewards Program</h3>
+            <p class="rewards-subtitle">Earn points, unlock member-only deals, and save more on every order.</p>
+            <a class="btn-emerald-outline rewards-cta" routerLink="/rewards">Join Us</a>
+          </div>
         </div>
       </div>
     </section>

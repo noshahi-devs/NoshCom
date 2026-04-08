@@ -10,11 +10,6 @@
         </nav>
         <div class="hero-title-row">
           <h1>{{ categoryTitle }}</h1>
-          <div class="product-status-badge" [class.status-green]="filteredProducts.length > 0"
-            [class.status-red]="filteredProducts.length === 0">
-            <i class="status-indicator"></i>
-            <span>{{ filteredProducts.length }} Products found</span>
-          </div>
         </div>
         <p class="hero-subtitle">Curated picks hand-selected to match your style, budget, and space.</p>
       </div>
@@ -32,32 +27,63 @@
     <!-- Filter Shelf -->
     <div class="filter-shelf" *ngIf="!hideNonProductUI && !isDiscountPage" [formGroup]="filtersForm">
       <div class="filter-group">
-        <span class="inner-label">Sort</span>
-        <select class="clean-select" formControlName="sortBy">
-          <option value="newest">Newest</option>
-          <option value="price-low">Price: low</option>
-          <option value="price-high">Price: high</option>
-        </select>
-      </div>
+        <span class="inner-label">Category</span>
+        <div class="category-dropdown" (click)="$event.stopPropagation()">
+          <button type="button" class="clean-select category-trigger" (click)="toggleCategoryMenu()"
+            aria-haspopup="listbox" [attr.aria-expanded]="categoryMenuOpen">
+            <span class="category-trigger-left">
+              <img class="category-thumb" [src]="selectedCategoryImage" [alt]="categoryLabel"
+                (error)="handleCategoryThumbError($event, categoryLabel)" />
+              <span class="category-trigger-label">{{ categoryLabel }}</span>
+            </span>
+            <i class="fas fa-chevron-down" aria-hidden="true"></i>
+          </button>
 
-      <div class="filter-group price-filter-group">
-        <span class="inner-label">Max Price</span>
-        <div class="price-pill-group">
-          <button *ngFor="let point of pricePoints" class="pill"
-            [class.active]="filtersForm.get('maxPrice')?.value === point" (click)="$event.preventDefault(); setPricePoint(point)">
-            ${{ point | number }}
-          </button>
-          <button class="pill" [class.active]="filtersForm.get('maxPrice')?.value >= 10000000"
-            (click)="$event.preventDefault(); setPricePoint(10000000)">
-            All
-          </button>
+          <div class="category-menu-panel" *ngIf="categoryMenuOpen" role="listbox" aria-label="Category options">
+            <div class="category-grid" role="presentation">
+              <div class="category-row" *ngFor="let row of categoryColumnRows">
+                <div class="category-col" *ngFor="let col of row">
+                  <button type="button" class="category-option" *ngFor="let cat of col"
+                    [class.active]="(filtersForm.get('category')?.value) === (cat.slug || cat.id)"
+                    (click)="selectCategory(cat.slug || cat.id)">
+                    <span class="category-option-left">
+                      <img class="category-thumb option-thumb" [src]="getCategoryOptionImage(cat)" [alt]="cat.name"
+                        (error)="handleCategoryThumbError($event, cat.name)" />
+                      <span class="opt-name">{{ cat.name }}</span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <button class="minimal-reset-btn" (click)="clearFilters()" title="Reset all filters">
-        <i class="fas fa-sync-alt"></i>
-        <span>Reset</span>
-      </button>
+      <div class="filter-right">
+        <div class="filter-group">
+          <span class="inner-label">Sort</span>
+          <select class="clean-select" formControlName="sortBy">
+            <option value="newest">Newest</option>
+            <option value="price-low">Price: low</option>
+            <option value="price-high">Price: high</option>
+          </select>
+        </div>
+
+        <div class="filter-group price-filter-group">
+          <span class="inner-label">Max Price</span>
+          <select class="clean-select price-select" formControlName="maxPrice" aria-label="Max price">
+            <option [ngValue]="10000000">All</option>
+            <option *ngFor="let point of pricePoints" [ngValue]="point">
+              {{ '$' + (point | number) }}
+            </option>
+          </select>
+        </div>
+
+        <button class="minimal-reset-btn" (click)="clearFilters()" title="Reset all filters">
+          <i class="fas fa-sync-alt"></i>
+          <span>Reset</span>
+        </button>
+      </div>
     </div>
 
     <div class="deals-heading" *ngIf="!hideNonProductUI && isDiscountPage">
@@ -66,26 +92,6 @@
 
     <!-- Main Content Layout -->
     <div class="main-content-layout" [class.solo-grid]="hideNonProductUI">
-      <!-- Left Sidebar (Alabaster Glass) -->
-      <aside class="left-sidebar d-none d-lg-block" *ngIf="!hideNonProductUI">
-        <div class="sidebar-filters animate-up">
-          <div class="filter-group">
-            <h5 class="filter-title">
-              <i class="fas fa-th-large"></i>
-              <span>Categories</span>
-            </h5>
-            <div class="category-menu">
-              <div *ngFor="let cat of categoriesWithCount" class="category-item"
-                [class.active]="currentCategorySlug === cat.id || currentCategorySlug === cat.slug"
-                (click)="onCategoryToggle(cat)">
-                <span class="category-name">{{ cat.name }}</span>
-                <span class="category-pill" [class.empty]="cat.count === 0">{{ cat.count }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
-
       <!-- Main Body -->
       <section class="main-content">
         <div class="products-grid-container">
@@ -115,19 +121,6 @@
 
           <!-- Product Grid -->
           <div class="grid-layout" *ngIf="!isLoading && filteredProducts.length > 0">
-            <!-- Bulk Action Header -->
-            <div class="bulk-actions" *ngIf="!hideNonProductUI">
-              <label class="select-all-box">
-                <input type="checkbox" (change)="toggleAllProducts($event)" [checked]="isAllSelected">
-                <span>Select All Products</span>
-              </label>
-
-              <button class="btn-bulk-add" *ngIf="selectedProducts.size > 0" (click)="addSelectedToCart()">
-                <i class="fas fa-shopping-bag"></i>
-                <span>Add {{ selectedProducts.size }} Items to Cart</span>
-              </button>
-            </div>
-
             <div class="row">
               <ng-container *ngFor="let product of filteredProducts; let i = index">
                 <div class="grid-item">

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Observable, catchError, throwError, combineLatest, Subject, of } from 'rxjs';
@@ -137,6 +137,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
   isDiscountPage = false;
   currentCategorySlug = '';
   pricePoints = [10, 50, 100, 200, 300, 400, 500];
+  categoryMenuOpen = false;
 
   private destroy$ = new Subject<void>();
 
@@ -242,6 +243,11 @@ export class ProductListComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  @HostListener('document:click')
+  closeCategoryMenu(): void {
+    this.categoryMenuOpen = false;
   }
 
   private fetchProducts(slug: string, searchTerm: string): Observable<ProductDto[]> {
@@ -421,6 +427,73 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
   onCategoryToggle(cat: any): void {
     this.router.navigate(['/category', cat.slug || cat.id]);
+  }
+
+  toggleCategoryMenu(): void {
+    this.categoryMenuOpen = !this.categoryMenuOpen;
+  }
+
+  selectCategory(value: string): void {
+    this.categoryMenuOpen = false;
+    this.filtersForm.patchValue({ category: value });
+  }
+
+  get categoryLabel(): string {
+    const current = this.filtersForm?.get('category')?.value || '';
+    if (!current) return 'All';
+
+    const match = (this.categoriesWithCount || []).find((c: any) => (c.slug || c.id) === current);
+    if (!match) return String(current);
+    return `${match.name}`;
+  }
+
+  get selectedCategoryImage(): string {
+    const current = this.filtersForm?.get('category')?.value || '';
+    if (!current) return this.getCategoryFallbackImage('All');
+
+    const match = (this.categoriesWithCount || []).find((c: any) => (c.slug || c.id) === current);
+    const url = (match as any)?.imageUrl || (match as any)?.image || (match as any)?.ImageUrl;
+    return url || this.getCategoryFallbackImage(this.categoryLabel);
+  }
+
+  getCategoryOptionImage(cat: any): string {
+    if (!cat || cat.__isAll) return this.getCategoryFallbackImage('All');
+    const url = cat?.imageUrl || cat?.image || cat?.ImageUrl;
+    return url || this.getCategoryFallbackImage(cat?.name || 'Category');
+  }
+
+  handleCategoryThumbError(event: any, name: string): void {
+    const img = event?.target;
+    if (!img) return;
+    img.src = this.getCategoryFallbackImage(name || 'Category');
+    img.onerror = null;
+  }
+
+  private getCategoryFallbackImage(name: string): string {
+    return `https://placehold.co/96x96/f85606/ffffff?text=${encodeURIComponent(name || 'Category')}`;
+  }
+
+  get categoryColumns(): any[][] {
+    const cols: any[][] = [];
+    const rawItems = this.categoriesWithCount || [];
+    const items = [
+      { __isAll: true, id: '', slug: '', name: 'All', count: null },
+      ...rawItems
+    ];
+    for (let i = 0; i < items.length; i += 4) {
+      cols.push(items.slice(i, i + 4));
+    }
+    return cols;
+  }
+
+  get categoryColumnRows(): any[][][] {
+    const rows: any[][][] = [];
+    const columns = this.categoryColumns;
+    const columnsPerRow = 4;
+    for (let i = 0; i < columns.length; i += columnsPerRow) {
+      rows.push(columns.slice(i, i + columnsPerRow));
+    }
+    return rows;
   }
 
   setPricePoint(val: number): void {
