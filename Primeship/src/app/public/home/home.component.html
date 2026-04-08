@@ -67,7 +67,7 @@
                             <div class="wf-card-media">
                                 <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
                             </div>
-                            <span class="wf-verified-badge" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
+                            <span class="wf-verified-badge" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
                             <button type="button" class="wf-heart" (click)="toggleWishlist(p, $event)" aria-label="Add to wishlist">
                                 <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
                             </button>
@@ -90,7 +90,7 @@
                             <div class="wf-card-media">
                                 <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
                             </div>
-                            <span class="wf-verified-badge" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
+                            <span class="wf-verified-badge" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
                             <button type="button" class="wf-heart" (click)="toggleWishlist(p, $event)" aria-label="Add to wishlist">
                                 <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
                             </button>
@@ -114,7 +114,7 @@
                             <div class="wf-card-media">
                                 <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
                             </div>
-                            <span class="wf-verified-badge" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
+                            <span class="wf-verified-badge" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
                             <button type="button" class="wf-heart" (click)="toggleWishlist(p, $event)" aria-label="Add to wishlist">
                                 <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
                             </button>
@@ -140,7 +140,7 @@
 
               <div class="rec-scroll" #recList>
                 <div class="deal-card rec-card" *ngFor="let p of allProducts" (click)="goToProduct(p)">
-                  <span class="deal-verified" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
+                  <span class="deal-verified" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
                   <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
                       <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
                   </button>
@@ -175,6 +175,17 @@
               </div>
             </div>
 
+            <div class="deal-banner deal-banner-photo">
+              <img
+                src="https://images.pexels.com/photos/8285755/pexels-photo-8285755.jpeg?auto=compress&cs=tinysrgb&w=2000"
+                srcset="https://images.pexels.com/photos/8285755/pexels-photo-8285755.jpeg?auto=compress&cs=tinysrgb&w=960 960w, https://images.pexels.com/photos/8285755/pexels-photo-8285755.jpeg?auto=compress&cs=tinysrgb&w=1400 1400w, https://images.pexels.com/photos/8285755/pexels-photo-8285755.jpeg?auto=compress&cs=tinysrgb&w=2000 2000w"
+                sizes="(min-width:1400px) 1400px, 100vw"
+                alt="Curated handmade essentials flat lay on a wooden surface."
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+
             <div class="rec-header">
               <h2 class="section-title">24-hours ONLY: deals of the day</h2>
             </div>
@@ -186,7 +197,7 @@
 
               <div class="rec-scroll" #dealList>
                 <div class="deal-card rec-card" *ngFor="let p of allProducts" (click)="goToProduct(p)">
-                  <span class="deal-verified" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
+                  <span class="deal-verified" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
                   <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
                       <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
                   </button>
@@ -300,7 +311,6 @@
             <div class="deal-card rec-card prod-card" *ngFor="let p of allProducts | slice:0:8" (click)="goToProduct(p)">
               <div class="prod-card-inner">
                 <div class="prod-card-front">
-                  <span class="deal-verified" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
                   <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
                       <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
                   </button>
@@ -587,9 +597,6 @@
                   <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
                 </button>
 
-                <span class="wf-deal-verified" *ngIf="i % 4 === 1" aria-hidden="true">
-                  <i class="fas fa-check"></i>
-                </span>
 
                 <span class="wf-deal-tag" [class.low]="i % 6 === 5">
                   {{ (i % 6 === 5) ? '30-Day Low Price' : '5 Days of Deals' }}
@@ -671,3 +678,4 @@
         </div>
       </div>
     </section>
+

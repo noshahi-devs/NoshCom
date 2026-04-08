@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OrderService } from '../../../core/services/order.service';
 import { Router } from '@angular/router';
@@ -28,7 +28,7 @@ export class DashboardComponent implements OnInit {
       value: '',
       change: '+0%',
       trend: 'up',
-      icon: '💰',
+      icon: '??',
       color: 'success',
       gradient: 'linear-gradient(135deg, #f85606 0%, #ff8c42 100%)',
       route: '/admin/finance'
@@ -38,7 +38,7 @@ export class DashboardComponent implements OnInit {
       value: '0',
       change: '+0%',
       trend: 'up',
-      icon: '🧾',
+      icon: '??',
       color: 'info',
       gradient: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
       route: '/admin/orders'
@@ -48,7 +48,7 @@ export class DashboardComponent implements OnInit {
       value: '0',
       change: '+0%',
       trend: 'up',
-      icon: '🏪',
+      icon: '??',
       color: 'warning',
       gradient: 'linear-gradient(135deg, #f85606 0%, #b43d04 100%)',
       route: '/admin/sellers'
@@ -58,7 +58,7 @@ export class DashboardComponent implements OnInit {
       value: '0',
       change: '+0%',
       trend: 'up',
-      icon: '📦',
+      icon: '??',
       color: 'success',
       gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
       route: '/admin/orders'
@@ -68,7 +68,7 @@ export class DashboardComponent implements OnInit {
       value: '0',
       change: '+0%',
       trend: 'up',
-      icon: '🗂️',
+      icon: '???',
       color: 'info',
       gradient: 'linear-gradient(135deg, #0f172a 0%, #1f2937 100%)',
       route: '/admin/categories'
@@ -78,7 +78,7 @@ export class DashboardComponent implements OnInit {
       value: '0',
       change: '+0%',
       trend: 'up',
-      icon: '🛍️',
+      icon: '???',
       color: 'info',
       gradient: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
       route: '/admin/products'

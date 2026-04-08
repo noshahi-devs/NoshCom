@@ -174,7 +174,7 @@ declare var lucide: any;
                       <div class="verified-pop-content">
                         <div class="verified-pop-intro">
                           <div class="verified-pop-badge">
-                            <i class="fas fa-shield-alt"></i>
+                            <i class="fa-solid fa-shield-halved"></i>
                           </div>
                           <div class="verified-pop-title">Your shortcut to the good stuff.</div>
                           <div class="verified-pop-sub">
@@ -445,7 +445,7 @@ declare var lucide: any;
               <div class="wf-footer-pay">
                 <i class="fab fa-cc-mastercard"></i>
                 <i class="fab fa-cc-visa"></i>
-                <span class="ssl-badge"><i class="fas fa-shield-alt"></i> 256 Bit SSL Encryption</span>
+                <span class="ssl-badge"><i class="fa-solid fa-shield-halved"></i> 256 Bit SSL Encryption</span>
               </div>
             </div>
           </div>
@@ -551,7 +551,7 @@ declare var lucide: any;
     .action-section { display: flex; align-items: center; gap: 16px; justify-content: flex-end; margin-right: 20px; }
     .action-link { text-decoration: none; color: #111827; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 999px; background: transparent; border: none; cursor: pointer; font-family: inherit; }
     .action-link:hover { color: #10B981; }
-    .action-icon { width: 26px; height: 26px; display: inline-block; flex: 0 0 auto; fill: #111827; }
+    .action-icon { width: 26px; height: 26px; display: inline-block; flex: 0 0 auto; fill: #10B981; color: #10B981; stroke: #10B981; }
     .account-icon { width: 32px; height: 32px; }
     .account-wrap { position: relative; display: inline-flex; align-items: center; }
     .account-trigger { user-select: none; }
@@ -575,7 +575,7 @@ declare var lucide: any;
     .account-dd-name { font-weight: 800; }
     .account-dd-group { padding: 6px 2px 2px; display: grid; gap: 2px; }
     .account-dd-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 10px; border-radius: 10px; color: #111827; text-decoration: none; font-size: 14px; font-weight: 600; background: transparent; border: none; cursor: pointer; text-align: left; font-family: inherit; line-height: 1.3; }
-    .account-dd-item i { width: 18px; text-align: center; color: #111827; opacity: 0.85; font-size: 15px; }
+    .account-dd-item i { width: 18px; text-align: center; color: #10B981; opacity: 0.9; font-size: 15px; }
     .account-dd-item:hover { background: #F3F4F6; }
 
     .account-dropdown::-webkit-scrollbar { width: 6px; }
@@ -1036,7 +1036,7 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
     routerLink?: any[] | string;
     queryParams?: Record<string, any>;
   }> = [
-    { key: 'verified', label: 'Verified', icon: 'fas fa-shield-alt', routerLink: ['/verified'] },
+    { key: 'verified', label: 'Verified', icon: 'fa-solid fa-shield-halved', routerLink: ['/verified'] },
     { key: 'new-arrivals', label: 'New Arrivals', routerLink: ['/shop'], queryParams: { sortBy: 'newest' } },
     { key: 'best-sellers', label: 'Best Sellers', routerLink: ['/shop'], queryParams: { sortBy: 'chart' } },
     { key: 'collaborations', label: 'Collaborations', routerLink: ['/collaborations'] },

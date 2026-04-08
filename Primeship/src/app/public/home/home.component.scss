@@ -514,7 +514,7 @@
 
   .card-media {
     width: 100%;
-    aspect-ratio: 1 / 1;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -524,6 +524,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      object-position: center bottom;
     }
   }
 
@@ -879,13 +880,14 @@
     width: 24px;
     height: 24px;
     border-radius: 8px;
-    background: rgba(123, 24, 159, 0.92);
+    background: rgba(16, 185, 129, 0.92);
     color: #fff;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 12px;
     box-shadow: 0 8px 16px rgba(15, 23, 42, 0.14);
+    i { color: #fff; }
   }
   .square-card .deal-heart {
     position: absolute;
@@ -1671,14 +1673,14 @@
     width: 28px;
     height: 28px;
     border-radius: 9px;
-    background: rgba(123, 24, 159, 0.92);
+    background: rgba(16, 185, 129, 0.92);
     color: #fff;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 8px 16px rgba(15, 23, 42, 0.14);
 
-    i { font-size: 14px; }
+    i { font-size: 14px; color: #fff; }
   }
 
   .wf-deal-tag {
@@ -1883,7 +1885,7 @@
     width: 44px;
     height: 44px;
     border-radius: 14px;
-    background: rgba(123, 24, 159, 0.12);
+    background: rgba(16, 185, 129, 0.12);
     color: #10B981;
     display: inline-flex;
     align-items: center;
@@ -1949,7 +1951,7 @@
   &.prev svg { transform: rotate(180deg); }
 
   &:hover {
-    background: rgba(123, 24, 159, 0.06);
+    background: rgba(16, 185, 129, 0.06);
     box-shadow: 0 16px 30px rgba(15, 23, 42, 0.22);
     transform: translateY(-50%) scale(1.03);
   }
@@ -2085,7 +2087,7 @@
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
-      border-color: rgba(123, 24, 159, 0.45);
+      border-color: rgba(16, 185, 129, 0.45);
     }
   }
 
@@ -2318,13 +2320,14 @@
   width: 26px;
   height: 26px;
   border-radius: 9px;
-  background: rgba(123, 24, 159, 0.92);
+  background: rgba(16, 185, 129, 0.92);
   color: #fff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 14px;
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.16);
+  i { color: #fff; }
 }
 
 .load-more-center {
@@ -2357,10 +2360,29 @@
 .deal-card.rec-card .card-media {
   height: 150px;
   flex: 0 0 auto;
+  overflow: hidden;
+  background: #fff;
+}
+
+.deal-card.rec-card .card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+  transform: scale(1.08);
+  display: block;
 }
 
 .deal-card.rec-card .card-info {
   min-height: 60px;
+}
+
+.deal-banner-photo img {
+  height: 220px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-3d-sm);
+  object-fit: cover;
+  display: block;
 }
 
 /* -------------------------------------------
