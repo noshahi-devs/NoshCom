@@ -101,33 +101,6 @@ declare var lucide: any;
                        <span>Help & Contact</span>
                      </a>
 
-                     <div class="account-dd-sep"></div>
-
-                     <a routerLink="/design-services" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
-                       <i class="fas fa-pencil-ruler"></i>
-                       <span>Design Services</span>
-                     </a>
-                     <a routerLink="/gift-card" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
-                       <i class="fas fa-gift"></i>
-                       <span>Gift Card</span>
-                     </a>
-                     <a routerLink="/rewards" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
-                       <i class="fas fa-award"></i>
-                       <span>Rewards</span>
-                     </a>
-                     <a routerLink="/credit-card" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
-                       <i class="far fa-credit-card"></i>
-                       <span>Credit Card</span>
-                     </a>
-                     <a routerLink="/financing" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
-                       <i class="fas fa-hand-holding-usd"></i>
-                       <span>Financing</span>
-                     </a>
-                     <a routerLink="/cash-registry" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
-                       <i class="fas fa-cash-register"></i>
-                       <span>Cash Registry</span>
-                     </a>
-
                      <div class="account-dd-footer">
                        <ng-container *ngIf="authService.isAuthenticated(); else signedOutCtas">
                          <span>On a public or shared device?</span>
@@ -187,31 +160,109 @@ declare var lucide: any;
           <div class="container-header nav-bar-inner">
             <div class="feature-links" aria-label="Primary navigation">
               <ng-container *ngFor="let link of headerFeatureLinks">
-                <a
-                  *ngIf="!link.external"
-                  [routerLink]="link.routerLink"
-                  [queryParams]="link.queryParams"
-                  class="feature-link"
-                  [class.verified]="link.key === 'verified'"
-                >
-                  <i *ngIf="link.icon" [class]="link.icon"></i>
-                  {{ link.label }}
-                </a>
-                <a
-                  *ngIf="link.external"
-                  [href]="link.href"
-                  class="feature-link"
-                  [class.verified]="link.key === 'verified'"
-                  [attr.target]="link.target || null"
-                  [attr.rel]="link.target === '_blank' ? 'noopener noreferrer' : null"
-                >
-                  <i *ngIf="link.icon" [class]="link.icon"></i>
-                  {{ link.label }}
-                </a>
+                <ng-container *ngIf="link.key === 'verified'; else collabOrStandard">
+                  <div class="verified-pop-wrap" [class.open]="showVerifiedPopup">
+                    <a
+                      class="feature-link verified"
+                      href="#"
+                      (click)="toggleVerifiedPopup($event)"
+                    >
+                      <i *ngIf="link.icon" [class]="link.icon"></i>
+                      {{ link.label }}
+                    </a>
+                    <div class="verified-popover" role="dialog" aria-label="Verified quick preview">
+                      <div class="verified-pop-content">
+                        <div class="verified-pop-intro">
+                          <div class="verified-pop-badge">
+                            <i class="fas fa-shield-alt"></i>
+                          </div>
+                          <div class="verified-pop-title">Your shortcut to the good stuff.</div>
+                          <div class="verified-pop-sub">
+                            Verified items are hand‑vetted for quality by our product specialists.
+                          </div>
+                        </div>
+                        <div class="verified-pop-grid">
+                          <a
+                            class="verified-pop-item"
+                            *ngFor="let item of verifiedCategories"
+                            [routerLink]="['/category', item.slug]"
+                          >
+                            <span
+                              class="verified-pop-thumb"
+                              [style.backgroundImage]="'url(' + item.image + ')'"
+                            ></span>
+                            <span class="verified-pop-label">{{ item.label }}</span>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </ng-container>
+                <ng-template #collabOrStandard>
+                  <a
+                    *ngIf="!link.external"
+                    [routerLink]="link.routerLink"
+                    [queryParams]="link.queryParams"
+                    class="feature-link"
+                    (click)="handleFeatureLinkClick($event, link)"
+                  >
+                    <i *ngIf="link.icon" [class]="link.icon"></i>
+                    {{ link.label }}
+                  </a>
+                  <a
+                    *ngIf="link.external"
+                    [href]="link.href"
+                    class="feature-link"
+                    [attr.target]="link.target || null"
+                    [attr.rel]="link.target === '_blank' ? 'noopener noreferrer' : null"
+                  >
+                    <i *ngIf="link.icon" [class]="link.icon"></i>
+                    {{ link.label }}
+                  </a>
+                </ng-template>
               </ng-container>
             </div>
             <div class="category-links">
-              <a *ngFor="let cat of categoryNavLinks" [routerLink]="['/category', cat.slug]" class="category-link">{{ cat.label }}</a>
+              <ng-container *ngFor="let cat of categoryNavLinks">
+                <ng-container *ngIf="getMegaMenu(cat.slug) as mega; else standardCategory">
+                  <div class="mega-pop-wrap">
+                    <a [routerLink]="['/category', cat.slug]" class="category-link mega-link">{{ cat.label }}</a>
+                    <div class="mega-popover" role="dialog" aria-label="Category mega menu">
+                      <div class="mega-pop-content">
+                        <div class="mega-columns">
+                          <div class="mega-col" *ngFor="let col of mega.columns">
+                            <div class="mega-col-title">{{ col.title }}</div>
+                            <a
+                              class="mega-item"
+                              *ngFor="let item of col.items"
+                              [routerLink]="item.link"
+                              [queryParams]="item.queryParams || null"
+                            >
+                              {{ item.label }}
+                            </a>
+                          </div>
+                        </div>
+                        <div class="mega-side">
+                          <div class="mega-side-group" *ngFor="let group of mega.side">
+                            <div class="mega-side-title">{{ group.title }}</div>
+                            <a
+                              class="mega-item"
+                              *ngFor="let item of group.items"
+                              [routerLink]="item.link"
+                              [queryParams]="item.queryParams || null"
+                            >
+                              {{ item.label }}
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </ng-container>
+                <ng-template #standardCategory>
+                  <a [routerLink]="['/category', cat.slug]" class="category-link">{{ cat.label }}</a>
+                </ng-template>
+              </ng-container>
             </div>
           </div>
         </div>
@@ -224,7 +275,7 @@ declare var lucide: any;
         </div>
       </header>
 
-      <section class="promo-carousel" *ngIf="!isAuthPage && !isHomePage && !isShopPage" (click)="$event.stopPropagation()" aria-label="Promotions carousel">
+      <section class="promo-carousel" *ngIf="showPromoCarousel && !isAuthPage && !isHomePage && !isShopPage" (click)="$event.stopPropagation()" aria-label="Promotions carousel">
         <div class="promo-carousel-inner">
           <button type="button" class="promo-carousel-nav prev" (click)="prevPromo($event)" aria-label="Previous promotion">
             <span class="promo-carousel-nav-ico" aria-hidden="true">
@@ -417,7 +468,7 @@ declare var lucide: any;
     .container-header { max-width: 1400px; margin: 0 auto; padding: 0 20px; width: 100%; }
     .container-footer { max-width: 1300px; margin: 0 auto; padding: 0 20px; width: 100%; }
 
-    .marketing-banner { background: #7B189F; color: #FFF; }
+    .marketing-banner { background: #10B981; color: #FFF; }
     .marketing-inner { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 10px 40px; flex-wrap: nowrap; }
     .marketing-left { display: flex; align-items: center; gap: 18px; min-width: 0; }
     .marketing-logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: #FFF; flex: 0 0 auto; }
@@ -475,7 +526,7 @@ declare var lucide: any;
     .cart-trigger { position: relative; .badge { position: absolute; top: -8px; right: -10px; background: var(--primary); color: #FFF; font-size: 11px; font-weight: 900; padding: 2px 6px; border-radius: 12px; line-height: 1; border: 2px solid var(--header-bg); } }
 
     .eliship-header { background: #FFF; }
-    .header-brand-bar { background: #7B189F; color: #FFF; }
+    .header-brand-bar { background: #10B981; color: #FFF; }
     .brand-bar-inner { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 10px 0; flex-wrap: nowrap; }
     .brand-links, .utility-links { display: flex; flex-wrap: nowrap; gap: 24px; align-items: center; }
     .brand-link, .utility-link { color: #FFF; font-size: 12px; font-weight: 800; text-decoration: none; text-transform: uppercase; letter-spacing: 0.12em; white-space: nowrap; }
@@ -486,32 +537,52 @@ declare var lucide: any;
     .header-main-bar { padding: 10px 0 12px; }
     .header-main-flex { display: grid; grid-template-columns: auto minmax(320px, 1fr) auto; align-items: center; gap: 32px; }
     .logo-section { flex-shrink: 0; margin-left: 40px; }
-    .eliship-logo { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: #7B189F; font-size: 28px; font-weight: 900; letter-spacing: -0.05em; }
-    .logo-mark { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 16px; background: linear-gradient(135deg, #8d2ec3 0%, #7a127b 100%); color: #FFF; font-size: 18px; font-weight: 800; }
-    .logo-text { letter-spacing: -0.8px; color: #7B189F; }
+    .eliship-logo { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: #10B981; font-size: 28px; font-weight: 900; letter-spacing: -0.05em; }
+    .logo-mark { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 16px; background: linear-gradient(135deg, #34D399 0%, #059669 100%); color: #FFF; font-size: 18px; font-weight: 800; }
+    .logo-text { letter-spacing: -0.8px; color: #10B981; }
 
     .search-section { width: 100%; display: flex; align-items: center; justify-content: center; }
     .search-box { display: flex; width: 100%; max-width: 680px; height: 56px; border-radius: 10px; background: #FFF; border: 1px solid #D1D5DB; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08); overflow: hidden; }
     .search-box input { flex: 1; border: none; padding: 0 28px; font-size: 16px; font-weight: 500; outline: none; color: #111827; }
     .search-box input::placeholder { color: #9CA3AF; }
-    .search-icon-btn { width: 72px; border: none; background: #7B189F; color: #FFF; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; border-radius: 0 10px 10px 0; padding: 0 12px; }
+    .search-icon-btn { width: 72px; border: none; background: #10B981; color: #FFF; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; border-radius: 0 10px 10px 0; padding: 0 12px; }
     .search-icon-btn:focus { outline: none; }
 
     .action-section { display: flex; align-items: center; gap: 16px; justify-content: flex-end; margin-right: 20px; }
     .action-link { text-decoration: none; color: #111827; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 999px; background: transparent; border: none; cursor: pointer; font-family: inherit; }
-    .action-link:hover { color: #7B189F; }
+    .action-link:hover { color: #10B981; }
     .action-icon { width: 26px; height: 26px; display: inline-block; flex: 0 0 auto; fill: #111827; }
     .account-icon { width: 32px; height: 32px; }
     .account-wrap { position: relative; display: inline-flex; align-items: center; }
     .account-trigger { user-select: none; }
 
-    .account-dropdown { position: absolute; top: calc(100% + 10px); right: 0; width: 290px; background: #FFF; border: 1px solid #E5E7EB; border-radius: 12px; box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18); padding: 10px; z-index: 2000; }
+    .account-dropdown {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: 290px;
+      background: #FFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+      padding: 10px;
+      z-index: 2400;
+      max-height: min(70vh, 520px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
     .account-dd-header { font-size: 18px; font-weight: 700; padding: 10px 10px 12px; color: #111827; border-bottom: 1px solid #E5E7EB; }
     .account-dd-name { font-weight: 800; }
-    .account-dd-group { padding: 6px 2px 2px; }
-    .account-dd-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 10px; border-radius: 10px; color: #111827; text-decoration: none; font-size: 14px; font-weight: 600; background: transparent; border: none; cursor: pointer; text-align: left; font-family: inherit; }
+    .account-dd-group { padding: 6px 2px 2px; display: grid; gap: 2px; }
+    .account-dd-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 10px; border-radius: 10px; color: #111827; text-decoration: none; font-size: 14px; font-weight: 600; background: transparent; border: none; cursor: pointer; text-align: left; font-family: inherit; line-height: 1.3; }
     .account-dd-item i { width: 18px; text-align: center; color: #111827; opacity: 0.85; font-size: 15px; }
     .account-dd-item:hover { background: #F3F4F6; }
+
+    .account-dropdown::-webkit-scrollbar { width: 6px; }
+    .account-dropdown::-webkit-scrollbar-track { background: transparent; }
+    .account-dropdown::-webkit-scrollbar-thumb { background: #10B981; border-radius: 999px; }
+    .account-dropdown::-webkit-scrollbar-thumb:hover { background: #059669; }
+    .account-dropdown { scrollbar-width: thin; scrollbar-color: #10B981 transparent; }
     .account-dd-sep { height: 1px; background: #E5E7EB; margin: 8px 8px; }
     .account-dd-footer { border-top: 1px solid #E5E7EB; margin-top: 10px; padding: 10px 10px 6px; font-size: 12px; color: #6B7280; display: flex; align-items: center; justify-content: flex-start; gap: 6px; }
     .account-dd-footer > span { flex: 0 1 auto; }
@@ -534,23 +605,208 @@ declare var lucide: any;
     .cart-empty-options { display: grid; gap: 10px; }
     .cart-empty-option { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 12px; border: 1px solid #E5E7EB; border-radius: 12px; background: #FFF; cursor: pointer; text-align: left; font-weight: 700; color: #111827; }
     .cart-empty-option:hover { background: #F9FAFB; border-color: #D1D5DB; }
-    .cart-empty-icon { width: 40px; height: 40px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; background: rgba(123, 24, 159, 0.12); color: #7B189F; flex: 0 0 auto; }
+    .cart-empty-icon { width: 40px; height: 40px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; background: rgba(16, 185, 129, 0.12); color: #10B981; flex: 0 0 auto; }
     .cart-empty-icon i { font-size: 18px; }
-    .cart-empty-link { color: #7B189F; text-decoration: underline; }
+    .cart-empty-link { color: #10B981; text-decoration: underline; }
 
     .category-links { display: flex; gap: 22px; flex-wrap: nowrap; overflow-x: auto; padding: 10px 0; align-items: center; justify-content: center; width: 100%; }
     .category-link { color: #111827; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; opacity: 0.92; transition: opacity 0.2s ease, color 0.2s ease; }
-    .category-link:hover { color: #7B189F; opacity: 1; }
+    .category-link:hover { color: #10B981; opacity: 1; }
 
-    .feature-links { display: flex; gap: 22px; flex-wrap: nowrap; overflow-x: auto; padding: 10px 0; align-items: center; justify-content: center; width: 100%; border-bottom: 1px solid #E5E7EB; }
+    .feature-links { display: flex; gap: 22px; flex-wrap: wrap; overflow: visible; padding: 10px 0; align-items: center; justify-content: center; width: 100%; border-bottom: 1px solid #34D399; }
     .feature-link { color: #111827; font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap; opacity: 0.95; transition: opacity 0.2s ease, color 0.2s ease; display: inline-flex; align-items: center; gap: 8px; }
-    .feature-link:hover { color: #7B189F; opacity: 1; }
-    .feature-link.verified { color: #7B189F; }
+    .feature-link:hover { color: #10B981; opacity: 1; }
+    .feature-link.verified { color: #10B981; }
     .feature-link i { font-size: 14px; }
-    .header-nav-bar { border-top: 1px solid #E5E7EB; border-bottom: 1px solid #E5E7EB; }
-    .nav-bar-inner { overflow-x: auto; }
 
-    .promo-bar { background: #7B189F; color: #FFF; }
+    .verified-pop-wrap { position: relative; display: inline-flex; align-items: center; }
+    .verified-pop-wrap::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      height: 12px;
+    }
+    .verified-popover {
+      position: absolute;
+      top: calc(100% + 12px);
+      left: 0;
+      right: auto;
+      transform: translateY(8px);
+      width: min(760px, calc(100vw - 48px));
+      max-height: none;
+      overflow: visible;
+      background: #FFF;
+      border: 1px solid #34D399;
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 24px 60px rgba(16, 185, 129, 0.25);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+      z-index: 2200;
+    }
+
+    .verified-pop-wrap.open .verified-popover,
+    .verified-popover:hover {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .verified-pop-content { display: grid; grid-template-columns: 280px 1fr; gap: 18px; }
+    .verified-pop-intro {
+      background: #FFF;
+      border: 1px solid #34D399;
+      border-radius: 14px;
+      padding: 16px;
+      display: grid;
+      gap: 10px;
+      text-align: center;
+      align-content: start;
+    }
+    .verified-pop-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #10B981;
+      color: #FFF;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      font-size: 18px;
+    }
+    .verified-pop-title { font-size: 18px; font-weight: 900; color: #10B981; }
+    .verified-pop-sub { font-size: 12px; font-weight: 600; color: #059669; line-height: 1.4; }
+    .verified-pop-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: #10B981;
+      color: #FFF;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid #059669;
+      margin-top: 4px;
+    }
+
+    .verified-pop-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .verified-pop-item {
+      display: grid;
+      gap: 8px;
+      padding: 8px;
+      border-radius: 12px;
+      border: 1px solid #34D399;
+      text-decoration: none;
+      color: #059669;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: lowercase;
+      background: #FFF;
+    }
+    .verified-pop-thumb {
+      width: 100%;
+      height: 78px;
+      border-radius: 10px;
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 10px 20px rgba(16, 185, 129, 0.18);
+    }
+    .verified-pop-label { text-align: center; text-transform: capitalize; }
+    .verified-pop-cta {
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border-style: dashed;
+      color: #10B981;
+    }
+
+    @media (max-width: 920px) {
+      .verified-pop-content { grid-template-columns: 1fr; }
+      .verified-pop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 640px) {
+      .verified-popover { display: none; }
+    }
+
+    /* Hard-disable old Services popover if any cached markup exists */
+    .services-popover { display: none !important; }
+
+    @media (min-width: 900px) {
+      .nav-bar-inner { overflow: visible; }
+      .feature-links { overflow: visible; flex-wrap: wrap; }
+    }
+    .header-nav-bar { border-top: 1px solid #34D399; border-bottom: 1px solid #34D399; position: relative; z-index: 2100; overflow: visible; }
+    .nav-bar-inner { overflow: visible; }
+    .category-links { overflow: visible; position: relative; }
+
+    .mega-pop-wrap { position: static; display: inline-flex; align-items: center; }
+    .mega-pop-wrap::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      height: 14px;
+    }
+    .mega-popover {
+      position: absolute;
+      top: calc(100% + 14px);
+      left: 0;
+      width: min(1050px, calc(100vw - 48px));
+      background: #fff;
+      border: 1px solid rgba(16,185,129,0.35);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 28px 60px rgba(15, 23, 42, 0.2);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+      z-index: 2200;
+    }
+    .mega-pop-wrap:hover .mega-popover,
+    .mega-popover:hover {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    .mega-pop-content { display: grid; grid-template-columns: 1fr 0.7fr; gap: 18px; }
+    .mega-columns { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .mega-col-title { font-weight: 900; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #0F766E; margin-bottom: 8px; }
+    .mega-item {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #111827;
+      text-decoration: none;
+      padding: 4px 0;
+    }
+    .mega-item:hover { color: #10B981; }
+    .mega-item.hot { color: #10B981; font-weight: 800; }
+    .mega-side { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-content: start; }
+    .mega-side-group { display: grid; gap: 6px; align-content: start; }
+    .mega-side-title { font-weight: 900; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #0F766E; margin-bottom: 6px; }
+
+    @media (max-width: 1024px) {
+      .mega-popover { width: min(840px, calc(100vw - 32px)); }
+      .mega-pop-content { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 820px) {
+      .mega-popover { display: none; }
+    }
+
+    .promo-bar { background: #10B981; color: #FFF; }
     .promo-inner { display: flex; justify-content: center; align-items: center; gap: 10px; min-height: 44px; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; }
     .promo-arrow { font-size: 18px; }
 
@@ -576,7 +832,7 @@ declare var lucide: any;
 
     .promo-carousel-dots { display: inline-flex; gap: 6px; justify-content: center; width: 100%; padding: 12px 0 16px; }
     .promo-carousel-dot { width: 8px; height: 8px; border-radius: 999px; border: none; background: #D1D5DB; cursor: pointer; }
-    .promo-carousel-dot.active { background: #7B189F; width: 18px; }
+    .promo-carousel-dot.active { background: #10B981; width: 18px; }
 
     .search-box::-webkit-scrollbar,
     .feature-links::-webkit-scrollbar,
@@ -641,7 +897,7 @@ declare var lucide: any;
     .wf-contact-actions { display: grid; justify-items: start; gap: 8px; margin-bottom: 12px; }
     .wf-contact-btn { width: min(190px, 100%); border: 2px solid #E5E7EB; background: #FFF; border-radius: 10px; padding: 8px 10px; min-height: 56px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; color: #111827; font-weight: 600; font-size: 12px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .wf-contact-btn:hover { background: #F3F4F6; }
-    .wf-contact-ico { width: 24px; height: 24px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; background: rgba(123, 24, 159, 0.10); color: #7B189F; flex: 0 0 auto; }
+    .wf-contact-ico { width: 24px; height: 24px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; background: rgba(16, 185, 129, 0.10); color: #10B981; flex: 0 0 auto; }
 
     .wf-hours-block { margin-top: 14px; }
     .wf-hours-title { margin: 0 0 6px; font-size: 14px; font-weight: 900; color: #111827; }
@@ -658,8 +914,8 @@ declare var lucide: any;
 
     /* Floating Help */
     .help-fab-wrap { position: fixed; right: 24px; bottom: 24px; z-index: 2700; }
-    .help-fab { width: 52px; height: 52px; border-radius: 999px; border: 2px solid #7B189F; background: #FFF; color: #7B189F; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 18px 36px rgba(15, 23, 42, 0.18); }
-    .help-fab:hover { background: rgba(123, 24, 159, 0.06); }
+    .help-fab { width: 52px; height: 52px; border-radius: 999px; border: 2px solid #10B981; background: #FFF; color: #10B981; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 18px 36px rgba(15, 23, 42, 0.18); }
+    .help-fab:hover { background: rgba(16, 185, 129, 0.06); }
     .help-fab-ico { width: 26px; height: 26px; display: block; }
 
     .help-popover { position: absolute; right: 0; bottom: 66px; width: 320px; max-width: calc(100vw - 32px); background: #FFF; border: 1px solid #E5E7EB; border-radius: 14px; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22); overflow: hidden; }
@@ -673,12 +929,12 @@ declare var lucide: any;
     .help-popover-sub { color: #111827; font-weight: 600; opacity: 0.9; margin-bottom: 14px; }
 
     .help-popover-actions { display: grid; gap: 12px; margin-bottom: 14px; }
-    .help-popover-pill { width: fit-content; max-width: 100%; border: 2px solid #7B189F; background: #FFF; color: #7B189F; border-radius: 999px; padding: 10px 16px; font-weight: 800; cursor: pointer; }
-    .help-popover-pill:hover { background: rgba(123, 24, 159, 0.06); }
+    .help-popover-pill { width: fit-content; max-width: 100%; border: 2px solid #10B981; background: #FFF; color: #10B981; border-radius: 999px; padding: 10px 16px; font-weight: 800; cursor: pointer; }
+    .help-popover-pill:hover { background: rgba(16, 185, 129, 0.06); }
 
     .help-popover-sep { height: 1px; background: #E5E7EB; margin: 14px 0 12px; }
     .help-popover-links { display: grid; gap: 10px; }
-    .help-popover-links a { color: #7B189F; font-weight: 800; text-decoration: underline; cursor: pointer; }
+    .help-popover-links a { color: #10B981; font-weight: 800; text-decoration: underline; cursor: pointer; }
 
     @media (max-width: 1024px) {
       .wf-footer-grid { grid-template-columns: 1fr; }
@@ -699,6 +955,7 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
   isAuthPage = false;
   isHomePage = false;
   isShopPage = false;
+  showPromoCarousel = false;
   cartCount = 0;
   userName = 'Guest';
   categories: CategoryLookupDto[] = [];
@@ -708,6 +965,7 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
   showCartPopup = false;
   showHelpWidget = false;
   promoIndex = 0;
+  showVerifiedPopup = false;
 
   promoSlides: Array<{
     kicker: string;
@@ -766,6 +1024,8 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
     { label: 'Sale', slug: 'sale' }
   ];
 
+  categoryMegaMenus: Record<string, any> = {};
+
   headerFeatureLinks: Array<{
     key: 'verified' | 'new-arrivals' | 'best-sellers' | 'collaborations' | 'shop-by-room' | 'inspiration' | 'outdoor-shop' | 'services';
     label: string;
@@ -780,11 +1040,32 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
     { key: 'new-arrivals', label: 'New Arrivals', routerLink: ['/shop'], queryParams: { sortBy: 'newest' } },
     { key: 'best-sellers', label: 'Best Sellers', routerLink: ['/shop'], queryParams: { sortBy: 'chart' } },
     { key: 'collaborations', label: 'Collaborations', routerLink: ['/collaborations'] },
-    { key: 'shop-by-room', label: 'Shop by Room', routerLink: ['/shop-by-room'] },
-    { key: 'inspiration', label: 'Inspiration', routerLink: ['/inspiration'] },
-    { key: 'outdoor-shop', label: 'The Outdoor Shop', routerLink: ['/category', 'outdoor'] },
+    { key: 'inspiration', label: 'Inspiration', routerLink: ['/inspiration'] }
+    ,
+    { key: 'outdoor-shop', label: 'The Outdoor Shop', routerLink: ['/outdoor-shop'] },
     { key: 'services', label: 'Services', routerLink: ['/services'] }
   ];
+
+  verifiedCategories = [
+    { label: 'living room', slug: 'living-room', image: 'https://images.unsplash.com/photo-1615873968403-89e068629265?auto=format&fit=crop&w=800&q=80' },
+    { label: 'kitchen & dining', slug: 'kitchen-dining', image: 'https://images.unsplash.com/photo-1556912167-f556f1f39fdf?auto=format&fit=crop&w=800&q=80' },
+    { label: 'bedroom', slug: 'bedroom', image: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=800&q=80' },
+    { label: 'bathroom', slug: 'bathroom', image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80' },
+    { label: 'outdoor', slug: 'outdoor', image: 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80' },
+    { label: 'rugs', slug: 'rugs', image: 'https://images.unsplash.com/photo-1523413651479-597eb2da0ad6?auto=format&fit=crop&w=800&q=80' },
+    { label: 'decor', slug: 'decor-pillows', image: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80' },
+    { label: 'baby & kids', slug: 'baby-kids', image: 'https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&w=800&q=80' }
+  ];
+
+  collaborationsPreview = [
+    { label: 'Studio Horizon', initials: 'SH', desc: 'Soft modern living' },
+    { label: 'Atelier North', initials: 'AN', desc: 'Scandinavian calm' },
+    { label: 'Drift & Co', initials: 'DC', desc: 'Coastal textures' },
+    { label: 'Lineage', initials: 'LN', desc: 'Classic heritage' },
+    { label: 'Monoform', initials: 'MF', desc: 'Minimal silhouettes' },
+    { label: 'Terra Loom', initials: 'TL', desc: 'Warm earthy tones' }
+  ];
+
 
   private fallbackCategories: CategoryLookupDto[] = [
     { id: 'pc', name: 'Personal Care', slug: 'personal-care' },
@@ -807,7 +1088,9 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private publicService: PublicService
-  ) { }
+  ) {
+    this.categoryMegaMenus = this.buildMegaMenus();
+  }
 
   ngOnInit(): void {
     // Set initial route-dependent flags (NavigationEnd may have fired before this component was constructed)
@@ -858,6 +1141,222 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
 
   get navCategories(): CategoryLookupDto[] {
     return this.categories.length > 0 ? this.categories : this.fallbackCategories;
+  }
+
+  getMegaMenu(slug: string): any {
+    return this.categoryMegaMenus[slug];
+  }
+
+  private buildItems(baseSlug: string, labels: string[]): Array<{ label: string; link: any[]; queryParams?: any }> {
+    return labels.map(label => ({
+      label,
+      link: ['/category', baseSlug],
+      queryParams: { q: label }
+    }));
+  }
+
+  private buildMenu(
+    baseSlug: string,
+    columns: Array<{ title: string; items: string[] }>,
+    side: Array<{ title: string; items: string[] }>
+  ): any {
+    return {
+      columns: columns.map(col => ({
+        title: col.title,
+        items: this.buildItems(baseSlug, col.items)
+      })),
+      side: side.map(group => ({
+        title: group.title,
+        items: this.buildItems(baseSlug, group.items)
+      }))
+    };
+  }
+
+  private buildMegaMenus(): Record<string, any> {
+    return {
+      furniture: this.buildMenu(
+        'furniture',
+        [
+          { title: 'Living Room', items: ['Sofas', 'Sectionals', 'Coffee Tables', 'TV Stands', 'Accent Chairs'] },
+          { title: 'Bedroom', items: ['Beds', 'Dressers & Chests', 'Nightstands', 'Wardrobes', 'Mattresses'] },
+          { title: 'Dining', items: ['Dining Tables', 'Dining Chairs', 'Bar Stools', 'Sideboards & Buffets', 'Kitchen Islands'] },
+          { title: 'Office', items: ['Desks', 'Office Chairs', 'Bookcases', 'Filing Cabinets', 'Office Sets'] }
+        ],
+        [
+          { title: 'New & Featured', items: ['Custom Furniture', 'Verified Furniture', 'Top-Rated Furniture', 'Fast Delivery Furniture'] },
+          { title: 'Trending Now', items: ['Hang-Out Must Haves', 'Modern Dining Sets', 'Reclining Furniture', 'Apartment-Friendly Picks'] }
+        ]
+      ),
+      outdoor: this.buildMenu(
+        'outdoor',
+        [
+          { title: 'Patio Seating', items: ['Patio Sets', 'Outdoor Sectionals', 'Conversation Sets', 'Outdoor Chairs', 'Chaise Lounges'] },
+          { title: 'Outdoor Dining', items: ['Dining Sets', 'Dining Tables', 'Dining Chairs', 'Bar Tables', 'Benches'] },
+          { title: 'Garden', items: ['Planters', 'Raised Beds', 'Outdoor Storage', 'Potting Benches', 'Garden Decor'] },
+          { title: 'Grilling', items: ['Grills', 'Smokers', 'Outdoor Kitchens', 'Grill Accessories', 'Coolers'] }
+        ],
+        [
+          { title: 'New & Featured', items: ['Weatherproof Sets', 'Teak Collection', 'Coastal Patio', 'Small Space Patio', 'Sustainable Picks'] },
+          { title: 'Trending Now', items: ['Fire Pit Tables', 'Bistro Sets', 'Solar Lighting', 'Pergolas', 'Outdoor Rugs'] }
+        ]
+      ),
+      'bedding-bath': this.buildMenu(
+        'bedding-bath',
+        [
+          { title: 'Bedding', items: ['Comforters', 'Sheets', 'Quilts', 'Duvet Covers', 'Pillows'] },
+          { title: 'Bath', items: ['Bath Rugs', 'Towels', 'Shower Curtains', 'Bath Accessories', 'Storage'] },
+          { title: 'Kids', items: ['Kids Bedding', 'Kids Bath', 'Crib Sheets', 'Baby Blankets', 'Changing Pads'] },
+          { title: 'Mattresses', items: ['Mattresses', 'Mattress Toppers', 'Protectors', 'Bed Frames', 'Foundations'] }
+        ],
+        [
+          { title: 'New & Featured', items: ['Cooling Bedding', 'Organic Cotton', 'Luxe Towels', 'Spa Sets', 'Hotel Picks'] },
+          { title: 'Trending Now', items: ['Layered Bedding', 'Neutral Palettes', 'Pattern Play', 'Color Pop', 'Cozy Throws'] }
+        ]
+      ),
+      rugs: this.buildMenu(
+        'rugs',
+        [
+          { title: 'Living Room', items: ['Area Rugs', 'Runners', 'Round Rugs', 'Oversized Rugs', 'Washable Rugs'] },
+          { title: 'Bedroom', items: ['Soft Pile', 'Shag', 'Layering Rugs', 'Bench Rugs', 'Rugs Under $200'] },
+          { title: 'Outdoor', items: ['Patio Rugs', 'Indoor/Outdoor', 'Weatherproof', 'Doormats', 'Entryway Rugs'] },
+          { title: 'Material', items: ['Wool Rugs', 'Jute Rugs', 'Cotton Rugs', 'Synthetic', 'Vintage'] }
+        ],
+        [
+          { title: 'New & Featured', items: ['Machine Washable', 'Performance Rugs', 'Handmade', 'Texture Focus', 'New Arrivals'] },
+          { title: 'Trending Now', items: ['Neutral Rugs', 'Bold Geometric', 'Persian Styles', 'Natural Jute', 'Plush Shag'] }
+        ]
+      ),
+      'decor-pillows': this.buildMenu(
+        'decor-pillows',
+        [
+          { title: 'Wall Decor', items: ['Art Prints', 'Mirrors', 'Wall Clocks', 'Shelves', 'Wall Accents'] },
+          { title: 'Pillows', items: ['Throw Pillows', 'Inserts', 'Lumbar Pillows', 'Outdoor Pillows', 'Pillow Covers'] },
+          { title: 'Accents', items: ['Vases', 'Candles', 'Decorative Objects', 'Trays', 'Books'] },
+          { title: 'Lighting Decor', items: ['Lamps', 'String Lights', 'Lanterns', 'Neon', 'LED'] }
+        ],
+        [
+          { title: 'New & Featured', items: ['Curated Sets', 'Artisan Finds', 'Seasonal Decor', 'Trending Colors', 'Minimal Picks'] },
+          { title: 'Trending Now', items: ['Gallery Walls', 'Boucle Textures', 'Mixed Metals', 'Earthy Tones', 'Patterned Pillows'] }
+        ]
+      ),
+      lighting: this.buildMenu(
+        'lighting',
+        [
+          { title: 'Ceiling', items: ['Chandeliers', 'Pendants', 'Flush Mounts', 'Ceiling Fans', 'Track Lighting'] },
+          { title: 'Lamps', items: ['Table Lamps', 'Floor Lamps', 'Desk Lamps', 'Reading Lamps', 'Tripod Lamps'] },
+          { title: 'Outdoor', items: ['Wall Lights', 'Path Lights', 'String Lights', 'Solar Lights', 'Deck Lights'] },
+          { title: 'Smart', items: ['Smart Bulbs', 'Smart Fixtures', 'Dimmers', 'Switches', 'LED Strips'] }
+        ],
+        [
+          { title: 'New & Featured', items: ['Brass Finishes', 'Globe Lights', 'Minimal Fixtures', 'Warm Glow', 'New Arrivals'] },
+          { title: 'Trending Now', items: ['Statement Pendants', 'Black Fixtures', 'Warm Dimmers', 'Scandi Lamps', 'Mixed Materials'] }
+        ]
+      ),
+      organization: this.buildMenu(
+        'organization',
+        [
+          { title: 'Storage', items: ['Shelving', 'Bins & Baskets', 'Closet Storage', 'Underbed Storage', 'Storage Benches'] },
+          { title: 'Kitchen', items: ['Pantry', 'Drawer Organizers', 'Spice Racks', 'Counter Storage', 'Food Containers'] },
+          { title: 'Office', items: ['Desk Organizers', 'File Storage', 'Cable Management', 'Bookcases', 'Wall Storage'] },
+          { title: 'Entry', items: ['Shoe Storage', 'Hooks', 'Console Tables', 'Umbrella Stands', 'Mail Sorters'] }
+        ],
+        [
+          { title: 'New & Featured', items: ['Modular Systems', 'Space Savers', 'Labeling', 'Clear Storage', 'Best Value'] },
+          { title: 'Trending Now', items: ['Closet Refresh', 'Small Space', 'Open Shelving', 'Minimal Setups', 'Hidden Storage'] }
+        ]
+      ),
+      kitchen: this.buildMenu(
+        'kitchen',
+        [
+          { title: 'Cookware', items: ['Pots & Pans', 'Bakeware', 'Cookware Sets', 'Cast Iron', 'Nonstick'] },
+          { title: 'Appliances', items: ['Coffee Makers', 'Air Fryers', 'Blenders', 'Microwaves', 'Toasters'] },
+          { title: 'Dining', items: ['Dinnerware', 'Glassware', 'Flatware', 'Serving', 'Barware'] },
+          { title: 'Storage', items: ['Food Storage', 'Pantry', 'Dish Racks', 'Counter', 'Kitchen Carts'] }
+        ],
+        [
+          { title: 'New & Featured', items: ['Chef Picks', 'Compact Appliances', 'Sustainable Tools', 'Matte Black', 'New Arrivals'] },
+          { title: 'Trending Now', items: ['Air Fryer Sets', 'Coffee Stations', 'Meal Prep', 'Open Shelves', 'Smart Kitchen'] }
+        ]
+      ),
+      'baby-kids': this.buildMenu(
+        'baby-kids',
+        [
+          { title: 'Nursery', items: ['Cribs', 'Changing Tables', 'Rockers', 'Nursery Decor', 'Storage'] },
+          { title: 'Kids Room', items: ['Beds', 'Dressers', 'Desks', 'Bookcases', 'Rugs'] },
+          { title: 'Play', items: ['Play Tables', 'Toy Storage', 'Play Tents', 'Kids Chairs', 'Activity'] },
+          { title: 'Bath & Bedding', items: ['Kids Bedding', 'Bath', 'Nightlights', 'Bedding Sets', 'Kids Towels'] }
+        ],
+        [
+          { title: 'New & Featured', items: ['Montessori', 'Soft Neutrals', 'Character Picks', 'Growth Beds', 'Organic'] },
+          { title: 'Trending Now', items: ['Playroom Ideas', 'Space-Saving', 'Bunk Beds', 'Reading Nooks', 'Cozy Lighting'] }
+        ]
+      ),
+      'home-improvement': this.buildMenu(
+        'home-improvement',
+        [
+          { title: 'Hardware', items: ['Cabinet Hardware', 'Door Knobs', 'Hinges', 'Hooks', 'Handles'] },
+          { title: 'Flooring', items: ['Rug Pads', 'Tiles', 'Vinyl', 'Laminate', 'Floor Care'] },
+          { title: 'Paint & Tools', items: ['Paint', 'Wallpaper', 'Tools', 'Ladders', 'Supplies'] },
+          { title: 'Fixtures', items: ['Faucets', 'Sinks', 'Lighting', 'Mirrors', 'Bath Accessories'] }
+        ],
+        [
+          { title: 'New & Featured', items: ['DIY Essentials', 'Smart Upgrades', 'Weekend Projects', 'Contractor Picks', 'Best Value'] },
+          { title: 'Trending Now', items: ['Peel & Stick', 'Modern Hardware', 'Matte Black', 'Statement Tile', 'Fresh Paint'] }
+        ]
+      ),
+      appliances: this.buildMenu(
+        'appliances',
+        [
+          { title: 'Major', items: ['Refrigerators', 'Ranges', 'Dishwashers', 'Washers', 'Dryers'] },
+          { title: 'Small', items: ['Blenders', 'Coffee Makers', 'Air Fryers', 'Mixers', 'Vacuum'] },
+          { title: 'Heating/Cooling', items: ['Air Purifiers', 'Fans', 'Heaters', 'Humidifiers', 'Dehumidifiers'] },
+          { title: 'Smart Home', items: ['Smart Plugs', 'Sensors', 'Cameras', 'Doorbells', 'Hubs'] }
+        ],
+        [
+          { title: 'New & Featured', items: ['Energy Star', 'Compact', 'Stainless', 'Smart Bundles', 'New Arrivals'] },
+          { title: 'Trending Now', items: ['Robot Vacuums', 'Espresso', 'Air Purifiers', 'Portable AC', 'Induction'] }
+        ]
+      ),
+      pet: this.buildMenu(
+        'pet',
+        [
+          { title: 'Cats', items: ['Cat Trees', 'Litter', 'Beds', 'Feeding', 'Toys'] },
+          { title: 'Dogs', items: ['Beds', 'Crates', 'Leashes', 'Bowls', 'Toys'] },
+          { title: 'Outdoor', items: ['Pet Doors', 'Outdoor Beds', 'Travel', 'Kennels', 'Cleaning'] },
+          { title: 'Decor', items: ['Pet Furniture', 'Covers', 'Storage', 'Mats', 'Odor Control'] }
+        ],
+        [
+          { title: 'New & Featured', items: ['Washable', 'Stylish Picks', 'Travel Ready', 'Cozy Beds', 'New Arrivals'] },
+          { title: 'Trending Now', items: ['Pet Sofas', 'Elevated Bowls', 'Calming Beds', 'Cat Condos', 'Chew Toys'] }
+        ]
+      ),
+      holiday: this.buildMenu(
+        'holiday',
+        [
+          { title: 'Decor', items: ['Ornaments', 'Wreaths', 'Garlands', 'Trees', 'Stockings'] },
+          { title: 'Entertaining', items: ['Tableware', 'Serveware', 'Bar', 'Linens', 'Centerpieces'] },
+          { title: 'Lighting', items: ['String Lights', 'Candles', 'Outdoor Lights', 'Lighted Decor', 'Projectors'] },
+          { title: 'Gifting', items: ['Gift Wrap', 'Gift Sets', 'Stocking Stuffers', 'Cards', 'Baskets'] }
+        ],
+        [
+          { title: 'New & Featured', items: ['Holiday 2026', 'Classic Red', 'Winter White', 'Metallics', 'Outdoor Decor'] },
+          { title: 'Trending Now', items: ['Cozy Glow', 'Rustic Lodge', 'Scandinavian', 'Minimal Tree', 'Mantel Styling'] }
+        ]
+      ),
+      sale: this.buildMenu(
+        'sale',
+        [
+          { title: 'Deals', items: ['Flash Deals', 'Clearance', 'Under $50', 'Under $100', 'Best Sellers'] },
+          { title: 'Room', items: ['Living Room', 'Bedroom', 'Kitchen', 'Outdoor', 'Office'] },
+          { title: 'Seasonal', items: ['Spring Refresh', 'Summer Patio', 'Back to School', 'Holiday', 'Year-End'] },
+          { title: 'Services', items: ['Protection Plans', 'Assembly', 'Financing', 'Rewards', 'Gift Cards'] }
+        ],
+        [
+          { title: 'New & Featured', items: ['Doorbusters', 'Price Drops', 'Bundle Offers', 'Limited Time', 'Member Deals'] },
+          { title: 'Trending Now', items: ['Top Savings', 'Best Value', 'New Discounts', 'Staff Picks', 'Trending Deals'] }
+        ]
+      )
+    };
   }
 
   private syncCategoryWithUrl(): void {
@@ -932,6 +1431,7 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
     this.closeAccountDropdown();
     this.closeCartPopup();
     this.showHelpWidget = false;
+    this.showVerifiedPopup = false;
   }
 
   onCartClick(event: Event): void {
@@ -960,6 +1460,12 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
     event?.preventDefault();
     event?.stopPropagation();
     this.showHelpWidget = !this.showHelpWidget;
+  }
+
+  toggleVerifiedPopup(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.showVerifiedPopup = !this.showVerifiedPopup;
   }
 
   goToLiveShopping(event?: Event): void {
@@ -1058,4 +1564,12 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
     event.preventDefault();
     this.router.navigateByUrl(this.merchantPortalHref);
   }
+
+  handleFeatureLinkClick(event: Event, link: { key?: string }): void {
+    if (link?.key === 'outdoor-shop') {
+      event.preventDefault();
+      this.router.navigate(['/outdoor-shop']);
+    }
+  }
 }
+

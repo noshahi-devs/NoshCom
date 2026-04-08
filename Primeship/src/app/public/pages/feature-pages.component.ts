@@ -144,27 +144,193 @@ export class InspirationComponent { }
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="page-shell">
-      <div class="page-card">
-        <h1>Services</h1>
-        <p class="lead">Extra help for ordering, design, and business sourcing.</p>
-        <div class="service-grid">
-          <a class="service" routerLink="/design-services">Design Services</a>
-          <a class="service" routerLink="/track-order">Order Tracking</a>
-          <a class="service" routerLink="/contact-support">Help & Contact</a>
-          <a class="service" routerLink="/returns-policy">Returns</a>
+    <div class="services-shell">
+      <div class="services-hero">
+        <div class="hero-content">
+          <span class="hero-kicker">Services</span>
+          <h1>Premium help for every step of your order.</h1>
+          <p class="hero-sub">From design guidance to order support, our team helps you plan, buy, and deliver with confidence.</p>
+          <div class="hero-actions">
+            <a class="hero-btn primary" routerLink="/design-services">Book Design Help</a>
+            <a class="hero-btn ghost" routerLink="/contact-support">Contact Support</a>
+          </div>
+          <div class="hero-metrics">
+            <div class="metric">
+              <span class="metric-value">24/7</span>
+              <span class="metric-label">Customer Care</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">48 hr</span>
+              <span class="metric-label">Design Replies</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">1:1</span>
+              <span class="metric-label">Project Support</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-panel">
+          <div class="hero-badge">Featured</div>
+          <div class="hero-card-title">Full-service design</div>
+          <div class="hero-card-sub">Moodboards, layouts, and a curated shortlist tailored to your space.</div>
+          <a class="hero-card-link" routerLink="/design-services">Start a project</a>
+        </div>
+      </div>
+
+      <div class="services-grid">
+        <a class="service-card" routerLink="/design-services">
+          <span class="card-media" style="background-image:url('https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=900&q=80')"></span>
+          <span class="card-label">Design Services</span>
+          <span class="card-desc">Room planning, styling direction, and curated picks.</span>
+          <span class="card-cta">Explore</span>
+        </a>
+        <a class="service-card" routerLink="/track-order">
+          <span class="card-media" style="background-image:url('https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=900&q=80')"></span>
+          <span class="card-label">Order Tracking</span>
+          <span class="card-desc">Live updates on shipping, delivery windows, and status.</span>
+          <span class="card-cta">Track now</span>
+        </a>
+        <a class="service-card" routerLink="/contact-support">
+          <span class="card-media" style="background-image:url('https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=900&q=80')"></span>
+          <span class="card-label">Help & Contact</span>
+          <span class="card-desc">Fast answers, live support, and order issue resolution.</span>
+          <span class="card-cta">Get help</span>
+        </a>
+        <a class="service-card" routerLink="/returns-policy">
+          <span class="card-media" style="background-image:url('https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=900&q=80')"></span>
+          <span class="card-label">Returns & Policies</span>
+          <span class="card-desc">Flexible returns, damage protection, and claims.</span>
+          <span class="card-cta">View policy</span>
+        </a>
+      </div>
+
+      <div class="services-strip">
+        <div class="strip-item">
+          <div class="strip-title">Assembly</div>
+          <div class="strip-text">Schedule professional help for setup.</div>
+        </div>
+        <div class="strip-item">
+          <div class="strip-title">Protection Plans</div>
+          <div class="strip-text">Extend coverage for peace of mind.</div>
+        </div>
+        <div class="strip-item">
+          <div class="strip-title">Trade & Business</div>
+          <div class="strip-text">Bulk pricing and dedicated sourcing.</div>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .page-shell { min-height: 60vh; padding: 70px 16px; background: #fff; }
-    .page-card { max-width: 980px; margin: 0 auto; border: 1px solid #E5E7EB; border-radius: 16px; padding: 26px; box-shadow: 0 10px 25px rgba(15,23,42,0.06); }
-    .lead { color: #4B5563; margin-top: 10px; }
-    .service-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
-    .service { border: 1px solid #E5E7EB; border-radius: 14px; padding: 14px; text-decoration: none; color: #111827; font-weight: 700; background: #F9FAFB; }
-    .service:hover { background: #F3F4F6; }
-    @media (max-width: 900px) { .service-grid { grid-template-columns: 1fr; } }
+    .services-shell { min-height: 70vh; padding: 64px 16px 80px; background: #fff; }
+    .services-hero {
+      max-width: 1100px;
+      margin: 0 auto 28px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+      gap: 24px;
+      padding: 28px;
+      border-radius: 22px;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      background: linear-gradient(135deg, rgba(16,185,129,0.10), rgba(255,255,255,0.96));
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.10);
+    }
+    .hero-kicker { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: #059669; }
+    .hero-content h1 { margin: 10px 0 8px; font-size: 32px; font-weight: 900; color: #0F172A; }
+    .hero-sub { color: #334155; font-weight: 600; }
+    .hero-actions { display: flex; gap: 12px; margin: 18px 0 16px; flex-wrap: wrap; }
+    .hero-btn { text-decoration: none; border-radius: 999px; padding: 10px 18px; font-weight: 800; font-size: 13px; }
+    .hero-btn.primary { background: #10B981; color: #fff; border: 1px solid #059669; }
+    .hero-btn.primary:hover { background: #059669; }
+    .hero-btn.ghost { border: 1px solid rgba(16,185,129,0.4); color: #10B981; }
+    .hero-btn.ghost:hover { background: rgba(16,185,129,0.08); }
+    .hero-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+    .metric { background: #fff; border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 10px; text-align: center; }
+    .metric-value { display: block; font-size: 16px; font-weight: 900; color: #10B981; }
+    .metric-label { display: block; font-size: 11px; font-weight: 700; color: #0F766E; }
+
+    .hero-panel {
+      background: #fff;
+      border-radius: 18px;
+      border: 1px solid rgba(16,185,129,0.35);
+      padding: 18px;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+      box-shadow: inset 0 0 0 1px rgba(16,185,129,0.15);
+    }
+    .hero-badge {
+      width: fit-content;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(16,185,129,0.12);
+      color: #059669;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .hero-card-title { font-size: 18px; font-weight: 900; color: #0F172A; }
+    .hero-card-sub { font-size: 13px; font-weight: 600; color: #475569; }
+    .hero-card-link { color: #10B981; font-weight: 800; text-decoration: none; }
+    .hero-card-link:hover { text-decoration: underline; }
+
+    .services-grid {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .service-card {
+      display: grid;
+      gap: 10px;
+      text-decoration: none;
+      color: #0F172A;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(16,185,129,0.3);
+      background: #fff;
+      box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .service-card:hover { transform: translateY(-4px); box-shadow: 0 24px 38px rgba(15, 23, 42, 0.14); }
+    .card-media {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      border-radius: 12px;
+      background-size: cover;
+      background-position: center;
+      border: 1px solid rgba(16,185,129,0.3);
+    }
+    .card-label { font-weight: 900; color: #0F172A; font-size: 14px; }
+    .card-desc { font-size: 12px; font-weight: 600; color: #475569; }
+    .card-cta { font-size: 12px; font-weight: 800; color: #10B981; }
+
+    .services-strip {
+      max-width: 1100px;
+      margin: 22px auto 0;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .strip-item {
+      background: #F0FDF4;
+      border: 1px solid rgba(16,185,129,0.35);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .strip-title { font-weight: 900; color: #0F766E; }
+    .strip-text { margin-top: 4px; font-size: 12px; font-weight: 600; color: #4B5563; }
+
+    @media (max-width: 1024px) {
+      .services-hero { grid-template-columns: 1fr; }
+      .services-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 640px) {
+      .services-grid { grid-template-columns: 1fr; }
+      .hero-metrics { grid-template-columns: 1fr; }
+      .services-strip { grid-template-columns: 1fr; }
+    }
   `]
 })
 export class ServicesComponent { }

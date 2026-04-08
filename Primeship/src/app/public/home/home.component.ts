@@ -73,6 +73,18 @@ interface MiniCategory {
   items: MiniListItem[];
 }
 
+interface CircleTailSpec {
+  label: string;
+  slug: string;
+  keywords: string[];
+}
+
+interface CircleTailItem {
+  label: string;
+  slug: string;
+  image: string;
+}
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -86,6 +98,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   @ViewChild('collList') collList?: ElementRef<HTMLDivElement>;
   @ViewChild('prodList') prodList?: ElementRef<HTMLDivElement>;
   @ViewChild('squareList2') squareList2?: ElementRef<HTMLDivElement>;
+  @ViewChild('spaceList') spaceList?: ElementRef<HTMLDivElement>;
+  @ViewChild('budgetList') budgetList?: ElementRef<HTMLDivElement>;
+  @ViewChild('wfDealList') wfDealList?: ElementRef<HTMLDivElement>;
   @ViewChild('categoryTrack') categoryTrack?: ElementRef<HTMLDivElement>;
 
   searchQuery = '';
@@ -221,6 +236,59 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   ];
 
+  spaceCards = [
+    {
+      slug: 'living-room',
+      label: 'Living room',
+      image: 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=1800&q=80'
+    },
+    {
+      slug: 'bedroom',
+      label: 'Bedroom',
+      image: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1800&q=80'
+    },
+    {
+      slug: 'home-office',
+      label: 'Home office',
+      image: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1800&q=80'
+    },
+    {
+      slug: 'kitchen-dining',
+      label: 'Kitchen and dining',
+      image: 'https://images.unsplash.com/photo-1556912167-f556f1f39fdf?auto=format&fit=crop&w=1800&q=80'
+    },
+    {
+      slug: 'bathroom',
+      label: 'Bathroom',
+      image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1800&q=80'
+    },
+    {
+      slug: 'outdoor',
+      label: 'Outdoor',
+      image: 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=1800&q=80'
+    },
+    {
+      slug: 'kids-room',
+      label: 'Kids room',
+      image: 'https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&w=1800&q=80'
+    },
+    {
+      slug: 'entryway',
+      label: 'Entryway',
+      image: 'https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=1800&q=80'
+    },
+    {
+      slug: 'modern',
+      label: 'Modern style',
+      image: 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=1800&q=80'
+    },
+    {
+      slug: 'small-spaces',
+      label: 'Small spaces',
+      image: 'https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?auto=format&fit=crop&w=1800&q=80'
+    }
+  ];
+
   miniCategories: MiniCategory[] = [];
 
   dealsPrimary: DealItem[] = [];
@@ -233,6 +301,33 @@ export class HomeComponent implements OnInit, OnDestroy {
   wfKeepShoppingProducts: DealItem[] = [];
   wfDealsProducts: DealItem[] = [];
   wfVerifiedProducts: DealItem[] = [];
+
+  private readonly tailCircleSpecs: CircleTailSpec[] = [
+    { label: 'Outdoor decor', slug: 'outdoor', keywords: ['outdoor', 'patio', 'garden', 'yard'] },
+    { label: 'Organization', slug: 'organization', keywords: ['organization', 'storage', 'closet'] },
+    { label: 'Home Improvement', slug: 'home-improvement', keywords: ['home improvement', 'improvement', 'tools', 'hardware'] },
+    { label: 'Kitchen', slug: 'kitchen', keywords: ['kitchen', 'cook', 'dining'] },
+    { label: 'Decor & Pillows', slug: 'decor-pillows', keywords: ['decor', 'pillow', 'pillows'] },
+    { label: 'Appliances', slug: 'appliances', keywords: ['appliance', 'appliances'] },
+    { label: 'Bedding & Bath', slug: 'bedding-bath', keywords: ['bedding', 'bath', 'towel', 'sheets'] }
+  ];
+
+  circleCategories: CircleTailItem[] = [
+    { label: 'Tax Refund Sale', slug: 'sale', image: 'https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=300&q=80' },
+    { label: 'Furniture', slug: 'furniture', image: 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=300&q=80' },
+    { label: 'Bedroom furniture', slug: 'bedroom', image: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=300&q=80' },
+    { label: 'Storage', slug: 'storage', image: 'https://images.unsplash.com/photo-1615876234886-fd9a39fda97f?auto=format&fit=crop&w=300&q=80' },
+    { label: 'Rugs', slug: 'rugs', image: 'https://images.unsplash.com/photo-1523413651479-597eb2da0ad6?auto=format&fit=crop&w=300&q=80' },
+    { label: 'Outdoor decor', slug: 'outdoor', image: 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=300&q=80' },
+    { label: 'Kitchen', slug: 'kitchen', image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=300&q=80' },
+    { label: 'Organization', slug: 'organization', image: 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=300&q=80' },
+    { label: 'Bedding & Bath', slug: 'bedding-bath', image: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=300&q=80' },
+    { label: 'Lighting', slug: 'lighting', image: 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=300&q=80' },
+    { label: 'Decor & Pillows', slug: 'decor-pillows', image: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=300&q=80' },
+    { label: 'Home Improvement', slug: 'home-improvement', image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=300&q=80' },
+    { label: 'Appliances', slug: 'appliances', image: 'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=300&q=80' },
+    { label: 'Plumbing', slug: 'plumbing', image: 'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=300&q=80' }
+  ];
 
   dealTimer = { hours: 12, minutes: 45, seconds: 30 };
   visibleDealsCount = 8;
@@ -336,7 +431,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private getParsedImage(images: string | string[]): string {
-    const placeholder = 'assets/images/placeholder.jpg';
+    const placeholder = '/assets/images/placeholder.jpg';
     if (!images) return placeholder;
     if (Array.isArray(images)) return images[0] || placeholder;
 
@@ -427,7 +522,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   setDefaultImage(event: Event): void {
-    (event.target as HTMLImageElement).src = 'assets/images/placeholder.jpg';
+    // Use an absolute path so it works on nested routes like `/home`.
+    (event.target as HTMLImageElement).src = '/assets/images/home/hero.png';
   }
 
   private buildWfPanels(): void {
@@ -480,7 +576,7 @@ export class HomeComponent implements OnInit, OnDestroy {
                     <div style="font-weight:700;font-size:13px;color:#111;">${p.name || 'Product'}</div>
                     <div style="font-weight:800;font-size:14px;color:#0f172a;">${p.price ? '$' + p.price.toFixed(0) : ''}</div>
                   </div>
-                  <div style="background:#8C0028;color:#fff;font-weight:700;font-size:11px;padding:6px 10px;border-radius:0 10px 0 0;">5 Days of Deals</div>
+                  <div style="background:#10B981;color:#fff;font-weight:700;font-size:11px;padding:6px 10px;border-radius:0 10px 0 0;">5 Days of Deals</div>
                 </div>`
             )
             .join('')}
@@ -488,7 +584,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       `,
       width: 900,
       confirmButtonText: 'View more',
-      confirmButtonColor: '#8C0028',
+      confirmButtonColor: '#10B981',
       showCloseButton: true,
       customClass: {
         popup: 'keep-shopping-modal'
@@ -577,6 +673,50 @@ export class HomeComponent implements OnInit, OnDestroy {
     el.scrollBy({ left: delta, behavior: 'smooth' });
   }
 
+  scrollSpaces(dir: 'left' | 'right'): void {
+    const el = this.spaceList?.nativeElement;
+    if (!el) return;
+    const delta = dir === 'left' ? -420 : 420;
+    el.scrollBy({ left: delta, behavior: 'smooth' });
+  }
+
+  scrollBudget(dir: 'left' | 'right'): void {
+    const el = this.budgetList?.nativeElement;
+    if (!el) return;
+    const delta = dir === 'left' ? -420 : 420;
+    el.scrollBy({ left: delta, behavior: 'smooth' });
+  }
+
+  scrollWfDeals(dir: 'left' | 'right'): void {
+    const el = this.wfDealList?.nativeElement;
+    if (!el) return;
+    const delta = dir === 'left' ? -420 : 420;
+    el.scrollBy({ left: delta, behavior: 'smooth' });
+  }
+
+  getRewardExtra(p: DealItem): number {
+    const oldPrice = Number(p?.oldPrice || 0);
+    const price = Number(p?.price || 0);
+    if (oldPrice > price) return oldPrice - price;
+    // Fallback: show a small "member" savings even if no oldPrice exists.
+    return Math.max(0, Math.round(price * 0.08 * 100) / 100);
+  }
+
+  get tailCircleItems(): CircleTailItem[] {
+    const fallback = this.allProducts || [];
+    const placeholder = '/assets/images/placeholder.jpg';
+    const haystack = (p: DealItem) => `${p?.category || ''} ${p?.name || ''}`.toLowerCase();
+
+    return this.tailCircleSpecs.map((spec, idx) => {
+      const match = fallback.find(p => {
+        const s = haystack(p);
+        return spec.keywords.some(k => s.includes(k.toLowerCase()));
+      });
+
+      const image = match?.image || fallback[idx]?.image || placeholder;
+      return { label: spec.label, slug: spec.slug, image };
+    });
+  }
 
   selectTab(index: number): void {
     this.activeTab = index;

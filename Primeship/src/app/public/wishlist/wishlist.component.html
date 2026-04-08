@@ -16,7 +16,7 @@
         <div class="wishlist-grid" *ngIf="wishlistItems.length > 0">
             <div class="wishlist-card" *ngFor="let item of wishlistItems">
                 <div class="card-media">
-                    <img [src]="item.image || 'assets/images/placeholder.jpg'" [alt]="item.name">
+                    <img [src]="item.image || '/assets/images/placeholder.jpg'" [alt]="item.name">
                     <button class="remove-btn" (click)="removeFromWishlist(item)" aria-label="Remove">
                         <i class="pi pi-times"></i>
                     </button>

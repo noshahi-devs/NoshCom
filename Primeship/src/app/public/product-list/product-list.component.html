@@ -1,7 +1,7 @@
 <div class="product-list-container">
   <div class="container">
     <!-- Modern Minimal Category Header -->
-    <div class="minimal-cat-header" *ngIf="categoryTitle && !isDiscountPage">
+    <div class="minimal-cat-header" *ngIf="!hideNonProductUI && categoryTitle && !isDiscountPage">
       <nav class="breadcrumb-nav">
         <a routerLink="/home">Home</a>
         <i class="fas fa-chevron-right tiny"></i>
@@ -17,12 +17,12 @@
       </div>
     </div>
 
-    <div class="deals-heading" *ngIf="isDiscountPage">
+    <div class="deals-heading" *ngIf="!hideNonProductUI && isDiscountPage">
       <h1>24-hours ONLY: deals of the day</h1>
     </div>
 
     <!-- Premium Filters Bar -->
-    <div class="filters-section" *ngIf="!isDiscountPage" [formGroup]="filtersForm">
+    <div class="filters-section" *ngIf="!hideNonProductUI && !isDiscountPage" [formGroup]="filtersForm">
       <div class="filters-row">
         <div class="filter-main-controls">
           <div class="filter-group">
@@ -57,9 +57,9 @@
     </div>
 
     <!-- Main Content Layout -->
-    <div class="main-content-layout">
+    <div class="main-content-layout" [class.solo-grid]="hideNonProductUI">
       <!-- Left Sidebar (Alabaster Glass) -->
-      <aside class="left-sidebar d-none d-lg-block">
+      <aside class="left-sidebar d-none d-lg-block" *ngIf="!hideNonProductUI">
         <div class="sidebar-filters animate-up">
           <div class="filter-group">
             <h5 class="filter-title">
@@ -108,7 +108,7 @@
           <!-- Product Grid -->
           <div class="grid-layout" *ngIf="!isLoading && filteredProducts.length > 0">
             <!-- Bulk Action Header -->
-            <div class="bulk-actions">
+            <div class="bulk-actions" *ngIf="!hideNonProductUI">
               <label class="select-all-box">
                 <input type="checkbox" (change)="toggleAllProducts($event)" [checked]="isAllSelected">
                 <span>Select All Products</span>
@@ -156,7 +156,7 @@
         </div>
 
         <!-- Simple Pagination -->
-        <div class="pagination-footer" *ngIf="!isLoading && filteredProducts.length > 0">
+        <div class="pagination-footer" *ngIf="!hideNonProductUI && !isLoading && filteredProducts.length > 0">
           <p>Showing {{ filteredProducts.length }} products across Noshahibaba Global</p>
         </div>
       </section>

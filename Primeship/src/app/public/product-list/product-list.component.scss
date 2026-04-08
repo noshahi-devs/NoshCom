@@ -159,6 +159,10 @@
   @media (max-width: 1024px) { grid-template-columns: 1fr; }
 }
 
+.main-content-layout.solo-grid {
+  grid-template-columns: 1fr;
+}
+
 /* --- SIDEBAR --- */
 .left-sidebar {
   .sidebar-filters {

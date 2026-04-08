@@ -47,6 +47,88 @@ export class ProductListComponent implements OnInit, OnDestroy {
   categoryTitle: string = 'Explore Products';
   categoryDescription: string = 'Discover high-performance products selected for quality and style.';
   categoryImage: string = 'assets/images/61+DG4Np+zL._AC_SX425_.jpg';
+  private routeCategorySlug = '';
+  private routeTitle = '';
+  private routeDescription = '';
+  private routeImage = '';
+  private routeFallbackAll = false;
+  private routeMaxProducts = 60;
+  hideNonProductUI = false;
+
+  private readonly outdoorFallbackProducts: any[] = [
+    {
+      id: 'outdoor-1',
+      name: 'Coastal Patio Lounge Set',
+      images: ['https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=900&q=80'],
+      price: 229
+    },
+    {
+      id: 'outdoor-2',
+      name: 'Modern Teak Bistro Table',
+      images: ['https://images.unsplash.com/photo-1523413651479-597eb2da0ad6?auto=format&fit=crop&w=900&q=80'],
+      price: 149
+    },
+    {
+      id: 'outdoor-3',
+      name: 'Rattan Outdoor Egg Chair',
+      images: ['https://images.unsplash.com/photo-1501045661006-fcebe0257c3f?auto=format&fit=crop&w=900&q=80'],
+      price: 199
+    },
+    {
+      id: 'outdoor-4',
+      name: 'All-Weather Sectional Set',
+      images: ['https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80'],
+      price: 389
+    },
+    {
+      id: 'outdoor-5',
+      name: 'Garden Solar Lanterns',
+      images: ['https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=900&q=80'],
+      price: 48
+    },
+    {
+      id: 'outdoor-6',
+      name: 'Woven Outdoor Rug',
+      images: ['https://images.unsplash.com/photo-1523413651479-597eb2da0ad6?auto=format&fit=crop&w=900&q=80'],
+      price: 78
+    },
+    {
+      id: 'outdoor-7',
+      name: 'Adjustable Patio Umbrella',
+      images: ['https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=900&q=80'],
+      price: 99
+    },
+    {
+      id: 'outdoor-8',
+      name: 'Acacia Wood Bench',
+      images: ['https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=900&q=80'],
+      price: 159
+    },
+    {
+      id: 'outdoor-9',
+      name: 'Planter Box Trio',
+      images: ['https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=900&q=80'],
+      price: 69
+    },
+    {
+      id: 'outdoor-10',
+      name: 'Outdoor Dining Set',
+      images: ['https://images.unsplash.com/photo-1472220625704-91e1462799b2?auto=format&fit=crop&w=900&q=80'],
+      price: 329
+    },
+    {
+      id: 'outdoor-11',
+      name: 'Cushioned Lounge Chair',
+      images: ['https://images.unsplash.com/photo-1501045661006-fcebe0257c3f?auto=format&fit=crop&w=900&q=80'],
+      price: 139
+    },
+    {
+      id: 'outdoor-12',
+      name: 'Fire Pit Table',
+      images: ['https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=900&q=80'],
+      price: 259
+    }
+  ];
 
   // Filters state
   filtersForm: FormGroup;
@@ -81,18 +163,25 @@ export class ProductListComponent implements OnInit, OnDestroy {
     // 1. Reactive Data Stream (BEST PRACTICE)
     // This handles EVERYTHING: Loading, Navigation, Parameters, and Cancellation.
     // -------------------------------------------------------------------------
-    combineLatest([this.route.paramMap, this.route.queryParamMap])
+    combineLatest([this.route.paramMap, this.route.queryParamMap, this.route.data])
       .pipe(
         takeUntil(this.destroy$),
-        switchMap(([params, queryParams]) => {
+        switchMap(([params, queryParams, data]) => {
           this.isLoading = true;
           this.startLoadingMessages();
           this.products = [];
           this.filteredProducts = [];
           this.cdr.detectChanges();
 
+          this.routeCategorySlug = (data && (data as any).categorySlug) || '';
+          this.routeTitle = (data && (data as any).title) || '';
+          this.routeDescription = (data && (data as any).description) || '';
+          this.routeImage = (data && (data as any).image) || '';
+          this.routeFallbackAll = Boolean(data && (data as any).fallbackAll);
+          this.routeMaxProducts = Number((data && (data as any).maxProducts) || 60);
+          this.hideNonProductUI = Boolean(data && (data as any).hideNonProductUI);
 
-          const slug = params.get('slug') || '';
+          const slug = params.get('slug') || this.routeCategorySlug || '';
           const q = queryParams.get('q') || '';
           const sort = (queryParams.get('sortBy') || 'newest').toLowerCase();
 
@@ -108,7 +197,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
           // Fetch products immediately. Backend handles slug or id.
           // We don't wait for categories to start the product search.
-          return this.publicService.getProductsByCategory(slug, q).pipe(
+          return this.fetchProducts(slug, q).pipe(
             finalize(() => {
               this.isLoading = false;
               this.stopLoadingMessages();
@@ -155,9 +244,33 @@ export class ProductListComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  private fetchProducts(slug: string, searchTerm: string): Observable<ProductDto[]> {
+    const base$ = this.publicService.getProductsByCategory(slug, searchTerm).pipe(
+      catchError(() => of([]))
+    );
+
+    if (!this.routeFallbackAll) {
+      return base$;
+    }
+
+    return base$.pipe(
+      switchMap(items => {
+        if (items && items.length > 0) {
+          return of(items);
+        }
+        return this.publicService.getProducts(searchTerm, 0, this.routeMaxProducts).pipe(
+          catchError(() => of([]))
+        );
+      })
+    );
+  }
+
   // Logic: Transform raw API products into UI models
   private processProducts(raw: any[]): void {
-    const list = raw || [];
+    let list = raw || [];
+    if ((!list || list.length === 0) && this.routeCategorySlug === 'outdoor') {
+      list = [...this.outdoorFallbackProducts];
+    }
     console.log(`📦 [ProductList] Processing ${list.length} Items.`);
 
     this.products = list.map(p => ({
@@ -216,6 +329,15 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   private updateCategoryInfo(): void {
+    if (this.routeTitle) {
+      this.categoryTitle = this.routeTitle;
+      this.categoryDescription = this.routeDescription || this.categoryDescription;
+      if (this.routeImage) {
+        this.categoryImage = this.routeImage;
+      }
+      return;
+    }
+
     if (!this.currentCategorySlug || this.currentCategorySlug === 'all') {
       this.categoryTitle = 'All Products';
       this.categoryDescription = 'Discover high-performance products selected for quality and style.';

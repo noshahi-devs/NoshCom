@@ -36,6 +36,24 @@ export const routes: Routes = [
     loadChildren: () => import('./public/auth/auth.module').then(m => m.AuthModule)
   },
   {
+    path: 'outdoor-shop',
+    component: PublicLayoutComponent,
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./public/product-list/product-list.component').then(m => m.ProductListComponent),
+        data: {
+          categorySlug: 'outdoor',
+          title: 'The Outdoor Shop',
+          description: 'Outdoor furniture, patio picks, and garden-ready essentials.',
+          fallbackAll: true,
+          maxProducts: 60,
+          hideNonProductUI: true
+        }
+      }
+    ]
+  },
+  {
     path: '',
     component: PublicLayoutComponent,
     children: [
@@ -100,7 +118,8 @@ export const routes: Routes = [
       },
       {
         path: 'verified',
-        component: VerifiedComponent
+        redirectTo: 'home',
+        pathMatch: 'full'
       },
       {
         path: 'collaborations',

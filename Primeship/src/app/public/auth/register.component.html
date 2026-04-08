@@ -1,17 +1,15 @@
-<div class="auth-split-page register-layout">
+<div class="auth-full-page register-full">
+  <div class="auth-image-panel" aria-hidden="true"></div>
 
-  <!-- LEFT PANEL — Form (reversed for register) -->
   <div class="auth-form-panel">
     <div class="form-panel-inner">
-
       <div class="auth-form-header">
-        <div class="welcome-icon green"><i class="fas fa-rocket"></i></div>
+        <div class="welcome-icon"><i class="fas fa-rocket"></i></div>
         <h2>Create Account</h2>
         <p>Join millions of global buyers</p>
       </div>
 
-      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
-
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form compact-form">
         <div class="form-row-grid">
           <div class="field-group">
             <label><i class="fas fa-user"></i> Full Name</label>
@@ -55,7 +53,7 @@
 
         <div class="field-group">
           <label><i class="fas fa-globe"></i> Country</label>
-          <input type="text" class="nosh-input" formControlName="country" placeholder="e.g. United States">
+          <input type="text" class="nosh-input" formControlName="country" placeholder="United States">
         </div>
 
         <div class="terms-row">
@@ -70,67 +68,12 @@
           <i class="fas fa-spinner fa-spin" *ngIf="isLoading"></i>
           <i class="fas fa-arrow-right" *ngIf="!isLoading"></i>
         </button>
-
       </form>
 
       <div class="auth-divider"><span>Have an account?</span></div>
-
       <div class="auth-form-footer">
         <p>Already registered? <a routerLink="/auth/login">Sign In</a></p>
       </div>
-
-    </div>
-  </div>
-
-  <!-- RIGHT PANEL — Full Image (reversed) -->
-  <div class="auth-visual-panel">
-    <div class="visual-bg-img register-img"></div>
-    <div class="visual-gradient-overlay"></div>
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-
-    <div class="visual-brand-overlay">
-
-      <!-- Top label bar -->
-      <div class="img-top-bar">
-        <a routerLink="/" class="auth-brand-logo">Noshahi<span>baba</span></a>
-        <span class="top-label-pill"><i class="fas fa-gem"></i> Verified Supplier</span>
-      </div>
-
-      <!-- Center big editorial text -->
-      <div class="img-center-text">
-        <div class="editorial-line line-sm">JOIN THE NETWORK</div>
-        <div class="editorial-line line-xl">Grow</div>
-        <div class="editorial-line line-xl indent">Global.</div>
-        <div class="editorial-sub">Premium sourcing · Secure escrow · Trade assurance</div>
-      </div>
-
-      <!-- Bottom stats row -->
-      <div class="img-stats-row">
-        <div class="img-stat-card"><strong>2.4M+</strong><span>Suppliers</span></div>
-        <div class="img-stat-card"><strong>98%</strong><span>Satisfaction</span></div>
-        <div class="img-stat-card"><strong>$0</strong><span>Setup Fee</span></div>
-      </div>
-
-    </div>
-  </div>
-
-</div>
-
-<!-- Celebration Overlay -->
-<div class="celebration-overlay" *ngIf="showCelebration">
-  <div class="confetti-container">
-    <div class="confetti-piece" *ngFor="let piece of confettiPieces"></div>
-  </div>
-  <div class="celebration-content">
-    <div class="success-tick-circle"><i class="fas fa-check"></i></div>
-    <div class="success-text">
-      <h2>Welcome Aboard! 🎉</h2>
-      <p>Your Noshahibaba account is ready. Start sourcing now!</p>
-    </div>
-    <div style="display:flex; gap:16px; justify-content:center; margin-top:24px;">
-      <a routerLink="/auth/login" class="btn-done-modal">Sign In <i class="fas fa-sign-in-alt"></i></a>
-      <a routerLink="/" class="btn-done-modal btn-outline">Home <i class="fas fa-home"></i></a>
     </div>
   </div>
 </div>

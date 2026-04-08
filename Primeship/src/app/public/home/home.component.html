@@ -147,6 +147,10 @@
                   <div class="card-media">
                     <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
                   </div>
+                  <div class="card-info">
+                    <div class="card-name">{{ p.name }}</div>
+                    <div class="card-price">{{ (p.price || 0) | currency:'USD':'symbol':'1.0-0' }}</div>
+                  </div>
                 </div>
               </div>
 
@@ -155,14 +159,20 @@
               </button>
             </div>
 
-            <div class="deal-banner">
-              <img
-                src="https://assets.wfcdn.com/im/33896598/resize-h250-w2000%5Ecompr-r85/4219/421983025/big_outdoor_sale_up_to_50%25_off._421983025.jpg"
-                srcset="https://assets.wfcdn.com/im/33896598/resize-h250-w2000%5Ecompr-r85/4219/421983025/big_outdoor_sale_up_to_50%25_off._421983025.jpg 960w, https://assets.wfcdn.com/im/73018347/resize-h200-w710%5Ecompr-r85/4219/421983018/big_outdoor_sale_up_to_50%25_off._421983018.jpg 1w"
-                alt="Big Outdoor Sale up to 50% off."
-                loading="lazy"
-                decoding="async"
-              />
+            <div class="deal-banner deal-banner-animated" role="img" aria-label="Big Outdoor Sale up to 50% off.">
+              <div class="deal-banner-animated__bg" aria-hidden="true">
+                <span class="banner-orb orb-1"></span>
+                <span class="banner-orb orb-2"></span>
+                <span class="banner-orb orb-3"></span>
+                <span class="banner-spark spark-1"></span>
+                <span class="banner-spark spark-2"></span>
+              </div>
+              <div class="deal-banner-animated__content">
+                <span class="banner-eyebrow">Outdoor Event</span>
+                <h3 class="banner-title">Big Outdoor Sale</h3>
+                <p class="banner-subtitle">Up to 50% off patio, grills, and summer favorites.</p>
+                <a class="btn-emerald-outline banner-cta" [routerLink]="['/shop']" [queryParams]="{ sortBy: 'discount' }">Shop the Sale</a>
+              </div>
             </div>
 
             <div class="rec-header">
@@ -183,6 +193,10 @@
                   <div class="card-media">
                     <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
                   </div>
+                  <div class="card-info">
+                    <div class="card-name">{{ p.name }}</div>
+                    <div class="card-price">{{ (p.price || 0) | currency:'USD':'symbol':'1.0-0' }}</div>
+                  </div>
                 </div>
               </div>
 
@@ -191,14 +205,20 @@
               </button>
             </div>
 
-            <div class="deal-banner">
-              <img
-                src="https://assets.wfcdn.com/im/33896598/resize-h250-w2000%5Ecompr-r85/4219/421983025/big_outdoor_sale_up_to_50%25_off._421983025.jpg"
-                srcset="https://assets.wfcdn.com/im/33896598/resize-h250-w2000%5Ecompr-r85/4219/421983025/big_outdoor_sale_up_to_50%25_off._421983025.jpg 960w, https://assets.wfcdn.com/im/73018347/resize-h200-w710%5Ecompr-r85/4219/421983018/big_outdoor_sale_up_to_50%25_off._421983018.jpg 1w"
-                alt="Big Outdoor Sale up to 50% off."
-                loading="lazy"
-                decoding="async"
-              />
+            <div class="deal-banner deal-banner-animated" role="img" aria-label="Big Outdoor Sale up to 50% off.">
+              <div class="deal-banner-animated__bg" aria-hidden="true">
+                <span class="banner-orb orb-1"></span>
+                <span class="banner-orb orb-2"></span>
+                <span class="banner-orb orb-3"></span>
+                <span class="banner-spark spark-1"></span>
+                <span class="banner-spark spark-2"></span>
+              </div>
+              <div class="deal-banner-animated__content">
+                <span class="banner-eyebrow">Outdoor Event</span>
+                <h3 class="banner-title">Big Outdoor Sale</h3>
+                <p class="banner-subtitle">Up to 50% off patio, grills, and summer favorites.</p>
+                <a class="btn-emerald-outline banner-cta" [routerLink]="['/shop']" [queryParams]="{ sortBy: 'discount' }">Shop the Sale</a>
+              </div>
             </div>
         </div>
     </section>
@@ -215,6 +235,7 @@
                 <div class="circle-thumb">
                   <img [src]="c.image" [alt]="c.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
                 </div>
+                <span class="collection-title">{{ c.name }}</span>
               </button>
             </div>
 
@@ -229,10 +250,10 @@
       <div class="container">
         <div class="deal-banner">
           <img
-            src="https://assets.wfcdn.com/im/13670107/scale-h504-w1780%5Ecompr-r85/4186/418678984/default_name.jpg"
-            srcset="https://assets.wfcdn.com/im/11564949/scale-h177-w624%5Ecompr-r85/4186/418678984/default_name.jpg 624w, https://assets.wfcdn.com/im/20650821/scale-h354-w1248%5Ecompr-r85/4186/418678984/default_name.jpg 1248w, https://assets.wfcdn.com/im/33249130/scale-h267-w944%5Ecompr-r85/4186/418678984/default_name.jpg 944w, https://assets.wfcdn.com/im/31634763/scale-h534-w1888%5Ecompr-r85/4186/418678984/default_name.jpg 1888w, https://assets.wfcdn.com/im/15169319/scale-h500-w1764%5Ecompr-r85/4186/418678984/default_name.jpg 1764w, https://assets.wfcdn.com/im/34192577/scale-h1000-w3528%5Ecompr-r85/4186/418678984/default_name.jpg 3528w"
+            src="https://images.pexels.com/photos/33344557/pexels-photo-33344557.jpeg?auto=compress&cs=tinysrgb&w=2000"
+            srcset="https://images.pexels.com/photos/33344557/pexels-photo-33344557.jpeg?auto=compress&cs=tinysrgb&w=624 624w, https://images.pexels.com/photos/33344557/pexels-photo-33344557.jpeg?auto=compress&cs=tinysrgb&w=944 944w, https://images.pexels.com/photos/33344557/pexels-photo-33344557.jpeg?auto=compress&cs=tinysrgb&w=1248 1248w, https://images.pexels.com/photos/33344557/pexels-photo-33344557.jpeg?auto=compress&cs=tinysrgb&w=1764 1764w, https://images.pexels.com/photos/33344557/pexels-photo-33344557.jpeg?auto=compress&cs=tinysrgb&w=2000 2000w"
             sizes="(min-width:1780px) 1780px, (min-width:960px) 100vw, (min-width:640px) 100vw, 100vw"
-            alt="PICKS FROM $25, small-space styles, make the most of every outdoor inch, find your fit."
+            alt="Spacious modern living room with panoramic windows and warm lighting."
             loading="lazy"
             decoding="async"
           />
@@ -277,13 +298,22 @@
 
           <div class="product-grid" #prodList>
             <div class="deal-card rec-card prod-card" *ngFor="let p of allProducts | slice:0:8" (click)="goToProduct(p)">
-              <span class="deal-verified" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
-              <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
-                  <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
-              </button>
-              <span class="deal-tag">5 Days of Deals</span>
-              <div class="card-media">
-                <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+              <div class="prod-card-inner">
+                <div class="prod-card-front">
+                  <span class="deal-verified" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
+                  <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
+                      <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+                  </button>
+                  <div class="card-media">
+                    <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                  </div>
+                </div>
+                <div class="prod-card-back">
+                  <div class="prod-back-content">
+                    <div class="prod-back-name">{{ p.name }}</div>
+                    <div class="prod-back-price">{{ (p.price || 0) | currency:'USD':'symbol':'1.0-0' }}</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -353,37 +383,291 @@
 
           <a class="magic-card" [routerLink]="['/category', 'watches-jewelry']">
             <div class="magic-img">
-              <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1400&q=80" alt="Watches and jewelry" loading="lazy" decoding="async">
+              <img src="https://images.pexels.com/photos/9267840/pexels-photo-9267840.jpeg?auto=compress&cs=tinysrgb&w=1400" srcset="https://images.pexels.com/photos/9267840/pexels-photo-9267840.jpeg?auto=compress&cs=tinysrgb&w=700 700w, https://images.pexels.com/photos/9267840/pexels-photo-9267840.jpeg?auto=compress&cs=tinysrgb&w=1000 1000w, https://images.pexels.com/photos/9267840/pexels-photo-9267840.jpeg?auto=compress&cs=tinysrgb&w=1400 1400w" alt="Luxury watches on a wrist with warm tones." loading="lazy" decoding="async">
             </div>
-            <div class="magic-title">Watches and jewelery</div>
+            <div class="magic-title">Watches and jewelry</div>
           </a>
         </div>
       </div>
     </section>
 
-    <section class="home-square-carousel" *ngIf="allProducts.length">
+    <section class="home-inspiration">
       <div class="container">
-        <div class="rec-shell squares-shell">
-          <button type="button" class="rec-btn rec-btn-left" (click)="scrollSquares2('left')" aria-label="Scroll left">
+        <div class="inspiration-inner">
+          <div class="inspiration-heading">Looking for inspiration? Explore and shop these spaces.</div>
+          <div class="inspiration-grid">
+            <a class="insp-card insp-a" [routerLink]="['/category', 'living-room']" aria-label="Living room">
+              <span class="insp-inner">
+                <span class="insp-face insp-front">
+                  <img src="https://images.unsplash.com/photo-1615873968403-89e068629265?auto=format&fit=crop&w=1600&q=80" alt="Living room" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                </span>
+                <span class="insp-face insp-back"><span class="insp-back-text">Living room</span></span>
+              </span>
+            </a>
+            <a class="insp-card insp-b" [routerLink]="['/category', 'bedroom']" aria-label="Bedroom">
+              <span class="insp-inner">
+                <span class="insp-face insp-front">
+                  <img src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1600&q=80" alt="Bedroom" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                </span>
+                <span class="insp-face insp-back"><span class="insp-back-text">Bedroom</span></span>
+              </span>
+            </a>
+            <a class="insp-card" [routerLink]="['/category', 'home-office']" aria-label="Home office">
+              <span class="insp-inner">
+                <span class="insp-face insp-front">
+                  <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1600&q=80" alt="Home office" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                </span>
+                <span class="insp-face insp-back"><span class="insp-back-text">Home office</span></span>
+              </span>
+            </a>
+            <a class="insp-card" [routerLink]="['/category', 'dining']" aria-label="Kitchen and dining">
+              <span class="insp-inner">
+                <span class="insp-face insp-front">
+                  <img src="https://images.unsplash.com/photo-1556912167-f556f1f39fdf?auto=format&fit=crop&w=1600&q=80" alt="Kitchen and dining" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                </span>
+                <span class="insp-face insp-back"><span class="insp-back-text">Kitchen and dining</span></span>
+              </span>
+            </a>
+            <a class="insp-card" [routerLink]="['/category', 'bathroom']" aria-label="Bathroom">
+              <span class="insp-inner">
+                <span class="insp-face insp-front">
+                  <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1600&q=80" alt="Bathroom" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                </span>
+                <span class="insp-face insp-back"><span class="insp-back-text">Bathroom</span></span>
+              </span>
+            </a>
+            <a class="insp-card" [routerLink]="['/category', 'outdoor']" aria-label="Outdoor">
+              <span class="insp-inner">
+                <span class="insp-face insp-front">
+                  <img src="https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=1600&q=80" alt="Outdoor space" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                </span>
+                <span class="insp-face insp-back"><span class="insp-back-text">Outdoor</span></span>
+              </span>
+            </a>
+            <a class="insp-card" [routerLink]="['/category', 'kids-room']" aria-label="Kids room">
+              <span class="insp-inner">
+                <span class="insp-face insp-front">
+                  <img src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=1600&q=80" alt="Kids room" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                </span>
+                <span class="insp-face insp-back"><span class="insp-back-text">Kids room</span></span>
+              </span>
+            </a>
+            <a class="insp-card" [routerLink]="['/category', 'rugs']" aria-label="Rugs">
+              <span class="insp-inner">
+                <span class="insp-face insp-front">
+                  <img src="https://images.unsplash.com/photo-1603204077779-bed963ea7d0e?auto=format&fit=crop&w=1600&q=80" alt="Rugs" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                </span>
+                <span class="insp-face insp-back"><span class="insp-back-text">Rugs</span></span>
+              </span>
+            </a>
+            <a class="insp-card" [routerLink]="['/category', 'decor']" aria-label="Decor">
+              <span class="insp-inner">
+                <span class="insp-face insp-front">
+                  <img src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1600&q=80" alt="Decor" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                </span>
+                <span class="insp-face insp-back"><span class="insp-back-text">Decor</span></span>
+              </span>
+            </a>
+            <a class="insp-card" [routerLink]="['/category', 'lighting']" aria-label="Lighting">
+              <span class="insp-inner">
+                <span class="insp-face insp-front">
+                  <img src="https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=1600&q=80" alt="Lighting" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                </span>
+                <span class="insp-face insp-back"><span class="insp-back-text">Lighting</span></span>
+              </span>
+            </a>
+            <a class="insp-card" [routerLink]="['/category', 'organization']" aria-label="Organization">
+              <span class="insp-inner">
+                <span class="insp-face insp-front">
+                  <img src="/assets/images/home/hero.png" alt="Organization" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                </span>
+                <span class="insp-face insp-back"><span class="insp-back-text">Organization</span></span>
+              </span>
+            </a>
+            <a class="insp-card insp-cta" [routerLink]="['/shop']" aria-label="Explore and shop all">
+              <img src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1600&q=80" alt="Explore and shop all" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+              <span class="insp-cta-text">Explore &amp; Shop All</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-spaces-carousel" *ngIf="spaceCards.length">
+      <div class="container">
+        <div class="rec-header">
+          <h2 class="section-title">New trends &amp; ideas to try now</h2>
+        </div>
+        <div class="rec-shell spaces-shell">
+          <button type="button" class="rec-btn rec-btn-left" (click)="scrollSpaces('left')" aria-label="Scroll left">
             <i class="fas fa-chevron-left"></i>
           </button>
 
-          <div class="square-grid" #squareList2>
-            <div class="square-card" *ngFor="let p of allProducts | slice:0:8" (click)="goToProduct(p)">
-              <span class="deal-verified" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
-              <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
-                  <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
-              </button>
-              <span class="deal-tag">5 Days of Deals</span>
-              <div class="card-media">
+          <div class="rec-scroll spaces-scroll" #spaceList>
+            <a class="space-card" *ngFor="let s of spaceCards" [routerLink]="['/category', s.slug]" [attr.aria-label]="s.label">
+              <span class="space-card-media">
+                <img [src]="s.image" [alt]="s.label" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+              </span>
+              <span class="space-card-title">{{ s.label }}</span>
+            </a>
+          </div>
+
+          <button type="button" class="rec-btn rec-btn-right" (click)="scrollSpaces('right')" aria-label="Scroll right">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-budget-carousel" *ngIf="!isLoadingDeals && allProducts.length">
+      <div class="container">
+        <div class="rec-header">
+          <h2 class="section-title">style for every budget</h2>
+        </div>
+
+        <div class="rec-shell budget-shell">
+          <button type="button" class="rec-btn rec-btn-left" (click)="scrollBudget('left')" aria-label="Scroll left">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+
+          <div class="rec-scroll budget-scroll" #budgetList>
+            <div class="budget-card" *ngFor="let p of allProducts | slice:0:10; let i = index" (click)="goToProduct(p)">
+              <div class="budget-media">
                 <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                <button type="button" class="budget-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
+                  <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+                </button>
+                <span class="budget-tag" *ngIf="i === 2">Bundle and Save</span>
+              </div>
+              <div class="budget-info">
+                <div class="budget-name">{{ p.name }}</div>
+                <div class="budget-price">
+                  <span class="budget-now">{{ p.price | currency:'USD':'symbol':'1.0-2' }}</span>
+                  <span class="budget-old" *ngIf="p.oldPrice">{{ p.oldPrice | currency:'USD':'symbol':'1.0-2' }}</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <button type="button" class="rec-btn rec-btn-right" (click)="scrollSquares2('right')" aria-label="Scroll right">
+          <button type="button" class="rec-btn rec-btn-right" (click)="scrollBudget('right')" aria-label="Scroll right">
             <i class="fas fa-chevron-right"></i>
           </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-banner-rewards">
+      <div class="container">
+        <div class="deal-banner rewards-banner">
+          <img
+            alt="Wayfair Rewards Members Only: Unbeatable savings on kitchen staples. Join Now. Up to 25% off."
+            src="https://assets.wfcdn.com/im/658072/resize-h288-w2000%5Ecompr-r85/3939/393921033/wayfair_rewards_members_only%3A_unbeatable_savings_on_kitchen_staples._join_now._up_to_25%25_off._393921033.jpg"
+            srcset="https://assets.wfcdn.com/im/658072/resize-h288-w2000%5Ecompr-r85/3939/393921033/wayfair_rewards_members_only%3A_unbeatable_savings_on_kitchen_staples._join_now._up_to_25%25_off._393921033.jpg 960w, https://assets.wfcdn.com/im/33679134/resize-h337-w825%5Ecompr-r85/3939/393921114/wayfair_rewards_members_only%3A_unbeatable_savings_on_kitchen_staples%2C_up_to_25%25_off%2C_join_now._393921114.jpg 1w"
+            loading="lazy"
+            decoding="async"
+            (error)="setDefaultImage($event)"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="home-wayfair-deals" *ngIf="!isLoadingDeals && allProducts.length">
+      <div class="container">
+        <div class="rec-shell wf-deals-shell">
+          <button type="button" class="rec-btn rec-btn-left" (click)="scrollWfDeals('left')" aria-label="Scroll left">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+
+          <div class="rec-scroll wf-deals-scroll" #wfDealList>
+            <div class="wf-deal-card" *ngFor="let p of allProducts | slice:0:10; let i = index" (click)="goToProduct(p)">
+              <div class="wf-deal-media">
+                <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+
+                <button type="button" class="wf-deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
+                  <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+                </button>
+
+                <span class="wf-deal-verified" *ngIf="i % 4 === 1" aria-hidden="true">
+                  <i class="fas fa-check"></i>
+                </span>
+
+                <span class="wf-deal-tag" [class.low]="i % 6 === 5">
+                  {{ (i % 6 === 5) ? '30-Day Low Price' : '5 Days of Deals' }}
+                </span>
+              </div>
+
+              <div class="wf-deal-body">
+                <div class="wf-deal-name">{{ p.name }}</div>
+                <div class="wf-deal-price-row">
+                  <span class="wf-deal-now">{{ p.price | currency:'USD':'symbol':'1.0-2' }}</span>
+                  <span class="wf-deal-old" *ngIf="p.oldPrice">{{ p.oldPrice | currency:'USD':'symbol':'1.0-2' }}</span>
+                </div>
+                <div class="wf-deal-member">
+                  <span class="wf-deal-member-pill">Reward Members Save Extra {{ getRewardExtra(p) | currency:'USD':'symbol':'1.0-2' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="rec-btn rec-btn-right" (click)="scrollWfDeals('right')" aria-label="Scroll right">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-banner-cash">
+      <div class="container">
+        <div class="deal-banner cash-banner">
+          <img
+            alt="NEW! CASH REGISTRIES cash gifts for every moment. Register for every milestone and get cash to spend how you want."
+            src="https://assets.wfcdn.com/im/14148385/resize-h454-w2000%5Ecompr-r85/3622/362211497/new%21_cash_registries_cash_gifts_for_every_moment._register_for_every_milestone_and_get_cash_to_spend_how_you_want._362211497.jpg"
+            srcset="https://assets.wfcdn.com/im/14148385/resize-h454-w2000%5Ecompr-r85/3622/362211497/new%21_cash_registries_cash_gifts_for_every_moment._register_for_every_milestone_and_get_cash_to_spend_how_you_want._362211497.jpg 960w, https://assets.wfcdn.com/im/80382601/resize-h350-w825%5Ecompr-r85/3692/369217140/new%21_cash_registries%3A_cash_gifts_for_every_moment._create_a_registry._369217140.jpg 1w"
+            loading="lazy"
+            decoding="async"
+            (error)="setDefaultImage($event)"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="home-circle-tail">
+      <div class="container">
+        <div class="circle-tail-grid">
+          <button
+            class="circle-tail-card"
+            *ngFor="let item of circleCategories"
+            type="button"
+            (click)="goToMiniCategory(item.slug, $event)"
+          >
+            <span class="circle-tail-media">
+              <img [src]="item.image" [alt]="item.label" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
+            </span>
+            <span class="circle-tail-label">{{ item.label }}</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-trust-strip">
+      <div class="container">
+        <div class="trust-strip-grid">
+          <div class="trust-item">
+            <span class="trust-ico"><i class="fas fa-couch"></i></span>
+            <span class="trust-text">Unbeatable Selection</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-ico"><i class="fas fa-headset"></i></span>
+            <span class="trust-text">Expert Customer Service</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-ico"><i class="fas fa-truck"></i></span>
+            <span class="trust-text">Fast &amp; Free Shipping Over $35*</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-ico"><i class="fas fa-shopping-bag"></i></span>
+            <span class="trust-text">Amazing Value Every Day</span>
+          </div>
         </div>
       </div>
     </section>
