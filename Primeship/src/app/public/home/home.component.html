@@ -1,6 +1,6 @@
     <!-- Skygarden-Style Hero Stage -->
     <section class="home-hero-stage">
-        <div class="hero-carousel-wrapper" tabindex="0" (keydown)="onHeroKey($event)">
+        <div class="hero-carousel-wrapper" #heroCarouselWrapper tabindex="0" (keydown)="onHeroKey($event)">
             <div class="hero-slide" *ngFor="let slide of heroSlides; let i = index" 
                  [class.active]="i === heroIndex">
                 <video
@@ -9,8 +9,12 @@
                     [attr.poster]="slide.poster || slide.image || null"
                     autoplay
                     muted
+                    defaultMuted
                     loop
                     playsinline
+                    webkit-playsinline
+                    disableremoteplayback
+                    disablepictureinpicture
                     preload="metadata"
                 >
                     <source [src]="slide.video" type="video/mp4" />

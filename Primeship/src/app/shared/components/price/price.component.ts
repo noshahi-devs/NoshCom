@@ -20,7 +20,7 @@ import { Component, Input } from '@angular/core';
     .current-price {
       font-weight: bold;
       font-size: 1.2rem;
-      color: #e74c3c;
+      color: var(--primary, #10B981);
     }
     .original-price {
       text-decoration: line-through;

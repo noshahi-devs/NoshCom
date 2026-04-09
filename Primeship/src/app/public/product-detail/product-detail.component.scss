@@ -145,7 +145,28 @@
       .qty-controls {
         display: flex; align-items: center; background: #F0F2F2; border: 1px solid #D5D9D9; border-radius: 8px; overflow: hidden; height: 36px;
         button { border: none; background: transparent; width: 36px; height: 100%; cursor: pointer; color: #111; &:hover { background: #D5D9D9; } }
-        input { border: none; background: #FFF; width: 40px; height: 100%; text-align: center; font-weight: 700; border-left: 1px solid #D5D9D9; border-right: 1px solid #D5D9D9; outline: none; }
+        input {
+          border: none;
+          background: #FFF;
+          width: 40px;
+          height: 100%;
+          padding: 0 !important;
+          line-height: 36px;
+          text-align: center !important;
+          font-weight: 700;
+          border-left: 1px solid #D5D9D9;
+          border-right: 1px solid #D5D9D9;
+          outline: none;
+          font-family: inherit;
+          font-variant-numeric: tabular-nums;
+          appearance: textfield;
+
+          &::-webkit-outer-spin-button,
+          &::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+          }
+        }
       }
     }
 

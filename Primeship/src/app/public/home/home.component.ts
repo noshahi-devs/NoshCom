@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -92,7 +92,7 @@ interface CircleTailItem {
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent implements OnInit, OnDestroy {
+export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('recList') recList?: ElementRef<HTMLDivElement>;
   @ViewChild('dealList') dealList?: ElementRef<HTMLDivElement>;
   @ViewChild('collList') collList?: ElementRef<HTMLDivElement>;
@@ -102,6 +102,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   @ViewChild('budgetList') budgetList?: ElementRef<HTMLDivElement>;
   @ViewChild('wfDealList') wfDealList?: ElementRef<HTMLDivElement>;
   @ViewChild('categoryTrack') categoryTrack?: ElementRef<HTMLDivElement>;
+  @ViewChild('heroCarouselWrapper') heroCarouselWrapper?: ElementRef<HTMLDivElement>;
 
   searchQuery = '';
   brandLinks = [
@@ -354,7 +355,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private cartService: CartService,
     private wishlistService: WishlistService,
     private publicService: PublicService,
-    private categoryService: CategoryService
+    private categoryService: CategoryService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   onSearch(event: Event): void {
@@ -370,6 +372,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.startHeroAutoPlay();
     this.startDealTimer();
     this.loadBackendData();
+  }
+
+  ngAfterViewInit(): void {
+    this.scheduleHeroVideoPlay();
   }
 
   private loadBackendData(): void {
@@ -610,6 +616,17 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.dealTimerId) {
       clearInterval(this.dealTimerId);
     }
+
+    // Pause hero videos when leaving the page (saves CPU + avoids autoplay quirks on return)
+    const wrapper = this.heroCarouselWrapper?.nativeElement;
+    const videos = wrapper ? Array.from(wrapper.querySelectorAll<HTMLVideoElement>('.hero-bg-video')) : [];
+    for (const v of videos) {
+      try {
+        v.pause();
+      } catch {
+        // Ignore
+      }
+    }
   }
 
   get activeTabProducts(): ProductItem[] {
@@ -731,14 +748,17 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   prevHero(): void {
     this.heroIndex = (this.heroIndex - 1 + this.heroSlides.length) % this.heroSlides.length;
+    this.scheduleHeroVideoPlay();
   }
 
   nextHero(): void {
     this.heroIndex = (this.heroIndex + 1) % this.heroSlides.length;
+    this.scheduleHeroVideoPlay();
   }
 
   goHero(index: number): void {
     this.heroIndex = index;
+    this.scheduleHeroVideoPlay();
   }
 
   onHeroKey(event: KeyboardEvent): void {
@@ -749,6 +769,58 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (event.key === 'ArrowRight') {
       this.nextHero();
       event.preventDefault();
+    }
+  }
+
+  private scheduleHeroVideoPlay(): void {
+    // Autoplay sometimes doesn't start when the slide becomes active (especially on iOS/Safari).
+    // Nudge the active hero video to play after the DOM updates.
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => requestAnimationFrame(() => this.playActiveHeroVideo()));
+      return;
+    }
+    setTimeout(() => this.playActiveHeroVideo(), 0);
+  }
+
+  private playActiveHeroVideo(): void {
+    const wrapper = this.heroCarouselWrapper?.nativeElement;
+    if (!wrapper) return;
+
+    // Pause any background videos that are not active (or when the active slide is an image).
+    const allVideos = Array.from(wrapper.querySelectorAll<HTMLVideoElement>('.hero-bg-video'));
+    for (const v of allVideos) {
+      try {
+        v.pause();
+      } catch {
+        // Ignore
+      }
+    }
+
+    const video = wrapper.querySelector<HTMLVideoElement>('.hero-slide.active .hero-bg-video');
+    if (!video) return;
+
+    // Ensure autoplay requirements are satisfied
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    (video as any).webkitPlaysInline = true;
+
+    try {
+      if (video.readyState < 2) {
+        video.load();
+      }
+    } catch {
+      // Ignore
+    }
+
+    const promise = video.play();
+    if (promise && typeof promise.catch === 'function') {
+      promise.catch(() => {
+        // Ignore autoplay blocking; poster will remain.
+      });
     }
   }
 
@@ -884,6 +956,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   private startHeroAutoPlay(): void {
     this.heroTimerId = window.setInterval(() => {
       this.nextHero();
+      // In zoneless change detection, timers don't trigger UI updates automatically.
+      // Force view update so the active slide + dots update reliably.
+      this.cdr.detectChanges();
     }, 7000);
   }
 
@@ -891,19 +966,23 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.dealTimerId = window.setInterval(() => {
       if (this.dealTimer.seconds > 0) {
         this.dealTimer.seconds -= 1;
+        this.cdr.detectChanges();
         return;
       }
       this.dealTimer.seconds = 59;
       if (this.dealTimer.minutes > 0) {
         this.dealTimer.minutes -= 1;
+        this.cdr.detectChanges();
         return;
       }
       this.dealTimer.minutes = 59;
       if (this.dealTimer.hours > 0) {
         this.dealTimer.hours -= 1;
+        this.cdr.detectChanges();
         return;
       }
       this.dealTimer = { hours: 12, minutes: 45, seconds: 30 };
+      this.cdr.detectChanges();
     }, 1000);
   }
 }
