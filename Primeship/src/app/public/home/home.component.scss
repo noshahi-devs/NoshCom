@@ -421,7 +421,7 @@
 .rec-card .card-price {
   font-size: 13px;
   font-weight: 800;
-  color: #0F766E;
+  color: var(--primary);
 }
 
 .home-collections {
@@ -633,7 +633,7 @@
 .prod-back-price {
   font-size: 16px;
   font-weight: 900;
-  color: #10B981;
+  color: var(--primary);
 }
 
 @media (hover: none) {
@@ -654,6 +654,7 @@
     border-radius: 12px;
     box-shadow: var(--shadow-3d-sm);
     object-fit: cover;
+    transition: transform 0.35s ease, filter 0.35s ease;
   }
 }
 
@@ -663,10 +664,13 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: var(--shadow-3d-sm);
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
   padding: 0 34px;
+  column-gap: 28px;
   background: #0b3a2e;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
 }
 
 .deal-banner-animated__bg {
@@ -677,6 +681,19 @@
   animation: bannerFlow 16s ease-in-out infinite;
 }
 
+.deal-banner-animated__bg::before {
+  content: "SALE";
+  position: absolute;
+  right: 28px;
+  bottom: 14px;
+  font-size: 92px;
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  color: rgba(255,255,255,0.08);
+  transform: rotate(-6deg);
+  user-select: none;
+}
+
 .deal-banner-animated__bg::after {
   content: "";
   position: absolute;
@@ -685,6 +702,7 @@
     radial-gradient(600px 220px at 18% 20%, rgba(255,255,255,0.18), transparent 60%),
     radial-gradient(520px 200px at 82% 80%, rgba(255,255,255,0.12), transparent 65%);
   opacity: 0.85;
+  transition: opacity 0.25s ease;
 }
 
 .banner-orb {
@@ -722,6 +740,101 @@
   color: #fff;
   display: grid;
   gap: 8px;
+}
+
+.deal-banner-animated__aside {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 14px;
+  justify-items: end;
+  pointer-events: none;
+}
+
+.banner-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  max-width: 360px;
+}
+
+.banner-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.18);
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.92);
+  backdrop-filter: blur(6px);
+}
+
+.banner-pill i {
+  color: rgba(255,255,255,0.95);
+  font-size: 12px;
+}
+
+.banner-thumbs {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.banner-thumb {
+  width: 78px;
+  height: 78px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.92);
+  box-shadow: 0 18px 36px rgba(0,0,0,0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.banner-thumb:not(:first-child) {
+  margin-left: -10px;
+}
+
+.banner-thumb:nth-child(1) { transform: rotate(-2deg) translateY(2px); }
+.banner-thumb:nth-child(2) { transform: rotate(1deg) translateY(-2px); }
+.banner-thumb:nth-child(3) { transform: rotate(-1deg) translateY(1px); }
+
+.banner-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 10px 12px rgba(0,0,0,0.22));
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .deal-banner-animated:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.18);
+    filter: saturate(1.03);
+  }
+
+  .deal-banner-animated:hover .deal-banner-animated__bg::after {
+    opacity: 1;
+  }
+
+  .deal-banner-animated:hover .banner-thumb img {
+    transform: scale(1.03);
+    filter: drop-shadow(0 14px 18px rgba(0,0,0,0.24));
+  }
+
+  .deal-banner:hover img {
+    transform: scale(1.015);
+  }
 }
 
 .banner-eyebrow {
@@ -781,6 +894,7 @@
   .deal-banner img { height: 320px; }
   .deal-banner-animated { height: 210px; padding: 0 24px; }
   .banner-title { font-size: 26px; }
+  .deal-banner-animated__aside { display: none; }
 }
 
 @media (max-width: 600px) {
@@ -1883,7 +1997,7 @@
 
 .home-circle-tail {
   padding: 10px 0 60px;
-  background: #fff;
+  background: #F8FAFB;
 
   .circle-tail-grid {
     display: grid;
@@ -1904,30 +2018,46 @@
     text-align: center;
     color: var(--text-dark);
     padding: 6px 4px;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
   }
 
   .circle-tail-media {
-    width: 130px;
-    height: 130px;
+    width: 154px;
+    height: 154px;
     border-radius: 50%;
-    background: #FFFFFF;
+    background: radial-gradient(circle at 35% 30%, #FFFFFF 0%, #F3F4F6 55%, #EEF2F7 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.1);
-    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow:
+      0 14px 30px rgba(15, 23, 42, 0.14),
+      0 0 0 6px rgba(243, 244, 246, 0.9);
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .circle-tail-card:hover .circle-tail-media {
+    transform: scale(1.03);
+    border-color: rgba(16, 185, 129, 0.18);
+    box-shadow:
+      0 18px 38px rgba(15, 23, 42, 0.18),
+      0 0 0 7px rgba(16, 185, 129, 0.12);
   }
 
   .circle-tail-media img {
-    width: 88%;
-    height: 88%;
+    width: 92%;
+    height: 92%;
     object-fit: contain;
     display: block;
   }
 
   .circle-tail-label {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
     color: #111827;
   }
@@ -1949,8 +2079,8 @@
       grid-template-columns: repeat(3, minmax(100px, 1fr));
     }
     .circle-tail-media {
-      width: 112px;
-      height: 112px;
+      width: 136px;
+      height: 136px;
     }
   }
 }

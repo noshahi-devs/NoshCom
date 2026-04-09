@@ -33,7 +33,7 @@
 /* --- THE 3-COLUMN GRID --- */
 .powerhouse-grid-container {
   display: grid;
-  grid-template-columns: 32% 43% 25%;
+  grid-template-columns: 32% 40% 28%;
   gap: 20px;
   max-width: 1600px;
   margin: 20px auto;
@@ -88,7 +88,7 @@
   .hub-divider { height: 1px; background: #EAEAEA; margin: 20px 0; }
 
   .ph-price-block {
-    .price-main { font-size: 36px; font-weight: 800; color: #B12704; line-height: 1; }
+    .price-main { font-size: 36px; font-weight: 800; color: var(--primary); line-height: 1; }
     .price-discount-row {
       display: flex; align-items: center; gap: 10px; margin-top: 5px;
       .price-old { font-size: 14px; color: #565959; text-decoration: line-through; }
@@ -119,8 +119,10 @@
 
 /* 3. RIGHT BUY BOX (AMAZON LAYOUT) */
 .col-buy-box {
+  padding-right: 16px;
+
   .buy-card {
-    background: #FFF; border: 1px solid #D5D9D9; border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    background: #FFF; border: 1px solid #D5D9D9; border-radius: 8px; padding: 24px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     
     .delivery-address {
       display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; font-size: 13px; line-height: 1.4;
@@ -201,7 +203,7 @@
       .ph-card-body { padding: 15px; display: flex; flex-direction: column; flex: 1; justify-content: space-between; }
       .ph-card-title { font-size: 14px; color: #007185; line-height: 1.4; margin-bottom: 8px; height: 2.8em; overflow: hidden; &:hover { color: #C40000; text-decoration: underline; } }
       .ph-card-rating { font-size: 12px; margin-bottom: 8px; span { color: #007185; margin-left: 5px; } }
-      .ph-card-price { font-size: 20px; font-weight: 700; color: #B12704; }
+      .ph-card-price { font-size: 20px; font-weight: 700; color: var(--primary); }
 
       @media (hover: hover) and (pointer: fine) {
         &:hover .ph-card-img img { transform: scale(1.03); }

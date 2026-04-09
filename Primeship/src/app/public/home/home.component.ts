@@ -119,6 +119,12 @@ export class HomeComponent implements OnInit, OnDestroy {
     { label: 'Fast & Free Shipping Over $35*', href: '/shipping' }
   ];
 
+  bannerThumbs = [
+    { src: '/assets/images/home/cat-electronics.png', alt: 'Electronics' },
+    { src: '/assets/images/home/cat-beauty.png', alt: 'Beauty' },
+    { src: '/assets/images/home/hero.png', alt: 'Featured' }
+  ];
+
   navCategories = [
     { label: 'Furniture', href: '/furniture' },
     { label: 'Outdoor', href: '/outdoor' },

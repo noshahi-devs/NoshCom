@@ -40,13 +40,14 @@ import { ToastService, Toast } from '../services/toast.service';
     }
 
     .toast {
+      --toast-accent-rgb: 248, 86, 6;
       display: flex;
       align-items: center;
       padding: 16px;
       border-radius: 12px;
       box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
       background: #ffffff;
-      border: 1px solid rgba(248, 86, 6, 0.12);
+      border: 1px solid rgba(var(--toast-accent-rgb), 0.12);
       animation: slideIn 0.3s ease-out;
       position: relative;
       overflow: hidden;
@@ -97,22 +98,24 @@ import { ToastService, Toast } from '../services/toast.service';
       content: '';
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at 20% 20%, rgba(248, 86, 6, 0.08), transparent 55%);
+      background: radial-gradient(circle at 20% 20%, rgba(var(--toast-accent-rgb), 0.08), transparent 55%);
       pointer-events: none;
     }
 
     .toast-success {
-      border-left: 4px solid #f85606;
-      box-shadow: 0 14px 30px rgba(248, 86, 6, 0.18);
+      --toast-accent-rgb: var(--primary-rgb, 16, 185, 129);
+      border-left: 4px solid var(--primary, #10B981);
+      box-shadow: 0 14px 30px rgba(var(--toast-accent-rgb), 0.18);
     }
 
     .toast-success .toast-icon {
-      color: #f85606;
+      color: var(--primary, #10B981);
     }
 
     .toast-error {
+      --toast-accent-rgb: 239, 68, 68;
       border-left: 4px solid #ef4444;
-      box-shadow: 0 14px 30px rgba(239, 68, 68, 0.18);
+      box-shadow: 0 14px 30px rgba(var(--toast-accent-rgb), 0.18);
     }
 
     .toast-error .toast-icon {
@@ -120,8 +123,9 @@ import { ToastService, Toast } from '../services/toast.service';
     }
 
     .toast-info {
+      --toast-accent-rgb: 249, 115, 22;
       border-left: 4px solid #f97316;
-      box-shadow: 0 14px 30px rgba(249, 115, 22, 0.18);
+      box-shadow: 0 14px 30px rgba(var(--toast-accent-rgb), 0.18);
     }
 
     .toast-info .toast-icon {
@@ -129,8 +133,9 @@ import { ToastService, Toast } from '../services/toast.service';
     }
 
     .toast-warning {
+      --toast-accent-rgb: 245, 158, 11;
       border-left: 4px solid #f59e0b;
-      box-shadow: 0 14px 30px rgba(245, 158, 11, 0.18);
+      box-shadow: 0 14px 30px rgba(var(--toast-accent-rgb), 0.18);
     }
 
     .toast-warning .toast-icon {

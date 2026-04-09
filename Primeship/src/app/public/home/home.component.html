@@ -173,6 +173,18 @@
                 <p class="banner-subtitle">Up to 50% off patio, grills, and summer favorites.</p>
                 <a class="btn-emerald-outline banner-cta" [routerLink]="['/shop']" [queryParams]="{ sortBy: 'discount' }">Shop the Sale</a>
               </div>
+              <div class="deal-banner-animated__aside" aria-hidden="true" *ngIf="allProducts.length">
+                <div class="banner-stats">
+                  <span class="banner-pill"><i class="fas fa-tag"></i> Up to 50% OFF</span>
+                  <span class="banner-pill"><i class="fas fa-bolt"></i> Limited-time</span>
+                  <span class="banner-pill"><i class="fas fa-truck"></i> Fast delivery</span>
+                </div>
+                <div class="banner-thumbs">
+                  <span class="banner-thumb" *ngFor="let t of bannerThumbs">
+                    <img [src]="t.src" [alt]="t.alt" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
+                  </span>
+                </div>
+              </div>
             </div>
 
             <div class="deal-banner deal-banner-photo">
@@ -229,6 +241,18 @@
                 <h3 class="banner-title">Big Outdoor Sale</h3>
                 <p class="banner-subtitle">Up to 50% off patio, grills, and summer favorites.</p>
                 <a class="btn-emerald-outline banner-cta" [routerLink]="['/shop']" [queryParams]="{ sortBy: 'discount' }">Shop the Sale</a>
+              </div>
+              <div class="deal-banner-animated__aside" aria-hidden="true" *ngIf="allProducts.length">
+                <div class="banner-stats">
+                  <span class="banner-pill"><i class="fas fa-tag"></i> Up to 50% OFF</span>
+                  <span class="banner-pill"><i class="fas fa-bolt"></i> Limited-time</span>
+                  <span class="banner-pill"><i class="fas fa-truck"></i> Fast delivery</span>
+                </div>
+                <div class="banner-thumbs">
+                  <span class="banner-thumb" *ngFor="let t of bannerThumbs">
+                    <img [src]="t.src" [alt]="t.alt" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
+                  </span>
+                </div>
               </div>
             </div>
         </div>
@@ -592,6 +616,10 @@
 
     <section class="home-wayfair-deals" *ngIf="!isLoadingDeals && allProducts.length">
       <div class="container">
+        <div class="rec-header">
+          <h2 class="section-title">With Special Savings</h2>
+        </div>
+
         <div class="rec-shell wf-deals-shell">
           <button type="button" class="rec-btn rec-btn-left" (click)="scrollWfDeals('left')" aria-label="Scroll left">
             <i class="fas fa-chevron-left"></i>

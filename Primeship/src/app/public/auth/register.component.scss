@@ -19,19 +19,14 @@ $bg-input: #F1F5F9;
 
 .auth-image-panel {
   position: relative;
-  background-image:
-    linear-gradient(180deg, rgba(6, 78, 59, 0.1), rgba(6, 78, 59, 0.25)),
-    url('https://images.pexels.com/photos/8003581/pexels-photo-8003581.jpeg?cs=srgb&dl=pexels-karolina-grabowska-8003581.jpg&fm=jpg');
+  background-image: url('https://images.pexels.com/photos/8003581/pexels-photo-8003581.jpeg?cs=srgb&dl=pexels-karolina-grabowska-8003581.jpg&fm=jpg');
   background-size: cover;
   background-position: center;
-  background-color: #0F766E;
+  background-color: transparent;
 }
 
 .auth-image-panel::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, rgba(6,78,59,0.55) 0%, rgba(6,78,59,0.1) 40%, rgba(6,78,59,0) 100%);
+  content: none;
 }
 
 .auth-form-panel {
