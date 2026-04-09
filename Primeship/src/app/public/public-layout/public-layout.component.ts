@@ -19,7 +19,7 @@ declare var lucide: any;
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, CurrencyPipe, FormsModule, ReactiveFormsModule],
   template: `
     <div class="nosh-shell" (click)="closeOverlays()">
-      <header class="eliship-header" *ngIf="!isAuthPage">
+      <header class="eliship-header" *ngIf="!isAuthPage && !isCheckoutPage">
         <div class="marketing-banner">
           <div class="container-header marketing-inner">
             <div class="marketing-left">
@@ -1027,6 +1027,7 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
   showCategoryDropdown = false;
   showNavCategories = false;
   isAuthPage = false;
+  isCheckoutPage = false;
   isHomePage = false;
   isShopPage = false;
   showPromoCarousel = false;
@@ -1169,6 +1170,7 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
   ngOnInit(): void {
     // Set initial route-dependent flags (NavigationEnd may have fired before this component was constructed)
     this.isAuthPage = this.router.url.includes('/auth/login') || this.router.url.includes('/auth/register');
+    this.isCheckoutPage = this.router.url.startsWith('/checkout');
     this.isHomePage = this.router.url === '/home' || this.router.url.startsWith('/home?') || this.router.url === '/';
     this.isShopPage = this.router.url.startsWith('/shop');
 
@@ -1200,6 +1202,7 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
     ).subscribe((event) => {
       const url = (event as NavigationEnd).urlAfterRedirects || this.router.url;
       this.isAuthPage = url.includes('/auth/login') || url.includes('/auth/register');
+      this.isCheckoutPage = url.startsWith('/checkout');
       this.isHomePage = url === '/home' || url.startsWith('/home?') || url === '/';
       this.isShopPage = url.startsWith('/shop');
       this.syncCategoryWithUrl();

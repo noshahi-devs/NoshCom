@@ -1,0 +1,175 @@
+<div class="seller-profile-page">
+  <section class="profile-hero">
+    <div class="hero-left">
+      <div class="avatar-block">
+        <span>{{ displayInitials }}</span>
+      </div>
+      <div class="hero-copy">
+        <p class="kicker">Seller Identity Hub</p>
+        <h2>{{ sellerProfile.businessName || 'Seller Profile' }}</h2>
+        <p>Manage your account details, sourcing preferences, and operational settings from one dashboard.</p>
+        <div class="hero-tags">
+          <span class="tag">
+            <i class="pi pi-verified"></i>
+            Verified Partner
+          </span>
+          <span class="tag">
+            <i class="pi pi-sync"></i>
+            {{ loadingStats ? 'Refreshing metrics...' : 'Last activity: ' + lastOrderDateLabel }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-actions">
+      <button type="button" class="btn primary" (click)="saveProfile()">
+        <i class="pi pi-check"></i>
+        Save Profile
+      </button>
+      <button type="button" class="btn secondary" (click)="syncStats()">
+        <i class="pi pi-refresh"></i>
+        Refresh Metrics
+      </button>
+    </div>
+  </section>
+
+  <section class="stats-grid">
+    <article class="stat-card">
+      <span class="label">Total Orders</span>
+      <strong>{{ totalOrders }}</strong>
+      <small>Sourcing requests handled</small>
+    </article>
+
+    <article class="stat-card">
+      <span class="label">Delivered Rate</span>
+      <strong>{{ completionRate }}%</strong>
+      <small>{{ deliveredOrders }} delivered orders</small>
+    </article>
+
+    <article class="stat-card">
+      <span class="label">Active Pipeline</span>
+      <strong>{{ activeOrders }}</strong>
+      <small>Pending, processing, shipped</small>
+    </article>
+
+    <article class="stat-card">
+      <span class="label">Order Value</span>
+      <strong>${{ totalValue.toFixed(2) }}</strong>
+      <small>Aggregate sourcing spend</small>
+    </article>
+  </section>
+
+  <section class="profile-layout">
+    <article class="panel profile-form">
+      <header class="panel-head">
+        <h3>Profile Details</h3>
+        <p>Update your contact and business information used in seller operations.</p>
+      </header>
+
+      <div class="form-grid">
+        <label>
+          Display Name
+          <input type="text" name="displayName" [(ngModel)]="sellerProfile.displayName" />
+        </label>
+        <label>
+          Business Name
+          <input type="text" name="businessName" [(ngModel)]="sellerProfile.businessName" />
+        </label>
+        <label>
+          Email Address
+          <input type="email" name="email" [(ngModel)]="sellerProfile.email" />
+        </label>
+        <label>
+          Phone Number
+          <input type="text" name="phone" [(ngModel)]="sellerProfile.phone" />
+        </label>
+        <label>
+          City
+          <input type="text" name="city" [(ngModel)]="sellerProfile.city" />
+        </label>
+        <label>
+          Tax / Registration ID
+          <input type="text" name="taxId" [(ngModel)]="sellerProfile.taxId" />
+        </label>
+        <label class="full">
+          Business Address
+          <input type="text" name="address" [(ngModel)]="sellerProfile.address" />
+        </label>
+        <label class="full">
+          Website / Store Link
+          <input type="text" name="website" [(ngModel)]="sellerProfile.website" />
+        </label>
+        <label class="full">
+          Bio
+          <textarea name="bio" rows="4" [(ngModel)]="sellerProfile.bio"></textarea>
+        </label>
+      </div>
+    </article>
+
+    <div class="side-stack">
+      <article class="panel preference-panel">
+        <header class="panel-head">
+          <h3>Operational Preferences</h3>
+          <p>Choose how your account handles orders and notifications.</p>
+        </header>
+
+        <div class="toggle-list">
+          <label class="toggle-item">
+            <div>
+              <strong>Auto-confirm verified orders</strong>
+              <span>Enable a faster order processing flow</span>
+            </div>
+            <input type="checkbox" name="autoConfirmOrders" [(ngModel)]="preferences.autoConfirmOrders" />
+          </label>
+
+          <label class="toggle-item">
+            <div>
+              <strong>Email alerts</strong>
+              <span>Receive order and shipping updates by email</span>
+            </div>
+            <input type="checkbox" name="emailAlerts" [(ngModel)]="preferences.emailAlerts" />
+          </label>
+
+          <label class="toggle-item">
+            <div>
+              <strong>SMS alerts</strong>
+              <span>Get urgent updates on your phone</span>
+            </div>
+            <input type="checkbox" name="smsAlerts" [(ngModel)]="preferences.smsAlerts" />
+          </label>
+
+          <label class="toggle-item">
+            <div>
+              <strong>Show public catalog link</strong>
+              <span>Display your seller storefront badge</span>
+            </div>
+            <input type="checkbox" name="showPublicCatalog" [(ngModel)]="preferences.showPublicCatalog" />
+          </label>
+        </div>
+      </article>
+
+      <article class="panel security-panel">
+        <header class="panel-head">
+          <h3>Account Security</h3>
+          <p>Protect your account access and login safety.</p>
+        </header>
+
+        <div class="security-list">
+          <div class="security-item">
+            <span>Login Email</span>
+            <strong>{{ sellerProfile.email || 'No email found' }}</strong>
+          </div>
+          <div class="security-item">
+            <span>Role</span>
+            <strong>Seller / Supplier</strong>
+          </div>
+        </div>
+
+        <button type="button" class="btn secondary update-password-btn" (click)="updatePassword()">
+          <i class="pi pi-lock"></i>
+          Update Password
+        </button>
+      </article>
+    </div>
+  </section>
+</div>

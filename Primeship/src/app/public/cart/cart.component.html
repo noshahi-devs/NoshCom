@@ -47,11 +47,11 @@
         </div>
 
         <!-- Global Cart Actions -->
-        <div class="mt-4 d-flex justify-content-between">
-          <button class="btn btn-sm btn-outline-secondary" routerLink="/shop" style="border-radius: 30px; font-weight: 700; padding: 10px 24px;">
+        <div class="cart-actions">
+          <button class="btn-continue-sourcing" routerLink="/shop" type="button">
             <i class="fas fa-arrow-left me-2"></i> Continue Sourcing
           </button>
-          <button class="text-danger bg-transparent border-0 fw-bold" (click)="clearCart()" style="cursor: pointer;">
+          <button class="btn-clear-cart" (click)="clearCart()" type="button">
             Clear All Items
           </button>
         </div>

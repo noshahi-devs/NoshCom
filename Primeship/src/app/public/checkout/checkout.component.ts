@@ -37,7 +37,19 @@ export class CheckoutComponent implements OnInit {
 
   isAddressSubmitted = false;
   isPaymentSubmitted = false;
-  selectedShippingMethod: 'in_store' | 'warehouse' | null = null;
+  selectedShippingMethod: 'in_store' | 'warehouse' | null = 'in_store';
+
+  get currentStep(): 1 | 2 | 3 {
+    if (this.isPaymentSubmitted) return 3;
+    if (this.isAddressSubmitted) return 2;
+    return 1;
+  }
+
+  get stepperProgressScale(): 0 | 0.5 | 1 {
+    if (this.currentStep === 1) return 0;
+    if (this.currentStep === 2) return 0.5;
+    return 1;
+  }
 
   // Easy Finora Integration
   isVerifyingBalance = false;
@@ -53,28 +65,8 @@ export class CheckoutComponent implements OnInit {
     { id: 'mastercard', name: 'Master Card', icon: 'fab fa-cc-mastercard', logoSrc: 'assets/brands/mastercard.svg' },
     { id: 'discover', name: 'Discover', icon: 'fab fa-cc-mastercard', logoSrc: 'assets/brands/discover.svg' },
     { id: 'amex', name: 'American Express', icon: 'fab fa-cc-mastercard', logoSrc: 'assets/brands/amex.svg' },
-    { id: 'finora', name: 'Easy Finora Card', icon: 'fas fa-id-card', logoSrc: 'assets/brands/easy-finora.svg' }
+    { id: 'easy_finora', name: 'NoshCom', icon: 'fas fa-wallet', logoSrc: 'assets/brands/easy-finora.svg' }
   ];
-  unavailablePaymentConfig: Record<string, { title: string; text: string; color: string; icon: 'info' | 'warning' | 'error' }> = {
-    mastercard: {
-      title: 'Master Card Unavailable',
-      text: 'Master Card payments are not available yet. Please use Easy Finora Card to place your order.',
-      color: '#10B981',
-      icon: 'warning'
-    },
-    discover: {
-      title: 'Discover Unavailable',
-      text: 'Discover payments are not available yet. Please use Easy Finora Card to place your order.',
-      color: '#10B981',
-      icon: 'info'
-    },
-    amex: {
-      title: 'American Express Unavailable',
-      text: 'American Express payments are not available yet. Please use Easy Finora Card to place your order.',
-      color: '#10B981',
-      icon: 'error'
-    }
-  };
 
   constructor(
     private fb: FormBuilder,
@@ -96,7 +88,7 @@ export class CheckoutComponent implements OnInit {
       address2: [''],
       zipCode: ['', Validators.required],
       city: ['', Validators.required],
-      paymentMethod: ['finora', Validators.required],
+      paymentMethod: ['mastercard', Validators.required],
       cardNumber: [''],
       expiryDate: [''],
       cvv: [''],
@@ -156,7 +148,7 @@ export class CheckoutComponent implements OnInit {
       this.checkoutForm.get(ctrl)?.updateValueAndValidity();
     });
 
-    if (['mastercard', 'discover', 'amex', 'finora'].includes(method)) {
+    if (['mastercard', 'discover', 'amex', 'easy_finora'].includes(method)) {
       this.checkoutForm.get('cardNumber')?.setValidators([Validators.required, Validators.pattern(/^\d{4} \d{4} \d{4} \d{4}$/)]);
       this.checkoutForm.get('expiryDate')?.setValidators([Validators.required, Validators.pattern(/^(0[1-9]|1[0-2])\/\d{2}$/)]);
       this.checkoutForm.get('cvv')?.setValidators([Validators.required, Validators.pattern(/^\d{3,4}$/)]);
@@ -195,6 +187,18 @@ export class CheckoutComponent implements OnInit {
     const last = (this.checkoutForm.get('lastName')?.value || '').toString().trim();
     const formName = [first, last].filter(Boolean).join(' ').trim();
     return formName || this.profileCardHolderName || 'Card Holder';
+  }
+
+  get selectedPaymentMethodName(): string {
+    const selected = this.checkoutForm.get('paymentMethod')?.value;
+    const match = this.paymentMethods.find(m => m.id === selected);
+    return match?.name || 'Card';
+  }
+
+  get cardLast4(): string {
+    const raw = (this.checkoutForm.get('cardNumber')?.value || '').toString();
+    const digits = raw.replace(/\D/g, '');
+    return digits.length >= 4 ? digits.slice(-4) : '';
   }
 
   private loadProfile(): void {
@@ -350,18 +354,26 @@ export class CheckoutComponent implements OnInit {
   }
 
   saveAddress(): void {
-    if (this.checkoutForm.valid) {
+    if (!this.selectedShippingMethod) {
+      this.toastService.showError('Please select a delivery method');
+      return;
+    }
+
+    const shippingControls = ['firstName', 'lastName', 'email', 'address1', 'city', 'zipCode'];
+    const isShippingValid = shippingControls.every((name) => this.checkoutForm.get(name)?.valid);
+
+    if (isShippingValid) {
       this.isAddressSubmitted = true;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       this.toastService.showError('Please fill in all required fields');
-      this.checkoutForm.markAllAsTouched();
+      shippingControls.forEach((name) => this.checkoutForm.get(name)?.markAsTouched());
     }
   }
 
   editAddress(): void {
     this.isAddressSubmitted = false;
-    this.selectedShippingMethod = null;
+    this.selectedShippingMethod = 'in_store';
     this.calculateTotals();
   }
 
@@ -381,28 +393,6 @@ export class CheckoutComponent implements OnInit {
       return;
     }
     if (this.checkoutForm.valid && this.isAddressSubmitted && this.selectedShippingMethod) {
-      const selectedMethod = this.checkoutForm.get('paymentMethod')?.value;
-      if (selectedMethod !== 'finora') {
-        const methodName = this.paymentMethods.find(m => m.id === selectedMethod)?.name || selectedMethod;
-        const cfg = this.unavailablePaymentConfig[selectedMethod] || {
-          title: 'Payment Method Unavailable',
-          text: `${methodName} is not available yet. Please use Easy Finora Card to place your order.`,
-          color: '#10B981',
-          icon: 'warning' as const
-        };
-        Swal.fire({
-          title: cfg.title,
-          text: cfg.text,
-          icon: cfg.icon,
-          confirmButtonText: 'OK',
-          confirmButtonColor: cfg.color,
-        });
-        return;
-      }
-      if (this.checkoutForm.get('paymentMethod')?.value === 'finora' && !this.isBalanceVerified) {
-        this.toastService.showError('Please verify your Easy Finora balance before proceeding.');
-        return;
-      }
       this.isPaymentSubmitted = true;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -428,28 +418,6 @@ export class CheckoutComponent implements OnInit {
       return;
     }
     if (this.checkoutForm.valid && this.isAddressSubmitted && this.selectedShippingMethod) {
-      const selectedMethod = this.checkoutForm.get('paymentMethod')?.value;
-      if (selectedMethod !== 'finora') {
-        const methodName = this.paymentMethods.find(m => m.id === selectedMethod)?.name || selectedMethod;
-        const cfg = this.unavailablePaymentConfig[selectedMethod] || {
-          title: 'Payment Method Unavailable',
-          text: `${methodName} is not available yet. Please use Easy Finora Card to place your order.`,
-          color: '#10B981',
-          icon: 'warning' as const
-        };
-        Swal.fire({
-          title: cfg.title,
-          text: cfg.text,
-          icon: cfg.icon,
-          confirmButtonText: 'OK',
-          confirmButtonColor: cfg.color,
-        });
-        return;
-      }
-      if (this.checkoutForm.get('paymentMethod')?.value === 'finora' && !this.isBalanceVerified) {
-        this.toastService.showError('Please verify your Easy Finora balance before placing the order.');
-        return;
-      }
       this.isProcessing = true;
       this.isSuccess = false;
       this.showCelebration = true;

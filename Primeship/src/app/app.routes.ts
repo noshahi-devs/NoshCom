@@ -247,7 +247,7 @@ export const routes: Routes = [
       },
       {
         path: 'profile',
-        component: DashboardComponent // Placeholder
+        loadComponent: () => import('./pages/seller/profile/seller-profile.component').then(m => m.SellerProfileComponent)
       }
     ]
   },

@@ -1,153 +1,137 @@
 <div class="seller-dashboard-container">
-  <!-- Simplified Page Header -->
-  <div class="page-header-enhanced">
-    <div class="header-background">
-      <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1600&h=400&fit=crop"
-        alt="Dashboard Background" class="header-image">
-      <div class="header-overlay"></div>
-    </div>
-    <div class="header-content">
-      <div class="seller-info">
-        <div class="seller-avatar">
-          <img src="https://images.unsplash.com/photo-1601924994987-69e26d50dc26?w=400&h=400&fit=crop&q=80"
-            alt="Seller Avatar" class="avatar-img">
-        </div>
-        <div class="seller-details">
-          <h1 class="page-title"> Sourcing Dashboard </h1>
-          <p class="page-subtitle">Manage your inventory sourcing and track supplier shipments</p>
-          <div class="seller-stats-summary">
-            <span class="stat-summary-item">
-              <i class="pi pi-verified"></i> Verified Partner
-            </span>
-            <span class="stat-summary-item">
-              <i class="pi pi-calendar"></i> {{ statsCards[2].value }} Active Sourcing Orders
-            </span>
-          </div>
-        </div>
+  <section class="dashboard-hero">
+    <div class="hero-copy">
+      <p class="hero-kicker">Sourcing Hub</p>
+      <h1 class="hero-title">Seller Dashboard</h1>
+      <p class="hero-subtitle">Track purchases, monitor delivery progress, and keep your sourcing flow organized.</p>
+      <div class="hero-meta">
+        <span class="hero-pill">
+          <i class="pi pi-verified"></i>
+          Verified Partner
+        </span>
+        <span class="hero-pill">
+          <i class="pi pi-truck"></i>
+          {{ statsCards[3].value }} Pending Deliveries
+        </span>
       </div>
     </div>
-  </div>
 
-  <!-- Stats Cards Grid -->
-  <div class="stats-grid">
-    <ng-container *ngIf="!isLoadingStats; else statsSkeleton">
-      <div class="stat-card-3d" *ngFor="let card of statsCards" [style.background]="card.gradient">
-      <div class="stat-card-content">
-        <div class="stat-icon-wrapper">
-          <span class="stat-icon">{{ card.icon }}</span>
+    <div class="hero-actions">
+      <button class="hero-action" type="button" (click)="router.navigate(['/shop'])">
+        <i class="pi pi-search"></i>
+        Browse Shop
+      </button>
+      <button class="hero-action" type="button" (click)="navigateToOrders()">
+        <i class="pi pi-shopping-cart"></i>
+        My Purchases
+      </button>
+      <button class="hero-action" type="button" (click)="router.navigate(['/seller/profile'])">
+        <i class="pi pi-user"></i>
+        Profile
+      </button>
+    </div>
+  </section>
+
+  <section class="metrics-grid">
+    <ng-container *ngIf="!isLoadingStats; else metricsSkeleton">
+      <article class="metric-card" *ngFor="let card of statsCards; let i = index">
+        <div class="metric-icon">
+          <i class="pi" [ngClass]="{
+            'pi-wallet': i === 0,
+            'pi-box': i === 1,
+            'pi-shopping-bag': i === 2,
+            'pi-truck': i === 3
+          }"></i>
         </div>
-        <div class="stat-info">
-          <h3 class="stat-value">{{ card.value }}</h3>
-          <p class="stat-title">{{ card.title }}</p>
+        <div class="metric-body">
+          <p class="metric-label">{{ card.title }}</p>
+          <p class="metric-value">{{ card.value }}</p>
         </div>
-      </div>
-      <div class="stat-card-decoration"></div>
-      </div>
+      </article>
     </ng-container>
-    <ng-template #statsSkeleton>
-      <div class="stat-card-3d skeleton-card" *ngFor="let _ of [1,2,3,4]">
-        <div class="skeleton-icon"></div>
+
+    <ng-template #metricsSkeleton>
+      <article class="metric-card skeleton-card" *ngFor="let _ of [1,2,3,4]">
+        <div class="skeleton-circle"></div>
         <div class="skeleton-lines">
           <span class="skeleton-line short"></span>
           <span class="skeleton-line"></span>
         </div>
-      </div>
+      </article>
     </ng-template>
-  </div>
+  </section>
 
-  <!-- Main Content Grid -->
-  <div class="content-grid">
-    <!-- Left Column -->
-    <div class="left-column">
-      <!-- Quick Actions -->
-      <div class="card-3d quick-actions-card">
-        <div class="card-header">
-          <h3>Quick Access</h3>
-        </div>
-        <div class="card-content">
-          <div class="actions-grid">
-            <button class="action-card" (click)="router.navigate(['/shop'])">
-              <span class="action-icon">🔍</span>
-              <span class="action-title">Browse Shop</span>
-            </button>
-            <button class="action-card" (click)="navigateToOrders()">
-              <span class="action-icon">📋</span>
-              <span class="action-title">My Purchases</span>
-            </button>
-            <button class="action-card" (click)="router.navigate(['/seller/profile'])">
-              <span class="action-icon">👤</span>
-              <span class="action-title">Profile</span>
-            </button>
+  <section class="dashboard-grid">
+    <article class="panel panel-info">
+      <header class="panel-header">
+        <h3>Sourcing Flow</h3>
+      </header>
+
+      <div class="panel-body">
+        <p class="panel-text">
+          Manage supplier purchases from one place. Browse products, place sourcing orders, and monitor delivery
+          status until warehouse arrival.
+        </p>
+
+        <div class="steps">
+          <div class="step-item">
+            <span class="step-index">1</span>
+            <p>Browse products from the shop catalog</p>
+          </div>
+          <div class="step-item">
+            <span class="step-index">2</span>
+            <p>Purchase at reseller pricing</p>
+          </div>
+          <div class="step-item">
+            <span class="step-index">3</span>
+            <p>Track each shipment in your order center</p>
           </div>
         </div>
       </div>
+    </article>
 
-      <!-- Verified Partners Info -->
-      <div class="card-3d info-card-gradient">
-        <div class="card-header">
-          <h3><i class="pi pi-info-circle"></i> Sourcing Hub</h3>
-        </div>
-        <div class="card-content">
-          <p>This is your central hub for sourcing products at wholesale prices. All orders here are purchase orders
-            from your suppliers.</p>
-          <div class="info-list">
-            <div class="info-item">
-              <i class="pi pi-check"></i>
-              <span>Select products from the shop</span>
+    <article class="panel panel-orders">
+      <header class="panel-header">
+        <h3>Recent Purchases</h3>
+        <button class="view-all" type="button" (click)="navigateToOrders()">View all</button>
+      </header>
+
+      <div class="panel-body">
+        <div class="orders-list" *ngIf="!isLoadingOrders; else ordersSkeleton">
+          <article class="order-item" *ngFor="let order of recentOrders">
+            <div class="order-top">
+              <p class="order-id">{{ getTrackingDisplayValue(order) }}</p>
+              <span class="status-badge" [class]="'status-' + getStatusColor(order.status)">
+                {{ getStatusLabel(order.status) }}
+              </span>
             </div>
-            <div class="info-item">
-              <i class="pi pi-check"></i>
-              <span>Buy at <strong>Reseller Price</strong></span>
+
+            <p class="order-product" *ngIf="order.items?.[0]">
+              {{ order.items[0].name }} <span *ngIf="order.items.length > 1">+{{ order.items.length - 1 }} more</span>
+            </p>
+
+            <div class="order-bottom">
+              <p class="order-amount">${{ (order.totalPurchaseAmount || 0).toFixed(2) }}</p>
+              <p class="order-date">{{ order.creationTime | date:'mediumDate' }}</p>
             </div>
-            <div class="info-item">
-              <i class="pi pi-check"></i>
-              <span>Track shipment to Hub warehouse</span>
-            </div>
+          </article>
+
+          <div class="empty-state" *ngIf="recentOrders.length === 0">
+            <i class="pi pi-inbox"></i>
+            <p>No recent purchases found.</p>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Right Column -->
-    <div class="right-column">
-      <!-- Recent Purchases -->
-      <div class="card-3d recent-orders-card">
-        <div class="card-header">
-          <h3>Recent Purchases</h3>
-          <a (click)="navigateToOrders()" class="view-all-link">View all</a>
-        </div>
-        <div class="card-content">
-          <div class="orders-list" *ngIf="!isLoadingOrders; else ordersSkeleton">
-            <div class="order-item" *ngFor="let order of recentOrders">
-              <div class="order-info">
-                <div class="order-header">
-                  <p class="order-id">{{ getTrackingDisplayValue(order) }}</p>
-                  <span class="status-badge" [class]="'status-' + getStatusColor(order.status)">
-                    {{ getStatusLabel(order.status) }}
-                  </span>
-                </div>
-                <p class="product-name" *ngIf="order.items?.[0]">{{ order.items[0].name }} <span
-                    *ngIf="order.items.length > 1">+{{ order.items.length - 1 }} more</span></p>
-                <p class="order-amount">${{ (order.totalPurchaseAmount || 0).toFixed(2) }}</p>
-                <p class="order-date">{{ order.creationTime | date:'mediumDate' }}</p>
-              </div>
-            </div>
-            <div class="no-data" *ngIf="recentOrders.length === 0">
-              <i class="pi pi-inbox"></i>
-              <p>No recent purchases found</p>
-            </div>
+        <ng-template #ordersSkeleton>
+          <div class="orders-list">
+            <article class="order-item skeleton-row" *ngFor="let _ of [1,2,3]">
+              <span class="skeleton-line wide"></span>
+              <span class="skeleton-line"></span>
+              <span class="skeleton-line short"></span>
+            </article>
           </div>
-          <ng-template #ordersSkeleton>
-            <div class="orders-list">
-              <div class="order-item skeleton-row" *ngFor="let _ of [1,2,3]">
-                <div class="skeleton-line wide"></div>
-                <div class="skeleton-line"></div>
-                <div class="skeleton-line short"></div>
-              </div>
-            </div>
-          </ng-template>
-        </div>
+        </ng-template>
       </div>
-    </div>
-  </div>
+    </article>
+  </section>
 </div>

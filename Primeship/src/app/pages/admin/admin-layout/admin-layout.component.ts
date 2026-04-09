@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
@@ -12,9 +12,11 @@ import { ToastService } from '../../../core/services/toast.service';
     templateUrl: './admin-layout.component.html',
     styleUrls: ['./admin-layout.component.scss']
 })
-export class AdminLayoutComponent implements OnInit, AfterViewInit {
+export class AdminLayoutComponent implements OnInit {
     sidebarCollapsed = false;
     mobileSidebarOpen = false;
+    sellerSidebarExpanded = false;
+    isUserDropdownOpen = false;
     isAdminView = false;
     isSellerView = false;
     userEmail = 'portal@primeship.com';
@@ -32,6 +34,24 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
         return this.isAdminView ? 'User Profile' : this.sellerPortalName;
     }
 
+    get sellerIconOnly(): boolean {
+        return this.isSellerView && window.innerWidth > 992 && !this.sellerSidebarExpanded;
+    }
+
+    get sidebarToggleIcon(): string {
+        const isMobile = window.innerWidth <= 992;
+
+        if (isMobile) {
+            return this.mobileSidebarOpen ? 'fa-times' : 'fa-bars';
+        }
+
+        if (this.isSellerView) {
+            return this.sellerIconOnly ? 'fa-bars' : 'fa-chevron-left';
+        }
+
+        return 'fa-indent';
+    }
+
     constructor(
         private router: Router,
         private authService: AuthService,
@@ -45,6 +65,7 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
             this.updateViewMode();
             this.updateDisplayIdentity();
             this.mobileSidebarOpen = false;
+            this.isUserDropdownOpen = false;
             this.scrollToTop();
         });
     }
@@ -63,32 +84,17 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
         if (this.isAdminView && url.includes('/admin')) {
             this.isSellerView = false;
         }
+
+        if (this.isSellerView) {
+            this.sidebarCollapsed = false;
+            if (window.innerWidth <= 992) {
+                this.sellerSidebarExpanded = false;
+            }
+        }
     }
 
     ngOnInit() {
         this.updateDisplayIdentity();
-    }
-
-    ngAfterViewInit() {
-        this.initializeSidebarToggle();
-    }
-
-    initializeSidebarToggle() {
-        const userMenuBtn = document.getElementById('userMenuBtn');
-        const userDropdown = document.getElementById('userDropdown');
-
-        if (userMenuBtn && userDropdown) {
-            userMenuBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.toggleUserDropdown(userDropdown);
-            });
-        }
-
-        document.addEventListener('click', (e) => {
-            if (userDropdown && !userDropdown.contains(e.target as Node) && userMenuBtn && !userMenuBtn.contains(e.target as Node)) {
-                this.closeUserDropdown(userDropdown);
-            }
-        });
     }
 
     private updateDisplayIdentity(): void {
@@ -105,20 +111,35 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
     }
 
     onSidebarToggle() {
-        const isMobile = window.innerWidth <= 768;
+        const isMobile = window.innerWidth <= 992;
         if (isMobile) {
             this.mobileSidebarOpen = !this.mobileSidebarOpen;
+            this.isUserDropdownOpen = false;
             return;
         }
+
+        if (this.isSellerView) {
+            this.sellerSidebarExpanded = !this.sellerSidebarExpanded;
+            this.isUserDropdownOpen = false;
+            return;
+        }
+
         this.sidebarCollapsed = !this.sidebarCollapsed;
+        this.isUserDropdownOpen = false;
     }
 
-    toggleUserDropdown(userDropdown: HTMLElement) {
-        userDropdown.classList.toggle('show');
+    toggleUserDropdown(event?: Event) {
+        event?.stopPropagation();
+        this.isUserDropdownOpen = !this.isUserDropdownOpen;
     }
 
-    closeUserDropdown(userDropdown: HTMLElement) {
-        userDropdown.classList.remove('show');
+    closeUserDropdown() {
+        this.isUserDropdownOpen = false;
+    }
+
+    @HostListener('document:click')
+    onDocumentClick() {
+        this.closeUserDropdown();
     }
 
     showNotifications() {
@@ -126,6 +147,7 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
     }
 
     openProfile() {
+        this.closeUserDropdown();
         if (this.isSellerView) {
             this.router.navigate(['/seller/profile']);
             return;
@@ -134,6 +156,7 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
     }
 
     logout() {
+        this.closeUserDropdown();
         this.authService.logout();
         this.router.navigate(['/auth/login']);
     }

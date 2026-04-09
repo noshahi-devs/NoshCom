@@ -190,6 +190,64 @@
   }
 }
 
+.cart-actions {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-continue-sourcing {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 24px;
+  border-radius: 999px;
+  border: 1.5px solid #94A3B8;
+  background: #FFFFFF;
+  color: var(--text-dark);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: 220ms ease;
+
+  &:hover {
+    border-color: rgba(16, 185, 129, 0.75);
+    background: #F0FDF4;
+    color: #065F46;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(16, 185, 129, 0.18);
+  }
+}
+
+.btn-clear-cart {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid #FECACA;
+  background: #FFF5F5;
+  color: #B91C1C;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 220ms ease;
+
+  &:hover {
+    border-color: #FCA5A5;
+    background: #FEE2E2;
+    color: #991B1B;
+    transform: translateY(-1px);
+  }
+}
+
 /* Summary Card */
 .cart-summary {
   background: #FFFFFF;
@@ -248,14 +306,21 @@
       &:focus { border-color: var(--primary); }
     }
     button {
-      background: var(--text-dark);
+      background: linear-gradient(140deg, #10b981 0%, #34d399 100%);
       color: #FFFFFF;
-      border: none;
+      border: 1px solid #10b981;
       padding: 0 20px;
       border-radius: 12px;
       font-weight: 800;
       cursor: pointer;
-      &:hover { background: #000; }
+      box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+      transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+
+      &:hover {
+        background: linear-gradient(140deg, #059669 0%, #10b981 100%);
+        box-shadow: 0 14px 26px rgba(16, 185, 129, 0.28);
+        transform: translateY(-1px);
+      }
     }
   }
 
@@ -334,4 +399,15 @@
   .item-img-box { width: 100%; height: 200px; }
   .item-controls { flex-direction: row; width: 100%; justify-content: space-between; align-items: center; }
   .cart-summary { margin-top: 40px; position: static; }
+}
+
+@media (max-width: 576px) {
+  .cart-actions {
+    align-items: stretch;
+  }
+
+  .btn-continue-sourcing,
+  .btn-clear-cart {
+    width: 100%;
+  }
 }
