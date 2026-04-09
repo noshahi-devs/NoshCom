@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, inject, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -15,13 +15,14 @@ import Swal from 'sweetalert2';
     templateUrl: './add-product-mapping.component.html',
     styleUrls: ['./add-product-mapping.component.scss']
 })
-export class AddProductMappingComponent implements OnInit {
+export class AddProductMappingComponent implements OnInit, OnDestroy {
     private productService = inject(ProductService);
     private storeProductService = inject(StoreProductService);
     private storeService = inject(StoreService);
     private router = inject(Router);
     private cdr = inject(ChangeDetectorRef);
     private alert = inject(AlertService);
+    private zone = inject(NgZone);
 
     searchQuery: string = '';
     isSearching: boolean = false;
@@ -29,25 +30,39 @@ export class AddProductMappingComponent implements OnInit {
     showResults: boolean = false;
     selectedProduct: any = null;
     searchResults: any[] = [];
+    rawSearchResults: any[] = [];
     allProductsCatalog: any[] = [];
     categoryTiles: { name: string; count: number; icon: string; tone: string; }[] = [];
     currentStore: any = null;
+    isCategoryDropdownOpen: boolean = false;
+    selectedCategoryLabel: string = 'All Category';
 
     product: any = null;
     selectedImage: string = '';
     maxAllowedPrice: number = 0;
     minAllowedPrice: number = 0; // NEW FIELD
     retailPrice: number = 0;
-    handlingTime: number = 0;
-    maxOrderQty: number = 0;
+    handlingTime: number = 1;
+    maxOrderQty: number = 1;
     sellerNote: string = '';
+    minPriceFilter: number | null = null;
+    maxPriceFilter: number | null = null;
+    priceValidationError: string = '';
+    sortOption: 'relevance' | 'priceLowHigh' | 'priceHighLow' | 'newest' = 'relevance';
     isViewOnly: boolean = false;
     currentMappingId: string | null = null;
     private readonly titlePreviewLength = 92;
+    currentDate: string = '';
+    currentTime: string = '';
+    hourHandRotation = 0;
+    minuteHandRotation = 0;
+    secondHandRotation = 0;
+    private timer: any;
 
     ngOnInit() {
         this.loadStore();
         this.loadCategoryShowcase();
+        this.startClock();
 
         // Check if we are in view-only mode from listing
         const state = window.history.state;
@@ -62,6 +77,8 @@ export class AddProductMappingComponent implements OnInit {
             }
             if (state.product.stockQuantity) {
                 this.maxOrderQty = state.product.stockQuantity;
+            } else {
+                this.maxOrderQty = 1;
             }
             if (state.product.handlingTime) {
                 this.handlingTime = state.product.handlingTime;
@@ -71,17 +88,94 @@ export class AddProductMappingComponent implements OnInit {
         }
     }
 
+    ngOnDestroy(): void {
+        if (this.timer) {
+            clearInterval(this.timer);
+        }
+    }
+
     loadStore() {
         this.storeService.getMyStoreCached().subscribe({
             next: (res) => {
                 this.currentStore = (res as any)?.result || res;
+                this.cdr.detectChanges();
             }
         });
+    }
+
+    get displayStoreName(): string {
+        return (this.currentStore?.name || 'Your Store').toString().trim();
+    }
+
+    get joinedDateLabel(): string {
+        const createdAt = this.currentStore?.createdAt;
+        if (!createdAt) return 'Joined Date: --/--/----';
+        const formatted = new Intl.DateTimeFormat('en-US', {
+            month: '2-digit',
+            day: '2-digit',
+            year: 'numeric'
+        }).format(new Date(createdAt));
+        return `Joined Date: ${formatted}`;
+    }
+
+    private startClock(): void {
+        this.updateTime();
+        this.zone.runOutsideAngular(() => {
+            this.timer = setInterval(() => {
+                this.zone.run(() => {
+                    this.updateTime();
+                    this.cdr.markForCheck();
+                });
+            }, 1000);
+        });
+    }
+
+    private updateTime(): void {
+        const now = new Date();
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'America/New_York',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+
+        const dateFormatter = new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'America/New_York',
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+
+        this.currentTime = formatter.format(now);
+        this.currentDate = dateFormatter.format(now).replace(/ /g, '-');
+
+        const ny = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+        const hours = ny.getHours();
+        const minutes = ny.getMinutes();
+        const seconds = ny.getSeconds();
+        const hours12 = hours % 12;
+        this.hourHandRotation = (hours12 + minutes / 60 + seconds / 3600) * 30;
+        this.minuteHandRotation = (minutes + seconds / 60) * 6;
+        this.secondHandRotation = seconds * 6;
+    }
+
+    toggleCategoryDropdown(event?: Event): void {
+        event?.stopPropagation();
+        this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen;
+    }
+
+    @HostListener('document:click', ['$event'])
+    onDocumentClick(event: MouseEvent): void {
+        const target = event.target as HTMLElement | null;
+        if (!target?.closest('.ap-filter-container')) {
+            this.isCategoryDropdownOpen = false;
+        }
     }
 
     onSearch() {
         if (!this.searchQuery) {
             this.showResults = false;
+            this.rawSearchResults = [];
             return;
         }
         this.isSearching = true;
@@ -89,11 +183,12 @@ export class AddProductMappingComponent implements OnInit {
             next: (res) => {
                 this.isSearching = false;
                 console.log('Search Results:', res.result.items);
-                this.searchResults = res.result.items.map((p: any) => ({
+                this.rawSearchResults = res.result.items.map((p: any) => ({
                     ...p,
                     supplierPriceResolved: this.resolveSupplierPriceValue(p),
                     images: this.parseImages(p.images)
                 }));
+                this.applySearchFilters();
                 this.showResults = true;
                 this.cdr.detectChanges();
             },
@@ -107,6 +202,8 @@ export class AddProductMappingComponent implements OnInit {
 
     onCategoryQuickSearch(categoryName: string) {
         this.searchQuery = categoryName;
+        this.selectedCategoryLabel = categoryName;
+        this.isCategoryDropdownOpen = false;
 
         if (!this.allProductsCatalog.length) {
             this.isSearching = true;
@@ -118,6 +215,7 @@ export class AddProductMappingComponent implements OnInit {
                     this.cdr.detectChanges();
                 },
                 error: () => {
+                    this.rawSearchResults = [];
                     this.searchResults = [];
                     this.showResults = true;
                     this.isSearching = false;
@@ -154,28 +252,34 @@ export class AddProductMappingComponent implements OnInit {
                     counts.set(category, (counts.get(category) || 0) + 1);
                 });
 
-                const tones = ['tone-indigo', 'tone-emerald', 'tone-amber', 'tone-rose', 'tone-sky', 'tone-violet'];
-                this.categoryTiles = Array.from(counts.entries())
-                    .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]))
-                    .map(([name, count], index) => ({
-                        name,
-                        count,
-                        icon: this.getCategoryIcon(name),
-                        tone: tones[index % tones.length]
-                    }));
+                if (counts.size > 0) {
+                    this.categoryTiles = this.buildCategoryTiles(
+                        Array.from(counts.entries())
+                            .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]))
+                            .map(([name, count]) => ({ name, count }))
+                    );
+                } else {
+                    this.categoryTiles = this.getFallbackCategoryTiles();
+                }
 
+                this.showAllCategoryPreview();
                 this.isCategoriesLoading = false;
                 this.cdr.detectChanges();
             },
             error: () => {
                 this.isCategoriesLoading = false;
-                this.categoryTiles = [];
+                this.categoryTiles = this.getFallbackCategoryTiles();
                 this.cdr.detectChanges();
             }
         });
     }
 
     private applyCategoryFilter(categoryName: string) {
+        if (categoryName === 'All Category') {
+            this.showAllCategoryPreview();
+            return;
+        }
+
         const target = this.normalizeCategoryName(categoryName)?.toLowerCase() || '';
 
         const filtered = this.allProductsCatalog.filter((item: any) => {
@@ -183,12 +287,77 @@ export class AddProductMappingComponent implements OnInit {
             return !!cat && cat.toLowerCase() === target;
         });
 
-        this.searchResults = filtered.map((p: any) => ({
+        this.rawSearchResults = filtered.map((p: any) => ({
+            ...p,
+            supplierPriceResolved: this.resolveSupplierPriceValue(p),
+            images: this.parseImages(p.images)
+        }));
+        this.applySearchFilters();
+        this.showResults = true;
+    }
+
+    onFiltersChanged(): void {
+        if (this.minPriceFilter != null && this.maxPriceFilter != null && Number(this.maxPriceFilter) < Number(this.minPriceFilter)) {
+            this.priceValidationError = 'Max Price cannot be less than Min Price.';
+            return;
+        }
+
+        this.priceValidationError = '';
+        this.applySearchFilters();
+    }
+
+    clearSearchFilters(): void {
+        this.minPriceFilter = null;
+        this.maxPriceFilter = null;
+        this.priceValidationError = '';
+        this.sortOption = 'relevance';
+        this.applySearchFilters();
+    }
+
+    private applySearchFilters(): void {
+        if (this.priceValidationError) {
+            return;
+        }
+
+        let results = [...this.rawSearchResults];
+
+        if (this.minPriceFilter != null && Number.isFinite(Number(this.minPriceFilter))) {
+            const min = Number(this.minPriceFilter);
+            results = results.filter(item => this.resolveSupplierPriceValue(item) >= min);
+        }
+
+        if (this.maxPriceFilter != null && Number.isFinite(Number(this.maxPriceFilter))) {
+            const max = Number(this.maxPriceFilter);
+            results = results.filter(item => this.resolveSupplierPriceValue(item) <= max);
+        }
+
+        if (this.sortOption === 'priceLowHigh') {
+            results.sort((a, b) => this.resolveSupplierPriceValue(a) - this.resolveSupplierPriceValue(b));
+        } else if (this.sortOption === 'priceHighLow') {
+            results.sort((a, b) => this.resolveSupplierPriceValue(b) - this.resolveSupplierPriceValue(a));
+        } else if (this.sortOption === 'newest') {
+            results.sort((a, b) => {
+                const aTime = new Date(a?.creationTime || a?.createdAt || 0).getTime();
+                const bTime = new Date(b?.creationTime || b?.createdAt || 0).getTime();
+                return bTime - aTime;
+            });
+        }
+
+        this.searchResults = results;
+    }
+
+    private showAllCategoryPreview(): void {
+        const shuffled = [...this.allProductsCatalog]
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 10);
+
+        this.rawSearchResults = shuffled.map((p: any) => ({
             ...p,
             supplierPriceResolved: this.resolveSupplierPriceValue(p),
             images: this.parseImages(p.images)
         }));
         this.showResults = true;
+        this.applySearchFilters();
     }
 
     private extractItems(res: any): any[] {
@@ -215,6 +384,38 @@ export class AddProductMappingComponent implements OnInit {
         if (key.includes('shoe') || key.includes('footwear')) return 'fa-shoe-prints';
         if (key.includes('jewel') || key.includes('gold')) return 'fa-gem';
         return 'fa-layer-group';
+    }
+
+    private buildCategoryTiles(entries: Array<{ name: string; count: number }>): Array<{ name: string; count: number; icon: string; tone: string; }> {
+        const tones = ['tone-indigo', 'tone-emerald', 'tone-amber', 'tone-rose', 'tone-sky', 'tone-violet'];
+        return entries.map((entry, index) => ({
+            name: entry.name,
+            count: entry.count,
+            icon: this.getCategoryIcon(entry.name),
+            tone: tones[index % tones.length]
+        }));
+    }
+
+    private getFallbackCategoryTiles(): Array<{ name: string; count: number; icon: string; tone: string; }> {
+        return this.buildCategoryTiles([
+            { name: 'Electronics', count: 0 },
+            { name: 'Watches & Jewelry', count: 0 },
+            { name: 'Networking Products', count: 0 },
+            { name: 'Pets And Dog Food', count: 0 },
+            { name: 'Home Improvement', count: 0 },
+            { name: 'Laptop Accessories', count: 0 },
+            { name: 'Sport & Outdoors', count: 0 },
+            { name: 'Home Decor', count: 0 },
+            { name: 'Kitchen Accessories', count: 0 },
+            { name: 'Office Products', count: 0 },
+            { name: 'Baby Accessories', count: 0 },
+            { name: 'Hand Made', count: 0 },
+            { name: 'Personal Care', count: 0 },
+            { name: 'Baby Monitors', count: 0 },
+            { name: 'Baby Car Toys', count: 0 },
+            { name: 'Bedding And Bath', count: 0 },
+            { name: 'Inverter Generator', count: 0 }
+        ]);
     }
 
     getPreviewTitle(value: string): string {
@@ -324,8 +525,14 @@ export class AddProductMappingComponent implements OnInit {
             mapping.id = this.currentMappingId;
             this.alert.loading('UPDATING LISTING...');
             this.storeProductService.update(mapping).subscribe({
-                next: () => {
-                    this.alert.success('Listing updated successfully!');
+                next: async () => {
+                    this.alert.close();
+                    const result = await this.alert.success('Listing updated successfully!');
+                    if (!result.isConfirmed) {
+                        return;
+                    }
+                    this.alert.forceCleanup();
+                    await new Promise(resolve => setTimeout(resolve, 50));
                     this.router.navigate(['/seller/listings']);
                 },
                 error: (err) => {
@@ -335,8 +542,14 @@ export class AddProductMappingComponent implements OnInit {
         } else {
             this.alert.loading('PUBLISHING TO STORE...');
             this.storeProductService.mapProductToStore(mapping).subscribe({
-                next: () => {
-                    this.alert.success('Product mapped to your store successfully!');
+                next: async () => {
+                    this.alert.close();
+                    const result = await this.alert.success('Product mapped to your store successfully!');
+                    if (!result.isConfirmed) {
+                        return;
+                    }
+                    this.alert.forceCleanup();
+                    await new Promise(resolve => setTimeout(resolve, 50));
                     this.router.navigate(['/seller/listings']);
                 },
                 error: (err) => {
@@ -381,8 +594,14 @@ export class AddProductMappingComponent implements OnInit {
                     mapping.id = existing.id;
                     this.alert.loading('UPDATING LISTING...');
                     this.storeProductService.update(mapping).subscribe({
-                        next: () => {
-                            this.alert.success('Listing updated successfully!');
+                        next: async () => {
+                            this.alert.close();
+                            const result = await this.alert.success('Listing updated successfully!');
+                            if (!result.isConfirmed) {
+                                return;
+                            }
+                            this.alert.forceCleanup();
+                            await new Promise(resolve => setTimeout(resolve, 50));
                             this.router.navigate(['/seller/listings']);
                         },
                         error: (err) => {

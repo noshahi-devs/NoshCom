@@ -19,16 +19,93 @@ export class AlertService {
             popup: 'animate__animated animate__fadeIn animate__faster'
         },
         hideClass: {
-            popup: 'animate__animated animate__fadeOut animate__faster'
+            popup: ''
         }
     };
+
+    private fire(config: any) {
+        this.forceCleanup();
+
+        const externalDidOpen = config?.didOpen;
+        const ensureButtonsEnabled = () => {
+            const confirmButton = Swal.getConfirmButton();
+            const denyButton = Swal.getDenyButton();
+            const cancelButton = Swal.getCancelButton();
+
+            [confirmButton, denyButton, cancelButton].forEach((button) => {
+                if (!button) return;
+                button.disabled = false;
+                button.removeAttribute('disabled');
+                button.removeAttribute('aria-disabled');
+            });
+        };
+
+        return new Promise<any>((resolve) => {
+            let settled = false;
+
+            const settle = (result: any) => {
+                if (settled) {
+                    return;
+                }
+
+                settled = true;
+                Swal.close();
+                this.forceCleanup();
+                resolve(result);
+            };
+
+            Swal.fire({
+                ...this.baseConfig,
+                ...config,
+                didOpen: (popup) => {
+                    ensureButtonsEnabled();
+                    setTimeout(() => ensureButtonsEnabled(), 0);
+                    setTimeout(() => ensureButtonsEnabled(), 60);
+
+                    const confirmButton = Swal.getConfirmButton();
+                    const denyButton = Swal.getDenyButton();
+                    const cancelButton = Swal.getCancelButton();
+
+                    if (confirmButton && config?.showConfirmButton !== false) {
+                        confirmButton.onclick = (event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            settle({ isConfirmed: true, isDenied: false, isDismissed: false, value: true });
+                        };
+                    }
+
+                    if (denyButton) {
+                        denyButton.onclick = (event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            settle({ isConfirmed: false, isDenied: true, isDismissed: false, value: false });
+                        };
+                    }
+
+                    if (cancelButton) {
+                        cancelButton.onclick = (event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            settle({ isConfirmed: false, isDenied: false, isDismissed: true, dismiss: Swal.DismissReason.cancel });
+                        };
+                    }
+
+                    externalDidOpen?.(popup);
+                },
+                didRender: () => {
+                    ensureButtonsEnabled();
+                }
+            }).then((result) => {
+                settle(result);
+            });
+        });
+    }
 
     /**
      * Standard Landscape Alerts
      */
     success(message: string, title: string = 'SUCCESS') {
-        return Swal.fire({
-            ...this.baseConfig,
+        return this.fire({
             title: title.toUpperCase(),
             text: message,
             icon: 'success',
@@ -37,8 +114,7 @@ export class AlertService {
     }
 
     error(message: string, title: string = 'ERROR') {
-        return Swal.fire({
-            ...this.baseConfig,
+        return this.fire({
             title: title.toUpperCase(),
             text: message,
             icon: 'error',
@@ -47,8 +123,7 @@ export class AlertService {
     }
 
     warning(message: string, title: string = 'WARNING') {
-        return Swal.fire({
-            ...this.baseConfig,
+        return this.fire({
             title: title.toUpperCase(),
             text: message,
             icon: 'warning',
@@ -57,8 +132,7 @@ export class AlertService {
     }
 
     info(message: string, title: string = 'INFO') {
-        return Swal.fire({
-            ...this.baseConfig,
+        return this.fire({
             title: title.toUpperCase(),
             text: message,
             icon: 'info',
@@ -67,8 +141,7 @@ export class AlertService {
     }
 
     confirm(message: string, title: string = 'ARE YOU SURE?') {
-        return Swal.fire({
-            ...this.baseConfig,
+        return this.fire({
             title: title.toUpperCase(),
             text: message,
             icon: 'warning',
@@ -82,8 +155,7 @@ export class AlertService {
      * Premium Centered Modal Notification (Landscape)
      */
     toast(message: string, title: string = 'NOTIFICATION', icon: 'success' | 'error' | 'warning' | 'info' = 'success') {
-        return Swal.fire({
-            ...this.baseConfig,
+        return this.fire({
             customClass: {
                 popup: 'sui-swal-modal-toast'
             },
@@ -98,10 +170,12 @@ export class AlertService {
     }
 
     loading(message: string = 'PLEASE WAIT...') {
-        return Swal.fire({
-            ...this.baseConfig,
+        return this.fire({
             title: message.toUpperCase(),
+            showConfirmButton: false,
             allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false,
             didOpen: () => {
                 Swal.showLoading();
             }
@@ -110,5 +184,18 @@ export class AlertService {
 
     close() {
         Swal.close();
+    }
+
+    forceCleanup() {
+        Swal.close();
+
+        if (typeof document === 'undefined') {
+            return;
+        }
+
+        document.body.classList.remove('swal2-shown', 'swal2-height-auto', 'swal2-no-backdrop');
+        document.body.style.removeProperty('padding-right');
+
+        document.querySelectorAll('.swal2-container').forEach((el) => el.remove());
     }
 }

@@ -1,108 +1,225 @@
 <div class="add-product-container">
-    <div class="page-header mb-5">
-        <i class="fas fa-store"></i>
-        <span>Add Product in Your Store Listing</span>
-    </div>
+    <section class="ap-hero mb-5">
+        <div class="ap-store">
+            <div class="ap-store-icon">
+                <img src="/assets/images/logo1.png" alt="Store Logo" class="ap-store-logo-img">
+            </div>
+            <div class="ap-store-copy">
+                <div class="ap-store-title-row">
+                    <div class="ap-store-title-group">
+                        <h2 class="ap-store-title">{{ displayStoreName }}</h2>
+                        <span *ngIf="currentStore?.status" title="Admin Verified Store" class="ap-store-verified">
+                            <i class="fas fa-check-circle"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="ap-store-mode">
+                    <h3>Add Product</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="ap-right-stack">
+            <div class="ap-time-card">
+                <div class="ap-analog-clock">
+                    <div class="ap-clock-ring ap-clock-ring-one"></div>
+                    <div class="ap-clock-ring ap-clock-ring-two"></div>
+                    <div class="ap-clock-mark ap-mark-12"></div>
+                    <div class="ap-clock-mark ap-mark-3"></div>
+                    <div class="ap-clock-mark ap-mark-6"></div>
+                    <div class="ap-clock-mark ap-mark-9"></div>
+                    <div class="ap-clock-hand ap-hour-hand" [style.transform]="'translateX(-50%) rotate(' + hourHandRotation + 'deg)'"></div>
+                    <div class="ap-clock-hand ap-minute-hand" [style.transform]="'translateX(-50%) rotate(' + minuteHandRotation + 'deg)'"></div>
+                    <div class="ap-clock-hand ap-second-hand" [style.transform]="'translateX(-50%) rotate(' + secondHandRotation + 'deg)'"></div>
+                    <div class="ap-clock-center"></div>
+                </div>
+                <div class="ap-time-copy">
+                    <div class="ap-time-main">{{ currentTime }}</div>
+                    <div class="ap-time-date">{{ currentDate }}</div>
+                    <div class="ap-time-location-pill">
+                        <div class="ap-flag-wrap">
+                            <img src="https://flagcdn.com/w80/us.png" alt="US flag">
+                        </div>
+                        <div class="ap-time-location">US | GMT-5</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ap-filter-center">
+            <div class="ap-filter-container">
+                <div class="ap-filter-label">Listing By Category</div>
+                <button type="button" class="ap-date-pill" (click)="toggleCategoryDropdown($event)">
+                    <span>{{ selectedCategoryLabel }}</span>
+                    <span *ngIf="isCategoriesLoading" class="ap-pill-loader"><i class="fas fa-spinner fa-spin"></i></span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <div class="ap-category-dropdown" *ngIf="isCategoryDropdownOpen">
+                    <div class="ap-category-dropdown-scroll">
+                        <button type="button" class="ap-category-option ap-category-option-all" (click)="onCategoryQuickSearch('All Category')">
+                            <span class="ap-option-icon">
+                                <i class="fas fa-layer-group"></i>
+                            </span>
+                            <span class="ap-option-meta">
+                                <span class="ap-option-name">All Category</span>
+                            </span>
+                            <span class="ap-option-arrow"><i class="fas fa-arrow-right"></i></span>
+                        </button>
+                        <button type="button" class="ap-category-option" *ngFor="let cat of categoryTiles" [ngClass]="cat.tone"
+                            (click)="onCategoryQuickSearch(cat.name)">
+                            <span class="ap-option-icon">
+                                <i class="fas" [ngClass]="cat.icon"></i>
+                            </span>
+                            <span class="ap-option-meta">
+                                <span class="ap-option-name">{{ cat.name }}</span>
+                            </span>
+                            <span class="ap-option-arrow"><i class="fas fa-arrow-right"></i></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <div class="search-section mb-5" *ngIf="!product">
-        <div class="search-wrapper d-flex align-items-center gap-3">
-            <span class="fs-4"><i class="fas fa-search"></i></span>
-            <input type="text" class="search-input" placeholder="Search by Product ID / Name / SKU"
-                [(ngModel)]="searchQuery" (keyup.enter)="onSearch()">
-            <button class="btn btn-primary rounded-3 px-4" (click)="onSearch()" [disabled]="isSearching">
-                <i class="fas" [class.fa-search]="!isSearching" [class.fa-spinner]="isSearching"
-                    [class.fa-spin]="isSearching"></i>
-            </button>
-        </div>
-    </div>
+        <div class="search-toolbar">
+            <div class="search-wrapper d-flex align-items-center gap-3">
+                <span class="search-icon-badge"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input type="text" class="search-input" placeholder="Search by Product ID / Name / SKU"
+                    [(ngModel)]="searchQuery" (keyup.enter)="onSearch()">
+                <button class="search-action-btn" (click)="onSearch()" [disabled]="isSearching" aria-label="Search products">
+                    <i class="fas" [class.fa-search]="!isSearching" [class.fa-spinner]="isSearching"
+                        [class.fa-spin]="isSearching"></i>
+                </button>
+            </div>
 
-    <div class="category-showcase mb-5" *ngIf="!product">
-        <div class="category-showcase-head">
-            <h5 class="mb-1">Explore by Category</h5>
-            <p class="mb-0">Pick any category to instantly search matching supplier products.</p>
-        </div>
-
-        <div class="category-skeleton-grid" *ngIf="isCategoriesLoading">
-            <div class="category-skeleton" *ngFor="let _ of [1,2,3,4,5,6,7,8]"></div>
-        </div>
-
-        <div class="category-grid" *ngIf="!isCategoriesLoading && categoryTiles.length > 0">
-            <button type="button" class="category-tile" *ngFor="let cat of categoryTiles" [ngClass]="cat.tone"
-                (click)="onCategoryQuickSearch(cat.name)">
-                <span class="category-icon-wrap">
-                    <i class="fas" [ngClass]="cat.icon"></i>
-                </span>
-                <span class="category-meta">
-                    <span class="category-name">{{ cat.name }}</span>
-                    <!-- <span class="category-count">{{ cat.count }} product{{ cat.count === 1 ? '' : 's' }}</span> -->
-                </span>
-                <span class="category-arrow"><i class="fas fa-arrow-right"></i></span>
-            </button>
-        </div>
-
-        <div class="category-empty" *ngIf="!isCategoriesLoading && categoryTiles.length === 0">
-            Categories could not be loaded right now.
+            <div class="search-filters">
+                <input type="number" class="filter-input" placeholder="Min Price" [(ngModel)]="minPriceFilter"
+                    (ngModelChange)="onFiltersChanged()">
+                <input type="number" class="filter-input" placeholder="Max Price" [(ngModel)]="maxPriceFilter"
+                    (ngModelChange)="onFiltersChanged()">
+                <select class="filter-select" [(ngModel)]="sortOption" (ngModelChange)="onFiltersChanged()">
+                    <option value="relevance">Sort By</option>
+                    <option value="priceLowHigh">Price: Low to High</option>
+                    <option value="priceHighLow">Price: High to Low</option>
+                    <option value="newest">Newest</option>
+                </select>
+                <button type="button" class="filter-clear-btn" (click)="clearSearchFilters()">Clear</button>
+            </div>
+            <div class="filter-error" *ngIf="priceValidationError">{{ priceValidationError }}</div>
         </div>
     </div>
 
     <div class="results-container mb-5" *ngIf="showResults && !product">
         <h5 class="fw-bold mb-4 text-muted">Search Results</h5>
-        <div class="product-card d-flex align-items-center justify-content-between mb-4"
-            *ngFor="let res of searchResults">
-            <div class="product-main d-flex align-items-center gap-4">
-                <img [src]="res.images[0]" class="product-img" />
-                <div>
-                    <div class="result-title-wrap" tabindex="0">
-                        <h5 class="mb-2 fw-semibold result-title">{{ getPreviewTitle(res.name) }}</h5>
-                        <div class="title-tooltip" *ngIf="isTitleTruncated(res.name)">
-                            {{ res.name }}
+        <div class="product-card mb-4" *ngFor="let res of searchResults">
+            <div class="product-card-shell">
+                <div class="product-main">
+                    <div class="product-thumb-wrap">
+                        <img [src]="res.images[0]" class="product-img" />
+                        <span class="product-id-chip">{{ res.categoryName }}</span>
+                    </div>
+
+                    <div class="product-copy">
+                        <div class="badge-group product-chip-row">
+                            <span class="badge-soft badge-category">ID: {{ res.id }}</span>
+                            <span class="badge-soft badge-brand">Brand: {{ res.brandName || 'Generic' }}</span>
+                        </div>
+
+                        <div class="result-title-wrap" tabindex="0">
+                            <h5 class="mb-0 fw-semibold result-title">{{ getPreviewTitle(res.name) }}</h5>
+                            <div class="title-tooltip" *ngIf="isTitleTruncated(res.name)">
+                                {{ res.name }}
+                            </div>
+                        </div>
+
+                        <div class="product-submeta">
+                            <span class="product-submeta-item">
+                                <i class="fas fa-store"></i>
+                                Supplier Catalog
+                            </span>
+                            <span class="product-submeta-item">
+                                <i class="fas fa-box-open"></i>
+                                Ready for Store Listing
+                            </span>
                         </div>
                     </div>
-                    <div class="badge-group">
-                        <span class="badge-soft">ID: {{res.id.substring(0, 8)}}...</span>
-                        <span class="badge-soft">Category: {{res.categoryName}}</span>
-                        <span class="badge-soft">Brand: {{res.brandName || 'Generic'}}</span>
+                </div>
+
+                <div class="action-group">
+                    <div class="price-panel">
+                        <span class="price-label">Supplier Price</span>
+                        <span class="price-badge">${{ res.supplierPriceResolved ?? res.supplierPrice }}</span>
                     </div>
-                    <span class="price-badge">${{res.supplierPriceResolved ?? res.supplierPrice}}</span>
+
+                    <button class="add-btn" (click)="selectProduct(res)">
+                        <i class="fas fa-plus"></i>
+                        <span>Add to Store</span>
+                    </button>
                 </div>
             </div>
+        </div>
 
-            <div class="action-group">
-                <button class="add-btn" (click)="selectProduct(res)">Add to Store</button>
-            </div>
+        <div class="results-footer-hint" *ngIf="selectedCategoryLabel === 'All Category'">
+            View More Product Select Category
         </div>
     </div>
 
     <div class="mapping-section animate__animated animate__fadeInUp" *ngIf="product">
         <div class="card-wrapper">
             <div class="product-mapping-info">
-                <div class="gallery">
-                    <div class="main-image">
-                        <img [src]="selectedImage" alt="Product Image">
+                <div class="gallery-panel">
+                    <div class="gallery-panel-head">
+                        <span class="gallery-kicker">Product Gallery</span>
+                        <span class="gallery-count">{{ product.images?.length || 0 }} Images</span>
                     </div>
-                    <div class="thumbs">
-                        <div class="thumb" *ngFor="let img of product.images" [class.active]="selectedImage === img"
-                            (click)="selectImage(img)">
-                            <img [src]="img">
+
+                    <div class="gallery">
+                        <div class="main-image">
+                            <img [src]="selectedImage" alt="Product Image">
+                        </div>
+                        <div class="thumbs">
+                            <div class="thumb" *ngFor="let img of product.images" [class.active]="selectedImage === img"
+                                (click)="selectImage(img)">
+                                <img [src]="img">
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="product-content">
-                    <div class="product-title">{{product.name}}</div>
-                    <div class="info-row mt-3">
+                    <div class="product-content-head">
+                        <div class="product-kicker">Selected Supplier Product</div>
+                        <div class="product-title">{{product.name}}</div>
+                    </div>
+
+                    <div class="info-row">
                         <div class="pill"><i class="fas fa-hashtag"></i> ID: {{product.id}}</div>
                         <div class="pill"><i class="fas fa-tag"></i> Category: {{product.categoryName}}</div>
                         <div class="pill"><i class="fas fa-copyright"></i> Brand: {{product.brandName || 'Generic'}}
                         </div>
                     </div>
-                    <div class="price"><i class="fas fa-tag"></i> Supplier Price: ${{product.supplierPrice}}</div>
-                    <div class="product-description mt-4 text-muted border-top pt-3" *ngIf="product.description">
-                        <h6 class="fw-bold mb-2">Product Description</h6>
-                        <div class="desc-tooltip-wrap" tabindex="0">
-                            <div class="desc-clamp" [innerHTML]="product.description"></div>
-                            <div class="desc-tooltip-popup">
-                                <div [innerHTML]="product.description"></div>
+
+                    <div class="product-highlight-row">
+                        <div class="price-panel-detail">
+                            <span class="price-panel-label">Supplier Price</span>
+                            <div class="price"><i class="fas fa-tag"></i> ${{product.supplierPrice}}</div>
+                        </div>
+
+                        <div class="product-status-note">
+                            <i class="fas fa-circle-check"></i>
+                            Ready to map into your store listing
+                        </div>
+                    </div>
+
+                    <div class="product-description-card" *ngIf="product.description">
+                        <div class="product-description text-muted">
+                            <h6 class="fw-bold mb-2">Product Description</h6>
+                            <div class="desc-tooltip-wrap" tabindex="0">
+                                <div class="desc-clamp" [innerHTML]="product.description"></div>
+                                <div class="desc-tooltip-popup">
+                                    <div [innerHTML]="product.description"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -112,54 +229,53 @@
 
         <div class="attribute-card">
             <div class="attribute-header mb-4">
-                <h4 class="fw-bold border-bottom pb-2 display-inline-block"
-                    style="border-width: 2px !important; border-color: #0f172a !important; display: inline-block;">
-                    Set Attributes For Store Listing
-                </h4>
+                <span class="attribute-kicker">Listing Configuration</span>
+                <h4 class="attribute-title">Set Attributes For Store Listing</h4>
+                <p class="attribute-subtitle mb-0">Define the pricing, handling, limits, and seller notes before publishing this product to your store.</p>
             </div>
 
             <div class="form-grid">
-                <div class="form-group">
+                <div class="form-group form-group-price-min">
                     <label class="fw-bold mb-2">Minimum Seller Price</label>
-                    <div class="input-box custom-input-wrapper bg-light border-0">
+                    <div class="input-box custom-input-wrapper readonly-box">
                         <span class="input-prefix fw-bold">$</span>
                         <input type="number" [value]="minAllowedPrice" readonly placeholder="0.00">
                     </div>
-                    <div class="small mt-1 text-muted" style="color:red !important">
+                    <div class="field-helper small mt-2">
                         <!-- At least 40% above supplier price. -->
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group form-group-price-max">
                     <label class="fw-bold mb-2">Maximum Seller Price</label>
-                    <div class="input-box custom-input-wrapper bg-light border-0">
+                    <div class="input-box custom-input-wrapper readonly-box">
                         <span class="input-prefix fw-bold">$</span>
                         <input type="number" [value]="maxAllowedPrice" readonly placeholder="0.00">
                     </div>
-                    <div class="small mt-1 text-muted" style="color:red !important">
+                    <div class="field-helper small mt-2">
                         <!-- Up to 167% of supplier price. -->
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group form-group-standard-price">
                     <label class="fw-bold mb-2">Standard Price</label>
                     <div class="input-box custom-input-wrapper"
                         [class.border-danger]="retailPrice > maxAllowedPrice || retailPrice < minAllowedPrice">
                         <span class="input-prefix fw-bold">$</span>
                         <input type="number" [(ngModel)]="retailPrice" [disabled]="isViewOnly" placeholder="0.00">
                     </div>
-                    <div *ngIf="retailPrice > maxAllowedPrice" class="text-danger small mt-1">
+                    <div *ngIf="retailPrice > maxAllowedPrice" class="validation-message text-danger small mt-2">
                         <i class="fas fa-exclamation-triangle"></i> Price exceeds the maximum allowed limit of
                         ${{maxAllowedPrice}}
                     </div>
-                    <div *ngIf="retailPrice < minAllowedPrice" class="text-danger small mt-1">
+                    <div *ngIf="retailPrice < minAllowedPrice" class="validation-message text-danger small mt-2">
                         <i class="fas fa-exclamation-triangle"></i> Price cannot be lower than the minimum allowed limit
                         of
                         ${{minAllowedPrice}}
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group form-group-handling-time">
                     <label class="fw-bold mb-2">Handling Time</label>
                     <div class="input-box custom-input-wrapper position-relative"
                         [class.border-danger]="handlingTime > 4 || handlingTime <= 0">
@@ -168,35 +284,35 @@
                             <option [ngValue]="1">Day 1</option>
                             <option [ngValue]="2">Day 2</option>
                             <option [ngValue]="3">Day 3</option>
-                            <option [ngValue]="4">Day 4</option>
-                        </select>
-                        <i class="fas fa-chevron-down position-absolute text-muted" style="right: 18px; pointer-events: none;"></i>
+                        <option [ngValue]="4">Day 4</option>
+                    </select>
+                    <i class="fas fa-chevron-down position-absolute text-muted" style="right: 18px; pointer-events: none;"></i>
                     </div>
-                    <div *ngIf="handlingTime > 4" class="text-danger small mt-1">
+                    <div *ngIf="handlingTime > 4" class="validation-message text-danger small mt-2">
                         <i class="fas fa-exclamation-triangle"></i> Handling Time cannot be more than 4 days.
                     </div>
-                    <div *ngIf="handlingTime <= 0" class="text-danger small mt-1">
+                    <div *ngIf="handlingTime <= 0" class="validation-message text-danger small mt-2">
                         <i class="fas fa-exclamation-triangle"></i> Handling Time must be at least 1 day.
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group form-group-max-order">
                     <label class="fw-bold mb-2">Max Order Quantity</label>
                     <div class="input-box custom-input-wrapper"
                         [class.border-danger]="maxOrderQty > 15 || maxOrderQty <= 0">
                         <span class="input-prefix text-muted fw-bold">Units</span>
                         <input type="number" [(ngModel)]="maxOrderQty" min="1" max="15" [disabled]="isViewOnly">
                     </div>
-                    <div *ngIf="maxOrderQty > 15" class="text-danger small mt-1">
+                    <div *ngIf="maxOrderQty > 15" class="validation-message text-danger small mt-2">
                         <i class="fas fa-exclamation-triangle"></i> Max Order Quantity cannot be more than 15 units.
                     </div>
-                    <div *ngIf="maxOrderQty <= 0" class="text-danger small mt-1">
+                    <div *ngIf="maxOrderQty <= 0" class="validation-message text-danger small mt-2">
                         <i class="fas fa-exclamation-triangle"></i> Max Order Quantity must be at least 1 unit.
                     </div>
                 </div>
             </div>
 
-            <div class="form-group mt-4">
+            <div class="form-group form-group-note mt-4">
                 <label class="fw-bold mb-2">Seller Note</label>
                 <textarea class="form-control" [(ngModel)]="sellerNote" [disabled]="isViewOnly" rows="3"
                     placeholder="Enter any extra details or instructions regarding this listing..."></textarea>

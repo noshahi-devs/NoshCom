@@ -1,24 +1,93 @@
 <div class="seller-orders-page">
-    <!-- Centered status header with 3D titles -->
-    <section class="status-header">
-        <h2 class="title-3d">
-            <i [class]="viewConfig.iconClass"></i>
-            {{ viewConfig.title }}
-        </h2>
-        <p class="sub-heading-3d">{{ viewConfig.description }}</p>
+    <section class="ap-hero">
+        <div class="ap-store">
+            <div class="ap-store-icon">
+                <img src="/assets/images/logo1.png" alt="Store Logo" class="ap-store-logo-img">
+            </div>
+            <div class="ap-store-copy">
+                <div class="ap-store-title-row">
+                    <div class="ap-store-title-group">
+                        <h2 class="ap-store-title">{{ displayStoreName }}</h2>
+                        <span *ngIf="currentStore?.status" title="Admin Verified Store" class="ap-store-verified">
+                            <i class="fas fa-check-circle"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="ap-store-mode">
+                    <h3>{{ viewConfig.title }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="ap-right-stack">
+            <div class="ap-time-card">
+                <div class="ap-analog-clock">
+                    <div class="ap-clock-ring ap-clock-ring-one"></div>
+                    <div class="ap-clock-ring ap-clock-ring-two"></div>
+                    <div class="ap-clock-mark ap-mark-12"></div>
+                    <div class="ap-clock-mark ap-mark-3"></div>
+                    <div class="ap-clock-mark ap-mark-6"></div>
+                    <div class="ap-clock-mark ap-mark-9"></div>
+                    <div class="ap-clock-hand ap-hour-hand" [style.transform]="'translateX(-50%) rotate(' + hourHandRotation + 'deg)'"></div>
+                    <div class="ap-clock-hand ap-minute-hand" [style.transform]="'translateX(-50%) rotate(' + minuteHandRotation + 'deg)'"></div>
+                    <div class="ap-clock-hand ap-second-hand" [style.transform]="'translateX(-50%) rotate(' + secondHandRotation + 'deg)'"></div>
+                    <div class="ap-clock-center"></div>
+                </div>
+                <div class="ap-time-copy">
+                    <div class="ap-time-main">{{ currentTime }}</div>
+                    <div class="ap-time-date">{{ currentDate }}</div>
+                    <div class="ap-time-location-pill">
+                        <div class="ap-flag-wrap">
+                            <img src="https://flagcdn.com/w80/us.png" alt="US flag">
+                        </div>
+                        <div class="ap-time-location">US | GMT-5</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ap-filter-center">
+            <div class="ap-filter-container ap-order-summary-shell">
+                <div class="ap-filter-label">Order Center</div>
+                <div class="ap-order-summary-card">
+                    <div class="ap-order-summary-icon">
+                        <i [class]="viewConfig.iconClass"></i>
+                    </div>
+                    <div class="ap-order-summary-copy">
+                        <div class="ap-order-summary-title">{{ viewConfig.title }}</div>
+                        <p>{{ viewConfig.description }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- Deep 3D card for orders table -->
     <section class="orders-table-card">
+        <div class="orders-card-top">
+            <div class="orders-card-copy">
+                <div class="orders-card-kicker">Order Workspace</div>
+                <h4>Manage {{ viewConfig.title }}</h4>
+            </div>
+            <div class="orders-live-chip">
+                <i class="fa-solid fa-wave-square"></i>
+                <span>Live View</span>
+            </div>
+        </div>
+
         <div class="table-tools">
             <div class="entries-info">
-                Show <span class="entries-chip">{{ pageSize }}</span> entries
+                <span class="entries-label">Rows Per Page</span>
+                <span class="entries-chip">{{ pageSize }}</span>
             </div>
 
             <div class="search-wrap">
-                <label for="sellerOrderSearch">Search:</label>
+                <label for="sellerOrderSearch">Search Orders</label>
+                <span class="search-icon-badge">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
                 <input id="sellerOrderSearch" type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
-                    placeholder="Type to search..." stroke-linecap="round" />
+                    placeholder="Search by order id, customer, carrier..." stroke-linecap="round" />
             </div>
         </div>
 
@@ -53,39 +122,71 @@
                 <tbody *ngIf="!isLoading && pagedOrders.length > 0">
                     <tr *ngFor="let order of pagedOrders; let i = index">
                         <td class="date-col">
-                            <div class="cell-box">
+                            <div class="cell-box date-cell-box">
                                 <div class="relative-time">{{ getRelativeTime(order) }}</div>
-                                <div class="date-val">{{ formatDate(order.createdAt) }}</div>
-                                <div class="time-val">{{ formatTime(order.createdAt) }}</div>
+                                <div class="date-panel">
+                                    <div class="date-panel-row">
+                                        <span class="meta-label">Date</span>
+                                        <span class="meta-value">{{ formatDate(order.createdAt) }}</span>
+                                    </div>
+                                    <div class="date-panel-row">
+                                        <span class="meta-label">Time</span>
+                                        <span class="meta-value">{{ formatTime(order.createdAt) }}</span>
+                                    </div>
+                                </div>
                             </div>
                         </td>
 
                         <td class="details-col">
-                            <div class="cell-box">
+                            <div class="cell-box details-cell-box">
                                 <div class="order-id">#{{ order.orderId }}</div>
-                                <div class="order-meta">Buyer: <b>{{ order.customerName }}</b></div>
-                                <div class="order-meta">Fulfillment: <b>Seller</b></div>
-                                <div class="order-meta">Channel: <b>{{ order.salesChannel }}</b></div>
+                                <div class="order-detail-list">
+                                    <div class="order-detail-row">
+                                        <span class="meta-label">Buyer</span>
+                                        <span class="meta-value">{{ order.customerName }}</span>
+                                    </div>
+                                    <div class="order-detail-row">
+                                        <span class="meta-label">Fulfillment</span>
+                                        <span class="meta-value">Seller</span>
+                                    </div>
+                                    <div class="order-detail-row">
+                                        <span class="meta-label">Channel</span>
+                                        <span class="meta-value">{{ order.salesChannel }}</span>
+                                    </div>
+                                </div>
                             </div>
                         </td>
 
                         <td class="customer-col">
-                            <div class="cell-box">
+                            <div class="cell-box info-card-box">
                                 <div class="customer-option">Standard Shipping</div>
-                                <div class="ship-info">Ship by: {{ order.shipBy }}</div>
-                                <div class="ship-info">Deliver by: {{ order.deliverBy }}</div>
+                                <div class="ship-info-row">
+                                    <span class="meta-label">Ship by</span>
+                                    <span class="meta-value value-block">{{ order.shipBy }}</span>
+                                </div>
+                                <div class="ship-info-row">
+                                    <span class="meta-label">Deliver by</span>
+                                    <span class="meta-value value-block">{{ order.deliverBy }}</span>
+                                </div>
                             </div>
                         </td>
 
                         <td class="ship-col" *ngIf="viewConfig.showShipVia">
-                            <div class="cell-box">
-                                <div class="ship-info"><b>Carrier:</b> {{ order.shipVia }}</div>
-                                <div class="ship-info"><b>Tracking:</b> {{ order.trackingId }}</div>
+                            <div class="cell-box info-card-box">
+                                <div class="ship-info-row">
+                                    <span class="meta-label">Carrier</span>
+                                    <span class="meta-value value-block">{{ order.shipVia }}</span>
+                                </div>
+                                <div class="ship-info-row">
+                                    <span class="meta-label">Tracking</span>
+                                    <span class="meta-value value-block tracking-value">{{ order.trackingId }}</span>
+                                </div>
                             </div>
                         </td>
 
                         <td>
-                            <div class="cell-box">
+                            <div class="cell-box status-cell-box">
+                                <div class="status-mini-label">Current Status</div>
                                 <span class="status-pill" [ngClass]="getStatusClass(order.statusKey)">
                                     {{ order.statusLabel }}
                                 </span>
@@ -128,8 +229,15 @@
                 <tbody *ngIf="!isLoading && pagedOrders.length === 0">
                     <tr>
                         <td [attr.colspan]="viewConfig.showShipVia ? 6 : 5" class="empty-row">
-                            <i class="fa-solid fa-folder-open mb-3 d-block" style="font-size: 3rem; opacity: 0.2;"></i>
-                            No orders found in this category.
+                            <div class="empty-state-shell">
+                                <div class="empty-state-icon">
+                                    <i class="fa-solid fa-box-open"></i>
+                                </div>
+                                <div class="empty-state-title">No orders found</div>
+                                <div class="empty-state-copy">
+                                    There are currently no orders available in this order view.
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
@@ -139,7 +247,8 @@
         <!-- Symmetrical Footer & Pager -->
         <div class="table-footer">
             <div class="info-text">
-                Showing entries <span>{{ showingFrom }}</span> to <span>{{ showingTo }}</span> of <span>{{ filteredOrders.length }}</span>
+                <span class="info-pill">Showing {{ showingFrom }} - {{ showingTo }}</span>
+                <span class="info-total">of {{ filteredOrders.length }} orders</span>
             </div>
 
             <div class="pager">

@@ -66,7 +66,16 @@ export const routes: Routes = [
       { path: 'orders/3pl-partners', loadComponent: () => import('./pages/seller/shipping-partners/shipping-partners.component').then(m => m.ShippingPartnersComponent) },
       { path: 'logistics', redirectTo: 'orders/3pl-partners', pathMatch: 'full' },
       { path: 'warehouse', loadComponent: () => import('./pages/seller/warehouse/warehouse.component').then(m => m.WarehouseComponent) },
-      { path: 'finances/wallet', loadComponent: () => import('./pages/seller/wallet-center/wallet-center.component').then(m => m.WalletCenterComponent) },
+      {
+        path: 'finances/wallet',
+        loadComponent: () => import('./pages/seller/wallet-center/wallet-center.component').then(m => m.WalletCenterComponent),
+        data: { walletView: 'wallet' }
+      },
+      {
+        path: 'finances/withdrawal',
+        loadComponent: () => import('./pages/seller/wallet-center/wallet-center.component').then(m => m.WalletCenterComponent),
+        data: { walletView: 'withdrawal' }
+      },
       { path: 'finances/payouts', redirectTo: 'finances/payouts/pending', pathMatch: 'full' },
       {
         path: 'finances/payouts/pending',

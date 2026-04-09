@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, inject, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
@@ -28,11 +28,10 @@ export class SellerLayoutComponent implements OnInit {
     private router = inject(Router);
     private authService = inject(AuthService);
     private storeService = inject(StoreService);
-    private cdr = inject(ChangeDetectorRef);
 
-    isSidebarCollapsed = true;
+    isSidebarCollapsed = false;
     showOrderMenu = true;
-    showWithdrawMenu = true;
+    showWithdrawMenu = false;
     showStatsMenu = false;
     currentUser: any = null;
     currentStore: any = null;
@@ -51,34 +50,26 @@ export class SellerLayoutComponent implements OnInit {
 
     ngOnInit() {
         this.currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        this.showOrderMenu = this.isOrderRoute(this.router.url);
-        this.showWithdrawMenu = this.isWithdrawRoute(this.router.url);
-        this.showStatsMenu = this.isStatsRoute(this.router.url);
+        this.showOrderMenu = false;
+        this.showWithdrawMenu = false;
+        this.showStatsMenu = false;
         this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe((event: any) => {
             const url = event.urlAfterRedirects || event.url;
-            let stateChanged = false;
-            
-            if (this.isOrderRoute(url) && !this.showOrderMenu) {
-                this.showOrderMenu = true;
-                stateChanged = true;
+
+            if (this.showOrderMenu) {
+                this.showOrderMenu = false;
             }
-            if (this.isWithdrawRoute(url) && !this.showWithdrawMenu) {
-                this.showWithdrawMenu = true;
-                stateChanged = true;
+            if (this.showWithdrawMenu) {
+                this.showWithdrawMenu = false;
             }
-            if (this.isStatsRoute(url) && !this.showStatsMenu) {
-                this.showStatsMenu = true;
-                stateChanged = true;
-            }
-            if (stateChanged) {
-               this.cdr.detectChanges();
+            if (this.showStatsMenu) {
+                this.showStatsMenu = false;
             }
         });
 
         // Use reactive stream for store updates
         this.storeService.currentStore$.subscribe(store => {
             this.currentStore = store;
-            this.cdr.detectChanges();
         });
 
         this.loadMyStore();
@@ -100,28 +91,62 @@ export class SellerLayoutComponent implements OnInit {
 
     toggleSidebar() {
         this.isSidebarCollapsed = !this.isSidebarCollapsed;
+        if (this.isSidebarCollapsed) {
+            this.showOrderMenu = false;
+            this.showWithdrawMenu = false;
+            this.showStatsMenu = false;
+        }
     }
 
     toggleOrderMenu() {
+        if (!this.showOrderMenu) {
+            this.showWithdrawMenu = false;
+            this.showStatsMenu = false;
+        }
         this.showOrderMenu = !this.showOrderMenu;
     }
 
+    closeOrderMenu() {
+        this.showOrderMenu = false;
+    }
+
     toggleWithdrawMenu() {
+        if (!this.showWithdrawMenu) {
+            this.showOrderMenu = false;
+            this.showStatsMenu = false;
+        }
         this.showWithdrawMenu = !this.showWithdrawMenu;
     }
 
+    closeWithdrawMenu() {
+        this.showWithdrawMenu = false;
+    }
+
     toggleStatsMenu() {
+        if (!this.showStatsMenu) {
+            this.showOrderMenu = false;
+            this.showWithdrawMenu = false;
+        }
         this.showStatsMenu = !this.showStatsMenu;
+    }
+
+    closeStatsMenu() {
+        this.showStatsMenu = false;
     }
 
     isOrderRoute(url?: string): boolean {
         const current = (url || this.router.url || '').toLowerCase();
-        return current.includes('/seller/orders');
+        return current.includes('/seller/orders') && !current.includes('/seller/orders/3pl-partners');
+    }
+
+    isThreePlRoute(url?: string): boolean {
+        const current = (url || this.router.url || '').toLowerCase();
+        return current.includes('/seller/orders/3pl-partners') || current.includes('/seller/logistics');
     }
 
     isWithdrawRoute(url?: string): boolean {
         const current = (url || this.router.url || '').toLowerCase();
-        return current.includes('/seller/finances/wallet') || current.includes('/seller/finances/payouts');
+        return current.includes('/seller/finances/withdrawal') || current.includes('/seller/finances/payouts');
     }
 
     isStatsRoute(url?: string): boolean {
@@ -180,11 +205,19 @@ export class SellerLayoutComponent implements OnInit {
         if (!target.closest('.country-dropdown')) {
             this.showCountryMenu = false;
         }
+        if (!target.closest('.sidebar') && !target.closest('.side-subsidebar')) {
+            this.showOrderMenu = false;
+            this.showWithdrawMenu = false;
+            this.showStatsMenu = false;
+        }
     }
 
     @HostListener('document:keydown.escape')
     onEscapeKey() {
         this.showCountryMenu = false;
+        this.showOrderMenu = false;
+        this.showWithdrawMenu = false;
+        this.showStatsMenu = false;
     }
 
     logout() {

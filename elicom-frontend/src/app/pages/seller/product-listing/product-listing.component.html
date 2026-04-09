@@ -1,31 +1,116 @@
 <div class="product-listing-content">
-    <div class="d-flex justify-content-between align-items-center mb-4 px-2">
-        <div>
-            <h2 class="fw-bold text-dark mb-1">Store Listings</h2>
-            <p class="text-muted small mb-0">Manage and monitor your products with premium 3D visualization.</p>
-        </div>
-        <button routerLink="/seller/add-product" class="btn btn-primary rounded-pill px-4 shadow-sm">
-            <i class="fas fa-plus me-2"></i>Add New Product
-        </button>
-    </div>
-
-    <!-- Filters Row -->
-    <div class="card border-0 shadow-sm mb-5 mx-2 bg-white rounded-4">
-        <div class="card-body d-flex gap-3 align-items-center flex-wrap p-3">
-            <div class="search-box flex-grow-1" style="position: relative;">
-                <i class="fas fa-search"
-                    style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
-                <input type="text" class="form-control ps-5 border-0 bg-light rounded-3" [(ngModel)]="filterText"
-                    placeholder="Search by name, SKU or brand..." style="height: 45px;">
+    <section class="ap-hero mb-5">
+        <div class="ap-store">
+            <div class="ap-store-icon">
+                <img src="/assets/images/logo1.png" alt="Store Logo" class="ap-store-logo-img">
             </div>
-            <select class="form-select w-auto border-0 bg-light rounded-3 shadow-none" style="height: 45px;">
-                <option>All Categories</option>
-            </select>
-            <select class="form-select w-auto border-0 bg-light rounded-3 shadow-none" style="height: 45px;">
-                <option>Price: Default</option>
-                <option>Low to High</option>
-                <option>High to Low</option>
-            </select>
+            <div class="ap-store-copy">
+                <div class="ap-store-title-row">
+                    <div class="ap-store-title-group">
+                        <h2 class="ap-store-title">{{ displayStoreName }}</h2>
+                        <span *ngIf="currentStore?.status" title="Admin Verified Store" class="ap-store-verified">
+                            <i class="fas fa-check-circle"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="ap-store-mode">
+                    <h3>Store Listing</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="ap-right-stack">
+            <div class="ap-time-card">
+                <div class="ap-analog-clock">
+                    <div class="ap-clock-ring ap-clock-ring-one"></div>
+                    <div class="ap-clock-ring ap-clock-ring-two"></div>
+                    <div class="ap-clock-mark ap-mark-12"></div>
+                    <div class="ap-clock-mark ap-mark-3"></div>
+                    <div class="ap-clock-mark ap-mark-6"></div>
+                    <div class="ap-clock-mark ap-mark-9"></div>
+                    <div class="ap-clock-hand ap-hour-hand" [style.transform]="'translateX(-50%) rotate(' + hourHandRotation + 'deg)'"></div>
+                    <div class="ap-clock-hand ap-minute-hand" [style.transform]="'translateX(-50%) rotate(' + minuteHandRotation + 'deg)'"></div>
+                    <div class="ap-clock-hand ap-second-hand" [style.transform]="'translateX(-50%) rotate(' + secondHandRotation + 'deg)'"></div>
+                    <div class="ap-clock-center"></div>
+                </div>
+                <div class="ap-time-copy">
+                    <div class="ap-time-main">{{ currentTime }}</div>
+                    <div class="ap-time-date">{{ currentDate }}</div>
+                    <div class="ap-time-location-pill">
+                        <div class="ap-flag-wrap">
+                            <img src="https://flagcdn.com/w80/us.png" alt="US flag">
+                        </div>
+                        <div class="ap-time-location">US | GMT-5</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ap-filter-center">
+            <div class="ap-filter-container ap-listing-cta-container">
+                <div class="ap-filter-label">Product Listing</div>
+                <button routerLink="/seller/add-product" type="button" class="ap-date-pill ap-listing-cta">
+                    <span><i class="fas fa-plus"></i> Add Product</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <div class="listing-search-section mb-5">
+        <div class="listing-search-toolbar">
+            <div class="listing-search-wrapper">
+                <span class="listing-search-icon-badge"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input type="text" class="listing-search-input" [(ngModel)]="filterText"
+                    placeholder="Search by Product Name, Brand, Category or SKU">
+                <button type="button" class="listing-search-action-btn" aria-label="Search listings">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+
+            <div class="listing-search-filters">
+                <div class="listing-category-filter">
+                    <button type="button" class="listing-category-trigger" (click)="toggleCategoryDropdown($event)">
+                        <span>{{ selectedCategory }}</span>
+                        <span *ngIf="isCategoriesLoading" class="listing-pill-loader"><i class="fas fa-spinner fa-spin"></i></span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="listing-category-dropdown" *ngIf="isCategoryDropdownOpen">
+                        <div class="listing-category-dropdown-scroll">
+                            <button type="button" class="listing-category-option listing-category-option-all"
+                                (click)="onCategorySelect('All Categories')">
+                                <span class="listing-option-icon">
+                                    <i class="fas fa-layer-group"></i>
+                                </span>
+                                <span class="listing-option-meta">
+                                    <span class="listing-option-name">All Categories</span>
+                                </span>
+                                <span class="listing-option-arrow"><i class="fas fa-arrow-right"></i></span>
+                            </button>
+                            <button type="button" class="listing-category-option" *ngFor="let cat of categoryTiles"
+                                [ngClass]="cat.tone" (click)="onCategorySelect(cat.name)">
+                                <span class="listing-option-icon">
+                                    <i class="fas" [ngClass]="cat.icon"></i>
+                                </span>
+                                <span class="listing-option-meta">
+                                    <span class="listing-option-name">{{ cat.name }}</span>
+                                </span>
+                                <span class="listing-option-arrow"><i class="fas fa-arrow-right"></i></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <input type="number" class="listing-filter-input" placeholder="Min Price" [(ngModel)]="minPriceFilter">
+                <input type="number" class="listing-filter-input" placeholder="Max Price" [(ngModel)]="maxPriceFilter">
+                <select class="listing-filter-select" [(ngModel)]="sortOption">
+                    <option value="default">Sort By</option>
+                    <option value="priceLowHigh">Price: Low to High</option>
+                    <option value="priceHighLow">Price: High to Low</option>
+                    <option value="newest">Newest</option>
+                </select>
+                <button type="button" class="listing-filter-clear-btn" (click)="clearListingFilters()">Clear</button>
+            </div>
+
+            <div class="listing-filter-error" *ngIf="priceValidationError">{{ priceValidationError }}</div>
         </div>
     </div>
 
@@ -53,8 +138,15 @@
     <!-- Filtered Empty State -->
     <div *ngIf="!isLoading && products.length > 0 && filteredProducts.length === 0"
         class="text-center py-5 bg-white rounded-4 shadow-sm mx-2 animate__animated animate__fadeIn">
-        <h4 class="fw-bold text-dark">No Matches Found</h4>
-        <p class="text-muted">Try adjusting your search terms for "{{filterText}}"</p>
+        <div class="mb-3">
+            <i class="fas" [class.fa-box-open]="isCategoryFilterActive" [class.fa-search]="!isCategoryFilterActive"
+                style="font-size: 2.5rem; color: #f2bb13;"></i>
+        </div>
+        <h4 class="fw-bold text-dark">{{ isCategoryFilterActive ? 'No Products Found In This Category' : 'No Matches Found' }}</h4>
+        <p class="text-muted" *ngIf="isCategoryFilterActive">
+            No mapped listings are available in "{{ selectedCategory }}" yet. Try another category or add a new product.
+        </p>
+        <p class="text-muted" *ngIf="!isCategoryFilterActive">Try adjusting your search terms for "{{filterText}}"</p>
     </div>
 
     <!-- 3D Product Grid -->
@@ -65,25 +157,37 @@
                 <div class="face">
                     <div class="image-container">
                         <img [src]="product.image" [alt]="product.title">
+                        <div class="image-overlay">
+                            <span class="overlay-chip">{{ product.category }}</span>
+                        </div>
                     </div>
                     <div class="info-container">
+                        <div class="meta-top-row">
+                            <span class="meta-pill id-pill">ID: {{ product.id.substring(0, 8) }}</span>
+                            <span class="meta-pill brand-pill">{{ product.brand }}</span>
+                        </div>
+
                         <div class="title-box">
                             <div class="title">{{ product.title }}</div>
                             <div class="tooltip-text">{{ product.title }}</div>
                         </div>
-                        <div class="tags">
-                            <span class="tag">ID: {{ product.id.substring(0, 8) }}</span>
-                            <span class="tag">{{ product.category }}</span>
-                            <span class="tag">{{ product.brand }}</span>
+
+                        <div class="listing-card-subtext">
+                            <span><i class="fas fa-store"></i> Active Store Listing</span>
+                            <span><i class="fas fa-box-open"></i> Ready to Manage</span>
                         </div>
+
                         <div class="bottom-row">
-                            <div class="price">${{ product.price }}</div>
+                            <div class="price-block">
+                                <span class="price-label">Seller Price</span>
+                                <div class="price">${{ product.price }}</div>
+                            </div>
                             <div class="actions-btns">
                                 <button class="heart" (click)="toggleActive($event, 'heart')">
                                     <i class="fas fa-heart"></i>
                                 </button>
                                 <button class="cart" (click)="editProduct(product, $event)">
-                                    <i class="fas fa-edit"></i>
+                                    <i class="fas fa-pen"></i>
                                 </button>
                             </div>
                         </div>

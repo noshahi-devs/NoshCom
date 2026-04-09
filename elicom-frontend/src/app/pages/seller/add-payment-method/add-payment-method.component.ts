@@ -1,9 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AlertService } from '../../../services/alert.service';
 import { SellerPayoutMethodService, SaveSellerPayoutMethodInput } from '../../../services/seller-payout-method.service';
+import { StoreService } from '../../../services/store.service';
 import { catchError, of } from 'rxjs';
 
 @Component({
@@ -11,17 +12,27 @@ import { catchError, of } from 'rxjs';
     standalone: true,
     imports: [CommonModule, FormsModule, RouterModule],
     templateUrl: './add-payment-method.component.html',
-    styleUrls: ['./add-payment-method.component.scss']
+    styleUrl: './add-payment-method.page.scss'
 })
-export class AddPaymentMethodComponent implements OnInit {
+export class AddPaymentMethodComponent implements OnInit, OnDestroy {
     private payoutMethodService = inject(SellerPayoutMethodService);
     private alert = inject(AlertService);
     private router = inject(Router);
+    private storeService = inject(StoreService);
+    private cdr = inject(ChangeDetectorRef);
+    private zone = inject(NgZone);
 
     // Navigation and State
     activeTab: 'bank' | 'thirdparty' = 'bank';
     isSaving: boolean = false;
     isLoadingCurrent: boolean = false;
+    currentStore: any = null;
+    currentTime = '';
+    currentDate = '';
+    hourHandRotation = 0;
+    minuteHandRotation = 0;
+    secondHandRotation = 0;
+    private clockTimer: ReturnType<typeof setInterval> | null = null;
 
     // Bank Form Fields
     bankAccountTitle: string = ''; // Beneficiary Name
@@ -38,7 +49,7 @@ export class AddPaymentMethodComponent implements OnInit {
     // Options
     thirdPartyOptions = [
         { label: 'Big Commerce', value: 'Big Commerce' },
-        { label: 'Easy Finora', value: 'Easy Finora' },
+        { label: 'NashPay', value: 'Easy Finora' },
         { label: 'Eastnets', value: 'Eastnets' },
         { label: 'Facilita Pay', value: 'Facilita Pay' },
         { label: 'Paddle', value: 'Paddle' }
@@ -83,11 +94,31 @@ export class AddPaymentMethodComponent implements OnInit {
     ];
 
     ngOnInit(): void {
+        this.storeService.currentStore$.subscribe(store => {
+            this.currentStore = store;
+        });
+        this.storeService.getMyStoreCached(true).pipe(
+            catchError(() => of(null))
+        ).subscribe((res: any) => {
+            this.currentStore = (res as any)?.result || res || this.currentStore;
+        });
+
+        this.startClock();
         this.loadCurrentMethod();
+    }
+
+    ngOnDestroy(): void {
+        if (this.clockTimer) {
+            clearInterval(this.clockTimer);
+        }
     }
 
     setTab(tab: 'bank' | 'thirdparty'): void {
         this.activeTab = tab;
+    }
+
+    get displayStoreName(): string {
+        return this.currentStore?.name || 'Seller Store';
     }
 
     savePaymentMethod() {
@@ -98,7 +129,7 @@ export class AddPaymentMethodComponent implements OnInit {
             }
 
             if (this.selectedThirdParty !== 'Easy Finora') {
-                this.alert.error('Please use Easy Finora wallet only');
+                this.alert.error('Please use NashPay wallet only');
                 return;
             }
 
@@ -108,7 +139,7 @@ export class AddPaymentMethodComponent implements OnInit {
             }
         } else {
             // Bank restricted as well
-            this.alert.error('Use Easy Finora wallet');
+            this.alert.error('Use NashPay wallet');
             return;
         }
 
@@ -122,10 +153,16 @@ export class AddPaymentMethodComponent implements OnInit {
                 this.alert.error(this.extractErrorMessage(err));
                 return of(null);
             })
-        ).subscribe((saved) => {
+        ).subscribe(async (saved) => {
             if (!saved) return;
             this.isSaving = false;
-            this.alert.success('Payout method updated successfully.');
+            this.alert.close();
+            const result = await this.alert.success('Payout method updated successfully.');
+            if (!result.isConfirmed) {
+                return;
+            }
+            this.alert.forceCleanup();
+            await new Promise(resolve => setTimeout(resolve, 50));
             this.router.navigate(['/seller/finances/wallet']);
         });
     }
@@ -180,5 +217,43 @@ export class AddPaymentMethodComponent implements OnInit {
             || err?.error?.message
             || err?.message
             || 'Failed to save payout method.';
+    }
+
+    private startClock(): void {
+        this.updateClock();
+        if (this.clockTimer) {
+            clearInterval(this.clockTimer);
+        }
+
+        this.zone.runOutsideAngular(() => {
+            this.clockTimer = setInterval(() => {
+                this.zone.run(() => {
+                    this.updateClock();
+                    this.cdr.markForCheck();
+                });
+            }, 1000);
+        });
+    }
+
+    private updateClock(): void {
+        const now = new Date();
+        this.currentTime = now.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+        this.currentDate = now.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        }).replace(/ /g, '-').toUpperCase();
+
+        const hours = now.getHours() % 12;
+        const minutes = now.getMinutes();
+        const seconds = now.getSeconds();
+
+        this.hourHandRotation = (hours * 30) + (minutes * 0.5);
+        this.minuteHandRotation = (minutes * 6) + (seconds * 0.1);
+        this.secondHandRotation = seconds * 6;
     }
 }

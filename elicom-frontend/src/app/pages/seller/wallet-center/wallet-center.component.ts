@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { WalletService } from '../../../services/wallet.service';
 import { WithdrawalService, WithdrawRequestDto } from '../../../services/withdrawal.service';
 import { AlertService } from '../../../services/alert.service';
@@ -73,6 +73,7 @@ export class WalletCenterComponent implements OnInit {
     private sellerDashboardService = inject(SellerDashboardService);
     private payoutMethodService = inject(SellerPayoutMethodService);
     private cdr = inject(ChangeDetectorRef);
+    private route = inject(ActivatedRoute);
 
     isLoading = true;
     isSubmitting = false;
@@ -107,8 +108,10 @@ export class WalletCenterComponent implements OnInit {
         seconds: 0
     };
     private timerSubscription?: Subscription;
+    viewMode: 'wallet' | 'withdrawal' = 'wallet';
 
     ngOnInit(): void {
+        this.viewMode = (this.route.snapshot.data?.['walletView'] as 'wallet' | 'withdrawal') || 'wallet';
         this.loadData();
         this.startCountdown();
     }
@@ -132,6 +135,84 @@ export class WalletCenterComponent implements OnInit {
             ].join(' ').toLowerCase();
             return composite.includes(term);
         });
+    }
+
+    get isWalletView(): boolean {
+        return this.viewMode === 'wallet';
+    }
+
+    get isWithdrawalView(): boolean {
+        return this.viewMode === 'withdrawal';
+    }
+
+    get availableToWithdraw(): number {
+        const limit = Number(this.currentStore?.withdrawLimit);
+        if (!Number.isFinite(limit) || limit <= 0) return 0;
+        return Math.max(0, Math.min(this.balance, limit));
+    }
+
+    get withdrawalStatusLabel(): string {
+        if (this.currentStore?.withdrawLimit === null || this.currentStore?.withdrawLimit === undefined) {
+            return 'Not Allowed';
+        }
+        return this.isWithdrawExpired ? 'Unlocked' : 'Locked';
+    }
+
+    get withdrawalStatusSubtext(): string {
+        if (this.currentStore?.withdrawLimit === null || this.currentStore?.withdrawLimit === undefined) {
+            return 'Waiting for admin permission';
+        }
+        if (this.isWithdrawExpired) {
+            return 'Withdrawal window is active';
+        }
+        return this.currentStore?.withdrawAllowedUntil
+            ? `Opens ${new Date(this.currentStore.withdrawAllowedUntil).toLocaleDateString()}`
+            : 'Protocol in progress';
+    }
+
+    get paymentMethodStatusLabel(): string {
+        return this.activeMethod.methodKey ? 'Configured' : 'Setup Needed';
+    }
+
+    get paymentMethodStatusTone(): string {
+        return this.activeMethod.isVerified ? 'verified' : (this.activeMethod.methodKey ? 'configured' : 'pending');
+    }
+
+    get paymentSparklinePoints(): string {
+        const values = this.getPaymentSparklineValues();
+        const width = 280;
+        const height = 96;
+        const paddingX = 10;
+        const topPadding = 10;
+        const bottomPadding = 14;
+        const max = Math.max(...values, 1);
+        const step = (width - paddingX * 2) / Math.max(values.length - 1, 1);
+
+        return values.map((value, index) => {
+            const x = paddingX + step * index;
+            const normalized = value / max;
+            const y = topPadding + (1 - normalized) * (height - topPadding - bottomPadding);
+            return `${x.toFixed(1)},${y.toFixed(1)}`;
+        }).join(' ');
+    }
+
+    get paymentSparklineAreaPath(): string {
+        const points = this.paymentSparklinePoints.split(' ');
+        if (!points.length) return '';
+        const first = points[0]?.split(',')[0] || '10';
+        const last = points[points.length - 1]?.split(',')[0] || '270';
+        return `M ${first},82 L ${this.paymentSparklinePoints} L ${last},82 Z`;
+    }
+
+    private getPaymentSparklineValues(): number[] {
+        const values = [
+            this.toSafeNumber(this.balance),
+            this.toSafeNumber(this.pendingPayout),
+            this.toSafeNumber(this.completePayout),
+            this.toSafeNumber(this.recentPayout)
+        ];
+
+        return values.every(value => value <= 0) ? [18, 34, 26, 42] : values;
     }
 
     setStatusFilter(filter: WithdrawFilter): void {
@@ -369,10 +450,12 @@ export class WalletCenterComponent implements OnInit {
         }
 
         const extractedWalletId = this.extractWalletId(latest.paymentDetails || '') || 'N/A';
+        const normalizedMethod = (latest.method || '').toLowerCase();
+        const displayMethod = this.getPayoutDisplayLabel(normalizedMethod, latest.method || 'Third Party');
         this.activeMethod = {
-            method: latest.method || 'Third Party',
-            methodKey: (latest.method || '').toLowerCase(),
-            receiveIn: 'World Cart API',
+            method: displayMethod,
+            methodKey: normalizedMethod,
+            receiveIn: normalizedMethod === 'easyfinora' ? 'NashPay' : 'World Cart API',
             walletId: extractedWalletId,
             paymentDetails: latest.paymentDetails || '',
             isVerified: true,
@@ -384,15 +467,24 @@ export class WalletCenterComponent implements OnInit {
         if (!saved?.methodKey) return;
 
         const normalizedMethod = (saved.methodKey || '').toLowerCase();
+        const displayMethod = this.getPayoutDisplayLabel(normalizedMethod, saved.methodLabel || saved.methodKey || 'Not set');
         this.activeMethod = {
-            method: saved.methodLabel || saved.methodKey || 'Not set',
+            method: displayMethod,
             methodKey: normalizedMethod,
-            receiveIn: normalizedMethod === 'easyfinora' ? 'Easy Finora Card' : 'World Cart API',
+            receiveIn: normalizedMethod === 'easyfinora' ? 'NashPay' : 'World Cart API',
             walletId: saved.walletId || saved.cardNumberMasked || saved.accountNumberMasked || 'Not set',
             paymentDetails: saved.paymentDetails || '',
             isVerified: !!saved.isEasyFinoraVerified,
             verificationMessage: saved.verificationMessage || ''
         };
+    }
+
+    private getPayoutDisplayLabel(methodKey: string, fallback: string): string {
+        if (methodKey === 'easyfinora') {
+            return 'NashPay';
+        }
+
+        return fallback || 'Not set';
     }
 
     private extractWalletId(details: string): string {

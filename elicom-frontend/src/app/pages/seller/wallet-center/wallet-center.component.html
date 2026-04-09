@@ -1,5 +1,5 @@
 <div class="wallet-page">
-    <section class="wallet-cards">
+    <section class="wallet-cards" *ngIf="isWalletView">
         <article class="summary-card card-wallet">
             <div class="card-title">Wallet Balance</div>
             <div class="card-sub">Wallet ID: <ng-container *ngIf="!isLoading; else idLoader">{{ walletId || 'N/A'
@@ -29,70 +29,78 @@
                     }}</ng-container></div>
             <i class="fa-solid fa-upload card-icon"></i>
         </article>
+
+        <article class="summary-card card-available">
+            <div class="card-title">Available to Withdraw</div>
+            <div class="card-sub">Within your current admin withdrawal limit</div>
+            <div class="card-value"><ng-container *ngIf="!isLoading; else numLoader">${{ availableToWithdraw | number:'1.2-2'
+                    }}</ng-container></div>
+            <i class="fa-solid fa-money-bill-wave card-icon"></i>
+        </article>
+
+        <article class="summary-card card-status">
+            <div class="card-title">Withdrawal Status</div>
+            <div class="card-sub">{{ withdrawalStatusSubtext }}</div>
+            <div class="card-value card-value-text"><ng-container *ngIf="!isLoading; else numLoader">{{ withdrawalStatusLabel
+                    }}</ng-container></div>
+            <i class="fa-solid fa-shield-halved card-icon"></i>
+        </article>
     </section>
 
-    <section class="wallet-mid-grid">
-        <article class="panel-card">
+    <section class="wallet-mid-grid" [class.single-mode]="isWalletView || isWithdrawalView">
+        <article class="panel-card" *ngIf="isWalletView">
             <h3>Currently Active Payment Method</h3>
-            <div class="payment-card-wrap" *ngIf="!isLoading; else methodLoader">
-                <div class="virtual-card-3d">
-                    <div class="card-glass-shine"></div>
-                    <div class="card-bg-pattern"></div>
-
-                    <div class="card-chip"></div>
-                    <div class="card-brand-icon">
-                        <i class="fas fa-wifi fa-rotate-90 card-contactless"></i>
-                        <i class="fas fa-microchip"></i>
+            <div class="wallet-method-shell mt-3" *ngIf="!isLoading; else methodLoader">
+                <div class="wallet-method-topbar">
+                    <div class="wallet-method-icon">
+                        <i class="fas fa-wallet"></i>
                     </div>
-                    <div class="card-method-name">{{ activeMethod.method }}</div>
-
-                    <div class="card-details-row">
-                        <div class="card-number-mask">{{ activeMethod.walletId }}</div>
+                    <div class="wallet-method-headings">
+                        <div class="wallet-method-kicker">Payout Profile</div>
+                        <div class="wallet-method-name">{{ activeMethod.method }}</div>
                     </div>
-
-                    <div class="card-middle-row">
-                        <div class="card-info-item">
-                            <span class="label">MEMBER SINCE</span>
-                            <span class="val">2024</span>
-                        </div>
-                        <div class="card-info-item text-center">
-                            <span class="label">VALID THRU</span>
-                            <span class="val">12 / 29</span>
-                        </div>
-                        <div class="card-hologram-seal">
-                            <div class="seal-inner"></div>
-                        </div>
-                    </div>
-
-                    <div class="card-bottom-row">
-                        <div class="card-holder">
-                            <span class="label">RECEIVING VIA</span>
-                            <span class="val">{{ activeMethod.receiveIn }}</span>
-                        </div>
-                        <div class="badge-stack">
-                            <div class="card-platinum-badge">
-                                <i class="fas fa-crown"></i>
-                                <span>PLATINUM STATUS</span>
-                            </div>
-                            <div class="card-status-badge" [ngClass]="activeMethod.isVerified ? 'verified' : 'pending'">
-                                {{ activeMethod.isVerified ? 'VERIFIED' : 'PENDING' }}
-                            </div>
-                        </div>
+                    <div class="wallet-method-status" [ngClass]="paymentMethodStatusTone">
+                        {{ paymentMethodStatusLabel }}
                     </div>
                 </div>
 
-                <div class="method-meta-info mt-3">
-                    <div class="meta-item">
-                        <i class="fas fa-check-circle" [class.text-success]="activeMethod.isVerified"></i>
-                        <span>{{ activeMethod.verificationMessage || (activeMethod.isVerified ? 'Payout method verified
-                            and active' : 'Awaiting verification') }}</span>
+                <div class="wallet-method-grid">
+                    <div class="wallet-method-card">
+                        <span class="wallet-method-label">Wallet ID</span>
+                        <span class="wallet-method-value">{{ activeMethod.walletId }}</span>
+                    </div>
+                    <div class="wallet-method-card">
+                        <span class="wallet-method-label">Receiving Via</span>
+                        <span class="wallet-method-value">{{ activeMethod.receiveIn }}</span>
+                    </div>
+                </div>
+
+                <div class="wallet-method-note">
+                    <i class="fas fa-check-circle" [class.text-success]="activeMethod.isVerified"></i>
+                    <span>{{ activeMethod.verificationMessage || (activeMethod.isVerified ? 'Payout method verified and active' : 'Awaiting verification') }}</span>
+                </div>
+
+                <div class="wallet-sparkline-card">
+                    <div class="wallet-sparkline-head">
+                        <span>Wallet Activity Snapshot</span>
+                        <span class="wallet-sparkline-badge">Live Summary</span>
+                    </div>
+                    <svg viewBox="0 0 280 96" class="wallet-sparkline" preserveAspectRatio="none" aria-label="Wallet trend graph">
+                        <path class="wallet-sparkline-area" [attr.d]="paymentSparklineAreaPath"></path>
+                        <polyline class="wallet-sparkline-line" [attr.points]="paymentSparklinePoints"></polyline>
+                    </svg>
+                    <div class="wallet-sparkline-labels">
+                        <span>Wallet</span>
+                        <span>Pending</span>
+                        <span>Complete</span>
+                        <span>Recent</span>
                     </div>
                 </div>
             </div>
             <a routerLink="/seller/finances/add-payment-method" class="btn-link">Change Payment Method</a>
         </article>
 
-        <article class="panel-card">
+        <article class="panel-card" *ngIf="isWithdrawalView">
             <h3>Withdraw Your Payment</h3>
 
             <div *ngIf="currentStore?.withdrawLimit === null || currentStore?.withdrawLimit === undefined"
@@ -197,7 +205,7 @@
         </article>
     </section>
 
-    <section class="table-card">
+    <section class="table-card" *ngIf="isWithdrawalView">
         <div class="table-head">
             <h3>Withdraw Transactions</h3>
         </div>

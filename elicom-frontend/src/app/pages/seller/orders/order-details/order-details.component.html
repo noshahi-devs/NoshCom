@@ -1,192 +1,283 @@
 <div class="od-page">
     <div class="od-container" *ngIf="order">
-        <!-- New Centered Toolbar with 3D font -->
-        <div class="od-toolbar">
-            <button class="od-back" (click)="goBack()" title="Back to Orders">
-                <i class="fas fa-chevron-left"></i>
-                <span>Back</span>
-            </button>
-            <h2 class="title-3d">Order Details</h2>
-        </div>
+        <section class="od-hero">
+            <div class="od-hero-topbar">
+                <button class="od-back" (click)="goBack()" title="Back to Orders">
+                    <i class="fas fa-chevron-left"></i>
+                    <span>Back to Orders</span>
+                </button>
 
-        <!-- 3D Progress Stepper -->
-        <section class="od-card od-stepper">
+                <div class="od-hero-chip">
+                    <i class="fa-solid fa-receipt"></i>
+                    <span>Order Center</span>
+                </div>
+            </div>
+
+            <div class="od-hero-grid">
+                <div class="od-hero-copy">
+                    <div class="od-hero-kicker">Order Details</div>
+                    <h1>#{{ order?.displayId }}</h1>
+                    <p>
+                        Review shipment timeline, buyer information, payout values, and order items in one
+                        clean workspace.
+                    </p>
+
+                    <div class="od-hero-meta">
+                        <div class="od-meta-pill">
+                            <span class="meta-label">Buyer</span>
+                            <span class="meta-value">{{ order?.customer }}</span>
+                        </div>
+                        <div class="od-meta-pill">
+                            <span class="meta-label">Purchased</span>
+                            <span class="meta-value">{{ order?.uiPurchaseDate }} {{ order?.uiPurchaseTime }}</span>
+                        </div>
+                        <div class="od-meta-pill">
+                            <span class="meta-label">Channel</span>
+                            <span class="meta-value">{{ order?.salesChannel }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="od-status-panel">
+                    <div class="od-panel-kicker">Current Status</div>
+                    <span class="status-badge" [ngClass]="(order?.status || '').toLowerCase()">
+                        {{ order?.statusLabel || order?.status }}
+                    </span>
+
+                    <div class="od-status-info">
+                        <div class="od-status-row">
+                            <span class="meta-label">Ship By</span>
+                            <span class="meta-value">{{ order?.shipBy }}</span>
+                        </div>
+                        <div class="od-status-row">
+                            <span class="meta-label">Deliver By</span>
+                            <span class="meta-value">{{ order?.deliverBy }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="od-stepper-shell">
             <div class="od-track" [ngClass]="{
                 'stage-2': order?.status === 'Pending' || order?.status === 'Processing',
                 'stage-3': order?.status === 'PendingVerification' || order?.status === 'Shipped' || order?.status === 'ShippedFromHub' || order?.status === 'Verified',
                 'stage-4': order?.status === 'Delivered'
             }">
-                <div class="od-step"
-                    [ngClass]="{'done': order?.status !== 'Cancelled' && order?.status !== 'Rejected'}">
-                    <div class="dot"><i class="fas fa-flag-checkered"></i></div>
+                <div class="od-step" [ngClass]="{'done': order?.status !== 'Cancelled' && order?.status !== 'Rejected'}">
+                    <div class="dot"><i class="fas fa-bag-shopping"></i></div>
                     <div class="txt">Ordered</div>
                 </div>
                 <div class="od-step" [ngClass]="{
                     'done': order?.status === 'PendingVerification' || order?.status === 'Shipped' || order?.status === 'ShippedFromHub' || order?.status === 'Verified' || order?.status === 'Delivered',
                     'active': order?.status === 'Pending' || order?.status === 'Processing'
                 }">
-                    <div class="dot"><i class="fas fa-shipping-fast"></i></div>
-                    <div class="txt">Confirm Shipment</div>
+                    <div class="dot"><i class="fas fa-truck-fast"></i></div>
+                    <div class="txt">Shipment</div>
                 </div>
                 <div class="od-step" [ngClass]="{
                     'done': order?.status === 'Delivered',
-                    'active': order?.status === 'PendingVerification' || order?.status === 'Shipped' || order?.status === 'ShippedFromHub'
-                        || order?.status === 'Verified'
+                    'active': order?.status === 'PendingVerification' || order?.status === 'Shipped' || order?.status === 'ShippedFromHub' || order?.status === 'Verified'
                 }">
-                    <div class="dot"><i class="fas fa-shield-alt"></i></div>
+                    <div class="dot"><i class="fas fa-shield-check"></i></div>
                     <div class="txt">Verified</div>
                 </div>
                 <div class="od-step" [ngClass]="{'done': order?.status === 'Delivered'}">
-                    <div class="dot"><i class="fas fa-home"></i></div>
+                    <div class="dot"><i class="fas fa-house"></i></div>
                     <div class="txt">Delivered</div>
                 </div>
             </div>
         </section>
 
-        <!-- 1. Header Info: Order ID & Customer Options -->
-        <section class="od-section od-header-info">
-            <div class="info-group">
-                <h3 class="group-title">Order ID: <span class="order-id">{{ order?.displayId }}</span></h3>
-                <div class="info-row">
-                    <span class="label">Ship by:</span>
-                    <span class="val">{{ order?.shipBy }}</span>
+        <section class="od-summary-grid">
+            <article class="od-info-card">
+                <div class="od-card-head">
+                    <div>
+                        <div class="od-card-kicker">Shipping Address</div>
+                        <h3>Ship To</h3>
+                    </div>
+                    <div class="od-icon-badge tone-blue">
+                        <i class="fas fa-location-dot"></i>
+                    </div>
                 </div>
-                <div class="info-row">
-                    <span class="label">Deliver by:</span>
-                    <span class="val">{{ order?.deliverBy }}</span>
+
+                <div class="od-detail-stack">
+                    <div class="od-detail-row">
+                        <span class="meta-label">Full Name</span>
+                        <span class="meta-value">{{ order?.customer }}</span>
+                    </div>
+                    <div class="od-detail-row">
+                        <span class="meta-label">Address</span>
+                        <span class="meta-value">{{ order?.shippingAddress }}</span>
+                    </div>
+                    <div class="od-detail-row">
+                        <span class="meta-label">City / State</span>
+                        <span class="meta-value">{{ order?.city }}, {{ order?.state }}</span>
+                    </div>
+                    <div class="od-detail-row">
+                        <span class="meta-label">Postal Code</span>
+                        <span class="meta-value">{{ order?.postalCode }}</span>
+                    </div>
+                    <div class="od-detail-row">
+                        <span class="meta-label">Address Type</span>
+                        <span class="meta-value">Residential</span>
+                    </div>
                 </div>
-                <div class="info-row">
-                    <span class="label">Purchase date:</span>
-                    <span class="val">{{ order?.uiPurchaseDate }} {{ order?.uiPurchaseTime }}</span>
+            </article>
+
+            <article class="od-info-card">
+                <div class="od-card-head">
+                    <div>
+                        <div class="od-card-kicker">Customer Options</div>
+                        <h3>Fulfillment Setup</h3>
+                    </div>
+                    <div class="od-icon-badge tone-amber">
+                        <i class="fas fa-sliders"></i>
+                    </div>
                 </div>
-            </div>
-            <div class="info-group">
-                <h3 class="group-title">Customer Options</h3>
-                <div class="info-row">
-                    <span class="label">Shipping service:</span>
-                    <span class="val">Standard</span>
+
+                <div class="od-pill-grid">
+                    <div class="od-data-pill">
+                        <span class="meta-label">Shipping Service</span>
+                        <span class="meta-value">{{ order?.shippingService || 'Standard' }}</span>
+                    </div>
+                    <div class="od-data-pill">
+                        <span class="meta-label">Fulfillment</span>
+                        <span class="meta-value">{{ order?.fulfillment || 'Seller' }}</span>
+                    </div>
+                    <div class="od-data-pill">
+                        <span class="meta-label">Sales Channel</span>
+                        <span class="meta-value">{{ order?.salesChannel }}</span>
+                    </div>
+                    <div class="od-data-pill">
+                        <span class="meta-label">Phone</span>
+                        <span class="meta-value">{{ order?.phone }}</span>
+                    </div>
+                    <div class="od-data-pill full">
+                        <span class="meta-label">Email</span>
+                        <span class="meta-value">{{ order?.email }}</span>
+                    </div>
                 </div>
-                <div class="info-row">
-                    <span class="label">Fulfillment:</span>
-                    <span class="val">Seller</span>
+            </article>
+
+            <article class="od-info-card od-billing-card">
+                <div class="od-card-head">
+                    <div>
+                        <div class="od-card-kicker">Billing Overview</div>
+                        <h3>Payment Summary</h3>
+                    </div>
+                    <div class="od-icon-badge tone-green">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
                 </div>
-                <div class="info-row">
-                    <span class="label">Sales Channel:</span>
-                    <span class="val">Worldcartus.com</span>
+
+                <div class="od-detail-stack">
+                    <div class="od-detail-row">
+                        <span class="meta-label">Payment Method</span>
+                        <span class="meta-value success">Standard - Verified</span>
+                    </div>
+                    <div class="od-detail-row">
+                        <span class="meta-label">Items Total</span>
+                        <span class="meta-value">${{ order?.subtotal | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="od-detail-row">
+                        <span class="meta-label">Platform Fee</span>
+                        <span class="meta-value">${{ order?.platformFee | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="od-detail-row">
+                        <span class="meta-label">Tax</span>
+                        <span class="meta-value success">4% (${{ order?.taxAmount | number:'1.2-2' }})</span>
+                    </div>
+                    <div class="od-detail-row total-row">
+                        <span class="meta-label">Grand Total</span>
+                        <span class="meta-value">${{ order?.grandTotal | number:'1.2-2' }}</span>
+                    </div>
                 </div>
-            </div>
+            </article>
         </section>
 
-        <!-- 2. Middle Grid: Ship To, Order Status, Billing Info -->
-        <section class="od-section od-details-grid">
-            <div class="grid-item ship-to">
-                <h3 class="grid-title">Ship to</h3>
-                <div class="ship-info-container">
-                    <div class="info-line">
-                        <span class="label">Full Name:</span>
-                        <span class="val highlight">{{ order?.customer }}</span>
-                    </div>
-                    <div class="info-line">
-                        <span class="label">Address:</span>
-                        <span class="val">{{ order?.shippingAddress }}</span>
-                    </div>
-                    <div class="info-line">
-                        <span class="label">City/State:</span>
-                        <span class="val">{{ order?.city }}, {{ order?.state }}</span>
-                    </div>
-                    <div class="info-line">
-                        <span class="label">Postal Code:</span>
-                        <span class="val">{{ order?.postalCode }}</span>
-                    </div>
-                    <div class="info-line">
-                        <span class="label">Address type:</span>
-                        <span class="val">Residential</span>
-                    </div>
+        <section class="od-items-shell">
+            <div class="od-section-heading">
+                <div>
+                    <div class="od-card-kicker">Order Content</div>
+                    <h3>Items in This Order</h3>
+                </div>
+                <div class="od-hero-chip">
+                    <i class="fa-solid fa-box-open"></i>
+                    <span>{{ order?.orderItems?.length || 0 }} item(s)</span>
                 </div>
             </div>
 
-            <div class="grid-item order-status">
-                <h3 class="grid-title">Order Status</h3>
-                <span class="status-badge" [ngClass]="(order?.status || '').toLowerCase()">{{ order?.statusLabel || order?.status }}</span>
+            <div class="od-items-grid" *ngIf="order?.orderItems?.length; else noItems">
+                <article class="od-item-card" *ngFor="let item of order?.orderItems">
+                    <div class="od-item-media">
+                        <img [src]="item.image" alt="Product" (error)="onProductImageError($event)">
+                    </div>
+
+                    <div class="od-item-copy">
+                        <div class="od-item-top">
+                            <div class="od-item-title">{{ item.name || 'Product' }}</div>
+                            <div class="od-item-price">${{ item.price | number:'1.2-2' }}</div>
+                        </div>
+
+                        <div class="od-item-meta">
+                            <div class="od-data-pill">
+                                <span class="meta-label">Condition</span>
+                                <span class="meta-value">New</span>
+                            </div>
+                            <div class="od-data-pill">
+                                <span class="meta-label">Product ID</span>
+                                <span class="meta-value">{{ item.productId?.substring(0, 18) }}</span>
+                            </div>
+                            <div class="od-data-pill">
+                                <span class="meta-label">Quantity</span>
+                                <span class="meta-value">{{ item.quantity }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="od-item-finance">
+                        <div class="od-finance-card">
+                            <div class="od-detail-row">
+                                <span class="meta-label">Item Subtotal</span>
+                                <span class="meta-value">${{ item.subtotal }}</span>
+                            </div>
+                            <div class="od-detail-row">
+                                <span class="meta-label">Tax</span>
+                                <span class="meta-value success">4% (${{ item.tax }})</span>
+                            </div>
+                            <div class="od-detail-row">
+                                <span class="meta-label">Platform Fee</span>
+                                <span class="meta-value">${{ item.platformFee }}</span>
+                            </div>
+                            <div class="od-detail-row total-row">
+                                <span class="meta-label">Item Total</span>
+                                <span class="meta-value">${{ item.total }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </article>
             </div>
 
-            <div class="grid-item billing-info">
-                <div class="billing-box">
-                    <h3 class="grid-title">Billing info</h3>
-                    <div class="info-row">
-                        <span class="label">Payment Method:</span>
-                        <span class="val success">Standard - Verified</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="label">Items total:</span>
-                        <span class="val">${{ order?.subtotal | number:'1.2-2' }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="label">Tax:</span>
-                        <span class="val success">4% (${{ order?.taxAmount | number:'1.2-2' }})</span>
-                    </div>
-                    <div class="info-row grand-total">
-                        <span class="label">Grand total:</span>
-                        <span class="val">${{ order?.grandTotal | number:'1.2-2' }}</span>
-                    </div>
+            <ng-template #noItems>
+                <div class="od-empty">No items found.</div>
+            </ng-template>
+        </section>
+
+        <section class="od-shipment-shell" *ngIf="canShowFulfillmentPanel()">
+            <div class="od-section-heading">
+                <div>
+                    <div class="od-card-kicker">Shipment Control</div>
+                    <h3>Confirm Shipment</h3>
                 </div>
             </div>
-        </section>
 
-        <!-- 3. Order Content Table -->
-        <section class="od-section od-content-section">
-            <h3 class="section-title">Order Content</h3>
-            <div class="od-table-wrapper">
-                <table class="od-table">
-                    <thead>
-                        <tr>
-                            <th>Image</th>
-                            <th>Product Name</th>
-                            <th>More info</th>
-                            <th>Quantity</th>
-                            <th>Unit price</th>
-                            <th>proceeds</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let item of order?.orderItems">
-                            <td class="img-cell">
-                                <div class="img-box">
-                                    <img [src]="item.image" alt="Product" (error)="onProductImageError($event)">
-                                </div>
-                            </td>
-                            <td class="name-cell">
-                                <div class="p-name">{{ item.name || 'Product' }}</div>
-                            </td>
-                            <td class="info-cell">
-                                <p>Condition: <b>New</b></p>
-                                <p>Product id: <b>{{ item.productId?.substring(0, 10) }}</b></p>
-                            </td>
-                            <td class="qty-cell">{{ item.quantity }}</td>
-                            <td class="price-cell">${{ item.price | number:'1.2-2' }}</td>
-                            <td class="proceeds-cell">
-                                <div class="proceeds-summary">
-                                    <div class="s-row">Item subtotal: <b>${{ item.subtotal }}</b></div>
-                                    <div class="s-row">Tax: <span class="success">4% (${{ item.tax }})</span></div>
-                                    <div class="s-row total">Item total: {{ item.total }}</div>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="od-empty" *ngIf="!order?.orderItems?.length">No items found.</div>
-            </div>
-        </section>
-
-        <!-- 4. Confirm Shipment Panel -->
-        <section class="od-section od-shipment-panel" *ngIf="canShowFulfillmentPanel()">
-            <h3 class="section-title">Confirm Shipment</h3>
-            <div class="form-grid">
-                <div class="form-group">
+            <div class="od-form-grid">
+                <div class="od-form-card">
                     <label>Shipment Date</label>
                     <input type="date" [(ngModel)]="fulfillmentForm.shipmentDate">
                 </div>
-                <div class="form-group">
+                <div class="od-form-card">
                     <label>Carrier</label>
                     <select [(ngModel)]="fulfillmentForm.carrierId">
                         <option value="" selected disabled>Choose Carrier</option>
@@ -199,69 +290,87 @@
                         <option value="AmazonLogistics">Amazon Logistics</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="od-form-card">
                     <label>Tracking ID</label>
                     <input type="text" [(ngModel)]="fulfillmentForm.trackingCode" placeholder="Tracking ID">
                 </div>
             </div>
 
-            <div class="form-actions">
+            <div class="od-form-actions">
                 <button *ngIf="!isCancelledStatus()" class="btn-cancel-outline" (click)="cancelOrder()">Cancel Order</button>
                 <button *ngIf="isCancelledStatus() && !isRejectedStatus()" class="btn-cancel-outline" (click)="rejectOrder()">Reject Order</button>
                 <button class="btn-confirm-solid" (click)="fulfillOrder()" [disabled]="fulfilling || isRejectedStatus()">
-                    <span *ngIf="!fulfilling">Confirm shipment</span>
+                    <span *ngIf="!fulfilling">Confirm Shipment</span>
                     <span *ngIf="fulfilling"><i class="fas fa-spinner fa-spin"></i> Processing...</span>
                 </button>
             </div>
         </section>
 
+        <section class="od-admin-shell" *ngIf="authService.isAdmin()">
+            <div class="od-section-heading">
+                <div>
+                    <div class="od-card-kicker">Admin Workspace</div>
+                    <h3>Seller & Source Controls</h3>
+                </div>
+            </div>
 
-        <section class="od-card od-admin" *ngIf="authService.isAdmin()">
-            <h4>Administrative Actions</h4>
+            <div class="od-admin-grid">
+                <article class="od-admin-card">
+                    <div class="od-card-head">
+                        <div>
+                            <div class="od-card-kicker">Seller Profile</div>
+                            <h3>Seller & Store</h3>
+                        </div>
+                        <div class="od-icon-badge tone-violet">
+                            <i class="fas fa-store"></i>
+                        </div>
+                    </div>
 
-            <div class="admin-grid">
-                <article class="mini-card">
-                    <h5>Seller & Store</h5>
-                    <div class="od-line"><span>Seller Name</span><b>{{ order?.sellerInfo?.sellerName || 'N/A' }}</b>
+                    <div class="od-detail-stack">
+                        <div class="od-detail-row"><span class="meta-label">Seller Name</span><span class="meta-value">{{ order?.sellerInfo?.sellerName || 'N/A' }}</span></div>
+                        <div class="od-detail-row"><span class="meta-label">Seller ID</span><span class="meta-value">{{ order?.sellerInfo?.sellerId || 'N/A' }}</span></div>
+                        <div class="od-detail-row"><span class="meta-label">Seller Email</span><span class="meta-value">{{ order?.sellerInfo?.sellerEmail || 'N/A' }}</span></div>
+                        <div class="od-detail-row"><span class="meta-label">Store Name</span><span class="meta-value">{{ order?.sellerInfo?.storeName || 'N/A' }}</span></div>
+                        <div class="od-detail-row"><span class="meta-label">Store ID</span><span class="meta-value">{{ order?.sellerInfo?.storeId || 'N/A' }}</span></div>
                     </div>
-                    <div class="od-line"><span>Seller ID</span><b>{{ order?.sellerInfo?.sellerId || 'N/A' }}</b></div>
-                    <div class="od-line"><span>Seller Email</span><b>{{ order?.sellerInfo?.sellerEmail || 'N/A' }}</b>
-                    </div>
-                    <div class="od-line"><span>Store Name</span><b>{{ order?.sellerInfo?.storeName || 'N/A' }}</b></div>
-                    <div class="od-line"><span>Store ID</span><b>{{ order?.sellerInfo?.storeId || 'N/A' }}</b></div>
                 </article>
 
-                <article class="mini-card">
-                    <h5>PrimeShip Source</h5>
-                    <div class="od-line"><span>Order ID</span><b>{{ order?.primeShipInfo?.sourceOrderId || 'N/A' }}</b>
+                <article class="od-admin-card">
+                    <div class="od-card-head">
+                        <div>
+                            <div class="od-card-kicker">PrimeShip Source</div>
+                            <h3>Supplier Reference</h3>
+                        </div>
+                        <div class="od-icon-badge tone-rose">
+                            <i class="fas fa-truck-ramp-box"></i>
+                        </div>
                     </div>
-                    <div class="od-line"><span>Tracking</span><b>{{ order?.primeShipInfo?.trackingNumber || 'N/A' }}</b>
+
+                    <div class="od-detail-stack">
+                        <div class="od-detail-row"><span class="meta-label">Order ID</span><span class="meta-value">{{ order?.primeShipInfo?.sourceOrderId || 'N/A' }}</span></div>
+                        <div class="od-detail-row"><span class="meta-label">Tracking</span><span class="meta-value">{{ order?.primeShipInfo?.trackingNumber || 'N/A' }}</span></div>
+                        <div class="od-detail-row"><span class="meta-label">Bought On</span><span class="meta-value">{{ formatPanelDateTime(order?.primeShipInfo?.purchaseDateTime) }}</span></div>
+                        <div class="od-detail-row"><span class="meta-label">Shipment Date</span><span class="meta-value">{{ formatPanelDateTime(order?.primeShipInfo?.shipmentDate) }}</span></div>
+                        <div class="od-detail-row"><span class="meta-label">Carrier</span><span class="meta-value">{{ order?.primeShipInfo?.carrier || 'N/A' }}</span></div>
                     </div>
-                    <div class="od-line"><span>Bought On</span><b>{{
-                            formatPanelDateTime(order?.primeShipInfo?.purchaseDateTime) }}</b></div>
-                    <div class="od-line"><span>Shipment Date</span><b>{{
-                            formatPanelDateTime(order?.primeShipInfo?.shipmentDate) }}</b></div>
-                    <div class="od-line"><span>Carrier</span><b>{{ order?.primeShipInfo?.carrier || 'N/A' }}</b></div>
                 </article>
             </div>
 
-            <div class="od-btns admin-actions-footer mt-4">
-                <button class="btn-cancel" (click)="cancelOrder()"
+            <div class="od-form-actions admin-actions-footer">
+                <button class="btn-cancel-outline" (click)="cancelOrder()"
                     *ngIf="!isCancelledStatus() && !isRejectedStatus() && order?.status !== 'Delivered'">
                     Cancel Order
                 </button>
 
-                <button *ngIf="canVerifyStatus(order?.status)" class="btn-confirm" (click)="verifyOrder()">
+                <button *ngIf="canVerifyStatus(order?.status)" class="btn-confirm-solid alt" (click)="verifyOrder()">
                     Verify Tracking
                 </button>
 
-                <button *ngIf="order?.status === 'Verified' || order?.status === 'ShippedFromHub'" class="btn-deliver"
+                <button *ngIf="order?.status === 'Verified' || order?.status === 'ShippedFromHub'" class="btn-confirm-solid success"
                     (click)="deliverOrder()">
                     Confirm Delivery
                 </button>
             </div>
         </section>
-
-        <div class="py-4"></div>
     </div>
 </div>

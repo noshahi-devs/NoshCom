@@ -1,20 +1,71 @@
 <div class="add-payout-page">
-    <!-- Centered Header -->
-    <section class="payout-header-section text-center">
-        <h2 class="title-3d">Update Payout Method</h2>
-        <p class="sub-heading-3d">Securely configure how you receive your earnings</p>
+    <section class="ap-hero mb-5">
+        <div class="ap-store">
+            <div class="ap-store-icon">
+                <img src="/assets/images/logo1.png" alt="Store Logo" class="ap-store-logo-img">
+            </div>
+            <div class="ap-store-copy">
+                <div class="ap-store-title-row">
+                    <div class="ap-store-title-group">
+                        <h2 class="ap-store-title">{{ displayStoreName }}</h2>
+                        <span *ngIf="currentStore?.status" title="Admin Verified Store" class="ap-store-verified">
+                            <i class="fas fa-check-circle"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="ap-store-mode">
+                    <h3>Add Payout Method</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="ap-right-stack">
+            <div class="ap-time-card">
+                <div class="ap-analog-clock">
+                    <div class="ap-clock-ring ap-clock-ring-one"></div>
+                    <div class="ap-clock-ring ap-clock-ring-two"></div>
+                    <div class="ap-clock-mark ap-mark-12"></div>
+                    <div class="ap-clock-mark ap-mark-3"></div>
+                    <div class="ap-clock-mark ap-mark-6"></div>
+                    <div class="ap-clock-mark ap-mark-9"></div>
+                    <div class="ap-clock-hand ap-hour-hand" [style.transform]="'translateX(-50%) rotate(' + hourHandRotation + 'deg)'"></div>
+                    <div class="ap-clock-hand ap-minute-hand" [style.transform]="'translateX(-50%) rotate(' + minuteHandRotation + 'deg)'"></div>
+                    <div class="ap-clock-hand ap-second-hand" [style.transform]="'translateX(-50%) rotate(' + secondHandRotation + 'deg)'"></div>
+                    <div class="ap-clock-center"></div>
+                </div>
+                <div class="ap-time-copy">
+                    <div class="ap-time-main">{{ currentTime }}</div>
+                    <div class="ap-time-date">{{ currentDate }}</div>
+                    <div class="ap-time-location-pill">
+                        <div class="ap-flag-wrap">
+                            <img src="https://flagcdn.com/w80/us.png" alt="US flag">
+                        </div>
+                        <div class="ap-time-location">US | GMT-5</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ap-filter-center">
+            <div class="ap-filter-container payout-tab-hero-shell">
+                <div class="ap-filter-label">Payout Setup</div>
+                <div class="payout-tabs">
+                    <button type="button" class="payout-tab" [class.active]="activeTab === 'bank'" (click)="setTab('bank')">
+                        <i class="fas fa-university me-2"></i> Via Bank Account
+                    </button>
+                    <button type="button" class="payout-tab" [class.active]="activeTab === 'thirdparty'" (click)="setTab('thirdparty')">
+                        <i class="fas fa-wallet me-2"></i> Via Third Party Services
+                    </button>
+                </div>
+            </div>
+        </div>
     </section>
 
-    <!-- 3D Tab Switcher -->
-    <div class="tab-switcher-container">
-        <div class="payout-tabs">
-            <button type="button" class="payout-tab" [class.active]="activeTab === 'bank'" (click)="setTab('bank')">
-                <i class="fas fa-university me-2"></i> Via Bank Account
-            </button>
-            <button type="button" class="payout-tab" [class.active]="activeTab === 'thirdparty'" (click)="setTab('thirdparty')">
-                <i class="fas fa-wallet me-2"></i> Via Third Party Services
-            </button>
-        </div>
+    <div class="page-top-actions">
+        <a routerLink="/seller/finances/wallet" class="btn-back-link btn-back-pill">
+            <i class="fas fa-chevron-left"></i>
+            <span>Back to Wallet Center</span>
+        </a>
     </div>
 
     <!-- Main Content Card -->
@@ -27,59 +78,135 @@
                 <b>USA Residents Only:</b> Required Bank Account for Payment Transactions
             </div>
 
-            <div class="payout-layout-grid">
+            <div class="payout-layout-grid payout-layout-grid-bank">
                 <div class="form-area">
-                    <div class="row g-4">
-                        <div class="col-12">
-                            <label class="p-label">Choose Bank *</label>
-                            <select class="p-input" [(ngModel)]="bankName">
-                                <option value="" disabled selected>--Choose--</option>
-                                <option *ngFor="let opt of bankOptions" [value]="opt.value">{{ opt.label }}</option>
-                            </select>
+                    <div class="bank-shell">
+                        <div class="bank-shell-head">
+                            <div class="bank-shell-kicker">Bank Withdrawal Setup</div>
+                            <h4>Connect your USA bank account</h4>
+                            <p>Complete the payout profile below to receive seller earnings directly into your verified USA bank account with secure processing.</p>
                         </div>
 
-                        <div class="col-12">
-                            <label class="p-label">Routing (ABA) *</label>
-                            <input type="text" class="p-input" [(ngModel)]="routingNumber" placeholder="9-digit routing number">
+                        <div class="bank-form-grid">
+                            <div class="bank-field-card bank-field-card-wide">
+                                <label class="p-label">Choose Bank *</label>
+                                <select class="p-input" [(ngModel)]="bankName">
+                                    <option value="" disabled selected>--Choose--</option>
+                                    <option *ngFor="let opt of bankOptions" [value]="opt.value">{{ opt.label }}</option>
+                                </select>
+                            </div>
+
+                            <div class="bank-field-card">
+                                <label class="p-label">Routing (ABA) *</label>
+                                <input type="text" class="p-input" [(ngModel)]="routingNumber" placeholder="9-digit routing number">
+                            </div>
+
+                            <div class="bank-field-card">
+                                <label class="p-label">Account number *</label>
+                                <input type="text" class="p-input" [(ngModel)]="bankAccountNumber" placeholder="Full account number">
+                            </div>
+
+                            <div class="bank-field-card">
+                                <label class="p-label">Account type *</label>
+                                <select class="p-input" [(ngModel)]="bankAccountType">
+                                    <option value="" disabled selected>--Choose--</option>
+                                    <option value="checking">Checking</option>
+                                    <option value="savings">Savings</option>
+                                </select>
+                            </div>
+
+                            <div class="bank-field-card">
+                                <label class="p-label">Beneficiary name *</label>
+                                <input type="text" class="p-input" [(ngModel)]="bankAccountTitle" placeholder="Name as it appears on account">
+                            </div>
+
+                            <div class="bank-field-card bank-field-card-wide">
+                                <label class="p-label">Reference number (Optional)</label>
+                                <input type="text" class="p-input" [(ngModel)]="referenceNumber" placeholder="Any internal reference">
+                            </div>
                         </div>
 
-                        <div class="col-12">
-                            <label class="p-label">Account number *</label>
-                            <input type="text" class="p-input" [(ngModel)]="bankAccountNumber" placeholder="Full account number">
+                        <div class="bank-inline-tips">
+                            <div class="bank-tip">
+                                <i class="fas fa-lock"></i>
+                                <span>All payout details are processed through a secure encrypted flow.</span>
+                            </div>
+                            <div class="bank-tip">
+                                <i class="fas fa-building-columns"></i>
+                                <span>Use account details exactly as registered with your bank to avoid payout delays.</span>
+                            </div>
                         </div>
 
-                        <div class="col-12">
-                            <label class="p-label">Account type *</label>
-                            <select class="p-input" [(ngModel)]="bankAccountType">
-                                <option value="" disabled selected>--Choose--</option>
-                                <option value="checking">Checking</option>
-                                <option value="savings">Savings</option>
-                            </select>
+                        <div class="action-footer mt-4">
+                            <button class="btn-3d-submit" (click)="savePaymentMethod()" [disabled]="isSaving">
+                                <i class="fas fa-plus-circle me-2"></i>
+                                {{ isSaving ? 'Saving...' : 'Add account as withdraw method' }}
+                            </button>
                         </div>
-
-                        <div class="col-12">
-                            <label class="p-label">Beneficiary name *</label>
-                            <input type="text" class="p-input" [(ngModel)]="bankAccountTitle" placeholder="Name as it appears on account">
-                        </div>
-
-                        <div class="col-12">
-                            <label class="p-label">Reference number (Optional)</label>
-                            <input type="text" class="p-input" [(ngModel)]="referenceNumber" placeholder="Any internal reference">
-                        </div>
-                    </div>
-
-                    <div class="action-footer mt-5">
-                        <button class="btn-3d-submit" (click)="savePaymentMethod()" [disabled]="isSaving">
-                            <i class="fas fa-plus-circle me-2"></i>
-                            {{ isSaving ? 'Saving...' : 'Add account as withdraw method' }}
-                        </button>
                     </div>
                 </div>
 
-                <!-- Side Instruction Panel -->
                 <div class="instruction-area">
-                    <div class="instruction-box yellow-box">
-                        <p>To start receiving your payments, please add your USA bank account details. Ensure all information is accurate to avoid delays in processing withdrawals. This will allow you to seamlessly transfer your earnings from Elicom USA directly to your bank account. Your details are securely encrypted to maintain your privacy and security.</p>
+                    <div class="bank-side-panel">
+                        <div class="bank-side-card">
+                            <div class="bank-side-icon">
+                                <i class="fas fa-shield-halved"></i>
+                            </div>
+                            <div>
+                                <h5>Trusted payout processing</h5>
+                                <p>Keep your bank record accurate so withdrawals move smoothly from seller balance to your verified account.</p>
+                            </div>
+                        </div>
+
+                        <div class="bank-side-card accent">
+                            <div class="bank-side-icon">
+                                <i class="fas fa-landmark"></i>
+                            </div>
+                            <div>
+                                <h5>Best for USA-based sellers</h5>
+                                <p>A verified USA bank account gives you the most direct settlement path for regular payout transfers.</p>
+                            </div>
+                        </div>
+
+                        <div class="bank-side-card tone-sky">
+                            <div class="bank-side-icon">
+                                <i class="fas fa-money-check-dollar"></i>
+                            </div>
+                            <div>
+                                <h5>Fast ACH settlement</h5>
+                                <p>Accurate bank credentials help ACH-based payouts move faster with fewer retry issues.</p>
+                            </div>
+                        </div>
+
+                        <div class="bank-side-card tone-mint">
+                            <div class="bank-side-icon">
+                                <i class="fas fa-circle-check"></i>
+                            </div>
+                            <div>
+                                <h5>Verification ready</h5>
+                                <p>Keep your beneficiary name and account type matched with your bank profile for smooth approval.</p>
+                            </div>
+                        </div>
+
+                        <div class="bank-side-card tone-rose">
+                            <div class="bank-side-icon">
+                                <i class="fas fa-clock-rotate-left"></i>
+                            </div>
+                            <div>
+                                <h5>Fewer payout delays</h5>
+                                <p>Incorrect routing or account details can slow down settlement, so review every field before saving.</p>
+                            </div>
+                        </div>
+
+                        <div class="bank-side-card tone-lavender">
+                            <div class="bank-side-icon">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <div>
+                                <h5>Seller support friendly</h5>
+                                <p>Adding a reference number makes it easier to trace your payout setup if support assistance is ever needed.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -92,46 +219,75 @@
                 <b>Payment Solutions for Non-USA Residents</b>
             </div>
 
-            <div class="payout-layout-grid">
+            <div class="payout-layout-grid payout-layout-grid-thirdparty">
                 <div class="form-area">
-                    <div class="row g-4">
-                        <div class="col-12">
-                            <label class="p-label">Choose Third Party</label>
-                            <select class="p-input" [(ngModel)]="selectedThirdParty">
-                                <option value="" disabled selected>--Choose--</option>
-                                <option *ngFor="let opt of thirdPartyOptions" [value]="opt.value">{{ opt.label }}</option>
-                            </select>
+                    <div class="thirdparty-shell">
+                        <div class="thirdparty-shell-head">
+                            <div class="thirdparty-shell-kicker">Global Withdrawal Setup</div>
+                            <h4>Connect your preferred payout partner</h4>
+                            <p>Choose a supported payout provider and link the wallet ID where you want your seller earnings to arrive.</p>
                         </div>
 
-                        <div class="col-12">
-                            <label class="p-label">Add Wallet ID</label>
-                            <input type="text" class="p-input" [(ngModel)]="walletId" placeholder="Enter your wallet identifier">
-                        </div>
-                    </div>
+                        <div class="thirdparty-form-grid">
+                            <div class="thirdparty-field-card">
+                                <label class="p-label">Choose Third Party</label>
+                                <select class="p-input" [(ngModel)]="selectedThirdParty">
+                                    <option value="" disabled selected>--Choose--</option>
+                                    <option *ngFor="let opt of thirdPartyOptions" [value]="opt.value">{{ opt.label }}</option>
+                                </select>
+                            </div>
 
-                    <div class="action-footer mt-5">
-                        <button class="btn-3d-submit" (click)="savePaymentMethod()" [disabled]="isSaving">
-                            <i class="fas fa-sync-alt me-2"></i>
-                            {{ isSaving ? 'Saving...' : 'Update account details' }}
-                        </button>
+                            <div class="thirdparty-field-card">
+                                <label class="p-label">Add Wallet ID</label>
+                                <input type="text" class="p-input" [(ngModel)]="walletId" placeholder="Enter your wallet identifier">
+                            </div>
+                        </div>
+
+                        <div class="thirdparty-inline-tips">
+                            <div class="thirdparty-tip">
+                                <i class="fas fa-shield-check"></i>
+                                <span>Secure payout onboarding for international sellers.</span>
+                            </div>
+                            <div class="thirdparty-tip">
+                                <i class="fas fa-bolt"></i>
+                                <span>NashPay is recommended for the fastest wallet-based setup.</span>
+                            </div>
+                        </div>
+
+                        <div class="action-footer mt-4">
+                            <button class="btn-3d-submit" (click)="savePaymentMethod()" [disabled]="isSaving">
+                                <i class="fas fa-sync-alt me-2"></i>
+                                {{ isSaving ? 'Saving...' : 'Update account details' }}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Side Instruction Panel -->
                 <div class="instruction-area">
-                    <div class="instruction-box blue-box">
-                        <p>If you're not a USA resident or don't have a USA bank account, you can still receive payments by using third-party services. These platforms allow you to withdraw your earnings in your local currency, providing a convenient solution for international sellers. Simply connect your preferred third-party account, and start transferring your funds with ease.</p>
+                    <div class="thirdparty-side-panel">
+                        <div class="thirdparty-side-card">
+                            <div class="thirdparty-side-icon">
+                                <i class="fas fa-globe-americas"></i>
+                            </div>
+                            <div>
+                                <h5>International seller friendly</h5>
+                                <p>Receive earnings even without a USA bank account by connecting an approved payout service.</p>
+                            </div>
+                        </div>
+
+                        <div class="thirdparty-side-card accent">
+                            <div class="thirdparty-side-icon">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div>
+                                <h5>Recommended: NashPay</h5>
+                                <p>Use your NashPay wallet ID to route payouts faster and keep settlements simple for your store operations.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </ng-container>
 
     </section>
-
-    <!-- Back Button -->
-    <div class="page-footer-actions text-center mt-4">
-        <a routerLink="/seller/finances/wallet" class="btn-back-link">
-            <i class="fas fa-chevron-left me-1"></i> Back to Wallet Center
-        </a>
-    </div>
 </div>
