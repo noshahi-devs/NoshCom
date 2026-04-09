@@ -3,7 +3,7 @@
         <section class="sd-hero">
             <div class="sd-store">
                 <div class="sd-store-icon">
-                    <img src="/assets/images/world-favicon.svg" alt="Store Logo" class="sd-store-logo-img">
+                    <img src="/assets/images/logo1.png" alt="Store Logo" class="sd-store-logo-img">
                 </div>
                 <div class="sd-store-copy">
                     <div class="sd-store-title-row">
@@ -18,29 +18,45 @@
                                 </span>
                             </ng-template>
                         </h2>
-                        <span *ngIf="!isStoreLoading" class="sd-store-badge" [ngClass]="storeBadgeClass">
-                            <i class="fas"
-                                [ngClass]="currentStore?.status ? 'fa-check-circle' : (currentStore?.id ? 'fa-clock' : 'fa-store')"></i>
-                            {{ storeBadgeText }}
+                        <span *ngIf="!isStoreLoading && currentStore?.status" class="sd-store-verified" title="Admin Verified Store">
+                            <i class="fas fa-check-circle"></i>
                         </span>
+                        <div class="sd-filter-container sd-filter-inline">
+                            <div class="sd-date-picker-shell">
+                                <app-date-range-picker [storeCreatedAt]="currentStore?.createdAt" [initialRangeId]="'max'"
+                                    (onRangeChange)="onRangeChange($event)"></app-date-range-picker>
+                            </div>
+                        </div>
                     </div>
-                    <p class="sd-store-subtitle">Here's what's happening in your store today.</p>
+                    <p class="sd-store-subtitle">Track your store performance, orders, revenue, and payouts from one professional seller dashboard.</p>
                 </div>
             </div>
 
-            <div class="sd-time-card">
-                <div class="sd-flag-wrap">
-                    <img src="https://flagcdn.com/w80/us.png" alt="US flag">
+            <div class="sd-right-stack">
+                <div class="sd-time-card">
+                    <div class="sd-analog-clock">
+                        <div class="sd-clock-ring sd-clock-ring-one"></div>
+                        <div class="sd-clock-ring sd-clock-ring-two"></div>
+                        <div class="sd-clock-mark sd-mark-12"></div>
+                        <div class="sd-clock-mark sd-mark-3"></div>
+                        <div class="sd-clock-mark sd-mark-6"></div>
+                        <div class="sd-clock-mark sd-mark-9"></div>
+                        <div class="sd-clock-hand sd-hour-hand" [style.transform]="'translateX(-50%) rotate(' + hourHandRotation + 'deg)'"></div>
+                        <div class="sd-clock-hand sd-minute-hand" [style.transform]="'translateX(-50%) rotate(' + minuteHandRotation + 'deg)'"></div>
+                        <div class="sd-clock-hand sd-second-hand" [style.transform]="'translateX(-50%) rotate(' + secondHandRotation + 'deg)'"></div>
+                        <div class="sd-clock-center"></div>
+                    </div>
+                    <div class="sd-time-copy">
+                        <div class="sd-time-main">{{ currentTime }}</div>
+                        <div class="sd-time-date">{{ currentDate }}</div>
+                        <div class="sd-time-location-pill">
+                            <div class="sd-flag-wrap">
+                                <img src="https://flagcdn.com/w80/us.png" alt="US flag">
+                            </div>
+                            <div class="sd-time-location">US | GMT-5</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="sd-time-copy">
-                    <div class="sd-time-main">{{ currentDate }} | {{ currentTime }}</div>
-                    <div class="sd-time-location">New York, USA (GMT-5)</div>
-                </div>
-            </div>
-            <div class="sd-filter-container d-flex align-items-center ms-auto"
-                style="min-width: 280px; text-align: right; z-index: 10;">
-                <app-date-range-picker [storeCreatedAt]="currentStore?.createdAt" [initialRangeId]="'max'"
-                    (onRangeChange)="onRangeChange($event)"></app-date-range-picker>
             </div>
         </section>
 
@@ -51,47 +67,50 @@
                 <div class="sd-kpi-value">
                     <ng-container *ngIf="!isStatsLoading; else metricLoader">{{ storeItemsCount | number }}</ng-container>
                 </div>
-                <div class="sd-kpi-icon"><i class="fas fa-cart-plus"></i></div>
+                <div class="sd-kpi-icon"><i class="fas fa-box-open"></i></div>
                 <div class="sd-kpi-wave"></div>
             </article>
 
             <article class="sd-kpi-card sd-kpi-income">
                 <div class="sd-kpi-head">New Orders</div>
-                <div class="sd-kpi-chip">{{ currentDateRange.label }}</div>
+                <div class="sd-kpi-chip">This month</div>
                 <div class="sd-kpi-value">
                     <ng-container *ngIf="!isStatsLoading; else metricLoader">{{ stats?.pendingOrders || 0 | number
                         }}</ng-container>
                 </div>
-                <div class="sd-kpi-icon"><i class="fas fa-dollar-sign"></i></div>
+                <div class="sd-kpi-icon"><i class="fas fa-bag-shopping"></i></div>
                 <div class="sd-kpi-wave"></div>
             </article>
 
             <article class="sd-kpi-card sd-kpi-expense">
                 <div class="sd-kpi-head">Sales Revenue</div>
-                <div class="sd-kpi-chip">{{ currentDateRange.label }}</div>
+                <div class="sd-kpi-chip">Last 30 days</div>
                 <div class="sd-kpi-value">
                     <ng-container *ngIf="!isStatsLoading; else metricLoader">${{ stats?.totalIncome || 0 | number:'1.2-2'
                         }}</ng-container>
                 </div>
-                <div class="sd-kpi-icon"><i class="fas fa-money-bill-wave"></i></div>
+                <div class="sd-kpi-icon"><i class="fas fa-chart-line"></i></div>
                 <div class="sd-kpi-wave"></div>
             </article>
 
             <article class="sd-kpi-card sd-kpi-users">
                 <div class="sd-kpi-head">Total Profit</div>
-                <div class="sd-kpi-chip">{{ currentDateRange.label }}</div>
+                <div class="sd-kpi-chip">Lifetime</div>
                 <div class="sd-kpi-value">
                     <ng-container *ngIf="!isStatsLoading; else metricLoader">${{ totalProfit | number:'1.2-2'
                         }}</ng-container>
                 </div>
-                <div class="sd-kpi-icon"><i class="fas fa-users"></i></div>
+                <div class="sd-kpi-icon"><i class="fas fa-sack-dollar"></i></div>
                 <div class="sd-kpi-wave"></div>
             </article>
         </section>
 
         <section class="sd-stat-panel">
             <div class="sd-stat-header">
-                <h3>STATISTICS</h3>
+                <div class="sd-stat-title">
+                    <span class="sd-stat-kicker">Performance Overview</span>
+                    <h3>STATISTICS</h3>
+                </div>
                 <div class="sd-window-switch">
                     <button type="button" [class.active]="statsWindow === 'day'"
                         (click)="setStatsWindow('day')">Day</button>
@@ -189,23 +208,53 @@
             <article class="sd-chart-card">
                 <h4>REVENUE GROWTH ($)</h4>
                 <ng-container *ngIf="!isStatsLoading; else chartLoader">
-                    <svg class="sd-line-chart" viewBox="0 0 640 220" preserveAspectRatio="none"
-                        aria-label="Revenue growth chart">
-                        <polyline [attr.points]="revenueLinePoints" class="line"></polyline>
-                    </svg>
-                    <div class="sd-chart-labels">
-                        <span *ngFor="let label of chartLabels">{{ label }}</span>
+                    <div class="sd-hero-graph">
+                        <div class="sd-graph-glow sd-graph-glow-a"></div>
+                        <div class="sd-graph-glow sd-graph-glow-b"></div>
+                        <div class="sd-graph-spark sd-graph-spark-a"></div>
+                        <div class="sd-graph-spark sd-graph-spark-b"></div>
+                        <div class="sd-graph-spark sd-graph-spark-c"></div>
+                        <div class="sd-graph-bars" [style.grid-template-columns]="'repeat(' + revenueBars.length + ', 1fr)'">
+                            <div class="sd-graph-bar-item" *ngFor="let bar of revenueBars">
+                                <div class="sd-graph-bar" [style.height.%]="bar"></div>
+                            </div>
+                        </div>
+                        <svg class="sd-line-chart sd-line-chart-hero" viewBox="0 0 640 220" preserveAspectRatio="none"
+                            aria-label="Revenue growth chart">
+                            <defs>
+                                <linearGradient id="sdRevenueLine" x1="0" x2="1" y1="0" y2="0">
+                                    <stop offset="0%" stop-color="#d8fff7"></stop>
+                                    <stop offset="100%" stop-color="#6ff5df"></stop>
+                                </linearGradient>
+                                <linearGradient id="sdRevenueFill" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stop-color="#b9fff3" stop-opacity="0.32"></stop>
+                                    <stop offset="100%" stop-color="#39d6c4" stop-opacity="0.04"></stop>
+                                </linearGradient>
+                            </defs>
+                            <polygon class="sd-line-area" [attr.points]="revenueAreaPoints"></polygon>
+                            <polyline [attr.points]="revenueLinePoints" class="line"></polyline>
+                            <g class="sd-line-dots">
+                                <circle *ngFor="let point of revenueChartCoords" [attr.cx]="point.x" [attr.cy]="point.y" r="5"></circle>
+                            </g>
+                        </svg>
+                        <div class="sd-chart-labels sd-chart-labels-inside">
+                            <span *ngFor="let label of chartLabels">{{ label }}</span>
+                        </div>
                     </div>
                 </ng-container>
             </article>
 
-            <article class="sd-chart-card">
+            <article class="sd-chart-card sd-chart-card-volume">
                 <h4>DAILY VOLUME (ORDERS)</h4>
                 <ng-container *ngIf="!isStatsLoading; else chartLoader">
-                    <div class="sd-bars" [style.grid-template-columns]="'repeat(' + orderVolumeBars.length + ', 1fr)'">
-                        <div class="sd-bar-item" *ngFor="let bar of orderVolumeBars; let i = index">
-                            <div class="bar-fill" [style.height.%]="bar"></div>
-                            <span>{{ chartLabels[i] || ('D' + (i + 1)) }}</span>
+                    <div class="sd-volume-graph">
+                        <div class="sd-volume-glow sd-volume-glow-a"></div>
+                        <div class="sd-volume-glow sd-volume-glow-b"></div>
+                        <div class="sd-bars" [style.grid-template-columns]="'repeat(' + orderVolumeBars.length + ', 1fr)'">
+                            <div class="sd-bar-item" *ngFor="let bar of orderVolumeBars; let i = index">
+                                <div class="bar-fill" [style.height.%]="bar"></div>
+                                <span>{{ chartLabels[i] || ('D' + (i + 1)) }}</span>
+                            </div>
                         </div>
                     </div>
                 </ng-container>
@@ -214,7 +263,10 @@
 
         <section class="sd-orders-panel">
             <div class="sd-orders-head">
-                <h4>Recent Store Orders</h4>
+                <div class="sd-orders-title">
+                    <span class="sd-orders-kicker">Order Activity</span>
+                    <h4>Recent Store Orders</h4>
+                </div>
                 <a routerLink="/seller/orders" class="sd-view-all">View All</a>
             </div>
 
@@ -287,4 +339,4 @@
             <span>Loading chart...</span>
         </div>
     </ng-template>
-</div>
+</div>
