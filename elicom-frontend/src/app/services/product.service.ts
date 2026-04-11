@@ -26,7 +26,12 @@ export class ProductService {
         return this.http.get(`${this.apiUrl}/Search`, { params: { query } });
     }
 
-    getAll(): Observable<any> {
-        return this.http.get(`${this.apiUrl}/GetAll`);
+    getAll(skipCount: number = 0, maxResultCount: number = 10): Observable<any> {
+        return this.http.get(`${this.apiUrl}/GetAll`, {
+            params: {
+                skipCount,
+                maxResultCount
+            }
+        });
     }
 }

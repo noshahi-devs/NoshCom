@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -26,9 +26,9 @@ export class WarehouseComponent implements OnInit {
             id: 1,
             ownerName: 'Arslan Noshahi',
             ownerEmail: 'arslan@noshahi.dev',
-            name: 'Main Electronic Hub',
-            shortDescription: 'Primary warehouse for consumer electronics.',
-            longDescription: 'This warehouse handles all small to medium-sized consumer electronics including smartphones, laptops, and accessories.',
+            name: 'Tech Fulfillment Center',
+            shortDescription: 'Core storage and dispatch point for electronics inventory.',
+            longDescription: 'This facility manages day-to-day handling for smartphones, laptops, accessories, and other fast-moving technology products.',
             isActive: true,
             createdAt: new Date('2025-10-15')
         },
@@ -36,9 +36,9 @@ export class WarehouseComponent implements OnInit {
             id: 2,
             ownerName: 'Adeel Khan',
             ownerEmail: 'adeel@example.com',
-            name: 'Home Appliance Depot',
-            shortDescription: 'Large appliance storage and distribution.',
-            longDescription: 'Specialized facility for refrigerators, washing machines, and other heavy home appliances with specialized loading docks.',
+            name: 'Home Essentials Warehouse',
+            shortDescription: 'Dedicated storage and routing space for home appliances.',
+            longDescription: 'This warehouse is arranged for large household products including refrigerators, washing machines, kitchen units, and other bulky appliance orders.',
             isActive: false,
             createdAt: new Date('2025-11-20')
         }
@@ -46,9 +46,23 @@ export class WarehouseComponent implements OnInit {
 
     selectedStore: Store | null = null;
     isEditing = false;
+    currentTimeDisplay = '';
+    currentDateDisplay = '';
+    hourHandRotation = 0;
+    minuteHandRotation = 0;
+    secondHandRotation = 0;
+    private clockTimer: ReturnType<typeof setInterval> | null = null;
 
     ngOnInit() {
-        // Init any warehouse specific logic
+        this.updateClock();
+        this.clockTimer = setInterval(() => this.updateClock(), 1000);
+    }
+
+    ngOnDestroy() {
+        if (this.clockTimer) {
+            clearInterval(this.clockTimer);
+            this.clockTimer = null;
+        }
     }
 
     get activeStoresCount(): number {
@@ -57,6 +71,18 @@ export class WarehouseComponent implements OnInit {
 
     get inactiveStoresCount(): number {
         return this.stores.filter(s => !s.isActive).length;
+    }
+
+    get activationRate(): number {
+        if (!this.stores.length) return 0;
+        return Math.round((this.activeStoresCount / this.stores.length) * 100);
+    }
+
+    get latestStoreName(): string {
+        if (!this.stores.length) return 'No stores yet';
+        return [...this.stores]
+            .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0]
+            ?.name || 'No stores yet';
     }
 
     editStore(store: Store) {
@@ -101,5 +127,28 @@ export class WarehouseComponent implements OnInit {
 
     toggleStoreStatus(store: Store) {
         store.isActive = !store.isActive;
+    }
+
+    private updateClock() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const seconds = now.getSeconds();
+
+        this.currentTimeDisplay = now.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+
+        this.currentDateDisplay = now.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        }).replace(/ /g, '-');
+
+        this.hourHandRotation = ((hours % 12) + minutes / 60) * 30;
+        this.minuteHandRotation = (minutes + seconds / 60) * 6;
+        this.secondHandRotation = seconds * 6;
     }
 }

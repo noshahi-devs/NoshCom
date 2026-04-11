@@ -4,8 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { StoreService } from '../../../services/store.service';
 import { StoreProductService } from '../../../services/store-product.service';
-import { ProductService } from '../../../services/product.service';
 import { AlertService } from '../../../services/alert.service';
+import { CategoryService } from '../../../services/category';
 
 @Component({
     selector: 'app-product-listing',
@@ -17,7 +17,7 @@ import { AlertService } from '../../../services/alert.service';
 export class ProductListingComponent implements OnInit, OnDestroy {
     private storeService = inject(StoreService);
     private storeProductService = inject(StoreProductService);
-    private productService = inject(ProductService);
+    private categoryService = inject(CategoryService);
     private alert = inject(AlertService);
     private router = inject(Router);
     private cdr = inject(ChangeDetectorRef);
@@ -286,13 +286,13 @@ export class ProductListingComponent implements OnInit, OnDestroy {
 
     private loadCategoryOptions() {
         this.isCategoriesLoading = true;
-        this.productService.getAll().subscribe({
-            next: (res: any) => {
-                const items = this.extractItems(res);
+        this.categoryService.refreshCache();
+        this.categoryService.getAllCategories().subscribe({
+            next: (categoriesResponse: any[]) => {
                 const categories = Array.from(
                     new Set(
-                        items
-                            .map((item: any) => this.normalizeCategoryName(item?.categoryName || item?.category?.name || item?.category))
+                        (categoriesResponse || [])
+                            .map((category: any) => this.normalizeCategoryName(category?.name || category?.categoryName || category?.title))
                             .filter((value: string | null): value is string => !!value)
                     )
                 ).sort((a, b) => a.localeCompare(b));

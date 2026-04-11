@@ -83,46 +83,63 @@
                     <div class="bank-shell">
                         <div class="bank-shell-head">
                             <div class="bank-shell-kicker">Bank Withdrawal Setup</div>
-                            <h4>Connect your USA bank account</h4>
+                            <h4>Connect your Bank Account</h4>
                             <p>Complete the payout profile below to receive seller earnings directly into your verified USA bank account with secure processing.</p>
                         </div>
 
                         <div class="bank-form-grid">
                             <div class="bank-field-card bank-field-card-wide">
-                                <label class="p-label">Choose Bank *</label>
-                                <select class="p-input" [(ngModel)]="bankName">
-                                    <option value="" disabled selected>--Choose--</option>
-                                    <option *ngFor="let opt of bankOptions" [value]="opt.value">{{ opt.label }}</option>
-                                </select>
-                            </div>
-
-                            <div class="bank-field-card">
-                                <label class="p-label">Routing (ABA) *</label>
-                                <input type="text" class="p-input" [(ngModel)]="routingNumber" placeholder="9-digit routing number">
-                            </div>
-
-                            <div class="bank-field-card">
-                                <label class="p-label">Account number *</label>
-                                <input type="text" class="p-input" [(ngModel)]="bankAccountNumber" placeholder="Full account number">
-                            </div>
-
-                            <div class="bank-field-card">
-                                <label class="p-label">Account type *</label>
-                                <select class="p-input" [(ngModel)]="bankAccountType">
-                                    <option value="" disabled selected>--Choose--</option>
-                                    <option value="checking">Checking</option>
-                                    <option value="savings">Savings</option>
-                                </select>
-                            </div>
-
-                            <div class="bank-field-card">
-                                <label class="p-label">Beneficiary name *</label>
-                                <input type="text" class="p-input" [(ngModel)]="bankAccountTitle" placeholder="Name as it appears on account">
+                                <label class="p-label">Country *</label>
+                                <input
+                                    type="text"
+                                    class="p-input"
+                                    [(ngModel)]="bankCountry"
+                                    list="bank-country-options"
+                                    placeholder="Enter country name">
+                                <datalist id="bank-country-options">
+                                    <option *ngFor="let opt of countryOptions" [value]="opt.value">{{ opt.label }}</option>
+                                </datalist>
                             </div>
 
                             <div class="bank-field-card bank-field-card-wide">
-                                <label class="p-label">Reference number (Optional)</label>
-                                <input type="text" class="p-input" [(ngModel)]="referenceNumber" placeholder="Any internal reference">
+                                <label class="p-label">Choose Bank *</label>
+                                <input
+                                    type="text"
+                                    class="p-input"
+                                    [(ngModel)]="bankName"
+                                    list="bank-name-options"
+                                    placeholder="Enter bank name">
+                                <datalist id="bank-name-options">
+                                    <option *ngFor="let opt of displayBankOptions" [value]="opt.value">{{ opt.label }}</option>
+                                </datalist>
+                            </div>
+
+                            <div class="bank-field-card">
+                                <label class="p-label">{{ bankRoutingLabel }}</label>
+                                <input type="text" class="p-input" [(ngModel)]="routingNumber" [placeholder]="bankRoutingPlaceholder">
+                            </div>
+
+                            <div class="bank-field-card">
+                                <label class="p-label">{{ bankAccountNumberLabel }}</label>
+                                <input type="text" class="p-input" [(ngModel)]="bankAccountNumber" [placeholder]="bankAccountNumberPlaceholder">
+                            </div>
+
+                            <div class="bank-field-card">
+                                <label class="p-label">{{ bankAccountTypeLabel }}</label>
+                                <select class="p-input" [(ngModel)]="bankAccountType">
+                                    <option value="" disabled selected>--Choose--</option>
+                                    <option *ngFor="let opt of bankAccountTypeOptions" [value]="opt.value">{{ opt.label }}</option>
+                                </select>
+                            </div>
+
+                            <div class="bank-field-card">
+                                <label class="p-label">{{ beneficiaryNameLabel }}</label>
+                                <input type="text" class="p-input" [(ngModel)]="bankAccountTitle" [placeholder]="beneficiaryNamePlaceholder">
+                            </div>
+
+                            <div class="bank-field-card bank-field-card-wide">
+                                <label class="p-label">{{ referenceNumberLabel }}</label>
+                                <input type="text" class="p-input" [(ngModel)]="referenceNumber" [placeholder]="referenceNumberPlaceholder">
                             </div>
                         </div>
 

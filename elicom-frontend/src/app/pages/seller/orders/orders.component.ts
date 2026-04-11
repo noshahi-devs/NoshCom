@@ -560,10 +560,7 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
     }
 
     private resolveSalesChannel(sourcePlatform: string): string {
-        if (!sourcePlatform) return 'smartstoreus.com';
-        return sourcePlatform.toLowerCase() === 'smartstore'
-            ? 'smartstoreus.com'
-            : `${sourcePlatform.toLowerCase()}.com`;
+        return 'NoshCom.com';
     }
 
     private normalizeStatus(status: string): string {

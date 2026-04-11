@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { SellerDashboardService, SellerDashboardStats } from '../../../../services/seller-dashboard.service';
 import { StoreService } from '../../../../services/store.service';
@@ -27,9 +27,24 @@ export class SalesReportComponent implements OnInit {
   isLoading = false; // Local flag mainly for internal states if needed, but not for UI overlay
   currentStore: any;
   currentDateRange: DateRangeResult = { label: 'Maximum Data', id: 'max' };
+  currentTimeDisplay = '';
+  currentDateDisplay = '';
+  hourHandRotation = 0;
+  minuteHandRotation = 0;
+  secondHandRotation = 0;
+  private clockTimer: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit() {
+    this.updateClock();
+    this.clockTimer = setInterval(() => this.updateClock(), 1000);
     this.loadData();
+  }
+
+  ngOnDestroy() {
+    if (this.clockTimer) {
+      clearInterval(this.clockTimer);
+      this.clockTimer = null;
+    }
   }
 
   loadData() {
@@ -90,5 +105,28 @@ export class SalesReportComponent implements OnInit {
     if (s === 'pending' || s === 'processing') return 'pending';
     if (s === 'canceled' || s === 'returned') return 'cancelled';
     return 'default';
+  }
+
+  private updateClock() {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const seconds = now.getSeconds();
+
+    this.currentTimeDisplay = now.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    this.currentDateDisplay = now.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    }).replace(/ /g, '-');
+
+    this.hourHandRotation = ((hours % 12) + minutes / 60) * 30;
+    this.minuteHandRotation = (minutes + seconds / 60) * 6;
+    this.secondHandRotation = seconds * 6;
   }
 }

@@ -1,13 +1,57 @@
 <div class="revenue-profit-page">
-    <div class="page-header-3d d-flex justify-content-between align-items-start">
-        <div class="header-content">
-            <h2 class="title-3d">Revenue and profit</h2>
-            <p class="sub-heading-3d">Track your earnings, platform fees, and net profit margins.</p>
+    <section class="rp-hero mb-5">
+        <div class="rp-store">
+            <div class="rp-store-icon">
+                <img src="/assets/images/logo1.png" alt="Store Logo" class="rp-store-logo-img">
+            </div>
+            <div class="rp-store-copy">
+                <div class="rp-store-title-row">
+                    <div class="rp-store-title-group">
+                        <h2 class="rp-store-title">{{ currentStore?.name || 'Hacking Tools' }}</h2>
+                        <span title="Admin Verified Store" class="rp-store-verified">
+                            <i class="fas fa-check-circle"></i>
+                        </span>
+                    </div>
+                    <div class="rp-filter-container rp-filter-inline">
+                        <div class="rp-picker-shell">
+                            <app-date-range-picker [storeCreatedAt]="currentStore?.createdAt" [initialRangeId]="'max'" (onRangeChange)="onRangeChange($event)"></app-date-range-picker>
+                        </div>
+                    </div>
+                </div>
+                <div class="rp-store-mode">
+                    <h3>Revenue & Profit</h3>
+                </div>
+                <p class="rp-store-subtitle">Track your earnings, platform fees, and net profit margins from one focused financial report view.</p>
+            </div>
         </div>
-        <div class="filter-section-3d">
-            <app-date-range-picker [storeCreatedAt]="currentStore?.createdAt" [initialRangeId]="'max'" (onRangeChange)="onRangeChange($event)"></app-date-range-picker>
+
+        <div class="rp-right-stack">
+            <div class="rp-time-card">
+                <div class="rp-analog-clock">
+                    <div class="rp-clock-ring rp-clock-ring-one"></div>
+                    <div class="rp-clock-ring rp-clock-ring-two"></div>
+                    <div class="rp-clock-mark rp-mark-12"></div>
+                    <div class="rp-clock-mark rp-mark-3"></div>
+                    <div class="rp-clock-mark rp-mark-6"></div>
+                    <div class="rp-clock-mark rp-mark-9"></div>
+                    <div class="rp-clock-hand rp-hour-hand" [style.transform]="'translateX(-50%) rotate(' + hourHandRotation + 'deg)'"></div>
+                    <div class="rp-clock-hand rp-minute-hand" [style.transform]="'translateX(-50%) rotate(' + minuteHandRotation + 'deg)'"></div>
+                    <div class="rp-clock-hand rp-second-hand" [style.transform]="'translateX(-50%) rotate(' + secondHandRotation + 'deg)'"></div>
+                    <div class="rp-clock-center"></div>
+                </div>
+                <div class="rp-time-copy">
+                    <div class="rp-time-main">{{ currentTimeDisplay }}</div>
+                    <div class="rp-time-date">{{ currentDateDisplay }}</div>
+                    <div class="rp-time-location-pill">
+                        <div class="rp-flag-wrap">
+                            <img src="https://flagcdn.com/w80/us.png" alt="US flag">
+                        </div>
+                        <div class="rp-time-location">US | GMT-5</div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
 
     <!-- Top Cards: Primary Metrics -->
     <div class="row g-4 mb-4">
@@ -94,9 +138,13 @@
         </div>
     </div>
 
-    <!-- Transactions Table -->
-    <h4 class="section-title"><i class="fa-solid fa-file-invoice-dollar me-2"></i> Sale Transactions</h4>
     <div class="table-section-3d">
+        <div class="table-header">
+            <div class="table-header-copy">
+                <span class="table-kicker">Revenue Ledger</span>
+                <h4 class="section-title"><i class="fa-solid fa-file-invoice-dollar me-2"></i> Sale Transactions</h4>
+            </div>
+        </div>
         <div class="table-responsive">
             <table class="transactions-table-3d">
                 <thead>

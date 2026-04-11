@@ -1,13 +1,57 @@
 <div class="sales-report-page">
-    <div class="page-header-3d d-flex justify-content-between align-items-start mb-5">
-        <div class="header-content">
-            <h2 class="title-3d"><i class="fa-solid fa-chart-line me-2"></i> Sales Report</h2>
-            <p class="sub-heading-3d">Detailed analysis of your sales performance and order metrics.</p>
+    <section class="sr-hero mb-5">
+        <div class="sr-store">
+            <div class="sr-store-icon">
+                <img src="/assets/images/logo1.png" alt="Store Logo" class="sr-store-logo-img">
+            </div>
+            <div class="sr-store-copy">
+                <div class="sr-store-title-row">
+                    <div class="sr-store-title-group">
+                        <h2 class="sr-store-title">{{ currentStore?.name || 'Hacking Tools' }}</h2>
+                        <span title="Admin Verified Store" class="sr-store-verified">
+                            <i class="fas fa-check-circle"></i>
+                        </span>
+                    </div>
+                    <div class="sr-filter-container sr-filter-inline">
+                        <div class="sr-picker-shell">
+                            <app-date-range-picker [storeCreatedAt]="currentStore?.createdAt" [initialRangeId]="'max'" (onRangeChange)="onRangeChange($event)"></app-date-range-picker>
+                        </div>
+                    </div>
+                </div>
+                <div class="sr-store-mode">
+                    <h3>Sales Report</h3>
+                </div>
+                <p class="sr-store-subtitle">Review delivered order trends, sales totals, and recent performance from one focused report view.</p>
+            </div>
         </div>
-        <div class="filter-section-3d">
-            <app-date-range-picker [storeCreatedAt]="currentStore?.createdAt" [initialRangeId]="'max'" (onRangeChange)="onRangeChange($event)"></app-date-range-picker>
+
+        <div class="sr-right-stack">
+            <div class="sr-time-card">
+                <div class="sr-analog-clock">
+                    <div class="sr-clock-ring sr-clock-ring-one"></div>
+                    <div class="sr-clock-ring sr-clock-ring-two"></div>
+                    <div class="sr-clock-mark sr-mark-12"></div>
+                    <div class="sr-clock-mark sr-mark-3"></div>
+                    <div class="sr-clock-mark sr-mark-6"></div>
+                    <div class="sr-clock-mark sr-mark-9"></div>
+                    <div class="sr-clock-hand sr-hour-hand" [style.transform]="'translateX(-50%) rotate(' + hourHandRotation + 'deg)'"></div>
+                    <div class="sr-clock-hand sr-minute-hand" [style.transform]="'translateX(-50%) rotate(' + minuteHandRotation + 'deg)'"></div>
+                    <div class="sr-clock-hand sr-second-hand" [style.transform]="'translateX(-50%) rotate(' + secondHandRotation + 'deg)'"></div>
+                    <div class="sr-clock-center"></div>
+                </div>
+                <div class="sr-time-copy">
+                    <div class="sr-time-main">{{ currentTimeDisplay }}</div>
+                    <div class="sr-time-date">{{ currentDateDisplay }}</div>
+                    <div class="sr-time-location-pill">
+                        <div class="sr-flag-wrap">
+                            <img src="https://flagcdn.com/w80/us.png" alt="US flag">
+                        </div>
+                        <div class="sr-time-location">US | GMT-5</div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
 
     <!-- Product Performance Section -->
     <div class="stats-section">
@@ -114,7 +158,10 @@
     <!-- Recent Orders Table -->
     <div class="table-card-3d">
         <div class="table-header">
-            <h5><i class="fa-solid fa-list-check me-2"></i> Recent Sale Orders</h5>
+            <div class="table-header-copy">
+                <span class="table-kicker">Recent Activity</span>
+                <h5><i class="fa-solid fa-list-check me-2"></i> Recent Sale Orders</h5>
+            </div>
         </div>
         <div class="table-responsive">
             <table class="orders-table-3d">

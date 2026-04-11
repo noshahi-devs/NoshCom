@@ -66,12 +66,24 @@
 
                 <div class="wallet-method-grid">
                     <div class="wallet-method-card">
-                        <span class="wallet-method-label">Wallet ID</span>
-                        <span class="wallet-method-value">{{ activeMethod.walletId }}</span>
+                        <span class="wallet-method-label">{{ payoutPrimaryLabel }}</span>
+                        <span class="wallet-method-value">{{ payoutPrimaryValue }}</span>
                     </div>
                     <div class="wallet-method-card">
-                        <span class="wallet-method-label">Receiving Via</span>
-                        <span class="wallet-method-value">{{ activeMethod.receiveIn }}</span>
+                        <span class="wallet-method-label">{{ payoutSecondaryLabel }}</span>
+                        <span class="wallet-method-value">{{ payoutSecondaryValue }}</span>
+                    </div>
+                    <div class="wallet-method-card" *ngIf="isBankMethod">
+                        <span class="wallet-method-label">Account Holder</span>
+                        <span class="wallet-method-value">{{ activeMethod.accountTitle || 'Not set' }}</span>
+                    </div>
+                    <div class="wallet-method-card" *ngIf="isBankMethod">
+                        <span class="wallet-method-label">Routing / Identifier</span>
+                        <span class="wallet-method-value">{{ activeMethod.routingNumber || 'Not provided' }}</span>
+                    </div>
+                    <div class="wallet-method-card" *ngIf="isBankMethod && activeMethod.referenceNumber">
+                        <span class="wallet-method-label">Reference</span>
+                        <span class="wallet-method-value">{{ activeMethod.referenceNumber }}</span>
                     </div>
                 </div>
 
@@ -100,17 +112,35 @@
             <a routerLink="/seller/finances/add-payment-method" class="btn-link">Change Payment Method</a>
         </article>
 
-        <article class="panel-card" *ngIf="isWithdrawalView">
+        <article class="panel-card withdrawal-redesign-card" *ngIf="isWithdrawalView">
             <h3>Withdraw Your Payment</h3>
 
             <div *ngIf="currentStore?.withdrawLimit === null || currentStore?.withdrawLimit === undefined"
-                class="alert alert-danger-soft x-small mb-3 py-2">
-                <i class="fas fa-hand-holding-dollar me-2"></i> <strong>You cannot withdraw funds at this time.</strong>
-                <p class="mb-0 mt-1 opacity-75">Please wait for admin to set your withdrawal permission.</p>
+                class="withdraw-unavailable-shell">
+                <div class="withdraw-unavailable-alert">
+                    <div class="withdraw-unavailable-icon">
+                        <i class="fas fa-ban"></i>
+                    </div>
+                    <div class="withdraw-unavailable-copy">
+                        <strong>You cannot withdraw funds at this time.</strong>
+                        <p>Please wait for admin to set your withdrawal permission.</p>
+                    </div>
+                </div>
+
+                <div class="withdraw-input-wrap locked unavailable">
+                    <span>$</span>
+                    <input type="number" value="0" disabled>
+                </div>
+
+                <button type="button" class="btn-withdraw unavailable-btn" disabled>
+                    <i class="fas fa-lock me-2"></i> Withdrawal Locked
+                </button>
+
+                <p class="hint">Request goes to admin approval first.</p>
             </div>
 
             <div *ngIf="currentStore?.withdrawLimit !== null && currentStore?.withdrawLimit !== undefined && (currentStore?.withdrawLimit || currentStore?.withdrawAllowedUntil)"
-                class="premium-rules-card mb-3" [class.expired]="isWithdrawExpired">
+                class="premium-rules-card mb-3" [class.expired]="isWithdrawalUnlocked">
                 <div class="card-inner">
                     <div class="card-header">
                         <i class="fas fa-shield-halved"></i>
@@ -130,7 +160,7 @@
                     </div>
 
                     <div class="countdown-panel 3d-effect">
-                        <div class="clock-title">{{ isWithdrawExpired ? 'PERMISSION EXPIRED' : 'REMAINING TIME' }}</div>
+                        <div class="clock-title">{{ isWithdrawalUnlocked ? 'PROTOCOL COMPLETE' : 'REMAINING TIME' }}</div>
                         <div class="main-clock">
                             <div class="clock-unit">
                                 <span class="val">{{ countdownDaysDisplay }}</span>
@@ -154,11 +184,11 @@
                         </div>
                     </div>
 
-                    <div class="status-bar" *ngIf="!isWithdrawExpired">
-                        <span class="dot pulse-green"></span> SYSTEM ACTIVE • NEXT PAYOUT
+                    <div class="status-bar" *ngIf="!isWithdrawalUnlocked">
+                        <span class="dot pulse-green"></span> COUNTDOWN ACTIVE - WITHDRAWAL LOCKED
                     </div>
-                    <div class="status-bar expired" *ngIf="isWithdrawExpired">
-                        <span class="dot pulse-green"></span> PROTOCOL COMPLETE • WITHDRAWAL UNLOCKED
+                    <div class="status-bar expired" *ngIf="isWithdrawalUnlocked">
+                        <span class="dot pulse-green"></span> PROTOCOL COMPLETE - WITHDRAWAL UNLOCKED
                     </div>
 
                     <div class="instructions-footer" *ngIf="currentStore?.adminWithdrawRemarks">
@@ -168,16 +198,15 @@
                 </div>
             </div>
 
-            <!-- Withdrawal Locking Logic -->
-            <div class="unlock-notice mb-3" *ngIf="!isWithdrawExpired && currentStore?.withdrawAllowedUntil">
-                <i class="fas fa-lock me-2 text-warning"></i>
-                <span class="text-warning fw-bold small">Withdrawal Locked until Protocol Conclusions</span>
+            <div class="unlock-notice mb-3" *ngIf="!isWithdrawalUnlocked && currentStore?.withdrawAllowedUntil">
+                <i class="fas fa-unlock me-2 text-warning"></i>
+                <span class="text-warning fw-bold small">Withdrawal unlocks when the countdown completes</span>
             </div>
 
-            <div class="withdraw-input-wrap" [class.locked]="!isWithdrawExpired">
+            <div class="withdraw-input-wrap" [class.locked]="!isWithdrawalUnlocked"
+                *ngIf="currentStore?.withdrawLimit !== null && currentStore?.withdrawLimit !== undefined">
                 <span>$</span>
-                <input type="number" [(ngModel)]="withdrawAmount" min="1" step="0.01" placeholder="0"
-                    [disabled]="!isWithdrawExpired">
+                <input type="number" [(ngModel)]="withdrawAmount" min="1" step="0.01" placeholder="0">
             </div>
 
             <div class="withdraw-meta-info mt-2" *ngIf="currentStore?.withdrawLimit">
@@ -189,19 +218,21 @@
                         <i class="fas fa-exclamation-triangle me-1"></i> Amount exceeds permitted withdrawal limit!
                     </span>
 
-                    <span class="text-success x-small fw-bold" *ngIf="isWithdrawExpired">
-                        <i class="fas fa-unlock me-1"></i> Protocol complete. Withdrawal unlocked.
+                    <span class="text-success x-small fw-bold" *ngIf="isWithdrawalUnlocked">
+                        <i class="fas fa-unlock me-1"></i> Withdrawal window is active.
                     </span>
                 </div>
             </div>
 
-            <button type="button" class="btn-withdraw mt-3" [disabled]="!canWithdraw || isSubmitting"
+            <button type="button" class="btn-withdraw mt-3"
+                *ngIf="currentStore?.withdrawLimit !== null && currentStore?.withdrawLimit !== undefined"
+                [disabled]="!canWithdraw || isSubmitting"
                 (click)="submitWithdraw()">
                 <i class="fas" [class.fa-paper-plane]="!isSubmitting" [class.fa-spinner]="isSubmitting"
                     [class.fa-spin]="isSubmitting" [class.me-2]="true"></i>
-                {{ isSubmitting ? 'Processing...' : (isWithdrawExpired ? 'Withdraw Now' : 'Withdrawal Locked') }}
+                {{ isSubmitting ? 'Processing...' : (isWithdrawalUnlocked ? 'Withdraw Now' : 'Withdrawal Locked') }}
             </button>
-            <p class="hint">Request goes to admin approval first.</p>
+            <p class="hint" *ngIf="currentStore?.withdrawLimit !== null && currentStore?.withdrawLimit !== undefined">Request goes to admin approval first.</p>
         </article>
     </section>
 
@@ -260,8 +291,10 @@
                             <div class="date-relative">{{ getRelativeDate(req.creationTime) }}</div>
                             <div class="date-absolute">{{ req.creationTime | date:'dd-MM-yyyy' }}</div>
                         </td>
-                        <td><span class="method-main">Via: {{ req.method || 'Third Party' }}</span></td>
-                        <td>{{ req.paymentDetails || activeMethod.receiveIn }}</td>
+                        <td><span class="method-main">Via: {{ getWithdrawMethodLabel(req.method) }}</span></td>
+                        <td class="receive-col">
+                            <span class="receive-text">{{ getWithdrawReceiveInLabel(req.paymentDetails || activeMethod.receiveIn) }}</span>
+                        </td>
                         <td>${{ req.amount || 0 | number:'1.2-2' }}</td>
                         <td>
                             <span class="status-chip" [ngClass]="getStatusClass(req.status)">{{ req.status || 'Pending'

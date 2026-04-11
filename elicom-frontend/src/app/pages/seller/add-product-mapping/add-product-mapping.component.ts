@@ -6,6 +6,7 @@ import { ProductService } from '../../../services/product.service';
 import { StoreProductService } from '../../../services/store-product.service';
 import { StoreService } from '../../../services/store.service';
 import { AlertService } from '../../../services/alert.service';
+import { CategoryService } from '../../../services/category';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -19,6 +20,7 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
     private productService = inject(ProductService);
     private storeProductService = inject(StoreProductService);
     private storeService = inject(StoreService);
+    private categoryService = inject(CategoryService);
     private router = inject(Router);
     private cdr = inject(ChangeDetectorRef);
     private alert = inject(AlertService);
@@ -52,6 +54,7 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
     isViewOnly: boolean = false;
     currentMappingId: string | null = null;
     private readonly titlePreviewLength = 92;
+    private readonly previewCardCount = 10;
     currentDate: string = '';
     currentTime: string = '';
     hourHandRotation = 0;
@@ -201,32 +204,16 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
     }
 
     onCategoryQuickSearch(categoryName: string) {
-        this.searchQuery = categoryName;
+        this.searchQuery = categoryName === 'All Category' ? '' : categoryName;
         this.selectedCategoryLabel = categoryName;
         this.isCategoryDropdownOpen = false;
 
-        if (!this.allProductsCatalog.length) {
-            this.isSearching = true;
-            this.productService.getAll().subscribe({
-                next: (res: any) => {
-                    this.allProductsCatalog = this.extractItems(res);
-                    this.applyCategoryFilter(categoryName);
-                    this.isSearching = false;
-                    this.cdr.detectChanges();
-                },
-                error: () => {
-                    this.rawSearchResults = [];
-                    this.searchResults = [];
-                    this.showResults = true;
-                    this.isSearching = false;
-                    this.cdr.detectChanges();
-                }
-            });
+        if (categoryName === 'All Category') {
+            this.showAllCategoryPreview();
             return;
         }
 
-        this.applyCategoryFilter(categoryName);
-        this.cdr.detectChanges();
+        this.loadProductsForCategory(categoryName);
     }
 
     parseImages(imageJson: any): string[] {
@@ -240,35 +227,29 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
 
     private loadCategoryShowcase() {
         this.isCategoriesLoading = true;
-        this.productService.getAll().subscribe({
-            next: (res: any) => {
-                const items = this.extractItems(res);
-                this.allProductsCatalog = items;
-                const counts = new Map<string, number>();
+        this.categoryService.refreshCache();
+        this.categoryService.getAllCategories().subscribe({
+            next: (categories: any[]) => {
+                const categoryNames = Array.from(
+                    new Set(
+                        (categories || [])
+                            .map((category: any) => this.normalizeCategoryName(category?.name || category?.categoryName || category?.title))
+                            .filter((name): name is string => !!name)
+                    )
+                );
 
-                items.forEach((item: any) => {
-                    const category = this.normalizeCategoryName(item?.categoryName || item?.category?.name || item?.category);
-                    if (!category) return;
-                    counts.set(category, (counts.get(category) || 0) + 1);
-                });
+                this.categoryTiles = categoryNames.length
+                    ? this.buildCategoryTiles(categoryNames.map((name) => ({ name, count: 0 })))
+                    : this.getFallbackCategoryTiles();
 
-                if (counts.size > 0) {
-                    this.categoryTiles = this.buildCategoryTiles(
-                        Array.from(counts.entries())
-                            .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]))
-                            .map(([name, count]) => ({ name, count }))
-                    );
-                } else {
-                    this.categoryTiles = this.getFallbackCategoryTiles();
-                }
-
-                this.showAllCategoryPreview();
                 this.isCategoriesLoading = false;
+                this.showAllCategoryPreview();
                 this.cdr.detectChanges();
             },
             error: () => {
                 this.isCategoriesLoading = false;
                 this.categoryTiles = this.getFallbackCategoryTiles();
+                this.showAllCategoryPreview();
                 this.cdr.detectChanges();
             }
         });
@@ -347,17 +328,54 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
     }
 
     private showAllCategoryPreview(): void {
-        const shuffled = [...this.allProductsCatalog]
-            .sort(() => Math.random() - 0.5)
-            .slice(0, 10);
+        const previewSource = (this.categoryTiles.length ? this.categoryTiles : this.getFallbackCategoryTiles())
+            .slice(0, this.previewCardCount);
 
-        this.rawSearchResults = shuffled.map((p: any) => ({
-            ...p,
-            supplierPriceResolved: this.resolveSupplierPriceValue(p),
-            images: this.parseImages(p.images)
+        this.isSearching = false;
+        this.rawSearchResults = previewSource.map((tile, index) => ({
+            id: `preview-${index + 1}`,
+            name: `${tile.name} Featured Preview Product`,
+            categoryName: tile.name,
+            brandName: 'Preview Catalog',
+            supplierPrice: 0,
+            supplierPriceResolved: 0,
+            images: [`https://picsum.photos/seed/noshcom-preview-${index + 1}/500/500`],
+            isPreviewPlaceholder: true
         }));
+        this.searchResults = [...this.rawSearchResults];
         this.showResults = true;
-        this.applySearchFilters();
+        this.priceValidationError = '';
+    }
+
+    private loadProductsForCategory(categoryName: string): void {
+        this.isSearching = true;
+        this.productService.search(categoryName).subscribe({
+            next: (res: any) => {
+                const items = this.extractItems(res);
+                this.rawSearchResults = items
+                    .filter((item: any) => {
+                        const cat = this.normalizeCategoryName(item?.categoryName || item?.category?.name || item?.category);
+                        return !!cat && cat.toLowerCase() === categoryName.toLowerCase();
+                    })
+                    .map((p: any) => ({
+                        ...p,
+                        supplierPriceResolved: this.resolveSupplierPriceValue(p),
+                        images: this.parseImages(p.images)
+                    }));
+
+                this.showResults = true;
+                this.isSearching = false;
+                this.applySearchFilters();
+                this.cdr.detectChanges();
+            },
+            error: () => {
+                this.rawSearchResults = [];
+                this.searchResults = [];
+                this.showResults = true;
+                this.isSearching = false;
+                this.cdr.detectChanges();
+            }
+        });
     }
 
     private extractItems(res: any): any[] {
@@ -437,6 +455,11 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
     }
 
     selectProduct(prod: any) {
+        if (prod?.isPreviewPlaceholder) {
+            this.alert.info('Please select a category to load live supplier products.');
+            return;
+        }
+
         const resolvedSupplierPrice = this.resolveSupplierPriceValue(prod);
         const normalizedProduct = {
             ...prod,

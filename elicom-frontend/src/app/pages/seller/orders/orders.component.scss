@@ -514,7 +514,7 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0 14px;
-    table-layout: auto;
+    table-layout: fixed;
 
     thead th {
         background: linear-gradient(180deg, #fff8de 0%, #fff2c9 100%);
@@ -569,20 +569,23 @@
 }
 
 .col-date {
-    width: 16%;
+    width: 14%;
 }
 
 .col-details {
-    width: 22%;
+    width: 24%;
 }
 
-.col-customer,
+.col-customer {
+    width: 17%;
+}
+
 .col-ship {
-    width: 20%;
+    width: 14%;
 }
 
 .col-status {
-    width: 12%;
+    width: 13%;
 }
 
 .col-action {
@@ -672,7 +675,13 @@
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.85);
 }
 
-.date-panel-row,
+.date-panel-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
+    text-align: left;
+}
+
 .ship-info-row {
     display: flex;
     align-items: center;
@@ -720,6 +729,7 @@
 
 .info-card-box {
     text-align: left;
+    gap: 0;
 }
 
 .meta-label {
@@ -740,13 +750,17 @@
 .value-block {
     display: block;
     text-align: left;
-    overflow-wrap: anywhere;
-    word-break: break-word;
+    overflow-wrap: break-word;
+    word-break: normal;
 }
 
 .tracking-value {
     max-width: none;
     white-space: normal;
+    overflow-wrap: break-word;
+    word-break: normal;
+    font-size: 0.82rem;
+    line-height: 1.45;
 }
 
 .status-mini-label {
@@ -789,11 +803,12 @@
 
 .btn-action {
     border: none;
-    border-radius: 16px;
+    border-radius: 14px;
     font-weight: 800;
-    font-size: 0.9rem;
-    padding: 12px 20px;
-    min-width: 160px;
+    font-size: 0.85rem;
+    padding: 10px 14px;
+    min-width: 0;
+    width: 100%;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     
@@ -909,6 +924,30 @@
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
+}
+
+.table-responsive {
+    overflow-x: hidden;
+    overflow-y: hidden;
+    padding-bottom: 6px;
+}
+
+.ship-info-row {
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 0;
+    border-top: 1px solid rgba(242, 187, 19, 0.1);
+}
+
+.ship-info-row:first-of-type {
+    border-top: none;
+    padding-top: 0;
+}
+
+.customer-option {
+    margin-bottom: 10px;
 }
 
 .empty-state-shell {

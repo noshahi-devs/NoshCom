@@ -1,53 +1,124 @@
 <div class="warehouse-content">
-    <div class="dashboard-header mb-4">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="fw-bold mb-2">
-                    <i class="fas fa-warehouse me-3 text-primary"></i>
-                    Stores & Warehouses
-                </h1>
-                <p class="lead mb-0 text-muted">
-                    Manage and visualize your global warehouse network and stores.
-                </p>
+    <section class="wh-hero mb-5">
+        <div class="wh-store">
+            <div class="wh-store-icon">
+                <img src="/assets/images/logo1.png" alt="Store Logo" class="wh-store-logo-img">
             </div>
-            <div class="col-md-4 text-end">
-                <button (click)="createNewStore()" class="btn btn-primary-custom">
-                    <i class="fas fa-plus me-2"></i> Create New Store
+            <div class="wh-store-copy">
+                <div class="wh-store-title-row">
+                    <div class="wh-store-title-group">
+                        <h2 class="wh-store-title">Hacking Tools</h2>
+                        <span title="Admin Verified Store" class="wh-store-verified">
+                            <i class="fas fa-check-circle"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="wh-store-mode">
+                    <h3>Stores & Warehouses</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="wh-right-stack">
+            <div class="wh-time-card">
+                <div class="wh-analog-clock">
+                    <div class="wh-clock-ring wh-clock-ring-one"></div>
+                    <div class="wh-clock-ring wh-clock-ring-two"></div>
+                    <div class="wh-clock-mark wh-mark-12"></div>
+                    <div class="wh-clock-mark wh-mark-3"></div>
+                    <div class="wh-clock-mark wh-mark-6"></div>
+                    <div class="wh-clock-mark wh-mark-9"></div>
+                    <div class="wh-clock-hand wh-hour-hand" [style.transform]="'translateX(-50%) rotate(' + hourHandRotation + 'deg)'"></div>
+                    <div class="wh-clock-hand wh-minute-hand" [style.transform]="'translateX(-50%) rotate(' + minuteHandRotation + 'deg)'"></div>
+                    <div class="wh-clock-hand wh-second-hand" [style.transform]="'translateX(-50%) rotate(' + secondHandRotation + 'deg)'"></div>
+                    <div class="wh-clock-center"></div>
+                </div>
+                <div class="wh-time-copy">
+                    <div class="wh-time-main">{{ currentTimeDisplay }}</div>
+                    <div class="wh-time-date">{{ currentDateDisplay }}</div>
+                    <div class="wh-time-location-pill">
+                        <div class="wh-flag-wrap">
+                            <img src="https://flagcdn.com/w80/us.png" alt="US flag">
+                        </div>
+                        <div class="wh-time-location">US | GMT-5</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="wh-filter-center">
+            <div class="wh-filter-container wh-warehouse-cta-container">
+                <div class="wh-filter-label">Warehouse Network</div>
+                <button type="button" class="wh-date-pill wh-warehouse-cta" (click)="createNewStore()">
+                    <span><i class="fas fa-plus"></i> Create New Store</span>
                 </button>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Stats Grid -->
-    <div class="stats-grid mb-5">
-        <div class="stat-card">
-            <div class="stat-icon"><i class="fas fa-store"></i></div>
-            <div class="stat-info">
-                <h3>{{stores.length}}</h3>
-                <p>Total Stores</p>
-            </div>
+    <section class="stats-shell mb-5">
+        <div class="stats-shell-head">
+            <div class="stats-shell-kicker">Warehouse Insights</div>
+            <h3>Store Network Overview</h3>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon success"><i class="fas fa-check-circle"></i></div>
-            <div class="stat-info">
-                <h3>{{activeStoresCount}}</h3>
-                <p>Active Stores</p>
-            </div>
+
+        <div class="stats-grid">
+            <article class="stat-card tone-gold">
+                <div class="stat-icon"><i class="fas fa-store"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Total Stores</span>
+                    <h3>{{ stores.length }}</h3>
+                    <p>All stores currently mapped in your network.</p>
+                </div>
+            </article>
+
+            <article class="stat-card tone-green">
+                <div class="stat-icon success"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Active Stores</span>
+                    <h3>{{ activeStoresCount }}</h3>
+                    <p>Live stores available for operations.</p>
+                </div>
+            </article>
+
+            <article class="stat-card tone-amber">
+                <div class="stat-icon warning"><i class="fas fa-pause-circle"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Inactive Stores</span>
+                    <h3>{{ inactiveStoresCount }}</h3>
+                    <p>Stores currently paused or awaiting activation.</p>
+                </div>
+            </article>
+
+            <article class="stat-card tone-sky">
+                <div class="stat-icon info"><i class="fas fa-chart-line"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Activation Rate</span>
+                    <h3>{{ activationRate }}%</h3>
+                    <p>Share of stores that are active right now.</p>
+                </div>
+            </article>
+
+            <article class="stat-card tone-rose stat-card-wide">
+                <div class="stat-icon accent"><i class="fas fa-warehouse"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Latest Added Store</span>
+                    <h3>{{ latestStoreName }}</h3>
+                    <p>Most recently created warehouse or store profile.</p>
+                </div>
+            </article>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon warning"><i class="fas fa-pause-circle"></i></div>
-            <div class="stat-info">
-                <h3>{{inactiveStoresCount}}</h3>
-                <p>Inactive Stores</p>
-            </div>
-        </div>
-    </div>
+    </section>
 
     <!-- Store Edit/Create Modal Overlay -->
     <div *ngIf="isEditing" class="modal-overlay">
         <div class="modal-content-custom">
-            <div class="modal-header-custom mb-4">
-                <h3 class="fw-bold">{{selectedStore?.id === 0 ? 'Create New Store' : 'Edit Store'}}</h3>
+            <div class="modal-header-custom">
+                <div class="modal-header-copy">
+                    <div class="modal-kicker">Store Setup</div>
+                    <h3 class="fw-bold">{{selectedStore?.id === 0 ? 'Create New Store' : 'Update Store Profile'}}</h3>
+                    <p>{{selectedStore?.id === 0 ? 'Create a new store profile and configure its operating details.' : 'Refine the selected store information and keep the profile up to date.'}}</p>
+                </div>
                 <button (click)="isEditing = false" class="btn-close-custom"><i class="fas fa-times"></i></button>
             </div>
 
@@ -56,72 +127,92 @@
                     <div class="col-md-6">
                         <label class="form-label-custom">Store Owner Name</label>
                         <input type="text" [(ngModel)]="selectedStore.ownerName" class="form-control-custom"
-                            placeholder="Search for user...">
+                            placeholder="Enter store owner name">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label-custom">Owner Email</label>
-                        <input type="email" [(ngModel)]="selectedStore.ownerEmail" class="form-control-custom">
+                        <input type="email" [(ngModel)]="selectedStore.ownerEmail" class="form-control-custom"
+                            placeholder="Enter owner email">
                     </div>
                     <div class="col-12">
                         <label class="form-label-custom">Store Name</label>
-                        <input type="text" [(ngModel)]="selectedStore.name" class="form-control-custom">
+                        <input type="text" [(ngModel)]="selectedStore.name" class="form-control-custom"
+                            placeholder="Enter store name">
                     </div>
                     <div class="col-12">
                         <label class="form-label-custom">Short Description</label>
                         <textarea [(ngModel)]="selectedStore.shortDescription" rows="2"
-                            class="form-control-custom"></textarea>
+                            class="form-control-custom"
+                            placeholder="Add a short summary for this store"></textarea>
                     </div>
                     <div class="col-12">
-                        <label class="form-label-custom">Long Description</label>
+                        <label class="form-label-custom">Detailed Description</label>
                         <textarea [(ngModel)]="selectedStore.longDescription" rows="4"
-                            class="form-control-custom"></textarea>
+                            class="form-control-custom"
+                            placeholder="Describe the store operations, products, or handling notes"></textarea>
                     </div>
                     <div class="col-12">
-                        <div class="form-check form-switch-custom mt-2">
-                            <input class="form-check-input" type="checkbox" [(ngModel)]="selectedStore.isActive"
-                                id="storeActive">
-                            <label class="form-check-label ms-2" for="storeActive">Store Active</label>
+                        <div class="store-toggle-row mt-2">
+                            <div class="store-toggle-copy">
+                                <span class="toggle-title">Store Status</span>
+                                <span class="toggle-subtext">Mark this store as active and ready for operations.</span>
+                            </div>
+                            <div class="form-check form-switch-custom">
+                                <input class="form-check-input" type="checkbox" [(ngModel)]="selectedStore.isActive"
+                                    id="storeActive">
+                                <label class="form-check-label ms-2" for="storeActive">Active</label>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="modal-footer-custom mt-4">
+            <div class="modal-footer-custom">
                 <button (click)="isEditing = false" class="btn btn-secondary-custom me-2">Cancel</button>
-                <button (click)="saveStore()" class="btn btn-primary-custom">Save Changes</button>
+                <button (click)="saveStore()" class="btn btn-primary-custom">{{selectedStore?.id === 0 ? 'Create Store' : 'Save Changes'}}</button>
             </div>
         </div>
     </div>
 
-    <!-- Stores Table/Grid -->
-    <div class="stores-container">
-        <h3 class="fw-bold mb-4 text-primary">Managed Stores</h3>
+    <section class="stores-shell">
+        <div class="stores-shell-head">
+            <div>
+                <div class="stores-shell-kicker">Store Directory</div>
+                <h3>Managed Stores</h3>
+            </div>
+        </div>
+
         <div class="row g-4">
             <div *ngFor="let store of stores" class="col-lg-6">
-                <div class="store-card" [class.inactive]="!store.isActive">
-                    <div class="store-card-header d-flex justify-content-between align-items-start mb-3">
-                        <div class="d-flex align-items-center">
-                            <div class="store-icon me-3"><i class="fas fa-warehouse"></i></div>
-                            <div>
-                                <h4 class="mb-0 fw-bold">{{store.name}}</h4>
-                                <small class="text-muted">Owner: {{store.ownerName}} ({{store.ownerEmail}})</small>
-                            </div>
+                <article class="store-card" [class.inactive]="!store.isActive">
+                    <div class="store-card-topbar">
+                        <div class="store-card-badge">
+                            <i class="fas fa-warehouse"></i>
                         </div>
                         <span class="status-badge" [class.active]="store.isActive">
                             {{store.isActive ? 'Active' : 'Inactive'}}
                         </span>
                     </div>
 
-                    <p class="store-short-desc mb-3 text-muted">{{store.shortDescription}}</p>
+                    <div class="store-card-body">
+                        <div class="store-card-copy">
+                            <h4>{{store.name}}</h4>
+                            <p class="store-short-desc">{{store.shortDescription}}</p>
+                        </div>
 
-                    <div class="store-meta mb-4">
-                        <div class="meta-item">
-                            <i class="far fa-calendar-alt me-2"></i>
-                            Created: {{store.createdAt | date:'mediumDate'}}
+                        <div class="store-meta-grid">
+                            <div class="store-meta-card">
+                                <span class="meta-label">Created</span>
+                                <span class="meta-value">{{store.createdAt | date:'mediumDate'}}</span>
+                            </div>
+                            <div class="store-meta-card">
+                                <span class="meta-label">Status</span>
+                                <span class="meta-value">{{store.isActive ? 'Operational' : 'Paused'}}</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="store-actions d-flex gap-2">
+                    <div class="store-actions">
                         <button (click)="editStore(store)" class="btn btn-outline-custom flex-grow-1">
                             <i class="fas fa-edit me-2"></i> Edit
                         </button>
@@ -134,8 +225,8 @@
                             <i class="fas" [class.fa-power-off]="store.isActive" [class.fa-play]="!store.isActive"></i>
                         </button>
                     </div>
-                </div>
+                </article>
             </div>
         </div>
-    </div>
+    </section>
 </div>

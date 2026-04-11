@@ -96,6 +96,11 @@ export class WalletCenterComponent implements OnInit {
         methodKey: '',
         receiveIn: 'World Cart API',
         walletId: 'Not set',
+        accountTitle: 'Not set',
+        country: '',
+        accountType: '',
+        routingNumber: '',
+        referenceNumber: '',
         paymentDetails: '',
         isVerified: false,
         verificationMessage: ''
@@ -108,16 +113,21 @@ export class WalletCenterComponent implements OnInit {
         seconds: 0
     };
     private timerSubscription?: Subscription;
+    private routeDataSubscription?: Subscription;
     viewMode: 'wallet' | 'withdrawal' = 'wallet';
 
     ngOnInit(): void {
-        this.viewMode = (this.route.snapshot.data?.['walletView'] as 'wallet' | 'withdrawal') || 'wallet';
+        this.routeDataSubscription = this.route.data.subscribe(data => {
+            this.viewMode = (data?.['walletView'] as 'wallet' | 'withdrawal') || 'wallet';
+            this.cdr.markForCheck();
+        });
         this.loadData();
         this.startCountdown();
     }
 
     ngOnDestroy(): void {
         this.timerSubscription?.unsubscribe();
+        this.routeDataSubscription?.unsubscribe();
     }
 
     get filteredRequests(): WithdrawRequestDto[] {
@@ -155,19 +165,21 @@ export class WalletCenterComponent implements OnInit {
         if (this.currentStore?.withdrawLimit === null || this.currentStore?.withdrawLimit === undefined) {
             return 'Not Allowed';
         }
-        return this.isWithdrawExpired ? 'Unlocked' : 'Locked';
+        return this.isWithdrawalUnlocked ? 'Unlocked' : 'Locked';
     }
 
     get withdrawalStatusSubtext(): string {
         if (this.currentStore?.withdrawLimit === null || this.currentStore?.withdrawLimit === undefined) {
             return 'Waiting for admin permission';
         }
-        if (this.isWithdrawExpired) {
-            return 'Withdrawal window is active';
+        if (this.isWithdrawalUnlocked) {
+            return this.currentStore?.withdrawAllowedUntil
+                ? `Unlocked on ${new Date(this.currentStore.withdrawAllowedUntil).toLocaleDateString()}`
+                : 'Withdrawal window is active';
         }
         return this.currentStore?.withdrawAllowedUntil
-            ? `Opens ${new Date(this.currentStore.withdrawAllowedUntil).toLocaleDateString()}`
-            : 'Protocol in progress';
+            ? `Unlocks on ${new Date(this.currentStore.withdrawAllowedUntil).toLocaleDateString()}`
+            : 'Waiting for unlock time';
     }
 
     get paymentMethodStatusLabel(): string {
@@ -176,6 +188,30 @@ export class WalletCenterComponent implements OnInit {
 
     get paymentMethodStatusTone(): string {
         return this.activeMethod.isVerified ? 'verified' : (this.activeMethod.methodKey ? 'configured' : 'pending');
+    }
+
+    get isBankMethod(): boolean {
+        return this.activeMethod.methodKey === 'bank';
+    }
+
+    get payoutPrimaryLabel(): string {
+        return this.isBankMethod ? 'Account Number' : 'Wallet ID';
+    }
+
+    get payoutPrimaryValue(): string {
+        return this.activeMethod.walletId || 'Not set';
+    }
+
+    get payoutSecondaryLabel(): string {
+        return this.isBankMethod ? 'Bank Setup' : 'Receiving Via';
+    }
+
+    get payoutSecondaryValue(): string {
+        if (this.isBankMethod) {
+            return [this.activeMethod.country, this.activeMethod.accountType].filter(Boolean).join(' • ') || 'Bank Transfer';
+        }
+
+        return this.activeMethod.receiveIn || 'World Cart API';
     }
 
     get paymentSparklinePoints(): string {
@@ -239,8 +275,8 @@ export class WalletCenterComponent implements OnInit {
             return false;
         }
 
-        // Wait check - Cannot withdraw if deadline has NOT passed yet
-        if (!this.isWithdrawExpired) {
+        // Withdrawal stays locked until the countdown completes
+        if (!this.isWithdrawalUnlocked) {
             return false;
         }
 
@@ -272,11 +308,40 @@ export class WalletCenterComponent implements OnInit {
         return new Date(this.currentStore.withdrawAllowedUntil).getTime() <= new Date().getTime();
     }
 
+    get isWithdrawalUnlocked(): boolean {
+        if (this.currentStore?.withdrawLimit === null || this.currentStore?.withdrawLimit === undefined) {
+            return false;
+        }
+
+        if (!this.currentStore?.withdrawAllowedUntil) {
+            return true;
+        }
+
+        return new Date(this.currentStore.withdrawAllowedUntil).getTime() <= new Date().getTime();
+    }
+
     getStatusClass(status: string): string {
         const normalized = this.normalizeStatus(status);
         if (this.isApproved(normalized)) return 'accepted';
         if (this.isRejected(normalized)) return 'refunded';
         return 'pending';
+    }
+
+    getWithdrawMethodLabel(method?: string): string {
+        const normalizedMethod = this.normalizeStatus(method || '');
+        return this.getPayoutDisplayLabel(normalizedMethod, method || 'Third Party');
+    }
+
+    getWithdrawReceiveInLabel(paymentDetails?: string): string {
+        if (!paymentDetails) {
+            return this.activeMethod.receiveIn || 'API Payout';
+        }
+
+        return paymentDetails
+            .replace(/Easy\s*Finora\s*Wallet\s*ID\s*:/i, 'NoshPay Wallet ID:')
+            .replace(/EasyFinora\s*Wallet\s*ID\s*:/i, 'NoshPay Wallet ID:')
+            .replace(/Easy\s*Finora/gi, 'NashPay')
+            .replace(/EasyFinora/gi, 'NashPay');
     }
 
     getRelativeDate(dateValue: string): string {
@@ -374,7 +439,7 @@ export class WalletCenterComponent implements OnInit {
                 new Date(b?.creationTime || 0).getTime() - new Date(a?.creationTime || 0).getTime()
             );
             this.walletId = (wallet as any)?.id ? String((wallet as any).id) : '';
-            this.resolveActiveMethodFromSaved(payoutMethod as SellerPayoutMethodDto | null);
+            this.resolveActiveMethodFromSavedEnhanced(payoutMethod as SellerPayoutMethodDto | null);
 
             this.currentStore = (storeRes as any)?.result || storeRes;
             const storeId = this.currentStore?.id || cachedStoreId;
@@ -442,6 +507,11 @@ export class WalletCenterComponent implements OnInit {
                 methodKey: '',
                 receiveIn: 'World Cart API',
                 walletId: 'Not set',
+                accountTitle: 'Not set',
+                country: '',
+                accountType: '',
+                routingNumber: '',
+                referenceNumber: '',
                 paymentDetails: '',
                 isVerified: false,
                 verificationMessage: ''
@@ -457,6 +527,11 @@ export class WalletCenterComponent implements OnInit {
             methodKey: normalizedMethod,
             receiveIn: normalizedMethod === 'easyfinora' ? 'NashPay' : 'World Cart API',
             walletId: extractedWalletId,
+            accountTitle: 'Not set',
+            country: '',
+            accountType: '',
+            routingNumber: '',
+            referenceNumber: '',
             paymentDetails: latest.paymentDetails || '',
             isVerified: true,
             verificationMessage: 'Based on latest payout request'
@@ -467,12 +542,71 @@ export class WalletCenterComponent implements OnInit {
         if (!saved?.methodKey) return;
 
         const normalizedMethod = (saved.methodKey || '').toLowerCase();
-        const displayMethod = this.getPayoutDisplayLabel(normalizedMethod, saved.methodLabel || saved.methodKey || 'Not set');
+        const parsedBankDetails = normalizedMethod === 'bank'
+            ? this.parseBankPaymentDetails(saved.paymentDetails || '')
+            : null;
+        const displayMethod = normalizedMethod === 'bank'
+            ? (saved.bankName || 'Bank Transfer')
+            : this.getPayoutDisplayLabel(normalizedMethod, saved.methodLabel || saved.methodKey || 'Not set');
+
+        const receiveIn = normalizedMethod === 'bank'
+            ? [saved.country, saved.accountType].filter(Boolean).join(' • ') || 'Bank Transfer'
+            : normalizedMethod === 'easyfinora'
+                ? 'NashPay'
+                : 'World Cart API';
+
+        const payoutTarget = normalizedMethod === 'bank'
+            ? (parsedBankDetails?.accountNumber || saved.accountNumberMasked || 'Not set')
+            : saved.walletId || saved.cardNumberMasked || saved.accountNumberMasked || 'Not set';
+
         this.activeMethod = {
             method: displayMethod,
             methodKey: normalizedMethod,
-            receiveIn: normalizedMethod === 'easyfinora' ? 'NashPay' : 'World Cart API',
-            walletId: saved.walletId || saved.cardNumberMasked || saved.accountNumberMasked || 'Not set',
+            receiveIn: receiveIn,
+            walletId: payoutTarget,
+            accountTitle: saved.accountTitle || parsedBankDetails?.accountTitle || 'Not set',
+            country: saved.country || parsedBankDetails?.country || '',
+            accountType: saved.accountType || parsedBankDetails?.accountType || '',
+            routingNumber: saved.routingNumber || parsedBankDetails?.routingNumber || '',
+            referenceNumber: saved.swiftCode || parsedBankDetails?.referenceNumber || '',
+            paymentDetails: saved.paymentDetails || '',
+            isVerified: !!saved.isEasyFinoraVerified,
+            verificationMessage: saved.verificationMessage || ''
+        };
+    }
+
+    private resolveActiveMethodFromSavedEnhanced(saved: SellerPayoutMethodDto | null): void {
+        if (!saved?.methodKey) return;
+
+        const normalizedMethod = (saved.methodKey || '').toLowerCase();
+        const parsedBankDetails = normalizedMethod === 'bank'
+            ? this.parseBankPaymentDetails(saved.paymentDetails || '')
+            : null;
+
+        const displayMethod = normalizedMethod === 'bank'
+            ? (saved.bankName || 'Bank Transfer')
+            : this.getPayoutDisplayLabel(normalizedMethod, saved.methodLabel || saved.methodKey || 'Not set');
+
+        const receiveIn = normalizedMethod === 'bank'
+            ? [saved.country || parsedBankDetails?.country, saved.accountType || parsedBankDetails?.accountType].filter(Boolean).join(' • ') || 'Bank Transfer'
+            : normalizedMethod === 'easyfinora'
+                ? 'NashPay'
+                : 'World Cart API';
+
+        const payoutTarget = normalizedMethod === 'bank'
+            ? (parsedBankDetails?.accountNumber || saved.accountNumberMasked || 'Not set')
+            : saved.walletId || saved.cardNumberMasked || saved.accountNumberMasked || 'Not set';
+
+        this.activeMethod = {
+            method: displayMethod,
+            methodKey: normalizedMethod,
+            receiveIn: receiveIn,
+            walletId: payoutTarget,
+            accountTitle: saved.accountTitle || parsedBankDetails?.accountTitle || 'Not set',
+            country: saved.country || parsedBankDetails?.country || '',
+            accountType: saved.accountType || parsedBankDetails?.accountType || '',
+            routingNumber: saved.routingNumber || parsedBankDetails?.routingNumber || '',
+            referenceNumber: saved.swiftCode || parsedBankDetails?.referenceNumber || '',
             paymentDetails: saved.paymentDetails || '',
             isVerified: !!saved.isEasyFinoraVerified,
             verificationMessage: saved.verificationMessage || ''
@@ -492,6 +626,42 @@ export class WalletCenterComponent implements OnInit {
         const digits = (details.match(/\d{8,}/g) || []).join('');
         if (digits) return digits;
         return details.length > 24 ? `${details.slice(0, 24)}...` : details;
+    }
+
+    private parseBankPaymentDetails(details: string): {
+        country: string;
+        accountType: string;
+        accountTitle: string;
+        accountNumber: string;
+        routingNumber: string;
+        referenceNumber: string;
+    } | null {
+        if (!details) return null;
+
+        const result = {
+            country: '',
+            accountType: '',
+            accountTitle: '',
+            accountNumber: '',
+            routingNumber: '',
+            referenceNumber: ''
+        };
+
+        details.split(';').forEach((segment) => {
+            const [rawLabel, ...rawValueParts] = segment.split(':');
+            const label = (rawLabel || '').trim().toLowerCase();
+            const value = rawValueParts.join(':').trim();
+            if (!label || !value) return;
+
+            if (label === 'country') result.country = value;
+            if (label === 'account type') result.accountType = value;
+            if (label === 'account title') result.accountTitle = value;
+            if (label === 'account') result.accountNumber = value;
+            if (label === 'routing') result.routingNumber = value;
+            if (label === 'reference') result.referenceNumber = value;
+        });
+
+        return result;
     }
 
     private matchesStatusFilter(status: string): boolean {

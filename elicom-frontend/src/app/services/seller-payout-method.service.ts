@@ -6,6 +6,8 @@ import { environment } from '../../environments/environment';
 export interface SellerPayoutMethodDto {
     methodKey: string;
     methodLabel: string;
+    country: string;
+    accountType: string;
     accountTitle: string;
     bankName: string;
     accountNumberMasked: string;
@@ -22,6 +24,8 @@ export interface SellerPayoutMethodDto {
 
 export interface SaveSellerPayoutMethodInput {
     methodKey: string;
+    country?: string;
+    accountType?: string;
     accountTitle?: string;
     bankName?: string;
     accountNumber?: string;
@@ -121,6 +125,8 @@ export class SellerPayoutMethodService {
         const dto: SellerPayoutMethodDto = {
             methodKey,
             methodLabel,
+            country: input.country || '',
+            accountType: input.accountType || '',
             accountTitle: input.accountTitle || '',
             bankName: input.bankName || '',
             accountNumberMasked: input.accountNumber ? this.maskTail(input.accountNumber) : '',
@@ -133,8 +139,8 @@ export class SellerPayoutMethodService {
             isEasyFinoraVerified: methodKey !== 'easyfinora',
             verificationMessage: methodKey === 'easyfinora' ? 'Saved locally (backend sync pending)' : 'Ready',
             paymentDetails: methodKey === 'easyfinora'
-                ? `EasyFinora Wallet ID: ${input.walletId || ''}`
-                : (input.walletId || '')
+                ? `NoshPay Wallet ID: ${input.walletId || ''}`
+                : `Country: ${input.country || ''}; Bank: ${input.bankName || ''}; Account Type: ${input.accountType || ''}; Account Title: ${input.accountTitle || ''}; Account: ${input.accountNumber || ''}; Routing: ${input.routingNumber || ''}; Reference: ${input.swiftCode || ''}`
         };
 
         localStorage.setItem(this.localKey, JSON.stringify(dto));

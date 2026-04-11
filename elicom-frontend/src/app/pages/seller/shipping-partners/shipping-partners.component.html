@@ -1,70 +1,121 @@
 <div class="partners-content">
-    <div class="dashboard-header mb-4">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="fw-bold mb-2">
-                    <i class="fas fa-handshake me-3 text-primary"></i>
-                    3PL Shipping Partners
-                </h1>
-                <p class="lead mb-0 text-muted">
-                    Please use the provided locations of our third-party logistics partners to fulfill your order shipments.
-                </p>
+    <section class="sp-hero mb-5">
+        <div class="sp-store">
+            <div class="sp-store-icon">
+                <img src="/assets/images/logo1.png" alt="Store Logo" class="sp-store-logo-img">
             </div>
-            <div class="col-md-4 text-end">
-                <div class="partners-stats-badge">
-                    <i class="fas fa-globe-americas me-2 text-primary"></i>
-                    <span>{{partners.length}} Active Partners</span>
+            <div class="sp-store-copy">
+                <div class="sp-store-title-row">
+                    <div class="sp-store-title-group">
+                        <h2 class="sp-store-title">Hacking Tools</h2>
+                        <span title="Admin Verified Store" class="sp-store-verified">
+                            <i class="fas fa-check-circle"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="sp-store-mode">
+                    <h3>3PL Shipping Partners</h3>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div *ngFor="let country of countries" class="country-section mb-5">
-        <div class="country-header d-flex align-items-center mb-4">
-            <div class="country-flag-placeholder me-3">
-                <i class="fas fa-map-marker-alt text-primary"></i>
+        <div class="sp-right-stack">
+            <div class="sp-time-card">
+                <div class="sp-analog-clock">
+                    <div class="sp-clock-ring sp-clock-ring-one"></div>
+                    <div class="sp-clock-ring sp-clock-ring-two"></div>
+                    <div class="sp-clock-mark sp-mark-12"></div>
+                    <div class="sp-clock-mark sp-mark-3"></div>
+                    <div class="sp-clock-mark sp-mark-6"></div>
+                    <div class="sp-clock-mark sp-mark-9"></div>
+                    <div class="sp-clock-hand sp-hour-hand" [style.transform]="'translateX(-50%) rotate(' + hourHandRotation + 'deg)'"></div>
+                    <div class="sp-clock-hand sp-minute-hand" [style.transform]="'translateX(-50%) rotate(' + minuteHandRotation + 'deg)'"></div>
+                    <div class="sp-clock-hand sp-second-hand" [style.transform]="'translateX(-50%) rotate(' + secondHandRotation + 'deg)'"></div>
+                    <div class="sp-clock-center"></div>
+                </div>
+                <div class="sp-time-copy">
+                    <div class="sp-time-main">{{ currentTimeDisplay }}</div>
+                    <div class="sp-time-date">{{ currentDateDisplay }}</div>
+                    <div class="sp-time-location-pill">
+                        <div class="sp-flag-wrap">
+                            <img src="https://flagcdn.com/w80/us.png" alt="US flag">
+                        </div>
+                        <div class="sp-time-location">US | GMT-5</div>
+                    </div>
+                </div>
             </div>
-            <h2 class="fw-bold mb-0">{{country}}</h2>
-            <div class="country-line flex-grow-1 ms-4"></div>
+        </div>
+
+        <div class="sp-filter-center">
+            <div class="sp-filter-container">
+                <div class="sp-filter-label">Partner Network</div>
+                <div class="sp-date-pill sp-partner-badge">
+                    <span><i class="fas fa-globe-americas"></i> {{ partners.length }} Active Partners</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section *ngFor="let country of countries" class="country-shell mb-5">
+        <div class="country-header">
+            <div class="country-title-wrap">
+                <div class="country-flag-placeholder">
+                    <i class="fas fa-map-location-dot"></i>
+                </div>
+                <div class="country-copy">
+                    <div class="country-kicker">Partner Region</div>
+                    <h2>{{country}}</h2>
+                </div>
+            </div>
+            <div class="country-summary-pill">
+                <span>{{ groupedPartners[country].length }} Partners</span>
+            </div>
         </div>
 
         <div class="row g-4">
-            <div *ngFor="let partner of groupedPartners[country]" class="col-md-6 col-lg-4">
-                <div class="partner-card h-100">
+            <div *ngFor="let partner of groupedPartners[country]; let i = index" class="col-md-6 col-xl-4">
+                <article class="partner-card h-100" [ngClass]="getPartnerTone(i)">
                     <div class="partner-card-inner">
-                        <div class="partner-brand mb-4">
+                        <div class="partner-card-topbar">
                             <div class="partner-logo">
                                 {{partner.name.charAt(0)}}
                             </div>
-                            <h4 class="partner-name mb-0">{{partner.name}}</h4>
+                            <div class="partner-pill">{{ partner.serviceLine }}</div>
                         </div>
 
-                        <div class="partner-details">
-                            <div class="detail-row mb-3">
-                                <i class="fas fa-map-pin text-primary me-3"></i>
-                                <span>{{partner.address}}</span>
+                        <div class="partner-brand">
+                            <h4 class="partner-name mb-0">{{partner.name}}</h4>
+                            <p class="partner-subtext">{{ partner.tagline }}</p>
+                        </div>
+
+                        <div class="partner-meta-stack">
+                            <div class="partner-meta-card">
+                                <span class="meta-label">Address</span>
+                                <span class="meta-value">{{partner.address}}</span>
                             </div>
-                            <div class="detail-row mb-3">
-                                <i class="fas fa-mail-bulk text-primary me-3"></i>
-                                <span>{{partner.zipCode}}</span>
-                            </div>
-                            <div class="detail-row mb-4">
-                                <i class="fas fa-external-link-alt text-primary me-3"></i>
-                                <a [href]="partner.website" target="_blank" class="partner-link">Visit Website</a>
+                            <div class="partner-meta-row">
+                                <div class="partner-meta-card">
+                                    <span class="meta-label">Zip Code</span>
+                                    <span class="meta-value">{{partner.zipCode}}</span>
+                                </div>
+                                <div class="partner-meta-card">
+                                    <span class="meta-label">Website</span>
+                                    <a [href]="partner.website" target="_blank" class="partner-link">Open Website</a>
+                                </div>
                             </div>
                         </div>
 
                         <div class="card-footer-actions">
                             <button class="btn-partner-action">
-                                <i class="fas fa-info-circle me-2"></i> Details
+                                <i class="fas fa-circle-info me-2"></i> Partner Profile
                             </button>
                             <button class="btn-partner-action primary">
-                                <i class="fas fa-truck me-2"></i> Use Partner
+                                <i class="fas fa-truck-fast me-2"></i> {{ getPartnerActionLabel(country) }}
                             </button>
                         </div>
                     </div>
-                </div>
+                </article>
             </div>
         </div>
-    </div>
+    </section>
 </div>

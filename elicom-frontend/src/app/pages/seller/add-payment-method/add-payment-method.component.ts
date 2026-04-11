@@ -35,6 +35,7 @@ export class AddPaymentMethodComponent implements OnInit, OnDestroy {
     private clockTimer: ReturnType<typeof setInterval> | null = null;
 
     // Bank Form Fields
+    bankCountry: string = '';
     bankAccountTitle: string = ''; // Beneficiary Name
     bankAccountNumber: string = '';
     bankName: string = '';
@@ -93,6 +94,49 @@ export class AddPaymentMethodComponent implements OnInit, OnDestroy {
         { label: 'WSFS Bank', value: 'WSFS Bank' }
     ];
 
+    countryOptions = [
+        { label: 'United States', value: 'United States' },
+        { label: 'Canada', value: 'Canada' },
+        { label: 'United Kingdom', value: 'United Kingdom' },
+        { label: 'United Arab Emirates', value: 'United Arab Emirates' },
+        { label: 'Pakistan', value: 'Pakistan' }
+    ];
+
+    private readonly countryBankOptionMap: Record<string, Array<{ label: string; value: string }>> = {
+        us: this.bankOptions,
+        canada: [
+            { label: 'Royal Bank of Canada', value: 'Royal Bank of Canada' },
+            { label: 'TD Canada Trust', value: 'TD Canada Trust' },
+            { label: 'Scotiabank', value: 'Scotiabank' },
+            { label: 'BMO Bank of Montreal', value: 'BMO Bank of Montreal' },
+            { label: 'CIBC', value: 'CIBC' }
+        ],
+        uk: [
+            { label: 'Barclays', value: 'Barclays' },
+            { label: 'HSBC UK', value: 'HSBC UK' },
+            { label: 'Lloyds Bank', value: 'Lloyds Bank' },
+            { label: 'NatWest', value: 'NatWest' },
+            { label: 'Santander UK', value: 'Santander UK' }
+        ],
+        uae: [
+            { label: 'Emirates NBD', value: 'Emirates NBD' },
+            { label: 'Abu Dhabi Commercial Bank', value: 'Abu Dhabi Commercial Bank' },
+            { label: 'Dubai Islamic Bank', value: 'Dubai Islamic Bank' },
+            { label: 'Mashreq', value: 'Mashreq' },
+            { label: 'First Abu Dhabi Bank', value: 'First Abu Dhabi Bank' }
+        ],
+        pakistan: [
+            { label: 'HBL', value: 'HBL' },
+            { label: 'UBL', value: 'UBL' },
+            { label: 'Meezan Bank', value: 'Meezan Bank' },
+            { label: 'MCB Bank', value: 'MCB Bank' },
+            { label: 'Bank Alfalah', value: 'Bank Alfalah' },
+            { label: 'Allied Bank', value: 'Allied Bank' },
+            { label: 'Faysal Bank', value: 'Faysal Bank' },
+            { label: 'Bank Al Habib', value: 'Bank Al Habib' }
+        ]
+    };
+
     ngOnInit(): void {
         this.storeService.currentStore$.subscribe(store => {
             this.currentStore = store;
@@ -121,6 +165,124 @@ export class AddPaymentMethodComponent implements OnInit, OnDestroy {
         return this.currentStore?.name || 'Seller Store';
     }
 
+    get normalizedBankCountry(): string {
+        const country = (this.bankCountry || '').trim().toLowerCase();
+        if (!country) return 'us';
+        if (country.includes('pakistan')) return 'pakistan';
+        if (country.includes('canada')) return 'canada';
+        if (country.includes('united kingdom') || country === 'uk' || country.includes('britain')) return 'uk';
+        if (country.includes('united arab emirates') || country === 'uae' || country.includes('emirates')) return 'uae';
+        if (country.includes('united states') || country === 'usa' || country === 'us' || country.includes('america')) return 'us';
+        return 'us';
+    }
+
+    get displayBankOptions(): Array<{ label: string; value: string }> {
+        return this.countryBankOptionMap[this.normalizedBankCountry] || this.bankOptions;
+    }
+
+    get bankRoutingLabel(): string {
+        switch (this.normalizedBankCountry) {
+            case 'pakistan':
+                return 'Bank Identifier (Optional)';
+            case 'canada':
+                return 'Transit / Institution Code *';
+            case 'uk':
+                return 'Sort Code *';
+            case 'uae':
+                return 'IBAN / Routing Code *';
+            default:
+                return 'Routing (ABA) *';
+        }
+    }
+
+    get bankRoutingPlaceholder(): string {
+        switch (this.normalizedBankCountry) {
+            case 'pakistan':
+                return 'Routing code or leave blank';
+            case 'canada':
+                return '5-digit transit and institution code';
+            case 'uk':
+                return '6-digit sort code';
+            case 'uae':
+                return 'Enter routing code';
+            default:
+                return '9-digit routing number';
+        }
+    }
+
+    get bankAccountNumberLabel(): string {
+        return 'Account Number *';
+    }
+
+    get bankAccountNumberPlaceholder(): string {
+        switch (this.normalizedBankCountry) {
+            case 'pakistan':
+                return 'Enter account number';
+            case 'uae':
+                return 'Enter account number';
+            default:
+                return 'Full account number';
+        }
+    }
+
+    get bankAccountTypeLabel(): string {
+        return this.normalizedBankCountry === 'pakistan' ? 'Account Category *' : 'Account Type *';
+    }
+
+    get bankAccountTypeOptions(): Array<{ label: string; value: string }> {
+        switch (this.normalizedBankCountry) {
+            case 'pakistan':
+                return [
+                    { label: 'Current', value: 'current' },
+                    { label: 'Saving', value: 'saving' },
+                    { label: 'Asaan Account', value: 'asaan' }
+                ];
+            case 'uk':
+                return [
+                    { label: 'Personal', value: 'personal' },
+                    { label: 'Business', value: 'business' },
+                    { label: 'Savings', value: 'savings' }
+                ];
+            default:
+                return [
+                    { label: 'Checking', value: 'checking' },
+                    { label: 'Savings', value: 'savings' }
+                ];
+        }
+    }
+
+    get beneficiaryNameLabel(): string {
+        return this.normalizedBankCountry === 'pakistan' ? 'Account Holder Name *' : 'Beneficiary Name *';
+    }
+
+    get beneficiaryNamePlaceholder(): string {
+        return this.normalizedBankCountry === 'pakistan'
+            ? 'Name as registered with your bank account'
+            : 'Name as it appears on account';
+    }
+
+    get referenceNumberLabel(): string {
+        switch (this.normalizedBankCountry) {
+            case 'pakistan':
+                return 'Reference / Branch Note (Optional)';
+            case 'uae':
+                return 'SWIFT / Reference (Optional)';
+            default:
+                return 'Reference Number (Optional)';
+        }
+    }
+
+    get referenceNumberPlaceholder(): string {
+        switch (this.normalizedBankCountry) {
+            case 'pakistan':
+                return 'Branch note or internal reference';
+            case 'uae':
+                return 'SWIFT or any internal reference';
+            default:
+                return 'Any internal reference';
+        }
+    }
+
     savePaymentMethod() {
         if (this.activeTab === 'thirdparty') {
             if (!this.selectedThirdParty) {
@@ -138,9 +300,35 @@ export class AddPaymentMethodComponent implements OnInit, OnDestroy {
                 return;
             }
         } else {
-            // Bank restricted as well
-            this.alert.error('Use NashPay wallet');
-            return;
+            if (!this.bankCountry.trim()) {
+                this.alert.warning('Please enter your country.');
+                return;
+            }
+
+            if (!this.bankName.trim()) {
+                this.alert.warning('Please enter your bank name.');
+                return;
+            }
+
+            if (!this.bankAccountTitle.trim()) {
+                this.alert.warning('Please enter the account holder name.');
+                return;
+            }
+
+            if (!this.bankAccountNumber.trim()) {
+                this.alert.warning('Please enter your account number.');
+                return;
+            }
+
+            if (!this.bankAccountType.trim()) {
+                this.alert.warning('Please choose your account type.');
+                return;
+            }
+
+            if (this.normalizedBankCountry !== 'pakistan' && !this.routingNumber.trim()) {
+                this.alert.warning(`Please enter ${this.bankRoutingLabel.replace('*', '').trim().toLowerCase()}.`);
+                return;
+            }
         }
 
         const payload = this.buildPayload();
@@ -180,10 +368,13 @@ export class AddPaymentMethodComponent implements OnInit, OnDestroy {
 
             if (method.methodKey === 'bank') {
                 this.activeTab = 'bank';
+                this.bankCountry = method.country || '';
                 this.bankName = method.bankName || '';
                 this.routingNumber = method.routingNumber || '';
                 this.bankAccountNumber = ''; // Backend masked, user should re-enter
                 this.bankAccountTitle = method.accountTitle || '';
+                this.bankAccountType = method.accountType || '';
+                this.referenceNumber = method.swiftCode || '';
             } else {
                 this.activeTab = 'thirdparty';
                 // Detect provider if possible, otherwise default to Easy Finora since it's the only one allowed
@@ -202,12 +393,14 @@ export class AddPaymentMethodComponent implements OnInit, OnDestroy {
         } else {
             return {
                 methodKey: 'bank',
-                bankName: this.bankName,
-                routingNumber: this.routingNumber,
-                accountNumber: this.bankAccountNumber,
-                accountTitle: this.bankAccountTitle,
+                country: this.bankCountry.trim(),
+                accountType: this.bankAccountType.trim(),
+                bankName: this.bankName.trim(),
+                routingNumber: this.routingNumber.trim(),
+                accountNumber: this.bankAccountNumber.trim(),
+                accountTitle: this.bankAccountTitle.trim(),
                 // Additional fields can be mapped to available DTO properties
-                swiftCode: this.referenceNumber // piggyback on swiftCode or similar if backend allows
+                swiftCode: this.referenceNumber.trim() // piggyback on swiftCode or similar if backend allows
             };
         }
     }

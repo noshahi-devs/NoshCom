@@ -1,10 +1,24 @@
 <div class="payout-transactions-page">
-    <section class="status-header">
-        <h2>
-            <i class="fa-solid fa-wallet"></i>
-            {{ title }}
-        </h2>
-        <p>{{ description }}</p>
+    <section class="pt-hero">
+        <div class="pt-hero-copy">
+            <div class="pt-kicker">{{ heroKicker }}</div>
+            <h2>
+                <i class="fa-solid" [ngClass]="heroIcon"></i>
+                {{ title }}
+            </h2>
+            <p>{{ description }}</p>
+        </div>
+
+        <div class="pt-hero-summary">
+            <div class="pt-summary-card">
+                <span class="pt-summary-label">Current View</span>
+                <span class="pt-summary-value">{{ heroBadge }}</span>
+            </div>
+            <div class="pt-summary-card">
+                <span class="pt-summary-label">{{ filteredCountLabel }}</span>
+                <span class="pt-summary-value">{{ filteredRequests.length }}</span>
+            </div>
+        </div>
     </section>
 
     <section class="orders-table-card">
@@ -15,7 +29,7 @@
 
             <div class="search-wrap">
                 <label for="ptSearch">Search:</label>
-                <input id="ptSearch" type="text" [(ngModel)]="searchTerm" placeholder="Type to search" />
+                <input id="ptSearch" type="text" [(ngModel)]="searchTerm" placeholder="Search method, amount, status..." />
             </div>
         </div>
 
@@ -24,10 +38,10 @@
                 <thead>
                     <tr>
                         <th class="col-date">Date</th>
-                        <th class="col-method">Payment method</th>
-                        <th class="col-receive">Receive in</th>
+                        <th class="col-method">Payment Method</th>
+                        <th class="col-receive">Receive In</th>
                         <th class="col-amount">Amount</th>
-                        <th class="col-status">Withdraw status</th>
+                        <th class="col-status">Withdraw Status</th>
                         <th class="col-action">Action</th>
                     </tr>
                 </thead>
@@ -52,33 +66,51 @@
                     <tr *ngFor="let req of filteredRequests; let idx = index" [class.zebra-even]="idx % 2 === 0"
                         [class.zebra-odd]="idx % 2 !== 0">
                         <td class="date-col">
-                            <div class="cell-box">
+                            <div class="cell-box cell-date">
                                 <div class="date-relative">{{ getRelativeDate(req.creationTime) }}</div>
-                                <div class="date-absolute">{{ req.creationTime | date:'dd/MM/yyyy' }}</div>
-                                <div>{{ req.creationTime | date:'hh:mm:ss a' }}</div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Date</span>
+                                    <span class="detail-value">{{ req.creationTime | date:'dd/MM/yyyy' }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Time</span>
+                                    <span class="detail-value">{{ req.creationTime | date:'hh:mm:ss a' }}</span>
+                                </div>
                             </div>
                         </td>
+
                         <td class="method-col">
-                            <div class="cell-box">
-                                <div class="method-main">Via: {{ req.method || 'Third Party' }}</div>
-                                <div class="sub-text">Payout request</div>
+                            <div class="cell-box cell-method">
+                                <div class="method-main">{{ getMethodLabel(req.method) }}</div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Request</span>
+                                    <span class="detail-value">Payout transfer</span>
+                                </div>
                             </div>
                         </td>
+
                         <td class="receive-col">
-                            <div class="cell-box">
-                                {{ req.paymentDetails || 'API Payout' }}
+                            <div class="cell-box cell-receive">
+                                <div class="receive-main">{{ getReceiveInLabel(req.paymentDetails) }}</div>
                             </div>
                         </td>
+
                         <td class="amount-col">
-                            <div class="cell-box amount-value">${{ req.amount || 0 | number:'1.2-2' }}</div>
+                            <div class="cell-box cell-amount">
+                                <div class="amount-value">${{ req.amount || 0 | number:'1.2-2' }}</div>
+                                <div class="amount-note">Transfer amount</div>
+                            </div>
                         </td>
+
                         <td>
                             <div class="cell-box cell-box-status">
+                                <div class="status-caption">Current Status</div>
                                 <span class="status-pill" [ngClass]="getStatusClass(req.status)">
                                     {{ getStatusLabel(req.status) }}
                                 </span>
                             </div>
                         </td>
+
                         <td>
                             <div class="cell-box cell-box-actions">
                                 <button type="button" class="btn-action btn-view" (click)="onActionClick(req)">
@@ -91,7 +123,13 @@
 
                 <tbody *ngIf="hasLoaded && !filteredRequests.length">
                     <tr>
-                        <td colspan="6" class="empty-row">No data available in table</td>
+                        <td colspan="6" class="empty-row">
+                            <div class="empty-state">
+                                <i class="fa-solid fa-folder-open"></i>
+                                <strong>{{ emptyStateTitle }}</strong>
+                                <span>Matching payout transactions will appear here once data is available.</span>
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>

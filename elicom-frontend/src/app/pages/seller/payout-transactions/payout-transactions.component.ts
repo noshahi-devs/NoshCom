@@ -39,6 +39,34 @@ export class PayoutTransactionsComponent implements OnInit {
         return 'Pending Payout Transactions';
     }
 
+    get heroKicker(): string {
+        return 'Payout Center';
+    }
+
+    get heroBadge(): string {
+        if (this.mode === 'completed') return 'Settled Transfers';
+        if (this.mode === 'refunds') return 'Reversed Transfers';
+        return 'Awaiting Review';
+    }
+
+    get heroIcon(): string {
+        if (this.mode === 'completed') return 'fa-circle-check';
+        if (this.mode === 'refunds') return 'fa-arrow-rotate-left';
+        return 'fa-clock';
+    }
+
+    get emptyStateTitle(): string {
+        if (this.mode === 'completed') return 'No completed payouts yet.';
+        if (this.mode === 'refunds') return 'No refunded payouts found.';
+        return 'No pending payouts right now.';
+    }
+
+    get filteredCountLabel(): string {
+        if (this.mode === 'completed') return 'Completed';
+        if (this.mode === 'refunds') return 'Refunded';
+        return 'Pending';
+    }
+
     get description(): string {
         if (this.mode === 'completed') {
             return 'Your completed payouts are listed here. Review successful transfers and reconcile settlement records.';
@@ -74,18 +102,33 @@ export class PayoutTransactionsComponent implements OnInit {
         });
     }
 
-    getStatusClass(status: string): string {
+    getStatusClass(status?: string): string {
         const normalized = this.normalizeStatus(status);
         if (this.isCompletedStatus(normalized)) return 'accepted';
         if (this.isRefundedStatus(normalized)) return 'refunded';
         return 'pending';
     }
 
-    getStatusLabel(status: string): string {
+    getStatusLabel(status?: string): string {
         const normalized = this.normalizeStatus(status);
         if (this.isCompletedStatus(normalized)) return 'Accepted';
         if (this.isRefundedStatus(normalized)) return 'Refunded';
         return 'Pending';
+    }
+
+    getMethodLabel(method?: string): string {
+        const normalized = this.normalizeStatus(method);
+        if (normalized === 'easyfinora') return 'NashPay';
+        return method || 'Third Party';
+    }
+
+    getReceiveInLabel(paymentDetails?: string): string {
+        if (!paymentDetails) return 'API Payout';
+        return paymentDetails
+            .replace(/Easy\s*Finora\s*Wallet\s*ID\s*:/i, 'NoshPay Wallet ID:')
+            .replace(/EasyFinora\s*Wallet\s*ID\s*:/i, 'NoshPay Wallet ID:')
+            .replace(/Easy\s*Finora/gi, 'NashPay')
+            .replace(/EasyFinora/gi, 'NashPay');
     }
 
     getRelativeDate(dateValue: string): string {
@@ -110,8 +153,8 @@ export class PayoutTransactionsComponent implements OnInit {
         const normalizedStatus = this.getStatusLabel(req?.status || '');
         const payoutId = req?.id || '-';
         const amount = Number(req?.amount || 0).toFixed(2);
-        const method = this.escapeHtml(req?.method || 'Third Party');
-        const receiveIn = this.escapeHtml(req?.paymentDetails || 'API Payout');
+        const method = this.escapeHtml(this.getMethodLabel(req?.method));
+        const receiveIn = this.escapeHtml(this.getReceiveInLabel(req?.paymentDetails));
         const createdAt = req?.creationTime ? new Date(req.creationTime).toLocaleString() : '-';
         const remarks = this.escapeHtml(req?.adminRemarks?.trim() || 'N/A');
 
@@ -165,14 +208,14 @@ export class PayoutTransactionsComponent implements OnInit {
         });
     }
 
-    private matchesMode(status: string): boolean {
+    private matchesMode(status?: string): boolean {
         const normalized = this.normalizeStatus(status);
         if (this.mode === 'completed') return this.isCompletedStatus(normalized);
         if (this.mode === 'refunds') return this.isRefundedStatus(normalized);
         return this.isPendingStatus(normalized);
     }
 
-    private normalizeStatus(status: string): string {
+    private normalizeStatus(status?: string): string {
         return (status || '').trim().toLowerCase();
     }
 

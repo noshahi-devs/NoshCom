@@ -122,7 +122,9 @@
 
                     <div class="product-copy">
                         <div class="badge-group product-chip-row">
-                            <span class="badge-soft badge-category">ID: {{ res.id }}</span>
+                            <span class="badge-soft badge-category">
+                                {{ res.isPreviewPlaceholder ? ('Preview: ' + res.categoryName) : ('ID: ' + res.id) }}
+                            </span>
                             <span class="badge-soft badge-brand">Brand: {{ res.brandName || 'Generic' }}</span>
                         </div>
 
@@ -136,11 +138,11 @@
                         <div class="product-submeta">
                             <span class="product-submeta-item">
                                 <i class="fas fa-store"></i>
-                                Supplier Catalog
+                                {{ res.isPreviewPlaceholder ? 'Preview Catalog' : 'Supplier Catalog' }}
                             </span>
                             <span class="product-submeta-item">
                                 <i class="fas fa-box-open"></i>
-                                Ready for Store Listing
+                                {{ res.isPreviewPlaceholder ? 'Select category for live products' : 'Ready for Store Listing' }}
                             </span>
                         </div>
                     </div>
@@ -149,12 +151,14 @@
                 <div class="action-group">
                     <div class="price-panel">
                         <span class="price-label">Supplier Price</span>
-                        <span class="price-badge">${{ res.supplierPriceResolved ?? res.supplierPrice }}</span>
+                        <span class="price-badge">
+                            {{ res.isPreviewPlaceholder ? 'Preview' : ('$' + (res.supplierPriceResolved ?? res.supplierPrice)) }}
+                        </span>
                     </div>
 
                     <button class="add-btn" (click)="selectProduct(res)">
                         <i class="fas fa-plus"></i>
-                        <span>Add to Store</span>
+                        <span>{{ res.isPreviewPlaceholder ? 'Select Category' : 'Add to Store' }}</span>
                     </button>
                 </div>
             </div>

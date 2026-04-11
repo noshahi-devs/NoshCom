@@ -108,7 +108,7 @@ export class OrderDetailsComponent implements OnInit {
             grandTotal: itemsTotal + (itemsTotal * 0.04), // subtotal + tax
             shippingService: 'Standard',
             fulfillment: 'Seller',
-            salesChannel: 'WorldCart.com',
+            salesChannel: 'NoshCom.com',
             sellerInfo: {
                 sellerName: this.asDisplayValue(data.sellerName),
                 sellerId: this.asDisplayValue(data.sellerId),
@@ -121,7 +121,7 @@ export class OrderDetailsComponent implements OnInit {
                 trackingNumber: data.primeShipTrackingNumber || data.trackingCode || data.deliveryTrackingNumber || 'N/A',
                 purchaseDateTime: creationDate,
                 shipmentDate: data.shipmentDate ? new Date(data.shipmentDate) : null,
-                carrier: data.carrierId || 'N/A'
+                carrier: data.carrierId === 'PrimeshipUK' ? 'Eliship' : (data.carrierId || 'N/A')
             },
             orderItems: (data.orderItems || []).map((item: any) => {
                 const itemSubtotal = item.priceAtPurchase * item.quantity;

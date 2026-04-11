@@ -79,6 +79,8 @@ namespace Elicom.Withdrawals
             var setting = new SellerPayoutMethodSetting
             {
                 MethodKey = methodKey,
+                Country = (input.Country ?? string.Empty).Trim(),
+                AccountType = (input.AccountType ?? string.Empty).Trim(),
                 AccountTitle = (input.AccountTitle ?? string.Empty).Trim(),
                 BankName = (input.BankName ?? string.Empty).Trim(),
                 AccountNumber = DigitsOnly(input.AccountNumber),
@@ -99,6 +101,16 @@ namespace Elicom.Withdrawals
             }
             else if (methodKey == "bank" || methodKey == "wise")
             {
+                if (setting.Country.IsNullOrWhiteSpace())
+                {
+                    throw new UserFriendlyException("Country is required.");
+                }
+
+                if (setting.AccountType.IsNullOrWhiteSpace())
+                {
+                    throw new UserFriendlyException("Account type is required.");
+                }
+
                 if (setting.AccountTitle.IsNullOrWhiteSpace() || setting.BankName.IsNullOrWhiteSpace())
                 {
                     throw new UserFriendlyException("Account title and bank name are required.");
@@ -586,6 +598,8 @@ namespace Elicom.Withdrawals
             {
                 MethodKey = setting.MethodKey ?? string.Empty,
                 MethodLabel = ToMethodLabel(setting.MethodKey),
+                Country = setting.Country ?? string.Empty,
+                AccountType = setting.AccountType ?? string.Empty,
                 AccountTitle = setting.AccountTitle ?? string.Empty,
                 BankName = setting.BankName ?? string.Empty,
                 AccountNumberMasked = MaskTail(setting.AccountNumber, 4),
@@ -712,7 +726,7 @@ namespace Elicom.Withdrawals
             return key switch
             {
                 "easyfinora" => $"EasyFinora Wallet ID: {setting.WalletId}",
-                "bank" or "wise" => $"Account Title: {setting.AccountTitle}; Bank: {setting.BankName}; Account: {setting.AccountNumber}; Routing: {setting.RoutingNumber}; SWIFT: {setting.SwiftCode}",
+                "bank" or "wise" => $"Country: {setting.Country}; Bank: {setting.BankName}; Account Type: {setting.AccountType}; Account Title: {setting.AccountTitle}; Account: {setting.AccountNumber}; Routing: {setting.RoutingNumber}; Reference: {setting.SwiftCode}",
                 "paypal" or "stripe" => $"Wallet ID: {setting.WalletId}",
                 _ => string.Empty
             };
@@ -737,6 +751,8 @@ namespace Elicom.Withdrawals
         private class SellerPayoutMethodSetting
         {
             public string MethodKey { get; set; } = string.Empty;
+            public string Country { get; set; } = string.Empty;
+            public string AccountType { get; set; } = string.Empty;
             public string AccountTitle { get; set; } = string.Empty;
             public string BankName { get; set; } = string.Empty;
             public string AccountNumber { get; set; } = string.Empty;
