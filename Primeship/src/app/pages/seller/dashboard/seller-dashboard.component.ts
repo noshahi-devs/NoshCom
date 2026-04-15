@@ -170,6 +170,33 @@ export class SellerDashboardComponent implements OnInit {
     this.router.navigate(['/seller/orders']);
   }
 
+  getPrimaryItemName(order: any): string {
+    return this.getPrimaryProductName(order) || 'Product unavailable';
+  }
+
+  getOrderItemsCount(order: any): number {
+    const items = order?.items || order?.orderItems || [];
+    return Array.isArray(items) ? items.length : 0;
+  }
+
+  getOrderAmount(order: any): number {
+    const directAmount = order?.totalPurchaseAmount ?? order?.totalAmount;
+    if (typeof directAmount === 'number') {
+      return directAmount;
+    }
+
+    const items = order?.items || order?.orderItems || [];
+    return items.reduce((sum: number, item: any) => {
+      const qty = item?.qty || item?.quantity || 0;
+      const price = item?.purchasePrice || item?.price || item?.priceAtPurchase || 0;
+      return sum + (qty * price);
+    }, 0);
+  }
+
+  getOrderReference(order: any): string {
+    return order?.referenceCode || order?.orderNumber || order?.id || 'N/A';
+  }
+
   getStatusColor(status: string): string {
     if (!status) return 'info';
     const s = status.toLowerCase();

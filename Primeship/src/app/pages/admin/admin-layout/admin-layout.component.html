@@ -9,18 +9,6 @@
       </div>
     </div>
 
-    <!-- User Profile Glass Card -->
-    <div class="user-profile">
-      <div class="user-avatar">
-        <i class="fas fa-user-tie"></i>
-        <div class="status-indicator online"></div>
-      </div>
-      <div class="user-info">
-        <h4>{{ profileDisplayName }}</h4>
-        <p class="role-badge">{{ isAdminView ? 'Platform Owner' : 'Verified Partner' }}</p>
-      </div>
-    </div>
-
     <!-- Navigation Hub -->
     <nav class="sidebar-nav">
       <!-- Admin Section -->
@@ -65,21 +53,21 @@
         <h5 class="menu-title">Sourcing Hub</h5>
         <ul class="nav-list">
           <li class="nav-item" routerLinkActive="active">
-            <a routerLink="/seller/dashboard" class="nav-link" [attr.title]="(sidebarCollapsed || sellerIconOnly) ? 'Dashboard' : null">
+            <a routerLink="/seller/dashboard" class="nav-link" [attr.title]="(sidebarCollapsed || sellerIconOnly) ? 'Overview' : null">
               <i class="fas fa-tachometer-alt nav-icon"></i>
-              <span class="nav-text">Dashboard</span>
+              <span class="nav-text">Overview</span>
             </a>
           </li>
           <li class="nav-item" routerLinkActive="active">
-            <a routerLink="/shop" class="nav-link" [attr.title]="(sidebarCollapsed || sellerIconOnly) ? 'Browse Products' : null">
+            <a routerLink="/shop" class="nav-link" [attr.title]="(sidebarCollapsed || sellerIconOnly) ? 'Source Products' : null">
               <i class="fas fa-shopping-basket nav-icon"></i>
-              <span class="nav-text">Browse Products</span>
+              <span class="nav-text">Source Products</span>
             </a>
           </li>
           <li class="nav-item" routerLinkActive="active">
-            <a routerLink="/seller/orders" class="nav-link" [attr.title]="(sidebarCollapsed || sellerIconOnly) ? 'My Purchases' : null">
+            <a routerLink="/seller/orders" class="nav-link" [attr.title]="(sidebarCollapsed || sellerIconOnly) ? 'Order Center' : null">
               <i class="fas fa-clipboard-list nav-icon"></i>
-              <span class="nav-text">My Purchases</span>
+              <span class="nav-text">Order Center</span>
             </a>
           </li>
         </ul>
@@ -105,7 +93,6 @@
 
             <div class="seller-header-copy">
               <span class="seller-header-kicker">Seller Workspace</span>
-              <strong>{{ sellerPortalName }}</strong>
               <p>Orders, sourcing, and delivery flow in one place.</p>
             </div>
 

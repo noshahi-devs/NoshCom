@@ -328,6 +328,43 @@ export class SellerOrdersComponent implements OnInit {
     return isNaN(val) ? '$0.00' : '$' + val.toFixed(2);
   }
 
+  getOrderReference(order: any): string {
+    return order?.referenceCode || order?.orderNo || order?.orderNumber || `ORD-${order?.id ?? 'N/A'}`;
+  }
+
+  getPrimaryItemName(order: any): string {
+    const items = order?.items || order?.orderItems || [];
+    const primary = items.find((item: any) => (item?.productName || item?.name || '').toString().trim().length > 0);
+    return primary?.productName || primary?.name || 'Item unavailable';
+  }
+
+  getOrderItemsCount(order: any): number {
+    const items = order?.items || order?.orderItems || [];
+    return Array.isArray(items) ? items.length : 0;
+  }
+
+  getOrderStageNote(status: any): string {
+    const normalized = (status || '').toLowerCase();
+    switch (normalized) {
+      case 'purchased':
+      case 'pending':
+        return 'Awaiting verification and dispatch assignment';
+      case 'verified':
+        return 'Order verified and queued for fulfillment';
+      case 'processing':
+        return 'Supplier team is preparing the shipment';
+      case 'shipped':
+        return 'Shipment is on the move to destination';
+      case 'settled':
+      case 'delivered':
+        return 'Order completed and logged successfully';
+      case 'cancelled':
+        return 'Order was cancelled before completion';
+      default:
+        return 'Status update will appear here once available';
+    }
+  }
+
   searchProduct(): void {
     if (!this.skuSearchTerm) return;
     this.productService.getProductBySku(this.skuSearchTerm).subscribe({

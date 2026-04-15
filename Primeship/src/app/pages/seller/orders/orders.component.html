@@ -15,182 +15,185 @@
   </div>
 
   <div class="orders-shell">
-    <section class="orders-hero">
-      <div class="hero-copy">
-        <p class="hero-kicker">Seller Command Center</p>
-        <h2>Order Pipeline</h2>
-        <p>Monitor sourcing requests, track delivery movement, and manage every order in one place.</p>
-        <div class="hero-pills">
-          <span class="hero-pill">
-            <i class="pi pi-sync"></i>
-            Live Order Feed
+    <section class="command-deck">
+      <div class="deck-copy">
+        <p class="deck-kicker">Supplier Fulfillment Studio</p>
+        <h2>Order Center</h2>
+        <p>Review sourcing requests, monitor shipment movement, and manage every order from one focused workspace.</p>
+        <div class="deck-badges">
+          <span class="deck-badge strong">
+            <i class="pi pi-database"></i>
+            {{ filteredOrders.length }} visible requests
           </span>
-          <span class="hero-pill">
-            <i class="pi pi-truck"></i>
-            {{ sellerStats.pendingOrders }} Active in Transit
+          <span class="deck-badge">
+            <i class="pi pi-check-circle"></i>
+            {{ sellerStats.deliveredOrders }} completed drops
           </span>
         </div>
       </div>
 
-      <div class="hero-actions">
+      <div class="deck-actions">
         <button type="button" class="btn primary" (click)="openAddOrder()">
           <i class="pi pi-plus"></i>
-          Place New Order
+          Create Sourcing Request
         </button>
         <button type="button" class="btn soft" (click)="clearFilters()">
           <i class="pi pi-filter-slash"></i>
-          Reset Filters
+          Clear View
         </button>
       </div>
     </section>
 
-    <section class="seller-stats">
-      <article class="stat-card">
-        <div class="stat-icon">
-          <i class="pi pi-shopping-bag"></i>
-        </div>
-        <div class="stat-info">
-          <div class="stat-value">{{ sellerStats.totalOrders }}</div>
-          <div class="stat-label">Total Orders</div>
-        </div>
-        <div class="stat-trend positive">
-          <i class="pi pi-arrow-up"></i>
-          <span>Flow</span>
-        </div>
-      </article>
-
-      <article class="stat-card">
-        <div class="stat-icon">
-          <i class="pi pi-wallet"></i>
-        </div>
-        <div class="stat-info">
-          <div class="stat-value">{{ formatPrice(sellerStats.totalEarnings) }}</div>
-          <div class="stat-label">Total Value</div>
-        </div>
-        <div class="stat-trend positive">
-          <i class="pi pi-dollar"></i>
-          <span>Revenue</span>
-        </div>
-      </article>
-
-      <article class="stat-card">
-        <div class="stat-icon">
-          <i class="pi pi-clock"></i>
-        </div>
-        <div class="stat-info">
-          <div class="stat-value">{{ sellerStats.pendingOrders }}</div>
-          <div class="stat-label">Pending Orders</div>
-        </div>
-        <div class="stat-trend neutral">
-          <i class="pi pi-send"></i>
-          <span>Queue</span>
-        </div>
-      </article>
-
-      <article class="stat-card">
-        <div class="stat-icon">
-          <i class="pi pi-check-circle"></i>
-        </div>
-        <div class="stat-info">
-          <div class="stat-value">{{ sellerStats.deliveredOrders }}</div>
-          <div class="stat-label">Delivered</div>
-        </div>
-        <div class="stat-trend positive">
-          <i class="pi pi-verified"></i>
-          <span>Closed</span>
-        </div>
-      </article>
-    </section>
-
-    <section class="orders-controls">
-      <div class="search-box">
-        <i class="pi pi-search"></i>
-        <input id="seller-order-search" name="sellerOrderSearch" type="text"
-          placeholder="Search by order number, customer, phone, or tracking..." [(ngModel)]="searchTerm"
-          (input)="applyFilters()" />
-      </div>
-
-      <div class="control-right">
-        <select id="seller-order-status" name="sellerOrderStatus" [(ngModel)]="selectedStatus" (change)="applyFilters()">
-          <option value="all">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="verified">Verified</option>
-          <option value="processing">Processing</option>
-          <option value="shipped">Shipped</option>
-          <option value="delivered">Delivered</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-
-        <span class="result-count">{{ filteredOrders.length }} Orders</span>
-      </div>
-    </section>
-
-    <section class="orders-grid" *ngIf="filteredOrders.length > 0; else emptyOrders">
-      <article class="order-card" *ngFor="let order of filteredOrders">
-        <header class="order-card-head">
-          <div class="order-identity">
-            <span class="eyebrow">Order</span>
-            <h3>{{ order.orderNo || order.referenceCode }}</h3>
-            <p>{{ (order.creationTime || order.createdAt) | date:'MMM dd, yyyy' }}</p>
-          </div>
-          <span class="status-badge" [ngClass]="order.status">
-            {{ getStatusLabel(order.status) }}
-          </span>
-        </header>
-
-        <div class="order-facts">
-          <div class="fact customer">
-            <span>Customer</span>
-            <strong>{{ order.customerName || 'N/A' }}</strong>
-            <small>{{ order.phone || '--' }}</small>
+    <section class="orders-studio">
+      <aside class="studio-rail">
+        <article class="rail-card filter-panel">
+          <div class="filter-panel-head">
+            <div class="filter-head-copy">
+              <h3>Manifest Filter</h3>
+              <p>Focus the order board by shipment stage.</p>
+            </div>
+            <span class="filter-state" [class.active]="selectedStatus !== 'all'">
+              {{ selectedStatus === 'all' ? 'All orders' : getStatusLabel(selectedStatus) }}
+            </span>
           </div>
 
-          <div class="fact">
-            <span>Tracking</span>
-            <div class="tracking-chip" [class.muted]="!order.hasTracking">
-              <span class="tracking-dot"></span>
-              <span class="tracking-text">{{ order.trackingDisplay }}</span>
+          <div class="filter-panel-body">
+            <label class="field-label" for="seller-order-status">Status Lane</label>
+            <div class="filter-select-wrap">
+              <select id="seller-order-status" name="sellerOrderStatus" [(ngModel)]="selectedStatus" (change)="applyFilters()">
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="verified">Verified</option>
+                <option value="processing">Processing</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
             </div>
           </div>
 
-          <div class="fact">
-            <span>Items</span>
-            <strong>{{ order.items?.length || 0 }} Line Items</strong>
-            <small>{{ getStatusLabel(order.status) }} Stage</small>
-          </div>
-        </div>
-
-        <footer class="order-card-foot">
-          <div class="order-total">
-            <span>Total Amount</span>
-            <strong>{{ formatPrice(getOrderTotal(order)) }}</strong>
-          </div>
-
-          <div class="order-actions">
-            <button type="button" class="btn small soft" (click)="openView(order)" title="View Details">
-              <i class="pi pi-eye"></i>
-              View
-            </button>
-            <button type="button" class="btn small danger" *ngIf="order.status === 'pending'"
-              (click)="openDeleteConfirm(order)" title="Delete Order">
-              <i class="pi pi-trash"></i>
-              Delete
+          <div class="filter-panel-actions">
+            <button type="button" class="btn soft full-width" (click)="clearFilters()">
+              <i class="pi pi-refresh"></i>
+              Reset Filters
             </button>
           </div>
-        </footer>
-      </article>
+        </article>
+
+        <article class="rail-card compact-stats">
+          <div class="mini-stat">
+            <span class="mini-key">Open Queue</span>
+            <strong>{{ sellerStats.pendingOrders }}</strong>
+          </div>
+          <div class="mini-stat">
+            <span class="mini-key">Delivered</span>
+            <strong>{{ sellerStats.deliveredOrders }}</strong>
+          </div>
+          <div class="mini-stat">
+            <span class="mini-key">Portfolio Value</span>
+            <strong>{{ formatPrice(sellerStats.totalEarnings) }}</strong>
+          </div>
+        </article>
+      </aside>
+
+      <div class="studio-main">
+        <section class="manifest-toolbar">
+          <div class="manifest-search">
+            <div class="search-input-shell">
+              <span class="search-icon-wrap" aria-hidden="true">
+                <i class="pi pi-search"></i>
+              </span>
+              <input id="seller-order-search" name="sellerOrderSearch" type="text"
+                placeholder="Search orders, customers, phones, or tracking numbers" [(ngModel)]="searchTerm"
+                (input)="applyFilters()" />
+              <button type="button" class="search-clear" *ngIf="searchTerm" (click)="searchTerm = ''; applyFilters()"
+                aria-label="Clear search">
+                <i class="pi pi-times"></i>
+              </button>
+            </div>
+            <div class="toolbar-meta">
+              <span class="result-pill">{{ filteredOrders.length }}</span>
+              <span class="result-note">Visible</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="manifest-board" *ngIf="filteredOrders.length > 0; else emptyOrders">
+          <header class="manifest-head">
+            <span>Manifest</span>
+            <span>Recipient</span>
+            <span>Shipment</span>
+            <span>Financials</span>
+            <span>Actions</span>
+          </header>
+
+          <article class="manifest-row" *ngFor="let order of filteredOrders">
+            <div class="manifest-cell manifest-order">
+              <span class="cell-label">Manifest</span>
+              <strong>{{ getOrderReference(order) }}</strong>
+              <p>{{ getPrimaryItemName(order) }}</p>
+              <small>
+                {{ (order.creationTime || order.createdAt) | date:'mediumDate' }} -
+                {{ getOrderItemsCount(order) }} item<span *ngIf="getOrderItemsCount(order) !== 1">s</span>
+              </small>
+            </div>
+
+            <div class="manifest-cell manifest-recipient">
+              <span class="cell-label">Recipient</span>
+              <strong>{{ order.customerName || 'Customer unavailable' }}</strong>
+              <p>{{ order.phone || 'Phone unavailable' }}</p>
+              <small>{{ order.shippingAddress || order.address || 'Address unavailable' }}</small>
+            </div>
+
+            <div class="manifest-cell manifest-shipment">
+              <span class="cell-label">Shipment</span>
+              <span class="status-badge" [ngClass]="order.status">
+                {{ getStatusLabel(order.status) }}
+              </span>
+              <div class="tracking-chip" [class.muted]="!order.hasTracking">
+                <span class="tracking-dot"></span>
+                <span class="tracking-text">{{ order.trackingDisplay }}</span>
+              </div>
+              <small>{{ getOrderStageNote(order.status) }}</small>
+            </div>
+
+            <div class="manifest-cell manifest-financials">
+              <span class="cell-label">Financials</span>
+              <strong>{{ formatPrice(getOrderTotal(order)) }}</strong>
+              <p>{{ getOrderItemsCount(order) }} line items</p>
+              <small *ngIf="order.hasTracking; else awaitingTracking">Tracking active</small>
+              <ng-template #awaitingTracking>
+                <small>Awaiting tracking assignment</small>
+              </ng-template>
+            </div>
+
+            <div class="manifest-cell manifest-actions">
+              <span class="cell-label">Actions</span>
+              <button type="button" class="btn small soft" (click)="openView(order)" title="View Details">
+                <i class="pi pi-eye"></i>
+                Inspect
+              </button>
+              <button type="button" class="btn small danger" *ngIf="order.status === 'pending'"
+                (click)="openDeleteConfirm(order)" title="Delete Order">
+                <i class="pi pi-trash"></i>
+                Remove
+              </button>
+            </div>
+          </article>
+        </section>
+      </div>
     </section>
   </div>
 
   <ng-template #emptyOrders>
     <div class="no-data">
-      <i class="pi pi-inbox"></i>
+      <i class="pi pi-receipt"></i>
       <p>No orders found</p>
-      <small>Start by placing your first order with the admin</small>
+      <small>Your workspace is clear right now. Start by creating a fresh sourcing request.</small>
       <div class="no-data-actions">
         <button type="button" class="btn primary" (click)="openAddOrder()">
           <i class="pi pi-plus"></i>
-          Place New Order
+          Create Sourcing Request
         </button>
         <button type="button" class="btn soft" (click)="clearFilters()">
           <i class="pi pi-filter-slash"></i>

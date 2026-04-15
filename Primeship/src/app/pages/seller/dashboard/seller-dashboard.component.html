@@ -19,11 +19,11 @@
     <div class="hero-actions">
       <button class="hero-action" type="button" (click)="router.navigate(['/shop'])">
         <i class="pi pi-search"></i>
-        Browse Shop
+        Source Products
       </button>
       <button class="hero-action" type="button" (click)="navigateToOrders()">
         <i class="pi pi-shopping-cart"></i>
-        My Purchases
+        Order Center
       </button>
       <button class="hero-action" type="button" (click)="router.navigate(['/seller/profile'])">
         <i class="pi pi-user"></i>
@@ -62,6 +62,88 @@
   </section>
 
   <section class="dashboard-grid">
+    <article class="panel panel-orders">
+      <header class="panel-header">
+        <h3>Purchase Activity</h3>
+        <button class="view-all" type="button" (click)="navigateToOrders()">View all</button>
+      </header>
+
+      <div class="panel-body">
+        <div class="orders-list" *ngIf="!isLoadingOrders; else ordersSkeleton">
+          <div class="orders-table" *ngIf="recentOrders.length > 0; else ordersEmptyState">
+            <div class="orders-head">
+              <span>Product</span>
+              <span>Tracking</span>
+              <span>Order Details</span>
+            </div>
+
+            <article class="order-row" *ngFor="let order of recentOrders">
+              <div class="order-col product-col">
+                <p class="col-label">Product</p>
+                <p class="order-product">{{ getPrimaryItemName(order) }}</p>
+                <p class="order-subtext">
+                  {{ getOrderItemsCount(order) }} item<span *ngIf="getOrderItemsCount(order) !== 1">s</span>
+                </p>
+              </div>
+
+              <div class="order-col tracking-col">
+                <p class="col-label">Tracking</p>
+                <p class="order-tracking">{{ getTrackingDisplayValue(order) }}</p>
+                <p class="order-subtext">Ref: {{ getOrderReference(order) }}</p>
+              </div>
+
+              <div class="order-col details-col">
+                <div class="details-top">
+                  <p class="col-label">Order Details</p>
+                  <span class="status-badge" [class]="'status-' + getStatusColor(order.status)">
+                    {{ getStatusLabel(order.status) }}
+                  </span>
+                </div>
+
+                <div class="details-grid">
+                  <div class="detail-cell">
+                    <span class="detail-key">Amount</span>
+                    <span class="detail-value">{{ getOrderAmount(order) | currency:'USD':'symbol':'1.2-2' }}</span>
+                  </div>
+                  <div class="detail-cell">
+                    <span class="detail-key">Date</span>
+                    <span class="detail-value">{{ order.creationTime | date:'mediumDate' }}</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <ng-template #ordersEmptyState>
+            <div class="empty-state">
+              <i class="pi pi-inbox"></i>
+              <p>No purchase activity found.</p>
+            </div>
+          </ng-template>
+
+        </div>
+
+        <ng-template #ordersSkeleton>
+          <div class="orders-list">
+            <article class="order-row skeleton-row" *ngFor="let _ of [1,2,3]">
+              <div class="skeleton-block">
+                <span class="skeleton-line wide"></span>
+                <span class="skeleton-line short"></span>
+              </div>
+              <div class="skeleton-block">
+                <span class="skeleton-line"></span>
+                <span class="skeleton-line short"></span>
+              </div>
+              <div class="skeleton-block">
+                <span class="skeleton-line"></span>
+                <span class="skeleton-line short"></span>
+              </div>
+            </article>
+          </div>
+        </ng-template>
+      </div>
+    </article>
+
     <article class="panel panel-info">
       <header class="panel-header">
         <h3>Sourcing Flow</h3>
@@ -87,50 +169,6 @@
             <p>Track each shipment in your order center</p>
           </div>
         </div>
-      </div>
-    </article>
-
-    <article class="panel panel-orders">
-      <header class="panel-header">
-        <h3>Recent Purchases</h3>
-        <button class="view-all" type="button" (click)="navigateToOrders()">View all</button>
-      </header>
-
-      <div class="panel-body">
-        <div class="orders-list" *ngIf="!isLoadingOrders; else ordersSkeleton">
-          <article class="order-item" *ngFor="let order of recentOrders">
-            <div class="order-top">
-              <p class="order-id">{{ getTrackingDisplayValue(order) }}</p>
-              <span class="status-badge" [class]="'status-' + getStatusColor(order.status)">
-                {{ getStatusLabel(order.status) }}
-              </span>
-            </div>
-
-            <p class="order-product" *ngIf="order.items?.[0]">
-              {{ order.items[0].name }} <span *ngIf="order.items.length > 1">+{{ order.items.length - 1 }} more</span>
-            </p>
-
-            <div class="order-bottom">
-              <p class="order-amount">${{ (order.totalPurchaseAmount || 0).toFixed(2) }}</p>
-              <p class="order-date">{{ order.creationTime | date:'mediumDate' }}</p>
-            </div>
-          </article>
-
-          <div class="empty-state" *ngIf="recentOrders.length === 0">
-            <i class="pi pi-inbox"></i>
-            <p>No recent purchases found.</p>
-          </div>
-        </div>
-
-        <ng-template #ordersSkeleton>
-          <div class="orders-list">
-            <article class="order-item skeleton-row" *ngFor="let _ of [1,2,3]">
-              <span class="skeleton-line wide"></span>
-              <span class="skeleton-line"></span>
-              <span class="skeleton-line short"></span>
-            </article>
-          </div>
-        </ng-template>
       </div>
     </article>
   </section>
