@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { OrderService } from '../../../core/services/order.service';
+import { ProductService } from '../../../core/services/product.service';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
@@ -15,38 +16,25 @@ import { catchError, map } from 'rxjs/operators';
 export class SellerDashboardComponent implements OnInit {
   isLoadingStats = true;
   isLoadingOrders = true;
+  isLoadingCategories = true;
+  pendingDeliveriesCount = '0';
+  overviewSeries: { label: string; shortLabel: string; amount: number; orders: number }[] = [];
+  topCategories: { name: string; count: number; iconClass: string; accentClass: string }[] = [];
   statsCards = [
     {
-      title: 'Total Sales',
-      value: '$0',
-      change: '+0%',
-      trend: 'up',
-      icon: '💰',
-      gradient: 'linear-gradient(135deg, #f85606 0%, #ff8b52 100%)'
+      title: 'All Product',
+      value: '0',
+      iconClass: 'pi-box'
     },
     {
-      title: 'Sourced Items',
+      title: 'Sales Product',
       value: '0',
-      change: '0',
-      trend: 'up',
-      icon: '📦',
-      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+      iconClass: 'pi-chart-bar'
     },
     {
-      title: 'Total Orders',
+      title: 'New Order',
       value: '0',
-      change: '+0%',
-      trend: 'up',
-      icon: '🛒',
-      gradient: 'linear-gradient(135deg, #f85606 0%, #ff9f43 100%)'
-    },
-    {
-      title: 'Pending Deliveries',
-      value: '0',
-      change: '0',
-      trend: 'up',
-      icon: '🚚',
-      gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+      iconClass: 'pi-shopping-cart'
     }
   ];
 
@@ -55,6 +43,7 @@ export class SellerDashboardComponent implements OnInit {
   constructor(
     public router: Router,
     private orderService: OrderService,
+    private productService: ProductService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -65,23 +54,43 @@ export class SellerDashboardComponent implements OnInit {
   loadDashboardData(): void {
     this.isLoadingStats = true;
     this.isLoadingOrders = true;
-    this.orderService.getAllForSupplier().subscribe({
-      next: (res) => {
-        const allOrders = res || [];
-        this.processStats(allOrders);
-        const latestOrders = allOrders.slice(0, 5);
+    this.isLoadingCategories = true;
 
+    forkJoin({
+      orders: this.orderService.getAllForSupplier().pipe(
+        catchError((err) => {
+          console.error('Failed to load seller orders', err);
+          return of([]);
+        })
+      ),
+      products: this.productService.getAll().pipe(
+        catchError((err) => {
+          console.error('Failed to load seller products', err);
+          return of([]);
+        })
+      )
+    }).subscribe({
+      next: ({ orders, products }) => {
+        const allOrders = orders || [];
+        const allProducts = products || [];
+
+        this.processStats(allOrders);
+        this.topCategories = this.buildTopCategoriesFromProducts(allProducts);
+
+        const latestOrders = allOrders.slice(0, 5);
         this.enrichRecentOrdersWithTracking(latestOrders).subscribe({
           next: (ordersWithTracking) => {
             this.recentOrders = ordersWithTracking;
             this.isLoadingStats = false;
             this.isLoadingOrders = false;
+            this.isLoadingCategories = false;
             this.cdr.detectChanges();
           },
           error: () => {
             this.recentOrders = latestOrders;
             this.isLoadingStats = false;
             this.isLoadingOrders = false;
+            this.isLoadingCategories = false;
             this.cdr.detectChanges();
           }
         });
@@ -90,44 +99,199 @@ export class SellerDashboardComponent implements OnInit {
         console.error('Failed to load dashboard data', err);
         this.isLoadingStats = false;
         this.isLoadingOrders = false;
+        this.isLoadingCategories = false;
         this.cdr.detectChanges();
       }
     });
   }
 
   private processStats(orders: any[]): void {
-    const totalSpending = orders.reduce((sum, o) => {
-      const total = o.totalPurchaseAmount || o.totalAmount;
-      if (total !== undefined) return sum + total;
-
-      const items = o.items || o.orderItems || [];
-      const calculated = items.reduce((iSum: number, it: any) => {
-        const qty = it.qty || it.quantity || 0;
-        const price = it.purchasePrice || it.price || it.priceAtPurchase || 0;
-        return iSum + (qty * price);
-      }, 0);
-      return sum + calculated;
-    }, 0);
-
     const orderCount = orders.length;
     const pendingCount = orders.filter(o => {
       const s = (o.status || '').toLowerCase();
       return ['pending', 'purchased', 'processing', 'shipped', 'verified'].includes(s);
     }).length;
+    const completedSalesCount = orders.filter(o => {
+      const s = (o.status || '').toLowerCase();
+      return ['delivered', 'settled'].includes(s);
+    }).length;
+    const totalItems = orders.reduce((sum, order) => {
+      const items = order.items || order.orderItems || [];
+      return sum + items.reduce((itemSum: number, item: any) => {
+        const qty = Number(item?.qty ?? item?.quantity ?? 0);
+        return itemSum + (Number.isFinite(qty) ? qty : 0);
+      }, 0);
+    }, 0);
 
-    // Count unique products
-    const uniqueProducts = new Set();
-    orders.forEach(o => {
-      const items = o.items || o.orderItems || [];
-      items.forEach((it: any) => {
-        if (it.name || it.productName) uniqueProducts.add(it.name || it.productName);
-      });
+    this.statsCards[0].value = totalItems.toLocaleString();
+    this.statsCards[1].value = completedSalesCount.toLocaleString();
+    this.statsCards[2].value = orderCount.toLocaleString();
+    this.pendingDeliveriesCount = pendingCount.toLocaleString();
+    this.overviewSeries = this.buildOverviewSeries(orders);
+  }
+
+  private buildOverviewSeries(orders: any[]): { label: string; shortLabel: string; amount: number; orders: number }[] {
+    const currentYear = new Date().getFullYear();
+
+    const buckets = Array.from({ length: 12 }, (_, index) => {
+      const date = new Date(currentYear, index, 1);
+
+      return {
+        key: `${currentYear}-${String(index + 1).padStart(2, '0')}`,
+        label: date.toLocaleDateString(undefined, { month: 'short' }),
+        shortLabel: date.toLocaleDateString(undefined, { month: 'short' }),
+        amount: 0,
+        orders: 0
+      };
     });
 
-    this.statsCards[0].value = '$' + totalSpending.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    this.statsCards[1].value = uniqueProducts.size.toString();
-    this.statsCards[2].value = orderCount.toString();
-    this.statsCards[3].value = pendingCount.toString();
+    const bucketMap = new Map(buckets.map((bucket) => [bucket.key, bucket]));
+
+    orders.forEach((order) => {
+      const rawDate = order?.creationTime || order?.createdAt || order?.date;
+      if (!rawDate) {
+        return;
+      }
+
+      const date = new Date(rawDate);
+      if (Number.isNaN(date.getTime())) {
+        return;
+      }
+
+      if (date.getFullYear() !== currentYear) {
+        return;
+      }
+
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const bucket = bucketMap.get(key);
+      if (!bucket) {
+        return;
+      }
+
+      bucket.orders += 1;
+      bucket.amount += this.getOrderAmount(order);
+    });
+
+    return buckets;
+  }
+
+  getOverviewMaxAmount(): number {
+    return Math.max(...this.overviewSeries.map((point) => point.amount), 0);
+  }
+
+  getOverviewBarHeight(amount: number): number {
+    const max = this.getOverviewMaxAmount();
+    if (!max) {
+      return 18;
+    }
+
+    return Math.max(18, Math.round((amount / max) * 110));
+  }
+
+  getOverviewTotalAmount(): number {
+    return this.overviewSeries.reduce((sum, point) => sum + point.amount, 0);
+  }
+
+  getOverviewTotalOrders(): number {
+    return this.overviewSeries.reduce((sum, point) => sum + point.orders, 0);
+  }
+
+  getOrderCustomerName(order: any): string {
+    return (order?.customerName || order?.recipientName || order?.sellerName || 'Unknown').toString().trim();
+  }
+
+  getOrderCategory(order: any): string {
+    const items = order?.items || order?.orderItems || [];
+    for (const item of items) {
+      const itemCategory = this.normalizeCategoryName(
+        item?.category || item?.productCategory || item?.group || item?.type || item?.name
+      );
+      if (itemCategory) {
+        return itemCategory;
+      }
+    }
+
+    return this.normalizeCategoryName(order?.category || order?.productCategory || '') || 'General';
+  }
+
+  private buildTopCategoriesFromProducts(products: any[]): { name: string; count: number; iconClass: string; accentClass: string }[] {
+    const counts = new Map<string, number>();
+
+    products.forEach((product) => {
+      const category = this.getResolvedProductCategoryName(product);
+      counts.set(category, (counts.get(category) || 0) + 1);
+    });
+
+    const derived = Array.from(counts.entries())
+      .map(([name, count]) => ({
+        name,
+        count,
+        iconClass: this.getCategoryIconClass(name),
+        accentClass: this.getCategoryAccentClass(name)
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    return derived.slice(0, 5);
+  }
+
+  private getResolvedProductCategoryName(product: any): string {
+    const direct = this.normalizeCategoryName(
+      product?.categoryName || product?.category || product?.productCategory || product?.group || product?.type || ''
+    );
+    if (direct) {
+      return direct;
+    }
+
+    return this.inferCategoryFromName(
+      (product?.name || product?.productName || product?.title || product?.sku || '').toString()
+    );
+  }
+
+  private normalizeCategoryName(value: any): string {
+    const text = (value ?? '').toString().trim();
+    if (!text) {
+      return '';
+    }
+
+    return text
+      .replace(/[_-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .replace(/\b\w/g, (char: string) => char.toUpperCase());
+  }
+
+  private inferCategoryFromName(name: string): string {
+    const value = name.toLowerCase();
+    if (value.includes('oil') && value.includes('filter')) return 'Oil Filter';
+    if (value.includes('ac') && value.includes('filter')) return 'AC Filter';
+    if (value.includes('care')) return 'Car Care';
+    if (value.includes('interior') || value.includes('seat') || value.includes('mat') || value.includes('cover')) return 'Car Interior';
+    if (value.includes('battery')) return 'Car Battery';
+    if (value.includes('brake')) return 'Brake Parts';
+    if (value.includes('engine')) return 'Engine Parts';
+    if (value.includes('filter')) return 'Filters';
+    return 'General';
+  }
+
+  private getCategoryIconClass(name: string): string {
+    const normalized = name.toLowerCase();
+    if (normalized.includes('oil')) return 'pi-filter';
+    if (normalized.includes('care')) return 'pi-star';
+    if (normalized.includes('ac') || normalized.includes('air')) return 'pi-sun';
+    if (normalized.includes('interior')) return 'pi-car';
+    if (normalized.includes('battery')) return 'pi-bolt';
+    if (normalized.includes('brake')) return 'pi-cog';
+    if (normalized.includes('engine')) return 'pi-wrench';
+    return 'pi-tag';
+  }
+
+  private getCategoryAccentClass(name: string): string {
+    const normalized = name.toLowerCase();
+    if (normalized.includes('oil')) return 'accent-green';
+    if (normalized.includes('care')) return 'accent-gold';
+    if (normalized.includes('ac')) return 'accent-blue';
+    if (normalized.includes('interior')) return 'accent-pink';
+    if (normalized.includes('battery')) return 'accent-violet';
+    return 'accent-mint';
   }
 
   private enrichRecentOrdersWithTracking(orders: any[]): Observable<any[]> {

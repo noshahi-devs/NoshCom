@@ -1,120 +1,197 @@
 <div class="account-container">
   <div class="container">
-    <div class="row">
-      <div class="col-md-3">
-        <div class="account-sidebar">
-          <div class="user-info">
-            <div class="user-avatar">
-              <img src="https://via.placeholder.com/100" alt="User Avatar">
-            </div>
-            <h5>{{ user?.firstName }} {{ user?.lastName }}</h5>
-            <p class="user-email">{{ user?.email }}</p>
-          </div>
-          
-          <nav class="account-nav">
-            <ul class="nav flex-column">
-              <li class="nav-item">
-                <a class="nav-link active" routerLink="/account/profile">
-                  <i class="fas fa-user"></i> Profile
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" routerLink="/account/orders">
-                  <i class="fas fa-shopping-bag"></i> Orders
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" routerLink="/account/settings">
-                  <i class="fas fa-cog"></i> Settings
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">
-                  <i class="fas fa-heart"></i> Wishlist
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">
-                  <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
-              </li>
-            </ul>
-          </nav>
+    <div class="account-shell">
+      <aside class="account-sidebar">
+        <div class="brand-mark-row" aria-hidden="true">
+          <span class="brand-mark"></span>
+          <span class="brand-bar"></span>
         </div>
-      </div>
-      
-      <div class="col-md-9">
-        <div class="account-content">
-          <h3>Profile Information</h3>
-          
-          <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label for="firstName">First Name</label>
-                  <input type="text" id="firstName" class="form-control" formControlName="firstName">
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label for="lastName">Last Name</label>
-                  <input type="text" id="lastName" class="form-control" formControlName="lastName">
-                </div>
-              </div>
-            </div>
-            
-            <div class="form-group">
-              <label for="email">Email Address</label>
-              <input type="email" id="email" class="form-control" formControlName="email">
-            </div>
-            
-            <div class="form-group">
-              <label for="phone">Phone Number</label>
-              <input type="tel" id="phone" class="form-control" formControlName="phone">
-            </div>
-            
-            <div class="form-group">
-              <label for="bio">Bio</label>
-              <textarea id="bio" class="form-control" rows="4" formControlName="bio" placeholder="Tell us about yourself..."></textarea>
-            </div>
-            
-            <div class="form-actions">
-              <button type="submit" class="btn btn-primary" [disabled]="profileForm.invalid || isLoading">
-                <span *ngIf="!isLoading">Save Changes</span>
-                <span *ngIf="isLoading">Saving...</span>
-              </button>
-              <button type="button" class="btn btn-outline-secondary" (click)="resetForm()">Cancel</button>
-            </div>
-          </form>
-          
-          <hr>
-          
-          <div class="change-password">
-            <h4>Change Password</h4>
-            <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()">
-              <div class="form-group">
-                <label for="currentPassword">Current Password</label>
-                <input type="password" id="currentPassword" class="form-control" formControlName="currentPassword">
-              </div>
-              
-              <div class="form-group">
-                <label for="newPassword">New Password</label>
-                <input type="password" id="newPassword" class="form-control" formControlName="newPassword">
-              </div>
-              
-              <div class="form-group">
-                <label for="confirmPassword">Confirm New Password</label>
-                <input type="password" id="confirmPassword" class="form-control" formControlName="confirmPassword">
-              </div>
-              
-              <button type="submit" class="btn btn-primary" [disabled]="passwordForm.invalid || isChangingPassword">
-                <span *ngIf="!isChangingPassword">Change Password</span>
-                <span *ngIf="isChangingPassword">Changing...</span>
-              </button>
-            </form>
+
+        <div class="sidebar-user">
+          <div class="sidebar-avatar">
+            <img [src]="profileAvatarUrl" [alt]="fullName">
+          </div>
+          <h5>{{ fullName }}</h5>
+          <p class="user-email">{{ emailValue }}</p>
+        </div>
+
+        <nav class="account-nav" aria-label="Account navigation">
+          <a
+            *ngFor="let item of accountNavItems"
+            class="nav-link"
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="item.exact ? { exact: true } : { exact: false }"
+          >
+            <i [class]="item.icon" aria-hidden="true"></i>
+            <span>{{ item.label }}</span>
+          </a>
+        </nav>
+
+        <div class="sidebar-note" *ngIf="showKycNotice">
+          <button type="button" class="sidebar-note-close" (click)="dismissKycNotice()" aria-label="Dismiss notice">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          </button>
+          <div class="sidebar-note-icon">
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+          </div>
+          <div class="sidebar-note-copy">
+            <strong>Register your KYC details</strong>
+            <p>
+              <a routerLink="/account/settings">here</a>
+            </p>
           </div>
         </div>
-      </div>
+      </aside>
+
+      <section class="account-content">
+        <div class="content-breadcrumb" aria-label="Breadcrumb">
+          <span>Profile</span>
+          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          <strong>My Account</strong>
+        </div>
+
+        <h1 class="page-title">My Account</h1>
+
+        <div class="profile-intro">
+          <div class="profile-avatar-large">
+            <img [src]="profileAvatarUrl" [alt]="fullName">
+          </div>
+
+          <div class="profile-intro-copy">
+            <h2>{{ fullName }}</h2>
+            <button type="button" class="display-image-link" (click)="editDisplayImage()">
+              Edit display image
+            </button>
+          </div>
+        </div>
+
+        <form class="profile-form" [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+          <div class="profile-grid">
+            <div class="profile-column">
+              <div class="form-group">
+                <label for="firstName">First Name</label>
+                <input id="firstName" type="text" class="form-control" formControlName="firstName">
+              </div>
+
+              <div class="form-group">
+                <label for="address">Address</label>
+                <input id="address" type="text" class="form-control" formControlName="address">
+              </div>
+
+              <div class="field-group">
+                <label>Date of Birth</label>
+                <div class="dob-row">
+                  <input type="text" inputmode="numeric" maxlength="2" class="form-control dob-input" formControlName="dobDay" aria-label="Day of birth">
+                  <input type="text" inputmode="numeric" maxlength="2" class="form-control dob-input" formControlName="dobMonth" aria-label="Month of birth">
+                  <input type="text" inputmode="numeric" maxlength="4" class="form-control dob-input dob-year" formControlName="dobYear" aria-label="Year of birth">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="investorType">Investor type</label>
+                <select id="investorType" class="form-control" formControlName="investorType">
+                  <option value="" disabled>Select investor type</option>
+                  <option *ngFor="let investorType of investorTypes" [value]="investorType">{{ investorType }}</option>
+                </select>
+              </div>
+
+              <div class="methods-panel">
+                <div class="methods-header">
+                  <div>
+                    <label>Saved withdrawal methods</label>
+                  </div>
+                </div>
+
+                <div class="method-card" *ngFor="let method of withdrawalMethods">
+                  <div class="method-copy">
+                    <div class="method-title">{{ method.title }}</div>
+                    <div class="method-subtitle">{{ method.subtitle }}</div>
+                    <div class="method-reference">{{ method.reference }}</div>
+                  </div>
+
+                  <button
+                    type="button"
+                    class="method-edit-btn"
+                    (click)="editWithdrawalMethod(method)"
+                    [attr.aria-label]="'Edit ' + method.title"
+                  >
+                    <i [class]="method.icon" aria-hidden="true"></i>
+                  </button>
+                </div>
+
+                <button type="button" class="add-method-btn" (click)="addWithdrawalMethod()">
+                  Add Method
+                </button>
+              </div>
+            </div>
+
+            <div class="profile-column">
+              <div class="form-group">
+                <label for="lastName">Last Name</label>
+                <input id="lastName" type="text" class="form-control" formControlName="lastName">
+              </div>
+
+              <div class="form-group">
+                <label for="city">City</label>
+                <input id="city" type="text" class="form-control" formControlName="city">
+              </div>
+
+              <div class="field-group">
+                <label for="gender">Gender</label>
+                <select id="gender" class="form-control" formControlName="gender">
+                  <option value="" disabled>Select gender</option>
+                  <option *ngFor="let option of genderOptions" [value]="option">{{ option }}</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="contacts">Contacts</label>
+                <input id="contacts" type="text" class="form-control" formControlName="contacts">
+              </div>
+
+              <div class="form-group">
+                <label for="email">E-mail Id</label>
+                <input id="email" type="email" class="form-control" formControlName="email">
+              </div>
+
+              <div class="form-group password-group">
+                <label for="password">Password</label>
+                <div class="input-shell">
+                  <input id="password" type="password" class="form-control" formControlName="password" autocomplete="new-password">
+                  <span class="input-icon" aria-hidden="true">
+                    <i class="fa-solid fa-eye"></i>
+                  </span>
+                </div>
+              </div>
+
+              <div class="form-group password-group">
+                <label for="confirmPassword">Re-enter Password</label>
+                <div class="input-shell">
+                  <input id="confirmPassword" type="password" class="form-control" formControlName="confirmPassword" autocomplete="new-password">
+                  <span class="input-icon" aria-hidden="true">
+                    <i class="fa-solid fa-chevron-down"></i>
+                  </span>
+                </div>
+                <small
+                  class="field-error"
+                  *ngIf="profileForm.hasError('passwordMismatch') && profileForm.get('confirmPassword')?.touched"
+                >
+                  Passwords do not match.
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-footer">
+            <button type="button" class="cancel-btn" (click)="resetForm()">Cancel</button>
+            <button type="submit" class="save-btn" [disabled]="profileForm.invalid || isLoading">
+              <span *ngIf="!isLoading">Save Changes</span>
+              <span *ngIf="isLoading">Saving...</span>
+            </button>
+          </div>
+        </form>
+      </section>
     </div>
   </div>
 </div>

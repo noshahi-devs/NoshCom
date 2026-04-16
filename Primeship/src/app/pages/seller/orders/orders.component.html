@@ -187,18 +187,30 @@
 
   <ng-template #emptyOrders>
     <div class="no-data">
-      <i class="pi pi-receipt"></i>
-      <p>No orders found</p>
-      <small>Your workspace is clear right now. Start by creating a fresh sourcing request.</small>
+      <div class="no-data-visual">
+        <div class="no-data-orbit orbit-one"></div>
+        <div class="no-data-orbit orbit-two"></div>
+        <div class="no-data-icon">
+          <i class="pi pi-shopping-bag"></i>
+        </div>
+      </div>
+
+      <div class="no-data-copy">
+        <span class="no-data-kicker">Order Workspace</span>
+        <h3>No sourcing requests yet</h3>
+        <p>Your manifest board is empty right now. Start a new sourcing request or reset the active filters to reveal hidden orders.</p>
+      </div>
+
       <div class="no-data-actions">
         <button type="button" class="btn primary" (click)="openAddOrder()">
           <i class="pi pi-plus"></i>
           Create Sourcing Request
         </button>
-        <button type="button" class="btn soft" (click)="clearFilters()">
-          <i class="pi pi-filter-slash"></i>
-          Clear Filters
-        </button>
+      </div>
+
+      <div class="no-data-note">
+        <i class="pi pi-info-circle"></i>
+        <span>Tip: orders appear here as soon as a sourcing request is placed or a filter is cleared.</span>
       </div>
     </div>
   </ng-template>

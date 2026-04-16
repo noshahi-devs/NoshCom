@@ -27,6 +27,15 @@ interface SideBanner {
   image: string;
 }
 
+interface AutoBannerSlide {
+  label: string;
+  title: string;
+  subtitle: string;
+  cta: string;
+  image: string;
+  alt: string;
+}
+
 interface ProductItem {
   name: string;
   category: string;
@@ -153,35 +162,34 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       subtitle: '',
       primaryCta: 'Open a Shop Now',
       secondaryCta: '',
-      video: 'https://secure.img1-fg.wfcdn.com/dm/video/de3b1f89-5bb5-49f1-870f-a49d4cc07e25/wfus_5dod_etm_desktop.mp4',
-      poster: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1920&h=600'
-    },
-    {
-      kicker: '',
-      title: 'Present<br/>Your Products',
-      highlight: 'to Millions',
-      subtitle: '',
-      primaryCta: 'Open a Shop Now',
-      secondaryCta: '',
       image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1920&h=600'
     },
     {
       kicker: '',
-      title: 'Source Top<br/>Trending',
-      highlight: 'Global Inventories',
+      title: 'Storefront<br/>In Style',
+      highlight: 'Modern Design',
       subtitle: '',
-      primaryCta: 'Explore Deals',
+      primaryCta: 'Open a Shop Now',
       secondaryCta: '',
-      image: 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=1920&h=600'
+      image: 'https://images.pexels.com/photos/32549949/pexels-photo-32549949.jpeg?cs=srgb&dl=pexels-kriss-32549949.jpg&fm=jpg'
     },
     {
       kicker: '',
-      title: 'Scale Your<br/>Operations',
-      highlight: 'Globally',
+      title: 'Styled<br/>Shopping Spaces',
+      highlight: 'For Your Brand',
+      subtitle: '',
+      primaryCta: 'Explore Deals',
+      secondaryCta: '',
+      image: 'https://images.pexels.com/photos/32549954/pexels-photo-32549954.jpeg?cs=srgb&dl=pexels-kriss-32549954.jpg&fm=jpg'
+    },
+    {
+      kicker: '',
+      title: 'Sell<br/>Online Faster',
+      highlight: 'Live From Home',
       subtitle: '',
       primaryCta: 'Browse Catalog',
       secondaryCta: '',
-      image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1920&h=600'
+      image: 'https://images.pexels.com/photos/12935042/pexels-photo-12935042.jpeg?cs=srgb&dl=pexels-imin-technology-276315592-12935042.jpg&fm=jpg'
     }
   ];
   heroSideBanners: SideBanner[] = [
@@ -196,6 +204,34 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       title: 'Home & Living',
       subtitle: 'Top margin decor picks.',
       image: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=360&h=360'
+    }
+  ];
+
+  promoBannerIndex = 0;
+  promoBannerSlides: AutoBannerSlide[] = [
+    {
+      label: 'Fresh Drop',
+      title: 'New Season Styles',
+      subtitle: 'Browse a rotating mix of fashion-forward pieces, modern interiors, and lifestyle inspiration.',
+      cta: 'Shop the Look',
+      image: 'https://images.pexels.com/photos/32549949/pexels-photo-32549949.jpeg?cs=srgb&dl=pexels-kriss-32549949.jpg&fm=jpg',
+      alt: 'Chic clothing storefront with modern design.'
+    },
+    {
+      label: 'Studio Edit',
+      title: 'Styled Spaces',
+      subtitle: 'A clean retail mood with soft textures, bold displays, and polished finishing touches.',
+      cta: 'Explore Now',
+      image: 'https://images.pexels.com/photos/32549954/pexels-photo-32549954.jpeg?cs=srgb&dl=pexels-kriss-32549954.jpg&fm=jpg',
+      alt: 'Stylish modern clothing store interior shot.'
+    },
+    {
+      label: 'Work From Home',
+      title: 'Sell Smarter',
+      subtitle: 'Showcase your products and work-from-home story with a banner that keeps changing on its own.',
+      cta: 'Start Selling',
+      image: 'https://images.pexels.com/photos/12935042/pexels-photo-12935042.jpeg?cs=srgb&dl=pexels-imin-technology-276315592-12935042.jpg&fm=jpg',
+      alt: 'Seamstress selling clothes online.'
     }
   ];
 
@@ -348,6 +384,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   isLoadingMiniCategories = false;
 
   private heroTimerId?: number;
+  private promoBannerTimerId?: number;
   private dealTimerId?: number;
 
   constructor(
@@ -370,6 +407,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnInit(): void {
     this.startHeroAutoPlay();
+    this.startPromoBannerAutoPlay();
     this.startDealTimer();
     this.loadBackendData();
   }
@@ -440,6 +478,17 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     // 3. Load Mini Categories
     // (Disabled for now - user requested removing the categories table UI)
     this.isLoadingMiniCategories = false;
+  }
+
+  get currentPromoBanner(): AutoBannerSlide {
+    return this.promoBannerSlides[this.promoBannerIndex] ?? this.promoBannerSlides[0];
+  }
+
+  get upcomingPromoBanner(): AutoBannerSlide {
+    if (!this.promoBannerSlides.length) {
+      return this.currentPromoBanner;
+    }
+    return this.promoBannerSlides[(this.promoBannerIndex + 1) % this.promoBannerSlides.length];
   }
 
   private getParsedImage(images: string | string[]): string {
@@ -613,6 +662,9 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.heroTimerId) {
       clearInterval(this.heroTimerId);
     }
+    if (this.promoBannerTimerId) {
+      clearInterval(this.promoBannerTimerId);
+    }
     if (this.dealTimerId) {
       clearInterval(this.dealTimerId);
     }
@@ -761,6 +813,18 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     this.scheduleHeroVideoPlay();
   }
 
+  nextPromoBanner(): void {
+    this.promoBannerIndex = (this.promoBannerIndex + 1) % this.promoBannerSlides.length;
+  }
+
+  goPromoBanner(index: number): void {
+    if (!this.promoBannerSlides.length) {
+      this.promoBannerIndex = 0;
+      return;
+    }
+    this.promoBannerIndex = ((index % this.promoBannerSlides.length) + this.promoBannerSlides.length) % this.promoBannerSlides.length;
+  }
+
   onHeroKey(event: KeyboardEvent): void {
     if (event.key === 'ArrowLeft') {
       this.prevHero();
@@ -822,6 +886,20 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
         // Ignore autoplay blocking; poster will remain.
       });
     }
+  }
+
+  private startPromoBannerAutoPlay(): void {
+    if (this.promoBannerTimerId) {
+      clearInterval(this.promoBannerTimerId);
+    }
+    if (this.promoBannerSlides.length < 2) {
+      return;
+    }
+
+    this.promoBannerTimerId = window.setInterval(() => {
+      this.nextPromoBanner();
+      this.cdr.detectChanges();
+    }, 4500);
   }
 
   scrollCategory(direction: number): void {

@@ -629,11 +629,11 @@ declare var lucide: any;
 
     .category-links { display: flex; gap: 22px; flex-wrap: nowrap; overflow-x: auto; padding: 10px 0; align-items: center; justify-content: center; width: 100%; }
     .category-link { color: #111827; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; opacity: 0.92; transition: opacity 0.2s ease, color 0.2s ease; }
-    .category-link:hover { color: #10B981; opacity: 1; }
+    .category-link:hover { color: #10B981; opacity: 1; text-decoration: none; }
 
     .feature-links { display: flex; gap: 22px; flex-wrap: wrap; overflow: visible; padding: 10px 0; align-items: center; justify-content: center; width: 100%; border-bottom: 1px solid #34D399; }
     .feature-link { color: #111827; font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap; opacity: 0.95; transition: opacity 0.2s ease, color 0.2s ease; display: inline-flex; align-items: center; gap: 8px; }
-    .feature-link:hover { color: #10B981; opacity: 1; }
+    .feature-link:hover { color: #10B981; opacity: 1; text-decoration: none; }
     .feature-link.verified { color: #10B981; }
     .feature-link i { font-size: 14px; }
 
@@ -960,8 +960,8 @@ declare var lucide: any;
     .wf-footer-col { min-width: 0; }
     .wf-footer-title { margin: 0 0 12px; font-size: 20px; font-weight: 900; color: #111827; }
     .wf-footer-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
-    .wf-footer-list a { color: #111827; text-decoration: none; font-size: 12px; font-weight: 600; }
-    .wf-footer-list a:hover { text-decoration: underline; }
+    .wf-footer-list a { color: #111827; text-decoration: none; font-size: 12px; font-weight: 600; transition: color 0.2s ease, opacity 0.2s ease; }
+    .wf-footer-list a:hover { color: #10B981; text-decoration: none; opacity: 1; }
 
     .wf-contact-actions { display: grid; justify-items: start; gap: 8px; margin-bottom: 12px; }
     .wf-contact-btn { width: min(190px, 100%); border: 2px solid #E5E7EB; background: #FFF; border-radius: 10px; padding: 8px 10px; min-height: 56px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; color: #111827; font-weight: 600; font-size: 12px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease; }

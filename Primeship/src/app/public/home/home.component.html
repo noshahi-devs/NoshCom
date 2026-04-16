@@ -232,31 +232,45 @@
               </button>
             </div>
 
-            <div class="deal-banner deal-banner-animated" role="img" aria-label="Big Outdoor Sale up to 50% off.">
-              <div class="deal-banner-animated__bg" aria-hidden="true">
-                <span class="banner-orb orb-1"></span>
-                <span class="banner-orb orb-2"></span>
-                <span class="banner-orb orb-3"></span>
-                <span class="banner-spark spark-1"></span>
-                <span class="banner-spark spark-2"></span>
-              </div>
-              <div class="deal-banner-animated__content">
-                <span class="banner-eyebrow">Outdoor Event</span>
-                <h3 class="banner-title">Big Outdoor Sale</h3>
-                <p class="banner-subtitle">Up to 50% off patio, grills, and summer favorites.</p>
-                <a class="btn-emerald-outline banner-cta" [routerLink]="['/shop']" [queryParams]="{ sortBy: 'discount' }">Shop the Sale</a>
-              </div>
-              <div class="deal-banner-animated__aside" aria-hidden="true" *ngIf="allProducts.length">
-                <div class="banner-stats">
-                  <span class="banner-pill"><i class="fas fa-tag"></i> Up to 50% OFF</span>
-                  <span class="banner-pill"><i class="fas fa-bolt"></i> Limited-time</span>
-                  <span class="banner-pill"><i class="fas fa-truck"></i> Fast delivery</span>
+            <div class="deal-banner story-banner" role="img" aria-label="Auto rotating banner with fashion and retail inspiration.">
+              <div class="story-banner__copy">
+                <span class="story-banner__pill">{{ currentPromoBanner.label }}</span>
+                <h3 class="story-banner__title">{{ currentPromoBanner.title }}</h3>
+                <p class="story-banner__text">{{ currentPromoBanner.subtitle }}</p>
+                <a class="btn-emerald-outline banner-cta story-banner__cta" [routerLink]="['/shop']" [queryParams]="{ sortBy: 'newest' }">
+                  {{ currentPromoBanner.cta }}
+                </a>
+
+                <div class="story-banner__dots" aria-label="Banner slides">
+                  <button
+                    type="button"
+                    class="story-banner__dot"
+                    *ngFor="let slide of promoBannerSlides; let i = index"
+                    [class.active]="i === promoBannerIndex"
+                    (click)="goPromoBanner(i)"
+                    [attr.aria-label]="'Show banner slide ' + (i + 1)"
+                  ></button>
                 </div>
-                <div class="banner-thumbs">
-                  <span class="banner-thumb" *ngFor="let t of bannerThumbs">
-                    <img [src]="t.src" [alt]="t.alt" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
-                  </span>
-                </div>
+              </div>
+
+              <div class="story-banner__circle" aria-hidden="true">
+                <img
+                  [src]="currentPromoBanner.image"
+                  [alt]="currentPromoBanner.alt"
+                  loading="lazy"
+                  decoding="async"
+                  (error)="setDefaultImage($event)"
+                />
+              </div>
+
+              <div class="story-banner__wide" aria-hidden="true">
+                <img
+                  [src]="upcomingPromoBanner.image"
+                  [alt]="upcomingPromoBanner.alt"
+                  loading="lazy"
+                  decoding="async"
+                  (error)="setDefaultImage($event)"
+                />
               </div>
             </div>
         </div>
@@ -668,9 +682,8 @@
       <div class="container">
         <div class="deal-banner cash-banner">
           <img
-            alt="NEW! CASH REGISTRIES cash gifts for every moment. Register for every milestone and get cash to spend how you want."
-            src="https://assets.wfcdn.com/im/14148385/resize-h454-w2000%5Ecompr-r85/3622/362211497/new%21_cash_registries_cash_gifts_for_every_moment._register_for_every_milestone_and_get_cash_to_spend_how_you_want._362211497.jpg"
-            srcset="https://assets.wfcdn.com/im/14148385/resize-h454-w2000%5Ecompr-r85/3622/362211497/new%21_cash_registries_cash_gifts_for_every_moment._register_for_every_milestone_and_get_cash_to_spend_how_you_want._362211497.jpg 960w, https://assets.wfcdn.com/im/80382601/resize-h350-w825%5Ecompr-r85/3692/369217140/new%21_cash_registries%3A_cash_gifts_for_every_moment._create_a_registry._369217140.jpg 1w"
+            alt="Chic clothing storefront with modern design."
+            src="https://images.pexels.com/photos/32549949/pexels-photo-32549949.jpeg?cs=srgb&dl=pexels-kriss-32549949.jpg&fm=jpg"
             loading="lazy"
             decoding="async"
             (error)="setDefaultImage($event)"
