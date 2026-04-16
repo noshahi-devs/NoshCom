@@ -9,6 +9,7 @@ interface HeroSlide {
   cta: string;
   link: string;
   image: string;
+  imagePosition?: string;
 }
 
 @Component({
@@ -31,7 +32,8 @@ export class HeroCarouselComponent implements OnInit, OnDestroy {
         'Pure sound, no noise. The new generation of noise-cancelling wireless headphones is here for professionals like you.',
       cta: 'Shop Collection',
       link: '/search-result',
-      image: 'https://images.pexels.com/photos/7679453/pexels-photo-7679453.jpeg',
+      image: 'https://images.pexels.com/photos/7679453/pexels-photo-7679453.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=2200',
+      imagePosition: 'center 5%',
     },
     {
       tagline: 'SMART TECH 2026',
@@ -40,7 +42,8 @@ export class HeroCarouselComponent implements OnInit, OnDestroy {
         'Track your health, manage your day, and look premium with our latest 3D smart watch series. Now with sapphire glass.',
       cta: 'View Details',
       link: '/search-result',
-      image: '/assets/images/banner-2.png',
+      image: 'https://images.pexels.com/photos/36730471/pexels-photo-36730471.jpeg',
+      imagePosition: 'center 5%',
     },
     {
       tagline: 'GAMING ESSENTIALS',
@@ -49,7 +52,8 @@ export class HeroCarouselComponent implements OnInit, OnDestroy {
         'Unleash the beast with the ultimate gaming hardware. Max settings, 4K resolution, zero lag gaming experience.',
       cta: 'Explore Gear',
       link: '/search-result',
-      image: '/assets/images/banner-4.png',
+      image: 'https://images.pexels.com/photos/3865906/pexels-photo-3865906.jpeg',
+      imagePosition: 'center 25%',
     },
     {
       tagline: 'WORLD CART SPECIALS',
@@ -58,7 +62,8 @@ export class HeroCarouselComponent implements OnInit, OnDestroy {
         'Browse standout deals curated for style, value and everyday essentials in one smooth shopping journey.',
       cta: 'Browse Offers',
       link: '/search-result',
-      image: '/assets/images/banner-5.png',
+      image: 'https://images.pexels.com/photos/6612552/pexels-photo-6612552.jpeg',
+      imagePosition: 'center 55%',
     },
   ];
 

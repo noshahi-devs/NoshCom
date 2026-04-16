@@ -5,7 +5,7 @@
     *ngFor="let slide of slides; let i = index"
     [class.active]="currentSlide === i"
   >
-    <img class="slide-bg" [src]="slide.image" [alt]="slide.title" />
+    <img class="slide-bg" [src]="slide.image" [alt]="slide.title" [style.object-position]="slide.imagePosition || 'center'" />
     <div class="slide-overlay"></div>
 
     <div class="slide-content">

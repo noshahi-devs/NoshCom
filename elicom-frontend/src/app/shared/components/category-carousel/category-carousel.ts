@@ -40,6 +40,30 @@ export class CategoryCarouselComponent implements OnInit, OnChanges {
     'BEST SELLER',
     'LIMITED',
   ];
+  private readonly universeCardClasses = [
+    'span-3 card-graphite',
+    'span-3 card-rose',
+    'span-6 card-amber',
+    'span-6 card-indigo',
+    'span-3 card-emerald',
+    'span-3 card-magenta',
+  ];
+  private readonly universeCardTags = [
+    'HOT',
+    'NEW',
+    'WORK',
+    'BEST',
+    'PLAY',
+    'LIMITED',
+  ];
+  private readonly universeCardEyebrows = [
+    'Enjoy with',
+    'Now wear',
+    'Work devices',
+    'Pet world',
+    'Play time',
+    'New drop',
+  ];
 
   constructor(
     private adeel: CategoryService,
@@ -63,9 +87,10 @@ export class CategoryCarouselComponent implements OnInit, OnChanges {
   }
 
   loadMyCategories(): void {
-    this.adeel.getAllCategories().subscribe({
+    this.adeel.refreshCache();
+    this.adeel.getAllCategories(200).subscribe({
       next: (res: any[]) => {
-        this.categories = this.shuffle(res || []);
+        this.categories = res || [];
         this.buildSlides();
         this.cdr.detectChanges();
       },
@@ -108,6 +133,18 @@ export class CategoryCarouselComponent implements OnInit, OnChanges {
     return this.promoLabels[index] || 'FEATURED';
   }
 
+  getUniverseCardClass(index: number): string {
+    return this.universeCardClasses[index] || 'span-3 card-graphite';
+  }
+
+  getUniverseCardTag(index: number): string {
+    return this.universeCardTags[index] || 'HOT';
+  }
+
+  getUniverseCardEyebrow(index: number): string {
+    return this.universeCardEyebrows[index] || 'Featured';
+  }
+
   getTrackTransform(): string {
     if (!this.slides.length) {
       return 'translateX(0)';
@@ -125,14 +162,26 @@ export class CategoryCarouselComponent implements OnInit, OnChanges {
   }
 
   getCategoryImage(cat: any): string {
-    let val = cat.imageUrl || '';
+    const rawValue =
+      cat?.imageUrl ||
+      cat?.image ||
+      cat?.categoryImage ||
+      cat?.categoryImageUrl ||
+      cat?.icon ||
+      cat?.logo ||
+      cat?.picture ||
+      cat?.photo ||
+      cat?.thumbnail ||
+      cat?.fileName ||
+      cat?.imageName ||
+      '';
 
-    if (!val || val === 'string' || val.trim() === '') {
+    let val = String(rawValue || '').trim();
+    if (!val || val === 'string') {
       const seed = cat.id || cat.categoryId || cat.name || 'default';
       return `https://picsum.photos/seed/${seed}/240/240`;
     }
 
-    val = val.trim();
     if (val.startsWith('"') || val.startsWith('\\"')) {
       val = val
         .replace(/^\\"/, '')
@@ -141,6 +190,7 @@ export class CategoryCarouselComponent implements OnInit, OnChanges {
         .replace(/"$/, '')
         .replace(/\\"/g, '');
     }
+
     if (val.startsWith('[')) {
       val = val
         .replace(/^\[/, '')
@@ -148,13 +198,27 @@ export class CategoryCarouselComponent implements OnInit, OnChanges {
         .replace(/^"/, '')
         .replace(/"$/, '')
         .replace(/\\"/g, '');
+      if (val.includes('","')) {
+        val = val.split('","')[0];
+      } else if (val.includes(',')) {
+        val = val.split(',')[0];
+      }
     }
 
-    if (val.startsWith('http')) {
+    if (val.startsWith('http://') || val.startsWith('https://')) {
       return val;
     }
 
-    return `${environment.apiUrl}/images/products/${val}`;
+    if (val.startsWith('/')) {
+      return `${environment.apiUrl}${val}`;
+    }
+
+    if (val.includes('/')) {
+      return `${environment.apiUrl}/${val}`;
+    }
+
+    // PrimeShip category images are usually stored as filenames under uploads.
+    return `${environment.apiUrl}/uploads/primeship-products/${val}`;
   }
 
   handleImageError(event: any, cat: any): void {

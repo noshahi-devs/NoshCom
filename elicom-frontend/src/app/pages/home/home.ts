@@ -333,12 +333,13 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isLoadingCategories = true;
     this.categoryError = '';
     console.log('HomeComponent: Triggering robust category load...');
-    this.categoryService.getAllCategories(30).subscribe({
+    this.categoryService.refreshCache();
+    this.categoryService.getAllCategories(200).subscribe({
       next: (res: any[]) => {
         this.isLoadingCategories = false;
         console.log('HomeComponent: Categories arrived reliably. Count:', res.length);
-        this.categories = this.shuffle(res);
-        console.log(`[DEBUG] Home Shuffle: First category is "${this.categories[0]?.name}" at ${new Date().toLocaleTimeString()}`);
+        this.categories = res || [];
+        console.log(`[DEBUG] Home Categories: First category is "${this.categories[0]?.name}" at ${new Date().toLocaleTimeString()}`);
         this.assignPreviewImages();
         this.cdr.detectChanges();
       },
