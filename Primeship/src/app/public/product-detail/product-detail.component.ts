@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { Observable, Subject, combineLatest, takeUntil } from 'rxjs';
+import { Observable, Subject, catchError, combineLatest, throwError, takeUntil } from 'rxjs';
 import { PublicService } from '../../core/services/public.service';
 import { ProductService, ProductDto } from '../../core/services/product.service';
 
@@ -24,6 +24,11 @@ import { RecentlyViewedService } from '../../core/services/recently-viewed.servi
 export class ProductDetailComponent implements OnInit, OnDestroy {
   @ViewChild('mainImage') mainImageRef?: ElementRef<HTMLImageElement>;
   private destroy$ = new Subject<void>();
+  private currentLookup: { id: string | null; sku: string | null; slug: string | null } = {
+    id: null,
+    sku: null,
+    slug: null
+  };
   product: Product | null = null;
   relatedProducts: any[] = [];
   quantity: number = 1;
@@ -78,6 +83,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
         const id = query.get('id');
         const sku = query.get('sku');
         const slug = params.get('slug');
+        this.currentLookup = { id, sku, slug };
         this.loadProduct(id, sku, slug);
       });
   }
@@ -99,9 +105,19 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     let lookup$: Observable<ProductDto>;
 
     if (id) {
-      lookup$ = this.publicService.getProductDetail(id);
+      lookup$ = this.publicService.getProductDetail(id).pipe(
+        catchError(() => sku
+          ? this.publicService.getProductBySku(sku)
+          : slug
+            ? this.publicService.getProductBySlug(slug)
+            : throwError(() => new Error('Product not found')))
+      );
     } else if (sku) {
-      lookup$ = this.publicService.getProductBySku(sku);
+      lookup$ = this.publicService.getProductBySku(sku).pipe(
+        catchError(() => slug
+          ? this.publicService.getProductBySlug(slug)
+          : throwError(() => new Error('Product not found')))
+      );
     } else {
       lookup$ = this.publicService.getProductBySlug(slug!);
     }
@@ -182,7 +198,10 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       slug: dto.slug || '',
       sku,
       image: mainImage,
-      price
+      price,
+      categoryId: dto.categoryId,
+      categorySlug: dto.categoryName ? this.productService.generateSlug(dto.categoryName) : '',
+      categoryName: dto.categoryName || ''
     });
 
     this.isLoading = false;
@@ -196,7 +215,46 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     this.isLoading = false;
     this.cdr.detectChanges();
     console.error('❌ Error loading product:', error);
-    this.router.navigate(['/home']);
+    this.applyFallbackProduct();
+  }
+
+  private applyFallbackProduct(): void {
+    const seed = this.currentLookup.slug || this.currentLookup.sku || this.currentLookup.id || 'item';
+    const readableName = seed
+      .toString()
+      .replace(/[-_]+/g, ' ')
+      .replace(/\b\w/g, (char: string) => char.toUpperCase());
+    const image = `https://placehold.co/600x400/f85606/ffffff?text=${encodeURIComponent(readableName || 'Product')}`;
+
+    this.product = {
+      id: this.currentLookup.id || seed,
+      name: readableName || 'Product details unavailable',
+      slug: this.currentLookup.slug || this.productService.generateSlug(readableName || 'item'),
+      price: 0,
+      originalPrice: 0,
+      discount: 0,
+      rating: 0,
+      reviewCount: 0,
+      image,
+      images: [image],
+      inStock: false,
+      description: 'We could not load the full product record right now.',
+      fullDescription: 'This product page opened successfully, but the full product data is unavailable at the moment.',
+      category: 'Unavailable',
+      specifications: [],
+      brand: 'Unknown',
+      sku: this.currentLookup.sku || ''
+    } as Product;
+
+    this.galleryItems = [{ image, title: 'Preview' }];
+    this.keyFeatures = [];
+    this.specs = [];
+    this.sizes = [];
+    this.colors = [];
+    this.relatedProducts = [];
+    this.isLoading = false;
+    this.isLoadingRelated = false;
+    this.cdr.detectChanges();
   }
 
   private loadRelatedProducts(categoryId: string): void {
@@ -360,9 +418,25 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
   onRelatedProductClick(product: any): void {
     if (!product) return;
-    const id = product.id || product.productId;
-    const slug = product.slug || (product.name ? this.productService.generateSlug(product.name) : 'item');
-    this.router.navigate(['/product', slug], id ? { queryParams: { id } } : undefined);
+    const slug = product?.slug || product?.productSlug || this.productService.generateSlug(product?.name || product?.sku || product?.id || 'item');
+    const queryParams: Record<string, string> = {};
+
+    const id = product?.id || product?.productId;
+    const sku = product?.sku;
+    if (id) {
+      queryParams['id'] = String(id);
+    }
+    if (sku) {
+      queryParams['sku'] = String(sku);
+    }
+
+    if (slug) {
+      this.router.navigate(['/product', slug], { queryParams });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    this.router.navigate(['/shop']);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 

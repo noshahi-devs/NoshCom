@@ -198,7 +198,7 @@
                 <span class="current-price">{{ product.price | currency:'USD':'symbol':'1.2-2' }}</span>
                 <span class="original-price">{{ product.originalPrice | currency:'USD':'symbol':'1.2-2' }}</span>
               </div>
-              <button class="btn btn-view-product" (click)="viewProduct(product.slug)">
+              <button class="btn btn-view-product" (click)="viewProduct(product)">
                 View Product
               </button>
             </div>

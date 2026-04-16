@@ -28,11 +28,34 @@ export class RecentlyViewedComponent implements OnInit {
   }
 
   open(item: RecentlyViewedItem): void {
-    const qp: any = {};
-    if (item.id) qp.id = item.id;
-    if (item.sku && !qp.id) qp.sku = item.sku;
-    const slug = item.slug || 'item';
-    this.router.navigate(['/product', slug], { queryParams: qp });
+    const routeSlug = this.getProductRoute(item);
+    const queryParams: Record<string, string> = {};
+    if (item.id) {
+      queryParams['id'] = String(item.id);
+    }
+    if (item.sku) {
+      queryParams['sku'] = String(item.sku);
+    }
+
+    if (routeSlug) {
+      this.router.navigate(['/product', routeSlug], { queryParams });
+      return;
+    }
+
+    this.router.navigate(['/shop']);
+  }
+
+  private getProductRoute(item: RecentlyViewedItem): string {
+    const raw = (item.slug || item.name || item.sku || item.id || '').toString().trim();
+    if (!raw) {
+      return '';
+    }
+
+    return raw
+      .toLowerCase()
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 
   async clear(): Promise<void> {

@@ -13,6 +13,9 @@ interface ReviewablePurchaseItem {
   sku?: string;
   name: string;
   image?: string;
+  categoryId?: string;
+  categorySlug?: string;
+  categoryName?: string;
   orderRef?: string;
   orderDate?: Date;
   status?: string;
@@ -99,6 +102,9 @@ export class ReviewPurchasesComponent implements OnInit {
         const productId = it?.product?.id || it?.productId || it?.storeProductId;
         const sku = it?.sku || it?.product?.sku;
         const image = it?.product?.image || it?.imageUrl || it?.image;
+        const categoryId = it?.product?.categoryId || it?.categoryId;
+        const categoryName = it?.product?.categoryName || it?.categoryName || it?.product?.category || it?.category;
+        const categorySlug = categoryName ? String(categoryName).toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') : '';
         const price = Number(it?.price ?? it?.product?.price);
         const qty = Number(it?.qty ?? it?.quantity ?? 1);
         const key = String(productId || sku || `${orderRef || ''}-${name}`).trim();
@@ -109,6 +115,9 @@ export class ReviewPurchasesComponent implements OnInit {
           sku: sku ? String(sku) : undefined,
           name: String(name),
           image: image ? String(image) : undefined,
+          categoryId: categoryId ? String(categoryId) : undefined,
+          categorySlug: categorySlug || undefined,
+          categoryName: categoryName ? String(categoryName) : undefined,
           orderRef: orderRef ? String(orderRef) : undefined,
           orderDate,
           status,
@@ -184,10 +193,34 @@ export class ReviewPurchasesComponent implements OnInit {
   }
 
   openProduct(item: ReviewablePurchaseItem): void {
-    const qp: any = {};
-    if (item.productId) qp.id = item.productId;
-    if (item.sku && !qp.id) qp.sku = item.sku;
-    const slug = 'item';
-    this.router.navigate(['/product', slug], { queryParams: qp });
+    const routeSlug = this.getProductRoute(item);
+    const queryParams: Record<string, string> = {};
+
+    if (item.productId) {
+      queryParams['id'] = String(item.productId);
+    }
+    if (item.sku) {
+      queryParams['sku'] = String(item.sku);
+    }
+
+    if (routeSlug) {
+      this.router.navigate(['/product', routeSlug], { queryParams });
+      return;
+    }
+
+    this.router.navigate(['/shop']);
+  }
+
+  private getProductRoute(item: ReviewablePurchaseItem): string {
+    const raw = (item.name || item.sku || item.productId || '').toString().trim();
+    if (!raw) {
+      return '';
+    }
+
+    return raw
+      .toLowerCase()
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 }

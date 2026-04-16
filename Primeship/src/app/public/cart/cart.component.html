@@ -6,7 +6,8 @@
         <div class="cart-items-wrapper">
           <div class="cart-item" *ngFor="let item of cartItems; let i = index">
             <!-- Product Image -->
-            <div class="item-img-box" [routerLink]="['/product', item.product.slug]">
+            <div class="item-img-box" role="button" tabindex="0" (click)="openProduct(item.product)"
+              (keydown.enter)="openProduct(item.product)" (keydown.space)="$event.preventDefault(); openProduct(item.product)">
               <img [src]="item.product.image" [alt]="item.product.name">
             </div>
 
@@ -17,7 +18,7 @@
                 <span class="meta-pill" *ngIf="item.size">Size: {{ item.size }}</span>
                 <span class="meta-pill" *ngIf="item.color">Color: {{ item.color }}</span>
               </div>
-              <a [routerLink]="['/product', item.product.slug]" class="item-name">{{ item.product.name }}</a>
+              <button type="button" class="item-name" (click)="openProduct(item.product)">{{ item.product.name }}</button>
               
               <button class="btn-remove" (click)="removeFromCart(i)">
                 <i class="fas fa-trash-alt"></i> Remove Item

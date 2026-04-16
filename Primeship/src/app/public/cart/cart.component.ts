@@ -98,6 +98,47 @@ export class CartComponent implements OnInit {
     this.cartService.removeFromCart(index);
   }
 
+  openProduct(product: any): void {
+    if (!product) {
+      return;
+    }
+
+    const routeSlug = this.getProductRoute(product);
+    const queryParams: Record<string, string> = {};
+    const id = (product?.id || '').toString().trim();
+    const sku = (product?.sku || '').toString().trim();
+    if (id) queryParams['id'] = id;
+    if (sku) queryParams['sku'] = sku;
+
+    if (routeSlug) {
+      this.router.navigate(['/product', routeSlug], { queryParams });
+      return;
+    }
+
+    this.router.navigate(['/shop']);
+  }
+
+  private getProductRoute(product: any): string {
+    const raw = (
+      product?.slug ||
+      product?.productSlug ||
+      product?.name ||
+      product?.sku ||
+      product?.id ||
+      ''
+    ).toString().trim();
+
+    if (!raw) {
+      return '';
+    }
+
+    return raw
+      .toLowerCase()
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
   clearCart(): void {
     this.cartService.clearCart();
   }

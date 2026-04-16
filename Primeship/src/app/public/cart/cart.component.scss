@@ -75,6 +75,7 @@
     overflow: hidden;
     background: var(--bg-alabaster);
     border: 1px solid var(--border-gray);
+    cursor: pointer;
     
     img {
       width: 100%;
@@ -99,6 +100,12 @@
       text-decoration: none;
       margin-bottom: 8px;
       display: block;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      text-align: left;
+      cursor: pointer;
+
       &:hover { color: var(--primary); }
     }
 

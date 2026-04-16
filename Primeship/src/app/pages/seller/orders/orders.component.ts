@@ -6,7 +6,7 @@ import { ProductService } from '../../../core/services/product.service';
 import { CartService, CartItem } from '../../../core/services/cart.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { PrimeIcons } from 'primeng/api';
 
 type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
@@ -51,6 +51,7 @@ export class SellerOrdersComponent implements OnInit {
     private cartService: CartService,
     private toastService: ToastService,
     private authService: AuthService,
+    private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) { }
@@ -86,6 +87,10 @@ export class SellerOrdersComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadOrders();
+
+    if (this.route.snapshot.queryParamMap.get('create') === '1') {
+      this.openAddOrder();
+    }
   }
 
   loadOrders(): void {

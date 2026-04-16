@@ -7,6 +7,9 @@ export interface RecentlyViewedItem {
   sku?: string;
   image?: string;
   price?: number;
+  categoryId?: string;
+  categorySlug?: string;
+  categoryName?: string;
   viewedAt: string;
 }
 

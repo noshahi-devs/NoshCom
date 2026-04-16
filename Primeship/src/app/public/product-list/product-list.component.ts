@@ -183,22 +183,23 @@ export class ProductListComponent implements OnInit, OnDestroy {
           this.hideNonProductUI = Boolean(data && (data as any).hideNonProductUI);
 
           const slug = params.get('slug') || this.routeCategorySlug || '';
+          const categoryId = queryParams.get('categoryId') || '';
           const q = queryParams.get('q') || '';
           const sort = (queryParams.get('sortBy') || 'newest').toLowerCase();
 
-          this.currentCategorySlug = slug;
+          this.currentCategorySlug = categoryId || slug;
           this.searchTerm = q;
           this.sortBy = sort;
           this.isDiscountPage = sort === 'discount';
 
           // Sync form UI instantly
-          this.filtersForm.patchValue({ category: slug, sortBy: sort }, { emitEvent: false });
+          this.filtersForm.patchValue({ category: categoryId || slug, sortBy: sort }, { emitEvent: false });
 
           console.log(`🚀 [ProductList] Loading Path: /${slug || 'all'} (Search: ${q})`);
 
           // Fetch products immediately. Backend handles slug or id.
           // We don't wait for categories to start the product search.
-          return this.fetchProducts(slug, q).pipe(
+          return this.fetchProducts(slug, q, categoryId).pipe(
             finalize(() => {
               this.isLoading = false;
               this.stopLoadingMessages();
@@ -250,8 +251,8 @@ export class ProductListComponent implements OnInit, OnDestroy {
     this.categoryMenuOpen = false;
   }
 
-  private fetchProducts(slug: string, searchTerm: string): Observable<ProductDto[]> {
-    const base$ = this.publicService.getProductsByCategory(slug, searchTerm).pipe(
+  private fetchProducts(slug: string, searchTerm: string, categoryId?: string): Observable<ProductDto[]> {
+    const base$ = this.publicService.getProductsByCategory(slug, searchTerm, categoryId).pipe(
       catchError(() => of([]))
     );
 
@@ -417,12 +418,49 @@ export class ProductListComponent implements OnInit, OnDestroy {
   // Actions
   // -------------------------------------------------------------------------
   onProductClick(p: any): void {
-    this.router.navigate(['/product', p.slug], {
-      queryParams: {
-        id: p.id,
-        sku: p.sku || p.Sku
-      }
-    });
+    const routeSlug = this.getProductRouteFromProduct(p);
+    const queryParams = this.getProductQueryParamsFromProduct(p);
+
+    if (routeSlug) {
+      this.router.navigate(['/product', routeSlug], { queryParams });
+      return;
+    }
+
+    this.router.navigate(['/shop']);
+  }
+
+  private getProductRouteFromProduct(product: any): string {
+    const raw = (
+      product?.slug ||
+      product?.productSlug ||
+      product?.name ||
+      product?.sku ||
+      product?.id ||
+      ''
+    ).toString().trim();
+
+    if (!raw) {
+      return '';
+    }
+
+    return raw
+      .toLowerCase()
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  private getProductQueryParamsFromProduct(product: any): Record<string, string> {
+    const queryParams: Record<string, string> = {};
+    const id = (product?.id || '').toString().trim();
+    const sku = (product?.sku || '').toString().trim();
+    if (id) {
+      queryParams['id'] = id;
+    }
+    if (sku) {
+      queryParams['sku'] = sku;
+    }
+    return queryParams;
   }
 
   onCategoryToggle(cat: any): void {

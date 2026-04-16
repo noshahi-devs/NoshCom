@@ -135,7 +135,28 @@ export class ProductDetailSimpleComponent implements OnInit {
     }
   }
 
-  viewProduct(slug: string): void {
-    this.router.navigate(['/product', slug]);
+  viewProduct(product: Product | string): void {
+    const raw = typeof product === 'string'
+      ? product
+      : (product?.slug || product?.name || product?.sku || product?.id || '');
+    const slug = (raw || '')
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    if (slug) {
+      const queryParams: Record<string, string> = {};
+      if (typeof product === 'object' && product) {
+        if (product.id) queryParams['id'] = String(product.id);
+        if (product.sku) queryParams['sku'] = String(product.sku);
+      }
+      this.router.navigate(['/product', slug], { queryParams });
+      return;
+    }
+
+    this.router.navigate(['/shop']);
   }
 }

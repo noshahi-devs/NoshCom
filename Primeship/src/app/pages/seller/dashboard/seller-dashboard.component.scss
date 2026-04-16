@@ -833,12 +833,18 @@
   border-radius: 16px;
   border: 1px solid rgba(220, 233, 228, 0.95);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 253, 250, 0.98));
+  cursor: pointer;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 14px 24px rgba(34, 62, 52, 0.08);
     border-color: rgba(52, 197, 154, 0.28);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(19, 139, 102, 0.18);
+    outline-offset: 2px;
   }
 }
 

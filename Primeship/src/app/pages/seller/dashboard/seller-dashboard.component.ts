@@ -330,8 +330,8 @@ export class SellerDashboardComponent implements OnInit {
     return forkJoin(requests);
   }
 
-  navigateToOrders() {
-    this.router.navigate(['/seller/orders']);
+  createSourcingRequest(): void {
+    this.router.navigate(['/seller/orders'], { queryParams: { create: '1' } });
   }
 
   getPrimaryItemName(order: any): string {

@@ -43,6 +43,9 @@ interface ProductItem {
   image: string;
   id?: string;
   slug?: string;
+  categoryId?: string;
+  categorySlug?: string;
+  categoryName?: string;
 }
 
 interface CategoryTab {
@@ -66,6 +69,9 @@ interface DealItem {
   image: string;
   id?: string;
   slug?: string;
+  categoryId?: string;
+  categorySlug?: string;
+  categoryName?: string;
 }
 
 interface MiniListItem {
@@ -74,6 +80,9 @@ interface MiniListItem {
   image: string;
   id?: string;
   slug?: string;
+  categoryId?: string;
+  categorySlug?: string;
+  categoryName?: string;
 }
 
 interface MiniCategory {
@@ -457,7 +466,10 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
             discount: discountLabel,
             image: this.getParsedImage(p.images),
             id: p.id,
-            slug: p.slug
+            slug: p.slug,
+            categoryId: p.categoryId,
+            categorySlug: (p as any).categorySlug || (p as any).category?.slug,
+            categoryName: p.categoryName || (p as any).category || ''
           };
         });
           this.allProducts = mapped.slice(0, 40);
@@ -1000,25 +1012,52 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   goToProduct(product: any) {
-    if (product?.slug) {
-      this.router.navigate(['/product', product.slug]);
+    const routeSlug = this.getProductDetailSlug(product);
+    const queryParams = this.getProductDetailQueryParams(product);
+    if (routeSlug) {
+      this.router.navigate(['/product', routeSlug], { queryParams });
       return;
     }
-    if (product?.id) {
-      this.router.navigate(['/product', 'item'], { queryParams: { id: product.id } });
-      return;
+
+    this.router.navigate(['/shop']);
+  }
+
+  getProductDetailRoute(product: any): string {
+    return this.getProductDetailSlug(product) || 'product';
+  }
+
+  getProductDetailQueryParams(product: any): Record<string, string> {
+    const queryParams: Record<string, string> = {};
+    const id = (product?.id || '').toString().trim();
+    const sku = (product?.sku || '').toString().trim();
+    if (id) {
+      queryParams['id'] = id;
     }
-    Swal.fire({
-      title: 'Product Detail Unavailable',
-      text: 'This item does not have a detail page yet.',
-      icon: 'info',
-      toast: true,
-      position: 'top-end',
-      timer: 2500,
-      showConfirmButton: false,
-      background: '#fff',
-      color: '#1e293b'
-    });
+    if (sku) {
+      queryParams['sku'] = sku;
+    }
+    return queryParams;
+  }
+
+  private getProductDetailSlug(product: any): string {
+    const raw = (
+      product?.slug ||
+      product?.productSlug ||
+      product?.name ||
+      product?.sku ||
+      product?.id ||
+      ''
+    ).toString().trim();
+
+    if (!raw) {
+      return '';
+    }
+
+    return raw
+      .toLowerCase()
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 
   goToMiniCategory(slug: string, event?: Event) {

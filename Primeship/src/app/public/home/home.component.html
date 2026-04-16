@@ -67,7 +67,9 @@
                         </h2>
                     </button>
                     <div class="wf-panel-cards">
-                        <div class="wf-mini-card" *ngFor="let p of wfKeepShoppingProducts; let i = index" (click)="goToProduct(p)">
+                        <div class="wf-mini-card" *ngFor="let p of wfKeepShoppingProducts; let i = index"
+                          [routerLink]="['/product', getProductDetailRoute(p)]"
+                          [queryParams]="getProductDetailQueryParams(p)" role="link" tabindex="0">
                             <div class="wf-card-media">
                                 <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
                             </div>
@@ -90,7 +92,9 @@
                         </h2>
                     </a>
                     <div class="wf-panel-cards">
-                        <div class="wf-mini-card" *ngFor="let p of wfDealsProducts; let i = index" (click)="goToProduct(p)">
+                        <div class="wf-mini-card" *ngFor="let p of wfDealsProducts; let i = index"
+                          [routerLink]="['/product', getProductDetailRoute(p)]"
+                          [queryParams]="getProductDetailQueryParams(p)" role="link" tabindex="0">
                             <div class="wf-card-media">
                                 <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
                             </div>
@@ -114,7 +118,9 @@
                         </h2>
                     </a>
                     <div class="wf-panel-cards">
-                        <div class="wf-mini-card" *ngFor="let p of wfVerifiedProducts; let i = index" (click)="goToProduct(p)">
+                        <div class="wf-mini-card" *ngFor="let p of wfVerifiedProducts; let i = index"
+                          [routerLink]="['/product', getProductDetailRoute(p)]"
+                          [queryParams]="getProductDetailQueryParams(p)" role="link" tabindex="0">
                             <div class="wf-card-media">
                                 <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
                             </div>
@@ -143,7 +149,8 @@
               </button>
 
               <div class="rec-scroll" #recList>
-                <div class="deal-card rec-card" *ngFor="let p of allProducts" (click)="goToProduct(p)">
+                <div class="deal-card rec-card" *ngFor="let p of allProducts" [routerLink]="['/product', getProductDetailRoute(p)]"
+                  [queryParams]="getProductDetailQueryParams(p)" role="link" tabindex="0">
                   <span class="deal-verified" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
                   <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
                       <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
@@ -212,7 +219,8 @@
               </button>
 
               <div class="rec-scroll" #dealList>
-                <div class="deal-card rec-card" *ngFor="let p of allProducts" (click)="goToProduct(p)">
+                <div class="deal-card rec-card" *ngFor="let p of allProducts" [routerLink]="['/product', getProductDetailRoute(p)]"
+                  [queryParams]="getProductDetailQueryParams(p)" role="link" tabindex="0">
                   <span class="deal-verified" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
                   <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
                       <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
@@ -284,7 +292,9 @@
             </button>
 
             <div class="rec-scroll collections-scroll" #collList>
-              <button class="collection-circle" *ngFor="let c of collectionItems" (click)="goToProduct(c)" aria-label="{{ c.name }}">
+              <button class="collection-circle" *ngFor="let c of collectionItems"
+                [routerLink]="['/product', getProductDetailRoute(c)]" [queryParams]="getProductDetailQueryParams(c)"
+                aria-label="{{ c.name }}">
                 <div class="circle-thumb">
                   <img [src]="c.image" [alt]="c.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
                 </div>
@@ -350,7 +360,9 @@
           </button>
 
           <div class="product-grid" #prodList>
-            <div class="deal-card rec-card prod-card" *ngFor="let p of allProducts | slice:0:8" (click)="goToProduct(p)">
+            <div class="deal-card rec-card prod-card" *ngFor="let p of allProducts | slice:0:8"
+              [routerLink]="['/product', getProductDetailRoute(p)]" [queryParams]="getProductDetailQueryParams(p)"
+              role="link" tabindex="0">
               <div class="prod-card-inner">
                 <div class="prod-card-front">
                   <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
@@ -583,7 +595,9 @@
           </button>
 
           <div class="rec-scroll budget-scroll" #budgetList>
-            <div class="budget-card" *ngFor="let p of allProducts | slice:0:10; let i = index" (click)="goToProduct(p)">
+            <div class="budget-card" *ngFor="let p of allProducts | slice:0:10; let i = index"
+              [routerLink]="['/product', getProductDetailRoute(p)]" [queryParams]="getProductDetailQueryParams(p)"
+              role="link" tabindex="0">
               <div class="budget-media">
                 <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
                 <button type="button" class="budget-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
@@ -644,7 +658,9 @@
           </button>
 
           <div class="rec-scroll wf-deals-scroll" #wfDealList>
-            <div class="wf-deal-card" *ngFor="let p of allProducts | slice:0:10; let i = index" (click)="goToProduct(p)">
+            <div class="wf-deal-card" *ngFor="let p of allProducts | slice:0:10; let i = index"
+              [routerLink]="['/product', getProductDetailRoute(p)]" [queryParams]="getProductDetailQueryParams(p)"
+              role="link" tabindex="0">
               <div class="wf-deal-media">
                 <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
 
