@@ -54,233 +54,284 @@
     </section>
 
     <!-- Wayfair-style 3-up panels -->
-    <section class="wf-home-panels" *ngIf="!isLoadingDeals && (wfKeepShoppingProducts.length || wfDealsProducts.length || wfVerifiedProducts.length)">
+    <section class="wf-home-panels">
         <div class="container">
-            <div class="wf-panel-grid">
-                <div class="wf-panel">
-                    <button class="wf-panel-head wf-panel-head-button" type="button" (click)="openKeepShoppingModal()">
-                        <h2 class="wf-panel-h2">
-                            keep shopping for {{ keepShoppingQuery }}
-                            <svg focusable="false" viewBox="2 2 24 24" aria-hidden="true" class="wf-panel-arrow-ico">
-                                <path d="M21.46 14.19a.5.5 0 000-.38.36.36 0 00-.11-.16l-6-6a.49.49 0 00-.7.7l5.14 5.15H7a.5.5 0 000 1h12.79l-5.14 5.15a.48.48 0 000 .7.48.48 0 00.7 0l6-6a.36.36 0 00.11-.16z"></path>
-                            </svg>
-                        </h2>
-                    </button>
-                    <div class="wf-panel-cards">
-                        <div class="wf-mini-card" *ngFor="let p of wfKeepShoppingProducts; let i = index"
-                          [routerLink]="['/product', getProductDetailRoute(p)]"
-                          [queryParams]="getProductDetailQueryParams(p)" role="link" tabindex="0">
-                            <div class="wf-card-media">
-                                <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
+            <ng-container *ngIf="isLoadingDeals; else wfPanelsLoaded">
+                <div class="wf-panel-grid">
+                    <div class="wf-panel wf-panel-skeleton" *ngFor="let _ of loadingPanelItems">
+                        <div class="wf-panel-head wf-panel-head-skeleton">
+                            <span class="skeleton-line wide"></span>
+                            <span class="skeleton-circle"></span>
+                        </div>
+                        <div class="wf-panel-cards wf-panel-cards-skeleton">
+                            <div class="wf-mini-card wf-mini-card-skeleton" *ngFor="let __ of loadingPanelItems">
+                                <span class="wf-card-media wf-card-media-skeleton"></span>
+                                <span class="wf-verified-badge wf-badge-skeleton" aria-hidden="true"></span>
+                                <span class="wf-heart wf-heart-skeleton" aria-hidden="true"></span>
+                                <span class="wf-mini-tag wf-tag-skeleton"></span>
                             </div>
-                            <span class="wf-verified-badge" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
-                            <button type="button" class="wf-heart" (click)="toggleWishlist(p, $event)" aria-label="Add to wishlist">
-                                <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
-                            </button>
-                            <span class="wf-mini-tag">{{ getWfTag('keep', i) }}</span>
                         </div>
                     </div>
                 </div>
+            </ng-container>
 
-                <div class="wf-panel">
-                    <a class="wf-panel-head" [routerLink]="['/shop']" [queryParams]="{ sortBy: 'discount' }">
-                        <h2 class="wf-panel-h2">
-                            up to 70% OFF: 5 Days of Deals
-                            <svg focusable="false" viewBox="2 2 24 24" aria-hidden="true" class="wf-panel-arrow-ico">
-                                <path d="M21.46 14.19a.5.5 0 000-.38.36.36 0 00-.11-.16l-6-6a.49.49 0 00-.7.7l5.14 5.15H7a.5.5 0 000 1h12.79l-5.14 5.15a.48.48 0 000 .7.48.48 0 00.7 0l6-6a.36.36 0 00.11-.16z"></path>
-                            </svg>
-                        </h2>
-                    </a>
-                    <div class="wf-panel-cards">
-                        <div class="wf-mini-card" *ngFor="let p of wfDealsProducts; let i = index"
-                          [routerLink]="['/product', getProductDetailRoute(p)]"
-                          [queryParams]="getProductDetailQueryParams(p)" role="link" tabindex="0">
-                            <div class="wf-card-media">
-                                <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
+            <ng-template #wfPanelsLoaded>
+                <div class="wf-panel-grid" *ngIf="wfKeepShoppingProducts.length || wfDealsProducts.length || wfVerifiedProducts.length">
+                    <div class="wf-panel">
+                        <button class="wf-panel-head wf-panel-head-button" type="button" (click)="openKeepShoppingModal()">
+                            <h2 class="wf-panel-h2">
+                                keep shopping for {{ keepShoppingQuery }}
+                                <svg focusable="false" viewBox="2 2 24 24" aria-hidden="true" class="wf-panel-arrow-ico">
+                                    <path d="M21.46 14.19a.5.5 0 000-.38.36.36 0 00-.11-.16l-6-6a.49.49 0 00-.7.7l5.14 5.15H7a.5.5 0 000 1h12.79l-5.14 5.15a.48.48 0 000 .7.48.48 0 00.7 0l6-6a.36.36 0 00.11-.16z"></path>
+                                </svg>
+                            </h2>
+                        </button>
+                        <div class="wf-panel-cards">
+                            <div class="wf-mini-card" *ngFor="let p of wfKeepShoppingProducts; let i = index"
+                              [routerLink]="['/product', getProductDetailRoute(p)]"
+                              [queryParams]="getProductDetailQueryParams(p)" role="link" tabindex="0">
+                                <div class="wf-card-media">
+                                    <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
+                                </div>
+                                <span class="wf-verified-badge" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
+                                <button type="button" class="wf-heart" (click)="toggleWishlist(p, $event)" aria-label="Add to wishlist">
+                                    <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+                                </button>
+                                <span class="wf-mini-tag">{{ getWfTag('keep', i) }}</span>
                             </div>
-                            <span class="wf-verified-badge" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
-                            <button type="button" class="wf-heart" (click)="toggleWishlist(p, $event)" aria-label="Add to wishlist">
-                                <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
-                            </button>
-                            <span class="wf-mini-tag">{{ getWfTag('deals', i) }}</span>
                         </div>
                     </div>
-                </div>
 
-                <div class="wf-panel">
-                    <a class="wf-panel-head" routerLink="/verified">
-                        <h2 class="wf-panel-h2">
-                            Verified items for you
-                            <span class="wf-info" aria-hidden="true"><i class="fas fa-info-circle"></i></span>
-                            <svg focusable="false" viewBox="2 2 24 24" aria-hidden="true" class="wf-panel-arrow-ico">
-                                <path d="M21.46 14.19a.5.5 0 000-.38.36.36 0 00-.11-.16l-6-6a.49.49 0 00-.7.7l5.14 5.15H7a.5.5 0 000 1h12.79l-5.14 5.15a.48.48 0 000 .7.48.48 0 00.7 0l6-6a.36.36 0 00.11-.16z"></path>
-                            </svg>
-                        </h2>
-                    </a>
-                    <div class="wf-panel-cards">
-                        <div class="wf-mini-card" *ngFor="let p of wfVerifiedProducts; let i = index"
-                          [routerLink]="['/product', getProductDetailRoute(p)]"
-                          [queryParams]="getProductDetailQueryParams(p)" role="link" tabindex="0">
-                            <div class="wf-card-media">
-                                <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
+                    <div class="wf-panel">
+                        <a class="wf-panel-head" [routerLink]="['/shop']" [queryParams]="{ sortBy: 'discount' }">
+                            <h2 class="wf-panel-h2">
+                                up to 70% OFF: 5 Days of Deals
+                                <svg focusable="false" viewBox="2 2 24 24" aria-hidden="true" class="wf-panel-arrow-ico">
+                                    <path d="M21.46 14.19a.5.5 0 000-.38.36.36 0 00-.11-.16l-6-6a.49.49 0 00-.7.7l5.14 5.15H7a.5.5 0 000 1h12.79l-5.14 5.15a.48.48 0 000 .7.48.48 0 00.7 0l6-6a.36.36 0 00.11-.16z"></path>
+                                </svg>
+                            </h2>
+                        </a>
+                        <div class="wf-panel-cards">
+                            <div class="wf-mini-card" *ngFor="let p of wfDealsProducts; let i = index"
+                              [routerLink]="['/product', getProductDetailRoute(p)]"
+                              [queryParams]="getProductDetailQueryParams(p)" role="link" tabindex="0">
+                                <div class="wf-card-media">
+                                    <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
+                                </div>
+                                <span class="wf-verified-badge" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
+                                <button type="button" class="wf-heart" (click)="toggleWishlist(p, $event)" aria-label="Add to wishlist">
+                                    <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+                                </button>
+                                <span class="wf-mini-tag">{{ getWfTag('deals', i) }}</span>
                             </div>
-                            <span class="wf-verified-badge" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
-                            <button type="button" class="wf-heart" (click)="toggleWishlist(p, $event)" aria-label="Add to wishlist">
-                                <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
-                            </button>
-                            <span class="wf-mini-tag">{{ getWfTag('verified', i) }}</span>
+                        </div>
+                    </div>
+
+                    <div class="wf-panel">
+                        <a class="wf-panel-head" routerLink="/verified">
+                            <h2 class="wf-panel-h2">
+                                Verified items for you
+                                <span class="wf-info" aria-hidden="true"><i class="fas fa-info-circle"></i></span>
+                                <svg focusable="false" viewBox="2 2 24 24" aria-hidden="true" class="wf-panel-arrow-ico">
+                                    <path d="M21.46 14.19a.5.5 0 000-.38.36.36 0 00-.11-.16l-6-6a.49.49 0 00-.7.7l5.14 5.15H7a.5.5 0 000 1h12.79l-5.14 5.15a.48.48 0 000 .7.48.48 0 00.7 0l6-6a.36.36 0 00.11-.16z"></path>
+                                </svg>
+                            </h2>
+                        </a>
+                        <div class="wf-panel-cards">
+                            <div class="wf-mini-card" *ngFor="let p of wfVerifiedProducts; let i = index"
+                              [routerLink]="['/product', getProductDetailRoute(p)]"
+                              [queryParams]="getProductDetailQueryParams(p)" role="link" tabindex="0">
+                                <div class="wf-card-media">
+                                    <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
+                                </div>
+                                <span class="wf-verified-badge" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
+                                <button type="button" class="wf-heart" (click)="toggleWishlist(p, $event)" aria-label="Add to wishlist">
+                                    <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+                                </button>
+                                <span class="wf-mini-tag">{{ getWfTag('verified', i) }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </ng-template>
         </div>
     </section>
 
     <!-- All Products -->
-    <section class="home-all-products" *ngIf="!isLoadingDeals && allProducts.length > 0">
+    <section class="home-all-products">
         <div class="container">
-            <div class="rec-header">
-              <h2 class="section-title">Recommended for you</h2>
-            </div>
+            <ng-container *ngIf="isLoadingDeals; else allProductsLoaded">
+              <div class="rec-header">
+                <h2 class="section-title"><span class="skeleton-line wide"></span></h2>
+              </div>
 
-            <div class="rec-shell">
-              <button type="button" class="rec-btn rec-btn-left" (click)="scrollRecommended('left')" aria-label="Scroll left">
-                <i class="fas fa-chevron-left"></i>
-              </button>
+              <div class="rec-shell">
+                <button type="button" class="rec-btn rec-btn-left skeleton-nav" aria-hidden="true" tabindex="-1">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
 
-              <div class="rec-scroll" #recList>
-                <div class="deal-card rec-card" *ngFor="let p of allProducts" [routerLink]="['/product', getProductDetailRoute(p)]"
-                  [queryParams]="getProductDetailQueryParams(p)" role="link" tabindex="0">
-                  <span class="deal-verified" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
-                  <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
-                      <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
-                  </button>
-                  <div class="card-media">
-                    <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
-                  </div>
-                  <div class="card-info">
-                    <div class="card-name">{{ p.name }}</div>
-                    <div class="card-price">{{ (p.price || 0) | currency:'USD':'symbol':'1.0-0' }}</div>
+                <div class="rec-scroll skeleton-scroll-row" #recList>
+                  <div class="deal-card rec-card rec-card-skeleton" *ngFor="let _ of loadingProductItems">
+                    <span class="deal-verified skeleton-badge" aria-hidden="true"></span>
+                    <span class="deal-heart skeleton-heart" aria-hidden="true"></span>
+                    <div class="card-media skeleton-media"></div>
+                    <div class="card-info skeleton-card-info">
+                      <span class="skeleton-line wide"></span>
+                      <span class="skeleton-line short"></span>
+                    </div>
                   </div>
                 </div>
+
+                <button type="button" class="rec-btn rec-btn-right skeleton-nav" aria-hidden="true" tabindex="-1">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </ng-container>
+
+            <ng-template #allProductsLoaded>
+              <div class="rec-header" *ngIf="allProducts.length > 0">
+                <h2 class="section-title">Recommended for you</h2>
               </div>
 
-              <button type="button" class="rec-btn rec-btn-right" (click)="scrollRecommended('right')" aria-label="Scroll right">
-                <i class="fas fa-chevron-right"></i>
-              </button>
-            </div>
+              <div class="rec-shell" *ngIf="allProducts.length > 0">
+                <button type="button" class="rec-btn rec-btn-left" (click)="scrollRecommended('left')" aria-label="Scroll left">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
 
-            <div class="deal-banner deal-banner-animated" role="img" aria-label="Big Outdoor Sale up to 50% off.">
-              <div class="deal-banner-animated__bg" aria-hidden="true">
-                <span class="banner-orb orb-1"></span>
-                <span class="banner-orb orb-2"></span>
-                <span class="banner-orb orb-3"></span>
-                <span class="banner-spark spark-1"></span>
-                <span class="banner-spark spark-2"></span>
-              </div>
-              <div class="deal-banner-animated__content">
-                <span class="banner-eyebrow">Outdoor Event</span>
-                <h3 class="banner-title">Big Outdoor Sale</h3>
-                <p class="banner-subtitle">Up to 50% off patio, grills, and summer favorites.</p>
-                <a class="btn-emerald-outline banner-cta" [routerLink]="['/shop']" [queryParams]="{ sortBy: 'discount' }">Shop the Sale</a>
-              </div>
-              <div class="deal-banner-animated__aside" aria-hidden="true" *ngIf="allProducts.length">
-                <div class="banner-stats">
-                  <span class="banner-pill"><i class="fas fa-tag"></i> Up to 50% OFF</span>
-                  <span class="banner-pill"><i class="fas fa-bolt"></i> Limited-time</span>
-                  <span class="banner-pill"><i class="fas fa-truck"></i> Fast delivery</span>
-                </div>
-                <div class="banner-thumbs">
-                  <span class="banner-thumb" *ngFor="let t of bannerThumbs">
-                    <img [src]="t.src" [alt]="t.alt" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div class="deal-banner deal-banner-photo">
-              <img
-                src="https://images.pexels.com/photos/8285755/pexels-photo-8285755.jpeg?auto=compress&cs=tinysrgb&w=2000"
-                srcset="https://images.pexels.com/photos/8285755/pexels-photo-8285755.jpeg?auto=compress&cs=tinysrgb&w=960 960w, https://images.pexels.com/photos/8285755/pexels-photo-8285755.jpeg?auto=compress&cs=tinysrgb&w=1400 1400w, https://images.pexels.com/photos/8285755/pexels-photo-8285755.jpeg?auto=compress&cs=tinysrgb&w=2000 2000w"
-                sizes="(min-width:1400px) 1400px, 100vw"
-                alt="Curated handmade essentials flat lay on a wooden surface."
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-
-            <div class="rec-header">
-              <h2 class="section-title">24-hours ONLY: deals of the day</h2>
-            </div>
-
-            <div class="rec-shell">
-              <button type="button" class="rec-btn rec-btn-left" (click)="scrollDealsRow('left')" aria-label="Scroll left">
-                <i class="fas fa-chevron-left"></i>
-              </button>
-
-              <div class="rec-scroll" #dealList>
-                <div class="deal-card rec-card" *ngFor="let p of allProducts" [routerLink]="['/product', getProductDetailRoute(p)]"
-                  [queryParams]="getProductDetailQueryParams(p)" role="link" tabindex="0">
-                  <span class="deal-verified" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
-                  <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
-                      <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
-                  </button>
-                  <div class="card-media">
-                    <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                <div class="rec-scroll" #recList>
+                  <div class="deal-card rec-card" *ngFor="let p of allProducts" [routerLink]="['/product', getProductDetailRoute(p)]"
+                    [queryParams]="getProductDetailQueryParams(p)" role="link" tabindex="0">
+                    <span class="deal-verified" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
+                    <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
+                        <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+                    </button>
+                    <div class="card-media">
+                      <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                    </div>
+                    <div class="card-info">
+                      <div class="card-name">{{ p.name }}</div>
+                      <div class="card-price">{{ (p.price || 0) | currency:'USD':'symbol':'1.0-0' }}</div>
+                    </div>
                   </div>
-                  <div class="card-info">
-                    <div class="card-name">{{ p.name }}</div>
-                    <div class="card-price">{{ (p.price || 0) | currency:'USD':'symbol':'1.0-0' }}</div>
+                </div>
+
+                <button type="button" class="rec-btn rec-btn-right" (click)="scrollRecommended('right')" aria-label="Scroll right">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+
+              <div class="deal-banner deal-banner-animated" role="img" aria-label="Big Outdoor Sale up to 50% off.">
+                <div class="deal-banner-animated__bg" aria-hidden="true">
+                  <span class="banner-orb orb-1"></span>
+                  <span class="banner-orb orb-2"></span>
+                  <span class="banner-orb orb-3"></span>
+                  <span class="banner-spark spark-1"></span>
+                  <span class="banner-spark spark-2"></span>
+                </div>
+                <div class="deal-banner-animated__content">
+                  <span class="banner-eyebrow">Outdoor Event</span>
+                  <h3 class="banner-title">Big Outdoor Sale</h3>
+                  <p class="banner-subtitle">Up to 50% off patio, grills, and summer favorites.</p>
+                  <a class="btn-emerald-outline banner-cta" [routerLink]="['/shop']" [queryParams]="{ sortBy: 'discount' }">Shop the Sale</a>
+                </div>
+                <div class="deal-banner-animated__aside" aria-hidden="true" *ngIf="allProducts.length">
+                  <div class="banner-stats">
+                    <span class="banner-pill"><i class="fas fa-tag"></i> Up to 50% OFF</span>
+                    <span class="banner-pill"><i class="fas fa-bolt"></i> Limited-time</span>
+                    <span class="banner-pill"><i class="fas fa-truck"></i> Fast delivery</span>
+                  </div>
+                  <div class="banner-thumbs">
+                    <span class="banner-thumb" *ngFor="let t of bannerThumbs">
+                      <img [src]="t.src" [alt]="t.alt" loading="lazy" decoding="async" (error)="setDefaultImage($event)" />
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <button type="button" class="rec-btn rec-btn-right" (click)="scrollDealsRow('right')" aria-label="Scroll right">
-                <i class="fas fa-chevron-right"></i>
-              </button>
-            </div>
-
-            <div class="deal-banner story-banner" role="img" aria-label="Auto rotating banner with fashion and retail inspiration.">
-              <div class="story-banner__copy">
-                <span class="story-banner__pill">{{ currentPromoBanner.label }}</span>
-                <h3 class="story-banner__title">{{ currentPromoBanner.title }}</h3>
-                <p class="story-banner__text">{{ currentPromoBanner.subtitle }}</p>
-                <a class="btn-emerald-outline banner-cta story-banner__cta" [routerLink]="['/shop']" [queryParams]="{ sortBy: 'newest' }">
-                  {{ currentPromoBanner.cta }}
-                </a>
-
-                <div class="story-banner__dots" aria-label="Banner slides">
-                  <button
-                    type="button"
-                    class="story-banner__dot"
-                    *ngFor="let slide of promoBannerSlides; let i = index"
-                    [class.active]="i === promoBannerIndex"
-                    (click)="goPromoBanner(i)"
-                    [attr.aria-label]="'Show banner slide ' + (i + 1)"
-                  ></button>
-                </div>
-              </div>
-
-              <div class="story-banner__circle" aria-hidden="true">
+              <div class="deal-banner deal-banner-photo">
                 <img
-                  [src]="currentPromoBanner.image"
-                  [alt]="currentPromoBanner.alt"
+                  src="https://images.pexels.com/photos/8285755/pexels-photo-8285755.jpeg?auto=compress&cs=tinysrgb&w=2000"
+                  srcset="https://images.pexels.com/photos/8285755/pexels-photo-8285755.jpeg?auto=compress&cs=tinysrgb&w=960 960w, https://images.pexels.com/photos/8285755/pexels-photo-8285755.jpeg?auto=compress&cs=tinysrgb&w=1400 1400w, https://images.pexels.com/photos/8285755/pexels-photo-8285755.jpeg?auto=compress&cs=tinysrgb&w=2000 2000w"
+                  sizes="(min-width:1400px) 1400px, 100vw"
+                  alt="Curated handmade essentials flat lay on a wooden surface."
                   loading="lazy"
                   decoding="async"
-                  (error)="setDefaultImage($event)"
                 />
               </div>
 
-              <div class="story-banner__wide" aria-hidden="true">
-                <img
-                  [src]="upcomingPromoBanner.image"
-                  [alt]="upcomingPromoBanner.alt"
-                  loading="lazy"
-                  decoding="async"
-                  (error)="setDefaultImage($event)"
-                />
+              <div class="rec-header">
+                <h2 class="section-title">24-hours ONLY: deals of the day</h2>
               </div>
-            </div>
+
+              <div class="rec-shell">
+                <button type="button" class="rec-btn rec-btn-left" (click)="scrollDealsRow('left')" aria-label="Scroll left">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+
+                <div class="rec-scroll" #dealList>
+                  <div class="deal-card rec-card" *ngFor="let p of allProducts" [routerLink]="['/product', getProductDetailRoute(p)]"
+                    [queryParams]="getProductDetailQueryParams(p)" role="link" tabindex="0">
+                    <span class="deal-verified" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
+                    <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
+                        <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+                    </button>
+                    <div class="card-media">
+                      <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                    </div>
+                    <div class="card-info">
+                      <div class="card-name">{{ p.name }}</div>
+                      <div class="card-price">{{ (p.price || 0) | currency:'USD':'symbol':'1.0-0' }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <button type="button" class="rec-btn rec-btn-right" (click)="scrollDealsRow('right')" aria-label="Scroll right">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+
+              <div class="deal-banner story-banner" role="img" aria-label="Auto rotating banner with fashion and retail inspiration.">
+                <div class="story-banner__copy">
+                  <span class="story-banner__pill">{{ currentPromoBanner.label }}</span>
+                  <h3 class="story-banner__title">{{ currentPromoBanner.title }}</h3>
+                  <p class="story-banner__text">{{ currentPromoBanner.subtitle }}</p>
+                  <a class="btn-emerald-outline banner-cta story-banner__cta" [routerLink]="['/shop']" [queryParams]="{ sortBy: 'newest' }">
+                    {{ currentPromoBanner.cta }}
+                  </a>
+
+                  <div class="story-banner__dots" aria-label="Banner slides">
+                    <button
+                      type="button"
+                      class="story-banner__dot"
+                      *ngFor="let slide of promoBannerSlides; let i = index"
+                      [class.active]="i === promoBannerIndex"
+                      (click)="goPromoBanner(i)"
+                      [attr.aria-label]="'Show banner slide ' + (i + 1)"
+                    ></button>
+                  </div>
+                </div>
+
+                <div class="story-banner__circle" aria-hidden="true">
+                  <img
+                    [src]="currentPromoBanner.image"
+                    [alt]="currentPromoBanner.alt"
+                    loading="lazy"
+                    decoding="async"
+                    (error)="setDefaultImage($event)"
+                  />
+                </div>
+
+                <div class="story-banner__wide" aria-hidden="true">
+                  <img
+                    [src]="upcomingPromoBanner.image"
+                    [alt]="upcomingPromoBanner.alt"
+                    loading="lazy"
+                    decoding="async"
+                    (error)="setDefaultImage($event)"
+                  />
+                </div>
+              </div>
+            </ng-template>
         </div>
     </section>
 
@@ -352,40 +403,68 @@
       </div>
     </section>
 
-    <section class="home-product-grid" *ngIf="!isLoadingDeals && allProducts.length">
+    <section class="home-product-grid">
       <div class="container">
-        <div class="rec-shell squares-shell">
-          <button type="button" class="rec-btn rec-btn-left" (click)="scrollProducts('left')" aria-label="Scroll left">
-            <i class="fas fa-chevron-left"></i>
-          </button>
+        <ng-container *ngIf="isLoadingDeals; else productGridLoaded">
+          <div class="rec-shell squares-shell">
+            <button type="button" class="rec-btn rec-btn-left skeleton-nav" aria-hidden="true" tabindex="-1">
+              <i class="fas fa-chevron-left"></i>
+            </button>
 
-          <div class="product-grid" #prodList>
-            <div class="deal-card rec-card prod-card" *ngFor="let p of allProducts | slice:0:8"
-              [routerLink]="['/product', getProductDetailRoute(p)]" [queryParams]="getProductDetailQueryParams(p)"
-              role="link" tabindex="0">
-              <div class="prod-card-inner">
-                <div class="prod-card-front">
-                  <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
-                      <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
-                  </button>
-                  <div class="card-media">
-                    <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+            <div class="product-grid skeleton-product-grid">
+              <div class="deal-card rec-card prod-card prod-card-skeleton" *ngFor="let _ of loadingProductItems">
+                <div class="prod-card-inner">
+                  <div class="prod-card-front">
+                    <div class="card-media skeleton-media square"></div>
                   </div>
-                </div>
-                <div class="prod-card-back">
-                  <div class="prod-back-content">
-                    <div class="prod-back-name">{{ p.name }}</div>
-                    <div class="prod-back-price">{{ (p.price || 0) | currency:'USD':'symbol':'1.0-0' }}</div>
+                  <div class="prod-card-back skeleton-back">
+                    <span class="skeleton-line wide"></span>
+                    <span class="skeleton-line short"></span>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <button type="button" class="rec-btn rec-btn-right" (click)="scrollProducts('right')" aria-label="Scroll right">
-            <i class="fas fa-chevron-right"></i>
-          </button>
-        </div>
+            <button type="button" class="rec-btn rec-btn-right skeleton-nav" aria-hidden="true" tabindex="-1">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </ng-container>
+
+        <ng-template #productGridLoaded>
+          <div class="rec-shell squares-shell" *ngIf="allProducts.length">
+            <button type="button" class="rec-btn rec-btn-left" (click)="scrollProducts('left')" aria-label="Scroll left">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <div class="product-grid" #prodList>
+              <div class="deal-card rec-card prod-card" *ngFor="let p of allProducts | slice:0:8"
+                [routerLink]="['/product', getProductDetailRoute(p)]" [queryParams]="getProductDetailQueryParams(p)"
+                role="link" tabindex="0">
+                <div class="prod-card-inner">
+                  <div class="prod-card-front">
+                    <button type="button" class="deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
+                        <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+                    </button>
+                    <div class="card-media">
+                      <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                    </div>
+                  </div>
+                  <div class="prod-card-back">
+                    <div class="prod-back-content">
+                      <div class="prod-back-name">{{ p.name }}</div>
+                      <div class="prod-back-price">{{ (p.price || 0) | currency:'USD':'symbol':'1.0-0' }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" class="rec-btn rec-btn-right" (click)="scrollProducts('right')" aria-label="Scroll right">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </ng-template>
       </div>
     </section>
 
@@ -583,42 +662,70 @@
       </div>
     </section>
 
-    <section class="home-budget-carousel" *ngIf="!isLoadingDeals && allProducts.length">
+    <section class="home-budget-carousel">
       <div class="container">
-        <div class="rec-header">
-          <h2 class="section-title">style for every budget</h2>
-        </div>
+        <ng-container *ngIf="isLoadingDeals; else budgetLoaded">
+          <div class="rec-header">
+            <h2 class="section-title"><span class="skeleton-line wide"></span></h2>
+          </div>
 
-        <div class="rec-shell budget-shell">
-          <button type="button" class="rec-btn rec-btn-left" (click)="scrollBudget('left')" aria-label="Scroll left">
-            <i class="fas fa-chevron-left"></i>
-          </button>
+          <div class="rec-shell budget-shell">
+            <button type="button" class="rec-btn rec-btn-left skeleton-nav" aria-hidden="true" tabindex="-1">
+              <i class="fas fa-chevron-left"></i>
+            </button>
 
-          <div class="rec-scroll budget-scroll" #budgetList>
-            <div class="budget-card" *ngFor="let p of allProducts | slice:0:10; let i = index"
-              [routerLink]="['/product', getProductDetailRoute(p)]" [queryParams]="getProductDetailQueryParams(p)"
-              role="link" tabindex="0">
-              <div class="budget-media">
-                <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
-                <button type="button" class="budget-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
-                  <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
-                </button>
-                <span class="budget-tag" *ngIf="i === 2">Bundle and Save</span>
-              </div>
-              <div class="budget-info">
-                <div class="budget-name">{{ p.name }}</div>
-                <div class="budget-price">
-                  <span class="budget-now">{{ p.price | currency:'USD':'symbol':'1.0-2' }}</span>
-                  <span class="budget-old" *ngIf="p.oldPrice">{{ p.oldPrice | currency:'USD':'symbol':'1.0-2' }}</span>
+            <div class="rec-scroll budget-scroll">
+              <div class="budget-card budget-card-skeleton" *ngFor="let _ of loadingProductItems">
+                <div class="budget-media budget-media-skeleton"></div>
+                <div class="budget-info budget-info-skeleton">
+                  <span class="skeleton-line wide"></span>
+                  <span class="skeleton-line short"></span>
                 </div>
               </div>
             </div>
+
+            <button type="button" class="rec-btn rec-btn-right skeleton-nav" aria-hidden="true" tabindex="-1">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </ng-container>
+
+        <ng-template #budgetLoaded>
+          <div class="rec-header" *ngIf="allProducts.length">
+            <h2 class="section-title">style for every budget</h2>
           </div>
 
-          <button type="button" class="rec-btn rec-btn-right" (click)="scrollBudget('right')" aria-label="Scroll right">
-            <i class="fas fa-chevron-right"></i>
-          </button>
-        </div>
+          <div class="rec-shell budget-shell" *ngIf="allProducts.length">
+            <button type="button" class="rec-btn rec-btn-left" (click)="scrollBudget('left')" aria-label="Scroll left">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <div class="rec-scroll budget-scroll" #budgetList>
+              <div class="budget-card" *ngFor="let p of allProducts | slice:0:10; let i = index"
+                [routerLink]="['/product', getProductDetailRoute(p)]" [queryParams]="getProductDetailQueryParams(p)"
+                role="link" tabindex="0">
+                <div class="budget-media">
+                  <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+                  <button type="button" class="budget-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
+                    <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+                  </button>
+                  <span class="budget-tag" *ngIf="i === 2">Bundle and Save</span>
+                </div>
+                <div class="budget-info">
+                  <div class="budget-name">{{ p.name }}</div>
+                  <div class="budget-price">
+                    <span class="budget-now">{{ p.price | currency:'USD':'symbol':'1.0-2' }}</span>
+                    <span class="budget-old" *ngIf="p.oldPrice">{{ p.oldPrice | currency:'USD':'symbol':'1.0-2' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" class="rec-btn rec-btn-right" (click)="scrollBudget('right')" aria-label="Scroll right">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </ng-template>
       </div>
     </section>
 
@@ -646,51 +753,80 @@
       </div>
     </section>
 
-    <section class="home-wayfair-deals" *ngIf="!isLoadingDeals && allProducts.length">
+    <section class="home-wayfair-deals">
       <div class="container">
-        <div class="rec-header">
-          <h2 class="section-title">With Special Savings</h2>
-        </div>
+        <ng-container *ngIf="isLoadingDeals; else wfDealsLoaded">
+          <div class="rec-header">
+            <h2 class="section-title"><span class="skeleton-line wide"></span></h2>
+          </div>
 
-        <div class="rec-shell wf-deals-shell">
-          <button type="button" class="rec-btn rec-btn-left" (click)="scrollWfDeals('left')" aria-label="Scroll left">
-            <i class="fas fa-chevron-left"></i>
-          </button>
+          <div class="rec-shell wf-deals-shell">
+            <button type="button" class="rec-btn rec-btn-left skeleton-nav" aria-hidden="true" tabindex="-1">
+              <i class="fas fa-chevron-left"></i>
+            </button>
 
-          <div class="rec-scroll wf-deals-scroll" #wfDealList>
-            <div class="wf-deal-card" *ngFor="let p of allProducts | slice:0:10; let i = index"
-              [routerLink]="['/product', getProductDetailRoute(p)]" [queryParams]="getProductDetailQueryParams(p)"
-              role="link" tabindex="0">
-              <div class="wf-deal-media">
-                <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
-
-                <button type="button" class="wf-deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
-                  <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
-                </button>
-
-
-                <span class="wf-deal-tag" [class.low]="i % 6 === 5">
-                  {{ (i % 6 === 5) ? '30-Day Low Price' : '5 Days of Deals' }}
-                </span>
-              </div>
-
-              <div class="wf-deal-body">
-                <div class="wf-deal-name">{{ p.name }}</div>
-                <div class="wf-deal-price-row">
-                  <span class="wf-deal-now">{{ p.price | currency:'USD':'symbol':'1.0-2' }}</span>
-                  <span class="wf-deal-old" *ngIf="p.oldPrice">{{ p.oldPrice | currency:'USD':'symbol':'1.0-2' }}</span>
-                </div>
-                <div class="wf-deal-member">
-                  <span class="wf-deal-member-pill">Reward Members Save Extra {{ getRewardExtra(p) | currency:'USD':'symbol':'1.0-2' }}</span>
+            <div class="rec-scroll wf-deals-scroll">
+              <div class="wf-deal-card wf-deal-card-skeleton" *ngFor="let _ of loadingProductItems">
+                <div class="wf-deal-media wf-deal-media-skeleton"></div>
+                <div class="wf-deal-body wf-deal-body-skeleton">
+                  <span class="skeleton-line wide"></span>
+                  <span class="skeleton-line short"></span>
+                  <span class="skeleton-line short"></span>
                 </div>
               </div>
             </div>
+
+            <button type="button" class="rec-btn rec-btn-right skeleton-nav" aria-hidden="true" tabindex="-1">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </ng-container>
+
+        <ng-template #wfDealsLoaded>
+          <div class="rec-header" *ngIf="allProducts.length">
+            <h2 class="section-title">With Special Savings</h2>
           </div>
 
-          <button type="button" class="rec-btn rec-btn-right" (click)="scrollWfDeals('right')" aria-label="Scroll right">
-            <i class="fas fa-chevron-right"></i>
-          </button>
-        </div>
+          <div class="rec-shell wf-deals-shell" *ngIf="allProducts.length">
+            <button type="button" class="rec-btn rec-btn-left" (click)="scrollWfDeals('left')" aria-label="Scroll left">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <div class="rec-scroll wf-deals-scroll" #wfDealList>
+              <div class="wf-deal-card" *ngFor="let p of allProducts | slice:0:10; let i = index"
+                [routerLink]="['/product', getProductDetailRoute(p)]" [queryParams]="getProductDetailQueryParams(p)"
+                role="link" tabindex="0">
+                <div class="wf-deal-media">
+                  <img [src]="p.image" [alt]="p.name" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+
+                  <button type="button" class="wf-deal-heart" (click)="toggleWishlist(p, $event)" aria-label="Save item">
+                    <i [class]="isInWishlist(p) ? 'fas fa-heart' : 'far fa-heart'"></i>
+                  </button>
+
+
+                  <span class="wf-deal-tag" [class.low]="i % 6 === 5">
+                    {{ (i % 6 === 5) ? '30-Day Low Price' : '5 Days of Deals' }}
+                  </span>
+                </div>
+
+                <div class="wf-deal-body">
+                  <div class="wf-deal-name">{{ p.name }}</div>
+                  <div class="wf-deal-price-row">
+                    <span class="wf-deal-now">{{ p.price | currency:'USD':'symbol':'1.0-2' }}</span>
+                    <span class="wf-deal-old" *ngIf="p.oldPrice">{{ p.oldPrice | currency:'USD':'symbol':'1.0-2' }}</span>
+                  </div>
+                  <div class="wf-deal-member">
+                    <span class="wf-deal-member-pill">Reward Members Save Extra {{ getRewardExtra(p) | currency:'USD':'symbol':'1.0-2' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" class="rec-btn rec-btn-right" (click)="scrollWfDeals('right')" aria-label="Scroll right">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </ng-template>
       </div>
     </section>
 

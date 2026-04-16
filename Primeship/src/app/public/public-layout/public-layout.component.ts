@@ -23,12 +23,7 @@ declare var lucide: any;
         <div class="marketing-banner">
           <div class="container-header marketing-inner">
             <div class="marketing-left">
-              <a routerLink="/home" class="marketing-logo">
-                <span class="marketing-logo-mark">E</span>
-                <span class="marketing-logo-text">Eliship</span>
-              </a>
-
-              <div class="marketing-stores" aria-label="Eliship stores">
+              <div class="marketing-stores" aria-label="Stores">
                 <a [routerLink]="['/shop']" [queryParams]="{ q: 'AllModern' }" class="marketing-store">AllModern</a>
                 <a [routerLink]="['/shop']" [queryParams]="{ q: 'Birch Lane' }" class="marketing-store">Birch Lane</a>
                 <a [routerLink]="['/shop']" [queryParams]="{ q: 'Joss & Main' }" class="marketing-store">Joss & Main</a>
@@ -47,13 +42,6 @@ declare var lucide: any;
 
         <div class="header-main-bar">
           <div class="container-header header-main-flex">
-            <div class="logo-section">
-              <a routerLink="/home" class="logo eliship-logo">
-                <span class="logo-mark">E</span>
-                <span class="logo-text">Eliship</span>
-              </a>
-            </div>
-
             <div class="search-section">
               <div class="search-box">
                 <input type="text" [(ngModel)]="searchTerm" placeholder="Find anything home..." (keyup.enter)="onSearch()" />
@@ -489,9 +477,6 @@ declare var lucide: any;
     .marketing-banner { background: #10B981; color: #FFF; }
     .marketing-inner { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 10px 40px; flex-wrap: nowrap; }
     .marketing-left { display: flex; align-items: center; gap: 18px; min-width: 0; }
-    .marketing-logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: #FFF; flex: 0 0 auto; }
-    .marketing-logo-mark { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(255,255,255,0.16); color: #FFF; font-size: 14px; font-weight: 800; }
-    .marketing-logo-text { font-weight: 900; letter-spacing: -0.02em; }
 
     .marketing-stores { display: flex; gap: 18px; align-items: center; flex-wrap: nowrap; overflow-x: auto; }
     .marketing-store { color: #FFF; text-decoration: none; font-size: 13px; font-weight: 600; white-space: nowrap; opacity: 0.95; border-bottom: 1px solid transparent; }
@@ -553,11 +538,7 @@ declare var lucide: any;
     .utility-link:hover { opacity: 1; }
 
     .header-main-bar { padding: 10px 0 12px; }
-    .header-main-flex { display: grid; grid-template-columns: auto minmax(320px, 1fr) auto; align-items: center; gap: 32px; }
-    .logo-section { flex-shrink: 0; margin-left: 40px; }
-    .eliship-logo { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: #10B981; font-size: 28px; font-weight: 900; letter-spacing: -0.05em; }
-    .logo-mark { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 16px; background: linear-gradient(135deg, #34D399 0%, #059669 100%); color: #FFF; font-size: 18px; font-weight: 800; }
-    .logo-text { letter-spacing: -0.8px; color: #10B981; }
+    .header-main-flex { display: grid; grid-template-columns: minmax(320px, 1fr) auto; align-items: center; gap: 32px; }
 
     .search-section { width: 100%; display: flex; align-items: center; justify-content: center; }
     .search-box { display: flex; width: 100%; max-width: 680px; height: 56px; border-radius: 10px; background: #FFF; border: 1px solid #D1D5DB; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08); overflow: hidden; }
@@ -908,7 +889,7 @@ declare var lucide: any;
     .category-links::-webkit-scrollbar { display: none; }
 
     @media (max-width: 1200px) {
-      .header-main-flex { grid-template-columns: auto 1fr auto; }
+      .header-main-flex { grid-template-columns: 1fr auto; }
       .brand-bar-inner, .category-links { gap: 16px; }
       .search-box { max-width: 100%; }
     }

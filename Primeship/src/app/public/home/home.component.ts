@@ -387,6 +387,8 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   visibleDealsSecondaryCount = 8;
   visibleJustForYouCount = 12;
   readonly EXTRA_DEALS_PER_LOAD = 4;
+  readonly loadingPanelItems = Array.from({ length: 3 }, (_, index) => index);
+  readonly loadingProductItems = Array.from({ length: 8 }, (_, index) => index);
   selectedCategory = '';
   isLoadingCategories = false;
   isLoadingDeals = false;
