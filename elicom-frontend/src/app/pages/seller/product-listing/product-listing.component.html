@@ -157,6 +157,7 @@
                 <div class="face">
                     <div class="image-container">
                         <img [src]="product.image" [alt]="product.title">
+                        <span class="new-badge" *ngIf="product.isNew">New</span>
                         <div class="image-overlay">
                             <span class="overlay-chip">{{ product.category }}</span>
                         </div>

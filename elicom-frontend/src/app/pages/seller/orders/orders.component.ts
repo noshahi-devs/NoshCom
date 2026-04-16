@@ -253,6 +253,20 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
         return value.toLocaleTimeString('en-US', { hour12: false });
     }
 
+    getRangeStart(value: string): string {
+        const text = (value || '').trim();
+        if (!text) return '-';
+        const parts = text.split(' to ');
+        return (parts[0] || text).trim();
+    }
+
+    getRangeEnd(value: string): string {
+        const text = (value || '').trim();
+        if (!text) return '';
+        const parts = text.split(' to ');
+        return (parts[1] || '').trim();
+    }
+
     getStatusClass(statusKey: string): string {
         if (statusKey === 'pending' || statusKey === 'processing') return 'badge-unshipped';
         if (statusKey === 'shipped' || statusKey === 'shippedfromhub') return 'badge-shipped';

@@ -794,6 +794,22 @@
         }
     }
 
+    .new-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: linear-gradient(180deg, #ffe49a 0%, #f7b500 100%);
+        color: #1c2430;
+        box-shadow: 0 10px 16px rgba(242, 187, 19, 0.28);
+        z-index: 2;
+    }
+
     .scene:hover .image-container {
         img {
             transform: scale(1.05);

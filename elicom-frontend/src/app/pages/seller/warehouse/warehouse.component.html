@@ -49,9 +49,9 @@
         <div class="wh-filter-center">
             <div class="wh-filter-container wh-warehouse-cta-container">
                 <div class="wh-filter-label">Warehouse Network</div>
-                <button type="button" class="wh-date-pill wh-warehouse-cta" (click)="createNewStore()">
-                    <span><i class="fas fa-plus"></i> Create New Store</span>
-                </button>
+                <div class="wh-date-pill wh-warehouse-cta wh-warehouse-static">
+                    <span><i class="fas fa-shield-check"></i> Managed by Admin</span>
+                </div>
             </div>
         </div>
     </section>
@@ -110,69 +110,6 @@
         </div>
     </section>
 
-    <!-- Store Edit/Create Modal Overlay -->
-    <div *ngIf="isEditing" class="modal-overlay">
-        <div class="modal-content-custom">
-            <div class="modal-header-custom">
-                <div class="modal-header-copy">
-                    <div class="modal-kicker">Store Setup</div>
-                    <h3 class="fw-bold">{{selectedStore?.id === 0 ? 'Create New Store' : 'Update Store Profile'}}</h3>
-                    <p>{{selectedStore?.id === 0 ? 'Create a new store profile and configure its operating details.' : 'Refine the selected store information and keep the profile up to date.'}}</p>
-                </div>
-                <button (click)="isEditing = false" class="btn-close-custom"><i class="fas fa-times"></i></button>
-            </div>
-
-            <div class="modal-body-custom" *ngIf="selectedStore">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label-custom">Store Owner Name</label>
-                        <input type="text" [(ngModel)]="selectedStore.ownerName" class="form-control-custom"
-                            placeholder="Enter store owner name">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label-custom">Owner Email</label>
-                        <input type="email" [(ngModel)]="selectedStore.ownerEmail" class="form-control-custom"
-                            placeholder="Enter owner email">
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label-custom">Store Name</label>
-                        <input type="text" [(ngModel)]="selectedStore.name" class="form-control-custom"
-                            placeholder="Enter store name">
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label-custom">Short Description</label>
-                        <textarea [(ngModel)]="selectedStore.shortDescription" rows="2"
-                            class="form-control-custom"
-                            placeholder="Add a short summary for this store"></textarea>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label-custom">Detailed Description</label>
-                        <textarea [(ngModel)]="selectedStore.longDescription" rows="4"
-                            class="form-control-custom"
-                            placeholder="Describe the store operations, products, or handling notes"></textarea>
-                    </div>
-                    <div class="col-12">
-                        <div class="store-toggle-row mt-2">
-                            <div class="store-toggle-copy">
-                                <span class="toggle-title">Store Status</span>
-                                <span class="toggle-subtext">Mark this store as active and ready for operations.</span>
-                            </div>
-                            <div class="form-check form-switch-custom">
-                                <input class="form-check-input" type="checkbox" [(ngModel)]="selectedStore.isActive"
-                                    id="storeActive">
-                                <label class="form-check-label ms-2" for="storeActive">Active</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-footer-custom">
-                <button (click)="isEditing = false" class="btn btn-secondary-custom me-2">Cancel</button>
-                <button (click)="saveStore()" class="btn btn-primary-custom">{{selectedStore?.id === 0 ? 'Create Store' : 'Save Changes'}}</button>
-            </div>
-        </div>
-    </div>
 
     <section class="stores-shell">
         <div class="stores-shell-head">
@@ -184,47 +121,42 @@
 
         <div class="row g-4">
             <div *ngFor="let store of stores" class="col-lg-6">
-                <article class="store-card" [class.inactive]="!store.isActive">
-                    <div class="store-card-topbar">
-                        <div class="store-card-badge">
-                            <i class="fas fa-warehouse"></i>
+                <article class="store-sheet-card" [class.inactive]="!store.isActive">
+                    <div class="sheet-row">
+                        <div class="sheet-label">Code</div>
+                        <div class="sheet-value code-value">{{ getStoreCode(store) }}</div>
+                    </div>
+
+                    <div class="sheet-row">
+                        <div class="sheet-label">Located in</div>
+                        <div class="sheet-value">{{ getStoreRegion(store) }}</div>
+                    </div>
+
+                    <div class="sheet-row">
+                        <div class="sheet-label">Postal Code</div>
+                        <div class="sheet-value">{{ getStorePostalCode(store) }}</div>
+                    </div>
+
+                    <div class="sheet-row address-row">
+                        <div class="sheet-label">Address</div>
+                        <div class="sheet-value">{{ getStoreAddress(store) }}</div>
+                    </div>
+
+                    <div class="sheet-row transit-row">
+                        <div class="sheet-label">Transit Time (Depart from US and UK)</div>
+                        <div class="sheet-value transit-values">
+                            <div class="transit-line"><span>by Sea:</span> <strong>{{ getSeaTransitDays(store) }} days</strong></div>
+                            <div class="transit-line"><span>by Air:</span> <strong>{{ getAirTransitDays(store) }} days</strong></div>
                         </div>
+                    </div>
+
+                    <div class="store-card-meta">
                         <span class="status-badge" [class.active]="store.isActive">
                             {{store.isActive ? 'Active' : 'Inactive'}}
                         </span>
+                        <span class="created-text">Created: {{store.createdAt | date:'mediumDate'}}</span>
                     </div>
 
-                    <div class="store-card-body">
-                        <div class="store-card-copy">
-                            <h4>{{store.name}}</h4>
-                            <p class="store-short-desc">{{store.shortDescription}}</p>
-                        </div>
-
-                        <div class="store-meta-grid">
-                            <div class="store-meta-card">
-                                <span class="meta-label">Created</span>
-                                <span class="meta-value">{{store.createdAt | date:'mediumDate'}}</span>
-                            </div>
-                            <div class="store-meta-card">
-                                <span class="meta-label">Status</span>
-                                <span class="meta-value">{{store.isActive ? 'Operational' : 'Paused'}}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="store-actions">
-                        <button (click)="editStore(store)" class="btn btn-outline-custom flex-grow-1">
-                            <i class="fas fa-edit me-2"></i> Edit
-                        </button>
-                        <button *ngIf="!store.isActive" (click)="publishAndNotify(store)"
-                            class="btn btn-publish-custom flex-grow-1">
-                            <i class="fas fa-paper-plane me-2"></i> Publish & Notify
-                        </button>
-                        <button (click)="toggleStoreStatus(store)" class="btn btn-status-custom"
-                            [class.active]="store.isActive">
-                            <i class="fas" [class.fa-power-off]="store.isActive" [class.fa-play]="!store.isActive"></i>
-                        </button>
-                    </div>
                 </article>
             </div>
         </div>

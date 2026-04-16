@@ -156,7 +156,7 @@ export class ProductListingComponent implements OnInit, OnDestroy {
         this.storeProductService.getPagedByStore(input).subscribe({
             next: (res) => {
                 this.totalProducts = res.result.totalCount;
-                this.products = res.result.items.map((sp: any) => ({
+                const mapped = res.result.items.map((sp: any) => ({
                     ...sp,
                     mappingId: sp.id,
                     id: sp.productId,
@@ -166,6 +166,19 @@ export class ProductListingComponent implements OnInit, OnDestroy {
                     category: sp.categoryName || 'General',
                     brand: sp.brandName || 'Generic'
                 }));
+                const lastPublishedId = (localStorage.getItem('lastPublishedProductId') || '').toString();
+                if (lastPublishedId && this.currentPage === 1) {
+                    const matchIndex = mapped.findIndex((item: any) => String(item.id) === lastPublishedId);
+                    if (matchIndex > -1) {
+                        const [matched] = mapped.splice(matchIndex, 1);
+                        (matched as any).isNew = true;
+                        this.products = [matched, ...mapped];
+                    } else {
+                        this.products = mapped;
+                    }
+                } else {
+                    this.products = mapped;
+                }
                 this.isLoading = false;
                 this.cdr.detectChanges();
             },

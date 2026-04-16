@@ -31,7 +31,7 @@ export class HeroCarouselComponent implements OnInit, OnDestroy {
         'Pure sound, no noise. The new generation of noise-cancelling wireless headphones is here for professionals like you.',
       cta: 'Shop Collection',
       link: '/search-result',
-      image: '/assets/images/banner-1.png',
+      image: 'https://images.pexels.com/photos/7679453/pexels-photo-7679453.jpeg',
     },
     {
       tagline: 'SMART TECH 2026',

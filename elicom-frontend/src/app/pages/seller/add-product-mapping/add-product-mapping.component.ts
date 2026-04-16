@@ -6,6 +6,7 @@ import { ProductService } from '../../../services/product.service';
 import { StoreProductService } from '../../../services/store-product.service';
 import { StoreService } from '../../../services/store.service';
 import { AlertService } from '../../../services/alert.service';
+import { AppPageLoaderService } from '../../../services/app-page-loader.service';
 import { CategoryService } from '../../../services/category';
 import Swal from 'sweetalert2';
 
@@ -24,6 +25,7 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
     private router = inject(Router);
     private cdr = inject(ChangeDetectorRef);
     private alert = inject(AlertService);
+    private pageLoader = inject(AppPageLoaderService);
     private zone = inject(NgZone);
 
     searchQuery: string = '';
@@ -52,6 +54,7 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
     priceValidationError: string = '';
     sortOption: 'relevance' | 'priceLowHigh' | 'priceHighLow' | 'newest' = 'relevance';
     isViewOnly: boolean = false;
+    showListingConfig: boolean = true;
     currentMappingId: string | null = null;
     private readonly titlePreviewLength = 92;
     private readonly previewCardCount = 10;
@@ -469,6 +472,7 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
         this.product = normalizedProduct;
         this.selectedProduct = normalizedProduct;
         this.selectedImage = (normalizedProduct.images && normalizedProduct.images.length > 0) ? normalizedProduct.images[0] : '';
+        this.showListingConfig = true;
 
         // Calculate Min and Max Allowed Prices based on supplier price
         // Min = Supplier Price + 40% (SupplierPrice * 1.40)
@@ -546,36 +550,46 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
 
         if (this.currentMappingId) {
             mapping.id = this.currentMappingId;
-            this.alert.loading('UPDATING LISTING...');
+            this.startGlobalLoader();
             this.storeProductService.update(mapping).subscribe({
                 next: async () => {
-                    this.alert.close();
+                    this.stopGlobalLoader();
                     const result = await this.alert.success('Listing updated successfully!');
                     if (!result.isConfirmed) {
                         return;
                     }
                     this.alert.forceCleanup();
-                    await new Promise(resolve => setTimeout(resolve, 50));
+                    this.showListingConfig = false;
                     this.router.navigate(['/seller/listings']);
                 },
                 error: (err) => {
+                    this.stopGlobalLoader();
                     this.alert.error(err?.error?.error?.message || 'Failed to update listing.');
                 }
             });
         } else {
-            this.alert.loading('PUBLISHING TO STORE...');
+            this.startGlobalLoader();
             this.storeProductService.mapProductToStore(mapping).subscribe({
                 next: async () => {
-                    this.alert.close();
+                    this.stopGlobalLoader();
+                    try {
+                        const publishedId = (mapping?.productId || this.product?.id || '').toString();
+                        if (publishedId) {
+                            localStorage.setItem('lastPublishedProductId', publishedId);
+                        }
+                    } catch {
+                        // no-op
+                    }
                     const result = await this.alert.success('Product mapped to your store successfully!');
                     if (!result.isConfirmed) {
                         return;
                     }
                     this.alert.forceCleanup();
-                    await new Promise(resolve => setTimeout(resolve, 50));
+                    this.showListingConfig = false;
                     this.router.navigate(['/seller/listings']);
                 },
                 error: (err) => {
+                    this.stopGlobalLoader();
                     const errorMsg = err?.error?.error?.message || 'Failed to map product.';
                     if (errorMsg.toLowerCase().includes('already mapped')) {
                         Swal.fire({
@@ -605,7 +619,7 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
     }
 
     updateExistingMapping(mapping: any) {
-        this.alert.loading('FETCHING EXISTING LISTING...');
+        this.startGlobalLoader();
         this.storeProductService.getByStore(this.currentStore.id).subscribe({
             next: (res: any) => {
                 const existing = res.result?.items?.find((item: any) => item.productId === mapping.productId) 
@@ -615,29 +629,41 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
                               
                 if (existing) {
                     mapping.id = existing.id;
-                    this.alert.loading('UPDATING LISTING...');
+                    this.startGlobalLoader();
                     this.storeProductService.update(mapping).subscribe({
                         next: async () => {
-                            this.alert.close();
+                            this.stopGlobalLoader();
                             const result = await this.alert.success('Listing updated successfully!');
                             if (!result.isConfirmed) {
                                 return;
                             }
                             this.alert.forceCleanup();
-                            await new Promise(resolve => setTimeout(resolve, 50));
+                            this.showListingConfig = false;
                             this.router.navigate(['/seller/listings']);
                         },
                         error: (err) => {
+                            this.stopGlobalLoader();
                             this.alert.error(err?.error?.error?.message || 'Failed to update listing.');
                         }
                     });
                 } else {
+                    this.stopGlobalLoader();
                     this.alert.error('Failed to find existing listing to update.');
                 }
             },
             error: () => {
+                this.stopGlobalLoader();
                 this.alert.error('Failed to fetch existing listing.');
             }
         });
+    }
+
+    private startGlobalLoader(): void {
+        this.pageLoader.startInitialLoad();
+    }
+
+    private stopGlobalLoader(): void {
+        this.pageLoader.onNavigationSettled();
+        this.pageLoader.markDataArrived();
     }
 }

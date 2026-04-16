@@ -1,4 +1,4 @@
-<div class="seller-orders-page">
+<div class="seller-orders-page" [class.tracking-verifications-view]="orderView === 'tracking-verifications'">
     <section class="ap-hero">
         <div class="ap-store">
             <div class="ap-store-icon">
@@ -162,11 +162,19 @@
                                 <div class="customer-option">Standard Shipping</div>
                                 <div class="ship-info-row">
                                     <span class="meta-label">Ship by</span>
-                                    <span class="meta-value value-block">{{ order.shipBy }}</span>
+                                    <span class="meta-value value-block range-stack">
+                                        <span class="range-start">{{ getRangeStart(order.shipBy) }}</span>
+                                        <span class="range-mid" *ngIf="getRangeEnd(order.shipBy)">to</span>
+                                        <span class="range-end" *ngIf="getRangeEnd(order.shipBy)">{{ getRangeEnd(order.shipBy) }}</span>
+                                    </span>
                                 </div>
                                 <div class="ship-info-row">
                                     <span class="meta-label">Deliver by</span>
-                                    <span class="meta-value value-block">{{ order.deliverBy }}</span>
+                                    <span class="meta-value value-block range-stack">
+                                        <span class="range-start">{{ getRangeStart(order.deliverBy) }}</span>
+                                        <span class="range-mid" *ngIf="getRangeEnd(order.deliverBy)">to</span>
+                                        <span class="range-end" *ngIf="getRangeEnd(order.deliverBy)">{{ getRangeEnd(order.deliverBy) }}</span>
+                                    </span>
                                 </div>
                             </div>
                         </td>
