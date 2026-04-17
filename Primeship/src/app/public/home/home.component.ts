@@ -138,8 +138,8 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   private homepageAdPopupTimerId?: number;
   private homepagePopupAutoCloseTimerId?: number;
   private homepagePopupCountdownTimerId?: number;
-  private readonly homepagePopupInitialDelayMs = 1200;
-  private readonly homepagePopupReopenDelayMs = 3000;
+  private readonly homepagePopupInitialDelayMs = 5000;
+  private readonly homepagePopupReopenDelayMs = 5000;
   private readonly homepagePopupAutoCloseMs = 6000;
   private homepagePopupAdIndex = 0;
   homepagePopupAds: HomePopupAd[] = [
@@ -808,8 +808,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     }, 1000);
 
     this.homepagePopupAutoCloseTimerId = window.setTimeout(() => {
-      this.moveToNextHomepagePopupAd();
-      this.closeHomepageAdPopup(false);
+      this.closeHomepageAdPopup(true);
       this.cdr.detectChanges();
     }, this.homepagePopupAutoCloseMs);
   }

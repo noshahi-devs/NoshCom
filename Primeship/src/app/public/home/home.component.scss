@@ -399,14 +399,16 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  min-height: 46px;
-  font-size: 14px;
+  gap: 6px;
+  min-height: 34px;
+  padding: 3px 0;
+  font-size: 12px;
   font-weight: 800;
+  line-height: 1.1;
 }
 
 .promo-arrow {
-  font-size: 18px;
+  font-size: 14px;
 }
 
 @media (max-width: 1024px) {

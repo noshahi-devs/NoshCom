@@ -872,6 +872,22 @@
       </div>
     </section>
 
+    <section class="home-inspiration-end" *ngIf="spaceCards.length">
+      <div class="container">
+        <h2 class="inspiration-end-heading">Looking for inspiration? Explore and shop these spaces.</h2>
+        <div class="inspiration-end-grid">
+          <a
+            class="inspiration-end-card"
+            *ngFor="let s of spaceCards | slice:0:8"
+            [routerLink]="['/category', s.slug]"
+            [attr.aria-label]="s.label"
+          >
+            <img [src]="s.image" [alt]="s.label" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+          </a>
+        </div>
+      </div>
+    </section>
+
     <section class="home-product-grid home-product-grid--tail" *ngIf="allProducts.length">
       <div class="container">
         <div class="moving-ad-strip" role="region" aria-label="Sponsored offers">
@@ -914,22 +930,6 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="home-inspiration-end" *ngIf="spaceCards.length">
-      <div class="container">
-        <h2 class="inspiration-end-heading">Looking for inspiration? Explore and shop these spaces.</h2>
-        <div class="inspiration-end-grid">
-          <a
-            class="inspiration-end-card"
-            *ngFor="let s of spaceCards | slice:0:8"
-            [routerLink]="['/category', s.slug]"
-            [attr.aria-label]="s.label"
-          >
-            <img [src]="s.image" [alt]="s.label" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
-          </a>
         </div>
       </div>
     </section>
