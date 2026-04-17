@@ -66,6 +66,7 @@
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
+  position: relative;
 }
 
 .overview-page-left {
@@ -88,14 +89,18 @@
 .overview-toolbar {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
   justify-content: flex-end;
+  flex: 1;
+  gap: 10px;
+  flex-wrap: nowrap;
+  min-width: 0;
   margin-left: auto;
 }
 
 .overview-search {
-  min-width: min(440px, 60vw);
+  min-width: min(440px, 52vw);
+  max-width: 520px;
+  margin-left: auto;
   height: 42px;
   display: inline-flex;
   align-items: center;
@@ -124,24 +129,6 @@
 
   input::placeholder {
     color: #7b92a1;
-  }
-}
-
-.toolbar-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 999px;
-  border: 1px solid #d7ebe5;
-  background: rgba(255, 255, 255, 0.96);
-  color: #48606a;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 8px 14px rgba(34, 62, 52, 0.05);
-
-  i {
-    font-size: 14px;
   }
 }
 
@@ -1387,6 +1374,7 @@
   .overview-search {
     min-width: 0;
     width: 100%;
+    max-width: none;
   }
 
   .metrics-grid {
@@ -1495,11 +1483,6 @@
 @media (max-width: 560px) {
   .overview-toolbar {
     width: 100%;
-  }
-
-  .toolbar-icon {
-    width: 34px;
-    height: 34px;
   }
 
   .metrics-grid {

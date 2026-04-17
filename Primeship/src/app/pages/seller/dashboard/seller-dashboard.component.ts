@@ -334,6 +334,10 @@ export class SellerDashboardComponent implements OnInit {
     this.router.navigate(['/seller/orders'], { queryParams: { create: '1' } });
   }
 
+  goToCategories(): void {
+    this.router.navigate(['/categories']);
+  }
+
   getPrimaryItemName(order: any): string {
     return this.getPrimaryProductName(order) || 'Product unavailable';
   }

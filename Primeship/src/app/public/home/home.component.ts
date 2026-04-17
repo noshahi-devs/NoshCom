@@ -171,7 +171,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       subtitle: '',
       primaryCta: 'Open a Shop Now',
       secondaryCta: '',
-      image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1920&h=600'
+      image: 'https://images.pexels.com/photos/7289719/pexels-photo-7289719.jpeg?cs=srgb&dl=pexels-kampus-7289719.jpg&fm=jpg'
     },
     {
       kicker: '',
@@ -180,7 +180,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       subtitle: '',
       primaryCta: 'Open a Shop Now',
       secondaryCta: '',
-      image: 'https://images.pexels.com/photos/32549949/pexels-photo-32549949.jpeg?cs=srgb&dl=pexels-kriss-32549949.jpg&fm=jpg'
+      image: 'https://images.pexels.com/photos/6169030/pexels-photo-6169030.jpeg?cs=srgb&dl=pexels-tima-miroshnichenko-6169030.jpg&fm=jpg'
     },
     {
       kicker: '',
@@ -189,7 +189,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       subtitle: '',
       primaryCta: 'Explore Deals',
       secondaryCta: '',
-      image: 'https://images.pexels.com/photos/32549954/pexels-photo-32549954.jpeg?cs=srgb&dl=pexels-kriss-32549954.jpg&fm=jpg'
+      image: 'https://images.pexels.com/photos/6170172/pexels-photo-6170172.jpeg?auto=compress&cs=tinysrgb&w=1920'
     },
     {
       kicker: '',
@@ -198,7 +198,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       subtitle: '',
       primaryCta: 'Browse Catalog',
       secondaryCta: '',
-      image: 'https://images.pexels.com/photos/12935042/pexels-photo-12935042.jpeg?cs=srgb&dl=pexels-imin-technology-276315592-12935042.jpg&fm=jpg'
+      image: 'https://images.pexels.com/photos/6169024/pexels-photo-6169024.jpeg'
     }
   ];
   heroSideBanners: SideBanner[] = [

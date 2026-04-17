@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrderService } from '../../../core/services/order.service';
@@ -9,7 +9,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PrimeIcons } from 'primeng/api';
 
-type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+type OrderStatus = 'pending' | 'verified' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'purchased' | 'settled';
 
 interface OrderItem {
   name?: string;
@@ -44,6 +44,16 @@ export class SellerOrdersComponent implements OnInit {
   filteredOrders: any[] = [];
   skuSearchTerm = '';
   foundProduct: any = null;
+  statusMenuOpen = false;
+  readonly statusOptions: Array<{ value: string; label: string }> = [
+    { value: 'all', label: 'All Orders' },
+    { value: 'pending', label: 'Pending Review' },
+    { value: 'verified', label: 'Verified' },
+    { value: 'processing', label: 'In Progress' },
+    { value: 'shipped', label: 'On the Way' },
+    { value: 'delivered', label: 'Delivered' },
+    { value: 'cancelled', label: 'Cancelled' }
+  ] as const;
 
   constructor(
     private orderService: OrderService,
@@ -57,7 +67,7 @@ export class SellerOrdersComponent implements OnInit {
   ) { }
 
   searchTerm = '';
-  selectedStatus: OrderStatus | 'all' = 'all';
+  selectedStatus = 'all';
 
   viewModalVisible = false;
   selectedOrder: any = null;
@@ -143,8 +153,8 @@ export class SellerOrdersComponent implements OnInit {
         phone.includes(q) ||
         tracking.includes(q);
 
-      const status = (o.status || '').toLowerCase();
-      const matchesStatus = this.selectedStatus === 'all' || status === this.selectedStatus.toLowerCase();
+      const status = this.normalizeStatusValue(o.status);
+      const matchesStatus = this.selectedStatus === 'all' || status === this.selectedStatus;
 
       return matchesSearch && matchesStatus;
     });
@@ -154,8 +164,32 @@ export class SellerOrdersComponent implements OnInit {
   clearFilters(): void {
     this.searchTerm = '';
     this.selectedStatus = 'all';
+    this.statusMenuOpen = false;
     this.applyFilters();
     this.cdr.detectChanges();
+  }
+
+  toggleStatusDropdown(): void {
+    this.statusMenuOpen = !this.statusMenuOpen;
+  }
+
+  selectStatus(status: string): void {
+    this.selectedStatus = status;
+    this.statusMenuOpen = false;
+    this.applyFilters();
+  }
+
+  getSelectedStatusLabel(): string {
+    const option = this.statusOptions.find((item) => item.value === this.selectedStatus);
+    return option?.label || 'All Orders';
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (!target?.closest('.status-select-wrap')) {
+      this.statusMenuOpen = false;
+    }
   }
 
   openView(order: any): void {
@@ -171,25 +205,38 @@ export class SellerOrdersComponent implements OnInit {
   }
 
   getStatusLabel(status: any): string {
-    const s = (status || '').toLowerCase();
+    const s = (status || '').toString().toLowerCase();
     switch (s) {
       case 'purchased':
       case 'pending':
-        return 'Pending';
+        return 'Pending Review';
       case 'verified':
         return 'Verified';
       case 'processing':
-        return 'Processing';
+        return 'In Progress';
       case 'shipped':
-        return 'Shipped';
+        return 'On the Way';
       case 'settled':
       case 'delivered':
         return 'Delivered';
       case 'cancelled':
         return 'Cancelled';
+      case 'all':
+        return 'All Orders';
       default:
         return status || 'Unknown';
     }
+  }
+
+  private normalizeStatusValue(status: any): string {
+    const value = (status || '').toString().toLowerCase();
+    if (value === 'purchased' || value === 'pending') return 'pending';
+    if (value === 'verified') return 'verified';
+    if (value === 'processing') return 'processing';
+    if (value === 'shipped') return 'shipped';
+    if (value === 'settled' || value === 'delivered') return 'delivered';
+    if (value === 'cancelled') return 'cancelled';
+    return 'all';
   }
 
   private getTrackingFallbackLabel(order: any): string {

@@ -3,18 +3,12 @@
     <div class="overview-page-header">
       <div class="overview-page-left">
         <h1 class="overview-page-title">Overview</h1>
+      </div>
+      <div class="overview-toolbar">
         <label class="overview-search" aria-label="Search dashboard">
           <i class="pi pi-search"></i>
           <input type="search" placeholder="Search" />
         </label>
-      </div>
-      <div class="overview-toolbar">
-        <button class="toolbar-icon" type="button" aria-label="Notifications">
-          <i class="pi pi-bell"></i>
-        </button>
-        <button class="toolbar-icon" type="button" aria-label="More options">
-          <i class="pi pi-ellipsis-v"></i>
-        </button>
       </div>
     </div>
 
@@ -208,7 +202,16 @@
         <div class="panel-body categories-body">
           <ng-container *ngIf="!isLoadingCategories; else categoriesLoading">
             <div class="categories-list" *ngIf="topCategories.length > 0; else categoriesEmpty">
-              <article class="category-row" *ngFor="let category of topCategories" [ngClass]="category.accentClass">
+              <article
+                class="category-row"
+                *ngFor="let category of topCategories"
+                [ngClass]="category.accentClass"
+                role="link"
+                tabindex="0"
+                (click)="goToCategories()"
+                (keydown.enter)="goToCategories()"
+                (keydown.space)="$event.preventDefault(); goToCategories()"
+              >
                 <div class="category-icon">
                   <i class="pi" [ngClass]="category.iconClass"></i>
                 </div>

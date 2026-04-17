@@ -1,8 +1,12 @@
     <!-- Skygarden-Style Hero Stage -->
     <section class="home-hero-stage">
         <div class="hero-carousel-wrapper" #heroCarouselWrapper tabindex="0" (keydown)="onHeroKey($event)">
-            <div class="hero-slide" *ngFor="let slide of heroSlides; let i = index" 
-                 [class.active]="i === heroIndex">
+            <div
+                class="hero-slide"
+                *ngFor="let slide of heroSlides; let i = index"
+                [class.active]="i === heroIndex"
+                [style.--hero-bg-image]="slide.image ? 'url(' + slide.image + ')' : null"
+            >
                 <video
                     *ngIf="slide.video; else heroImage"
                     class="hero-bg-video"
@@ -257,6 +261,13 @@
                   loading="lazy"
                   decoding="async"
                 />
+                <div class="deal-banner-photo__overlay" aria-hidden="true"></div>
+                <div class="deal-banner-photo__content">
+                  <span class="deal-banner-photo__eyebrow">Handpicked Edit</span>
+                  <h3 class="deal-banner-photo__title">Little details, bigger home vibes.</h3>
+                  <p class="deal-banner-photo__subtitle">Fresh handmade-inspired pieces that add warmth, texture, and character to every corner.</p>
+                  <a class="btn-emerald-outline deal-banner-photo__cta" [routerLink]="['/shop']">Shop the Edit</a>
+                </div>
               </div>
 
               <div class="rec-header">
@@ -840,6 +851,13 @@
             decoding="async"
             (error)="setDefaultImage($event)"
           />
+          <div class="cash-banner__overlay" aria-hidden="true"></div>
+          <div class="cash-banner__content">
+            <span class="cash-banner__eyebrow">New Season</span>
+            <h3 class="cash-banner__title">Fresh looks for every corner of your shop.</h3>
+            <p class="cash-banner__subtitle">A clean, modern drop with fashion-forward pieces that feel polished and easy to shop.</p>
+            <a class="btn-emerald-outline cash-banner__cta" [routerLink]="['/shop']">Shop the Edit</a>
+          </div>
         </div>
       </div>
     </section>
@@ -864,22 +882,45 @@
 
     <section class="home-trust-strip">
       <div class="container">
-        <div class="trust-strip-grid">
-          <div class="trust-item">
-            <span class="trust-ico"><i class="fas fa-couch"></i></span>
-            <span class="trust-text">Unbeatable Selection</span>
-          </div>
-          <div class="trust-item">
-            <span class="trust-ico"><i class="fas fa-headset"></i></span>
-            <span class="trust-text">Expert Customer Service</span>
-          </div>
-          <div class="trust-item">
-            <span class="trust-ico"><i class="fas fa-truck"></i></span>
-            <span class="trust-text">Fast &amp; Free Shipping Over $35*</span>
-          </div>
-          <div class="trust-item">
-            <span class="trust-ico"><i class="fas fa-shopping-bag"></i></span>
-            <span class="trust-text">Amazing Value Every Day</span>
+        <div class="trust-strip-viewport">
+          <div class="trust-strip-track">
+            <div class="trust-strip-group">
+              <div class="trust-item">
+                <span class="trust-ico"><i class="fas fa-couch"></i></span>
+                <span class="trust-text">Unbeatable Selection</span>
+              </div>
+              <div class="trust-item">
+                <span class="trust-ico"><i class="fas fa-headset"></i></span>
+                <span class="trust-text">Expert Customer Service</span>
+              </div>
+              <div class="trust-item">
+                <span class="trust-ico"><i class="fas fa-truck"></i></span>
+                <span class="trust-text">Fast &amp; Free Shipping Over $35*</span>
+              </div>
+              <div class="trust-item">
+                <span class="trust-ico"><i class="fas fa-shopping-bag"></i></span>
+                <span class="trust-text">Amazing Value Every Day</span>
+              </div>
+            </div>
+
+            <div class="trust-strip-group" aria-hidden="true">
+              <div class="trust-item">
+                <span class="trust-ico"><i class="fas fa-couch"></i></span>
+                <span class="trust-text">Unbeatable Selection</span>
+              </div>
+              <div class="trust-item">
+                <span class="trust-ico"><i class="fas fa-headset"></i></span>
+                <span class="trust-text">Expert Customer Service</span>
+              </div>
+              <div class="trust-item">
+                <span class="trust-ico"><i class="fas fa-truck"></i></span>
+                <span class="trust-text">Fast &amp; Free Shipping Over $35*</span>
+              </div>
+              <div class="trust-item">
+                <span class="trust-ico"><i class="fas fa-shopping-bag"></i></span>
+                <span class="trust-text">Amazing Value Every Day</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

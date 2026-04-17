@@ -59,16 +59,31 @@
 
           <div class="filter-panel-body">
             <label class="field-label" for="seller-order-status">Status Lane</label>
-            <div class="filter-select-wrap">
-              <select id="seller-order-status" name="sellerOrderStatus" [(ngModel)]="selectedStatus" (change)="applyFilters()">
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="verified">Verified</option>
-                <option value="processing">Processing</option>
-                <option value="shipped">Shipped</option>
-                <option value="delivered">Delivered</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
+            <div class="status-select-wrap" [class.open]="statusMenuOpen">
+              <button
+                id="seller-order-status"
+                type="button"
+                class="status-select-trigger"
+                (click)="toggleStatusDropdown()"
+                [attr.aria-expanded]="statusMenuOpen"
+                aria-haspopup="listbox"
+              >
+                <span>{{ getSelectedStatusLabel() }}</span>
+                <i class="pi pi-chevron-down"></i>
+              </button>
+
+              <div class="status-select-menu" *ngIf="statusMenuOpen" role="listbox" aria-label="Order status">
+                <button
+                  type="button"
+                  class="status-select-option"
+                  *ngFor="let option of statusOptions"
+                  [class.active]="selectedStatus === option.value"
+                  (click)="selectStatus(option.value)"
+                >
+                  <span>{{ option.label }}</span>
+                  <i class="pi pi-check" *ngIf="selectedStatus === option.value"></i>
+                </button>
+              </div>
             </div>
           </div>
 

@@ -508,7 +508,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   private getCategoryFallbackImage(name: string): string {
-    return `https://placehold.co/96x96/f85606/ffffff?text=${encodeURIComponent(name || 'Category')}`;
+    return `https://placehold.co/96x96/10B981/ffffff?text=${encodeURIComponent(name || 'Category')}`;
   }
 
   get categoryColumns(): any[][] {
