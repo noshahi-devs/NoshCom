@@ -86,11 +86,15 @@ export class CategoriesComponent implements OnInit {
   }
 
   private generateSlug(name: string): string {
-    return name
+    const slug = name
+      .trim()
       .toLowerCase()
-      .replace(/[^a-z0-9\\s-]/g, '')
-      .replace(/\\s+/g, '-')
-      .replace(/-+/g, '-');
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    return slug || 'category';
   }
 
   private categoryNameValidator(excludeId?: string): ValidatorFn {
@@ -99,11 +103,13 @@ export class CategoriesComponent implements OnInit {
       if (!rawValue) return null;
 
       const normalized = this.normalizeCategoryName(rawValue);
+      const slug = this.generateSlug(rawValue);
       const hasDuplicate = this.categories.some(category => {
         if (excludeId && String(category.id) === String(excludeId)) {
           return false;
         }
-        return this.normalizeCategoryName(category.name) === normalized;
+        const categorySlug = this.generateSlug(category.slug || category.name || '');
+        return this.normalizeCategoryName(category.name) === normalized || categorySlug === slug;
       });
 
       return hasDuplicate ? { duplicate: true } : null;
@@ -111,7 +117,29 @@ export class CategoriesComponent implements OnInit {
   }
 
   private normalizeCategoryName(value: string): string {
-    return value.toLowerCase().replace(/\\s+/g, ' ').trim();
+    return value.toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+
+  private makeUniqueSlug(name: string, excludeId?: string): string {
+    const baseSlug = this.generateSlug(name);
+    const existingSlugs = new Set(
+      this.categories
+        .filter(category => !excludeId || String(category.id) !== String(excludeId))
+        .map(category => this.generateSlug(category.slug || category.name || ''))
+    );
+
+    if (!existingSlugs.has(baseSlug)) {
+      return baseSlug;
+    }
+
+    let suffix = 2;
+    let candidate = `${baseSlug}-${suffix}`;
+    while (existingSlugs.has(candidate)) {
+      suffix += 1;
+      candidate = `${baseSlug}-${suffix}`;
+    }
+
+    return candidate;
   }
 
   private sortCategories(categories: CategoryDto[], pinnedId?: string): CategoryDto[] {
@@ -284,12 +312,13 @@ export class CategoriesComponent implements OnInit {
     }
 
     const formValue = this.addCategoryForm.value;
+    const name = String(formValue.name ?? '').trim();
     const input: CreateCategoryDto = {
-      tenantId: 2, // Explicitly set Prime Ship Tenant ID
-      name: formValue.name,
-      slug: formValue.slug || this.generateSlug(formValue.name),
-      imageUrl: formValue.imageUrl,
-      status: formValue.status
+      tenantId: 2,
+      name,
+      slug: this.makeUniqueSlug(name),
+      imageUrl: String(formValue.imageUrl ?? '').trim() || undefined,
+      status: !!formValue.status
     };
 
     console.log('💾 Creating category:', input);
@@ -305,7 +334,8 @@ export class CategoriesComponent implements OnInit {
       },
       error: (error) => {
         console.error('❌ Error creating category:', error);
-        this.toastService.showError('Failed to create category. Please try again.');
+        const errorMessage = this.extractHttpErrorMessage(error, 'Failed to create category. Please try again.');
+        this.toastService.showError(errorMessage);
       }
     });
   }
@@ -317,13 +347,14 @@ export class CategoriesComponent implements OnInit {
     }
 
     const formValue = this.editCategoryForm.value;
+    const name = String(formValue.name ?? '').trim();
     const input: UpdateCategoryDto = {
       id: formValue.id,
-      tenantId: 2, // Explicitly set Prime Ship Tenant ID
-      name: formValue.name,
-      slug: formValue.slug || this.generateSlug(formValue.name),
-      imageUrl: formValue.imageUrl,
-      status: formValue.status
+      tenantId: 2,
+      name,
+      slug: this.makeUniqueSlug(name, formValue.id),
+      imageUrl: String(formValue.imageUrl ?? '').trim() || undefined,
+      status: !!formValue.status
     };
 
     console.log('💾 Updating category:', input);
@@ -337,7 +368,8 @@ export class CategoriesComponent implements OnInit {
       },
       error: (error) => {
         console.error('❌ Error updating category:', error);
-        this.toastService.showError('Failed to update category. Please try again.');
+        const errorMessage = this.extractHttpErrorMessage(error, 'Failed to update category. Please try again.');
+        this.toastService.showError(errorMessage);
       }
     });
   }
@@ -536,6 +568,41 @@ export class CategoriesComponent implements OnInit {
 
   getStatusClass(status: boolean): string {
     return status ? 'active' : 'inactive';
+  }
+
+  private extractHttpErrorMessage(error: any, fallback: string): string {
+    const body = error?.error;
+
+    if (typeof body === 'string' && body.trim()) {
+      return body.trim();
+    }
+
+    const candidateMessages = [
+      body?.error?.message,
+      body?.message,
+      body?.detail,
+      body?.title,
+      error?.message
+    ];
+
+    for (const message of candidateMessages) {
+      if (typeof message === 'string' && message.trim()) {
+        return message.trim();
+      }
+    }
+
+    if (body?.errors && typeof body.errors === 'object') {
+      const flattened = Object.values(body.errors)
+        .flat()
+        .filter(Boolean)
+        .map(String)
+        .join(' ');
+      if (flattened.trim()) {
+        return flattened.trim();
+      }
+    }
+
+    return fallback;
   }
 
   removeToast(id: number): void {

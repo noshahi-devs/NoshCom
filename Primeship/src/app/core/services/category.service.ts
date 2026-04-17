@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
 import { map } from 'rxjs/operators';
+import { AuthService } from './auth.service';
 
 export interface CategoryDto {
     id: string;
@@ -51,7 +51,10 @@ export class CategoryService {
     private apiUrl = `${environment.apiUrl}/services/app/Category`;
     private tenantId = '2'; // Prime Ship Tenant
 
-    constructor(private http: HttpClient) { }
+    constructor(
+        private http: HttpClient,
+        private authService: AuthService
+    ) { }
 
     /**
      * Get all categories
@@ -90,12 +93,8 @@ export class CategoryService {
      * Create new category
      */
     create(input: CreateCategoryDto): Observable<CategoryDto> {
-        // Auto-generate slug if not provided
-        if (!input.slug) {
-            input.slug = this.generateSlug(input.name);
-        }
-
-        return this.http.post<any>(this.apiUrl + '/Create', input, {
+        const payload = this.normalizePayload(input);
+        return this.http.post<any>(this.apiUrl + '/Create', payload, {
             headers: this.getHeaders()
         }).pipe(
             map(response => response.result)
@@ -106,12 +105,8 @@ export class CategoryService {
      * Update existing category
      */
     update(input: UpdateCategoryDto): Observable<CategoryDto> {
-        // Auto-generate slug if not provided
-        if (!input.slug) {
-            input.slug = this.generateSlug(input.name);
-        }
-
-        return this.http.put<any>(this.apiUrl + '/Update', input, {
+        const payload = this.normalizePayload(input);
+        return this.http.put<any>(this.apiUrl + '/Update', payload, {
             headers: this.getHeaders()
         }).pipe(
             map(response => response.result)
@@ -131,21 +126,37 @@ export class CategoryService {
      * Generate slug from name
      */
     private generateSlug(name: string): string {
-        return name
+        const slug = name
+            .trim()
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/^-+|-+$/g, '');
+
+        return slug || 'category';
+    }
+
+    /**
+     * Normalize category payload so the API receives a stable shape.
+     */
+    private normalizePayload<T extends { name: string; slug?: string; imageUrl?: string | null }>(input: T): T {
+        const { ...rest } = input as any;
+        const name = String(rest.name ?? '').trim();
+        const slug = String(rest.slug ?? '').trim() || this.generateSlug(name);
+        const imageUrl = String(rest.imageUrl ?? '').trim();
+
+        return {
+            ...rest,
+            tenantId: Number(rest.tenantId ?? this.tenantId),
+            name,
+            slug,
+            imageUrl: imageUrl || undefined
+        };
     }
 
     /**
      * Get headers with tenant ID and auth token
      */
     private getHeaders(): HttpHeaders {
-        const token = localStorage.getItem('authToken');
-        return new HttpHeaders({
-            'Content-Type': 'application/json',
-            'Abp-TenantId': this.tenantId,
-            'Authorization': `Bearer ${token}`
-        });
+        return this.authService.getAuthHeaders();
     }
 }
