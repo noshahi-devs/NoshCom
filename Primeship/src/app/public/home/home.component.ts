@@ -18,6 +18,8 @@ interface HeroSlide {
   image?: string;
   video?: string;
   poster?: string;
+  imageFit?: 'cover' | 'contain';
+  imagePosition?: string;
 }
 
 interface SideBanner {
@@ -103,6 +105,14 @@ interface CircleTailItem {
   image: string;
 }
 
+interface HomePopupAd {
+  title: string;
+  subtitle: string;
+  image: string;
+  cta: string;
+  badge: string;
+}
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -123,6 +133,41 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('heroCarouselWrapper') heroCarouselWrapper?: ElementRef<HTMLDivElement>;
 
   searchQuery = '';
+  showHomepageAdPopup = false;
+  homepagePopupCountdown = 0;
+  private homepageAdPopupTimerId?: number;
+  private homepagePopupAutoCloseTimerId?: number;
+  private homepagePopupCountdownTimerId?: number;
+  private readonly homepagePopupInitialDelayMs = 1200;
+  private readonly homepagePopupReopenDelayMs = 3000;
+  private readonly homepagePopupAutoCloseMs = 6000;
+  private homepagePopupAdIndex = 0;
+  homepagePopupAds: HomePopupAd[] = [
+    {
+      title: 'Flash Offer: Sponsored Picks',
+      subtitle: 'Discover high-converting products with limited-time sponsored pricing.',
+      image: 'https://images.pexels.com/photos/5025670/pexels-photo-5025670.jpeg',
+      cta: 'Shop Sponsored Deals',
+      badge: 'Sponsored'
+    },
+    {
+      title: 'New Home Setup Deals',
+      subtitle: 'Fresh household picks with sponsored discounts for fast movers.',
+      image: 'https://images.pexels.com/photos/6034421/pexels-photo-6034421.jpeg',
+      cta: 'View Deals',
+      badge: 'Sponsored'
+    },
+    {
+      title: 'Unboxing Weekend Offer',
+      subtitle: 'Don’t miss curated sponsored bundles for home essentials.',
+      image: 'https://images.pexels.com/photos/6612550/pexels-photo-6612550.jpeg',
+      cta: 'Explore Offer',
+      badge: 'Sponsored'
+    }
+  ];
+  get homepagePopupAd(): HomePopupAd {
+    return this.homepagePopupAds[this.homepagePopupAdIndex] ?? this.homepagePopupAds[0];
+  }
   brandLinks = [
     { label: 'Wayfair', href: '/' },
     { label: 'ALLMODERN', href: '/allmodern' },
@@ -198,7 +243,9 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       subtitle: '',
       primaryCta: 'Browse Catalog',
       secondaryCta: '',
-      image: 'https://images.pexels.com/photos/6169024/pexels-photo-6169024.jpeg'
+      image: 'https://images.pexels.com/photos/7289707/pexels-photo-7289707.jpeg',
+      imageFit: 'cover',
+      imagePosition: 'center center'
     }
   ];
   heroSideBanners: SideBanner[] = [
@@ -421,6 +468,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     this.startPromoBannerAutoPlay();
     this.startDealTimer();
     this.loadBackendData();
+    this.maybeOpenHomepageAdPopup();
   }
 
   ngAfterViewInit(): void {
@@ -673,6 +721,10 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
 
   ngOnDestroy(): void {
+    if (this.homepageAdPopupTimerId) {
+      clearTimeout(this.homepageAdPopupTimerId);
+    }
+    this.clearHomepagePopupAutoCloseTimer();
     if (this.heroTimerId) {
       clearInterval(this.heroTimerId);
     }
@@ -692,6 +744,90 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       } catch {
         // Ignore
       }
+    }
+  }
+
+
+  private maybeOpenHomepageAdPopup(): void {
+    if (!this.homepagePopupAds.length) {
+      return;
+    }
+    this.queueHomepageAdPopup(this.homepagePopupInitialDelayMs);
+  }
+
+  private queueHomepageAdPopup(delayMs: number): void {
+    if (this.homepageAdPopupTimerId) {
+      clearTimeout(this.homepageAdPopupTimerId);
+    }
+    this.homepageAdPopupTimerId = setTimeout(() => {
+      this.showHomepageAdPopup = true;
+      this.startHomepagePopupAutoCloseTimer();
+    }, delayMs) as unknown as number;
+  }
+
+  closeHomepageAdPopup(reopenAfterDelay: boolean = true): void {
+    this.clearHomepagePopupAutoCloseTimer();
+    this.homepagePopupCountdown = 0;
+    this.showHomepageAdPopup = false;
+    if (reopenAfterDelay) {
+      this.moveToNextHomepagePopupAd();
+      this.queueHomepageAdPopup(this.homepagePopupReopenDelayMs);
+    }
+  }
+
+  private moveToNextHomepagePopupAd(): void {
+    if (this.homepagePopupAds.length <= 1) {
+      return;
+    }
+    this.homepagePopupAdIndex = (this.homepagePopupAdIndex + 1) % this.homepagePopupAds.length;
+  }
+
+  private startHomepagePopupAutoCloseTimer(): void {
+    this.clearHomepagePopupAutoCloseTimer();
+    this.homepagePopupCountdown = Math.ceil(this.homepagePopupAutoCloseMs / 1000);
+    this.cdr.detectChanges();
+
+    this.homepagePopupCountdownTimerId = window.setInterval(() => {
+      if (!this.showHomepageAdPopup) {
+        this.clearHomepagePopupAutoCloseTimer();
+        this.homepagePopupCountdown = 0;
+        this.cdr.detectChanges();
+        return;
+      }
+      if (this.homepagePopupCountdown <= 1) {
+        if (this.homepagePopupCountdownTimerId) {
+          clearInterval(this.homepagePopupCountdownTimerId);
+          this.homepagePopupCountdownTimerId = undefined;
+        }
+        this.homepagePopupCountdown = 0;
+        this.cdr.detectChanges();
+        return;
+      }
+      this.homepagePopupCountdown -= 1;
+      this.cdr.detectChanges();
+    }, 1000);
+
+    this.homepagePopupAutoCloseTimerId = window.setTimeout(() => {
+      this.moveToNextHomepagePopupAd();
+      this.closeHomepageAdPopup(false);
+      this.cdr.detectChanges();
+    }, this.homepagePopupAutoCloseMs);
+  }
+
+  private clearHomepagePopupAutoCloseTimer(): void {
+    if (this.homepagePopupAutoCloseTimerId) {
+      clearTimeout(this.homepagePopupAutoCloseTimerId);
+      this.homepagePopupAutoCloseTimerId = undefined;
+    }
+    if (this.homepagePopupCountdownTimerId) {
+      clearInterval(this.homepagePopupCountdownTimerId);
+      this.homepagePopupCountdownTimerId = undefined;
+    }
+  }
+
+  onHomepageAdBackdropClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.closeHomepageAdPopup();
     }
   }
 
@@ -1105,3 +1241,4 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     }, 1000);
   }
 }
+

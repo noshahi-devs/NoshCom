@@ -1,3 +1,22 @@
+    <div class="home-ad-popup-backdrop" *ngIf="showHomepageAdPopup" (click)="onHomepageAdBackdropClick($event)">
+        <div class="home-ad-popup" role="dialog" aria-modal="true" aria-labelledby="homeAdPopupTitle">
+            <span class="home-ad-popup-timer" *ngIf="homepagePopupCountdown > 0">Closing in {{ homepagePopupCountdown }}s</span>
+            <button type="button" class="home-ad-popup-close" (click)="closeHomepageAdPopup()" aria-label="Close popup ad">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+
+            <div class="home-ad-popup-media">
+                <img class="home-ad-popup-media-main" [src]="homepagePopupAd.image" [alt]="homepagePopupAd.title" loading="eager" decoding="async" (error)="setDefaultImage($event)">
+                <div class="home-ad-popup-overlay">
+                    <span class="home-ad-popup-badge">{{ homepagePopupAd.badge }}</span>
+                    <h2 id="homeAdPopupTitle">{{ homepagePopupAd.title }}</h2>
+                    <p>{{ homepagePopupAd.subtitle }}</p>
+                    <span class="home-ad-popup-cta-label">{{ homepagePopupAd.cta }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Skygarden-Style Hero Stage -->
     <section class="home-hero-stage">
         <div class="hero-carousel-wrapper" #heroCarouselWrapper tabindex="0" (keydown)="onHeroKey($event)">
@@ -24,7 +43,13 @@
                     <source [src]="slide.video" type="video/mp4" />
                 </video>
                 <ng-template #heroImage>
-                    <img [src]="slide.image" alt="Hero Background" class="hero-bg-img">
+                    <img
+                        [src]="slide.image"
+                        alt="Hero Background"
+                        class="hero-bg-img"
+                        [style.object-fit]="slide.imageFit || 'cover'"
+                        [style.object-position]="slide.imagePosition || 'center center'"
+                    >
                 </ng-template>
             </div>
             
@@ -368,21 +393,6 @@
               <i class="fas fa-chevron-right"></i>
             </button>
           </div>
-      </div>
-    </section>
-
-    <section class="home-banner-final">
-      <div class="container">
-        <div class="deal-banner">
-          <img
-            src="https://images.pexels.com/photos/33344557/pexels-photo-33344557.jpeg?auto=compress&cs=tinysrgb&w=2000"
-            srcset="https://images.pexels.com/photos/33344557/pexels-photo-33344557.jpeg?auto=compress&cs=tinysrgb&w=624 624w, https://images.pexels.com/photos/33344557/pexels-photo-33344557.jpeg?auto=compress&cs=tinysrgb&w=944 944w, https://images.pexels.com/photos/33344557/pexels-photo-33344557.jpeg?auto=compress&cs=tinysrgb&w=1248 1248w, https://images.pexels.com/photos/33344557/pexels-photo-33344557.jpeg?auto=compress&cs=tinysrgb&w=1764 1764w, https://images.pexels.com/photos/33344557/pexels-photo-33344557.jpeg?auto=compress&cs=tinysrgb&w=2000 2000w"
-            sizes="(min-width:1780px) 1780px, (min-width:960px) 100vw, (min-width:640px) 100vw, 100vw"
-            alt="Spacious modern living room with panoramic windows and warm lighting."
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
       </div>
     </section>
 
@@ -841,29 +851,11 @@
       </div>
     </section>
 
-    <section class="home-banner-cash">
-      <div class="container">
-        <div class="deal-banner cash-banner">
-          <img
-            alt="Chic clothing storefront with modern design."
-            src="https://images.pexels.com/photos/32549949/pexels-photo-32549949.jpeg?cs=srgb&dl=pexels-kriss-32549949.jpg&fm=jpg"
-            loading="lazy"
-            decoding="async"
-            (error)="setDefaultImage($event)"
-          />
-          <div class="cash-banner__overlay" aria-hidden="true"></div>
-          <div class="cash-banner__content">
-            <span class="cash-banner__eyebrow">New Season</span>
-            <h3 class="cash-banner__title">Fresh looks for every corner of your shop.</h3>
-            <p class="cash-banner__subtitle">A clean, modern drop with fashion-forward pieces that feel polished and easy to shop.</p>
-            <a class="btn-emerald-outline cash-banner__cta" [routerLink]="['/shop']">Shop the Edit</a>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <section class="home-circle-tail">
       <div class="container">
+        <div class="rec-header circle-tail-header">
+          <h2 class="section-title circle-tail-heading">Shop by Category</h2>
+        </div>
         <div class="circle-tail-grid">
           <button
             class="circle-tail-card"
@@ -880,47 +872,86 @@
       </div>
     </section>
 
-    <section class="home-trust-strip">
+    <section class="home-product-grid home-product-grid--tail" *ngIf="allProducts.length">
       <div class="container">
-        <div class="trust-strip-viewport">
-          <div class="trust-strip-track">
-            <div class="trust-strip-group">
-              <div class="trust-item">
-                <span class="trust-ico"><i class="fas fa-couch"></i></span>
-                <span class="trust-text">Unbeatable Selection</span>
-              </div>
-              <div class="trust-item">
-                <span class="trust-ico"><i class="fas fa-headset"></i></span>
-                <span class="trust-text">Expert Customer Service</span>
-              </div>
-              <div class="trust-item">
-                <span class="trust-ico"><i class="fas fa-truck"></i></span>
-                <span class="trust-text">Fast &amp; Free Shipping Over $35*</span>
-              </div>
-              <div class="trust-item">
-                <span class="trust-ico"><i class="fas fa-shopping-bag"></i></span>
-                <span class="trust-text">Amazing Value Every Day</span>
-              </div>
-            </div>
+        <div class="moving-ad-strip" role="region" aria-label="Sponsored offers">
+          <div class="moving-ad-strip__glow" aria-hidden="true"></div>
+          <div class="moving-ad-strip__meta">
+            <span class="moving-ad-strip__badge">Sponsored</span>
+            <span class="moving-ad-strip__title">Premium Offers</span>
+          </div>
 
-            <div class="trust-strip-group" aria-hidden="true">
-              <div class="trust-item">
-                <span class="trust-ico"><i class="fas fa-couch"></i></span>
-                <span class="trust-text">Unbeatable Selection</span>
+          <div class="moving-ad-viewport">
+            <div class="moving-ad-track">
+              <div class="moving-ad-group">
+                <a class="moving-ad-chip" [routerLink]="['/shop']" [queryParams]="{ sponsored: 'true', promo: 'flash-48h' }">
+                  <span class="moving-ad-chip__icon"><i class="fas fa-bolt" aria-hidden="true"></i></span>
+                  <span class="moving-ad-chip__text">Private price drop up to 45% on curated picks</span>
+                </a>
+                <a class="moving-ad-chip" [routerLink]="['/shop']" [queryParams]="{ sponsored: 'true', promo: 'free-ship' }">
+                  <span class="moving-ad-chip__icon"><i class="fas fa-truck" aria-hidden="true"></i></span>
+                  <span class="moving-ad-chip__text">Sponsored picks with priority shipping</span>
+                </a>
+                <a class="moving-ad-chip" [routerLink]="['/shop']" [queryParams]="{ sponsored: 'true', promo: 'new-arrivals' }">
+                  <span class="moving-ad-chip__icon"><i class="fas fa-gem" aria-hidden="true"></i></span>
+                  <span class="moving-ad-chip__text">Handpicked new arrivals from featured sellers</span>
+                </a>
               </div>
-              <div class="trust-item">
-                <span class="trust-ico"><i class="fas fa-headset"></i></span>
-                <span class="trust-text">Expert Customer Service</span>
-              </div>
-              <div class="trust-item">
-                <span class="trust-ico"><i class="fas fa-truck"></i></span>
-                <span class="trust-text">Fast &amp; Free Shipping Over $35*</span>
-              </div>
-              <div class="trust-item">
-                <span class="trust-ico"><i class="fas fa-shopping-bag"></i></span>
-                <span class="trust-text">Amazing Value Every Day</span>
+
+              <div class="moving-ad-group" aria-hidden="true">
+                <a class="moving-ad-chip" [routerLink]="['/shop']" [queryParams]="{ sponsored: 'true', promo: 'flash-48h' }">
+                  <span class="moving-ad-chip__icon"><i class="fas fa-bolt" aria-hidden="true"></i></span>
+                  <span class="moving-ad-chip__text">Private price drop up to 45% on curated picks</span>
+                </a>
+                <a class="moving-ad-chip" [routerLink]="['/shop']" [queryParams]="{ sponsored: 'true', promo: 'free-ship' }">
+                  <span class="moving-ad-chip__icon"><i class="fas fa-truck" aria-hidden="true"></i></span>
+                  <span class="moving-ad-chip__text">Sponsored picks with priority shipping</span>
+                </a>
+                <a class="moving-ad-chip" [routerLink]="['/shop']" [queryParams]="{ sponsored: 'true', promo: 'new-arrivals' }">
+                  <span class="moving-ad-chip__icon"><i class="fas fa-gem" aria-hidden="true"></i></span>
+                  <span class="moving-ad-chip__text">Handpicked new arrivals from featured sellers</span>
+                </a>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-inspiration-end" *ngIf="spaceCards.length">
+      <div class="container">
+        <h2 class="inspiration-end-heading">Looking for inspiration? Explore and shop these spaces.</h2>
+        <div class="inspiration-end-grid">
+          <a
+            class="inspiration-end-card"
+            *ngFor="let s of spaceCards | slice:0:8"
+            [routerLink]="['/category', s.slug]"
+            [attr.aria-label]="s.label"
+          >
+            <img [src]="s.image" [alt]="s.label" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-end-value-strip" aria-label="Store benefits">
+      <div class="container">
+        <div class="end-value-grid">
+          <div class="end-value-item">
+            <span class="end-value-icon"><i class="fas fa-couch" aria-hidden="true"></i></span>
+            <span class="end-value-text">Curated<br>Best Picks</span>
+          </div>
+          <div class="end-value-item">
+            <span class="end-value-icon"><i class="fas fa-headset" aria-hidden="true"></i></span>
+            <span class="end-value-text">Live Support<br>When You Need It</span>
+          </div>
+          <div class="end-value-item">
+            <span class="end-value-icon"><i class="fas fa-truck" aria-hidden="true"></i></span>
+            <span class="end-value-text">Fast &amp; Free Shipping<br>Over $35*</span>
+          </div>
+          <div class="end-value-item">
+            <span class="end-value-icon"><i class="fas fa-shopping-bag" aria-hidden="true"></i></span>
+            <span class="end-value-text">Great Prices,<br>Everyday Value</span>
           </div>
         </div>
       </div>
