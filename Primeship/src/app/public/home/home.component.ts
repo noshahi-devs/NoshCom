@@ -210,37 +210,37 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   activeTab = 0;
   heroSlides: HeroSlide[] = [
     {
-      kicker: '',
-      title: 'Present<br/>Your Products',
-      highlight: 'to Millions',
-      subtitle: '',
+      kicker: 'Start Selling Today',
+      title: 'Launch Your Store<br/>In Minutes',
+      highlight: 'Reach More Buyers',
+      subtitle: 'Build your online storefront, upload products, and start receiving orders from anywhere.',
       primaryCta: 'Open a Shop Now',
       secondaryCta: '',
       image: 'https://images.pexels.com/photos/7289719/pexels-photo-7289719.jpeg?cs=srgb&dl=pexels-kampus-7289719.jpg&fm=jpg'
     },
     {
-      kicker: '',
-      title: 'Storefront<br/>In Style',
-      highlight: 'Modern Design',
-      subtitle: '',
+      kicker: 'Design That Converts',
+      title: 'Make Your Brand<br/>Stand Out',
+      highlight: 'With Stunning Displays',
+      subtitle: 'Use clean layouts and high-quality visuals to turn visitors into loyal customers.',
       primaryCta: 'Open a Shop Now',
       secondaryCta: '',
       image: 'https://images.pexels.com/photos/6169030/pexels-photo-6169030.jpeg?cs=srgb&dl=pexels-tima-miroshnichenko-6169030.jpg&fm=jpg'
     },
     {
-      kicker: '',
-      title: 'Styled<br/>Shopping Spaces',
-      highlight: 'For Your Brand',
-      subtitle: '',
+      kicker: 'Curated Discovery',
+      title: 'Showcase Products<br/>People Love',
+      highlight: 'Across Every Category',
+      subtitle: 'Feature fashion, home, beauty, and everyday essentials in one modern catalog.',
       primaryCta: 'Explore Deals',
       secondaryCta: '',
       image: 'https://images.pexels.com/photos/6170172/pexels-photo-6170172.jpeg?auto=compress&cs=tinysrgb&w=1920'
     },
     {
-      kicker: '',
-      title: 'Sell<br/>Online Faster',
-      highlight: 'Live From Home',
-      subtitle: '',
+      kicker: 'Grow From Home',
+      title: 'Sell Online<br/>With Confidence',
+      highlight: 'Track Every Order',
+      subtitle: 'Manage listings, monitor performance, and scale your business without extra hassle.',
       primaryCta: 'Browse Catalog',
       secondaryCta: '',
       image: 'https://images.pexels.com/photos/7289707/pexels-photo-7289707.jpeg',

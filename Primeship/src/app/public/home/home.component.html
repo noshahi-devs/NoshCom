@@ -51,6 +51,16 @@
                         [style.object-position]="slide.imagePosition || 'center center'"
                     >
                 </ng-template>
+
+                <div class="hero-slide-inner">
+                    <div class="container">
+                        <div class="hero-text-content">
+                            <p class="hero-kicker" *ngIf="slide.kicker">{{ slide.kicker }}</p>
+                            <h1 [innerHTML]="slide.title + (slide.highlight ? '<br><span>' + slide.highlight + '</span>' : '')"></h1>
+                            <p class="hero-subtitle" *ngIf="slide.subtitle">{{ slide.subtitle }}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <!-- Navigation Arrows -->

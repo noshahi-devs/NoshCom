@@ -2620,8 +2620,8 @@
 
 .hero-carousel-wrapper {
   position: relative;
-  height: 88vh;
-  min-height: 88svh;
+  height: 64vh;
+  min-height: 64svh;
   overflow: hidden;
   outline: none; /* remove focus outline for keydown */
   background: #0b3a2e;
@@ -2658,9 +2658,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background:
-      linear-gradient(90deg, rgba(4, 18, 14, 0.45) 0%, rgba(4, 18, 14, 0.14) 50%, rgba(4, 18, 14, 0.28) 100%),
-      linear-gradient(180deg, rgba(4, 18, 14, 0.18) 0%, rgba(4, 18, 14, 0.08) 100%);
+    background: transparent;
     z-index: 1;
     pointer-events: none;
   }
@@ -2706,37 +2704,55 @@
   display: flex;
   align-items: center;
   position: relative;
-  z-index: 1; /* Keeps text above overlay */
+  z-index: 3; /* Keep text above image and overlays */
+}
+
+.hero-slide-inner .container {
+  width: 100%;
+  padding-left: calc(var(--home-gutter) + 84px);
+  padding-right: calc(var(--home-gutter) + 84px);
 }
 
 .hero-text-content {
-  max-width: 600px;
-  padding: 40px 0;
+  max-width: 660px;
+  padding: 28px 0;
+
+  .hero-kicker {
+    margin: 0 0 12px;
+    color: #064E3B;
+    background: #A7F3D0;
+    width: fit-content;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
 
   h1 {
-    font-size: 72px; /* Matched the massive size in reference */
-    font-weight: 900;
+    font-size: 52px;
+    font-weight: 700;
     line-height: 1.05;
-    color: #FFF; /* High contrast White font */
-    text-shadow: 0 4px 15px rgba(0,0,0,0.5); /* Strong shadow for readability */
-    margin-bottom: 35px;
-    letter-spacing: -2px;
-
-    /* Type-writer sweeping reveal animation */
-    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); /* Start hidden on the left */
-    animation: typeWriterSweep 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-    animation-delay: 0.2s; /* Wait briefly after slide loads */
+    color: #FFFFFF;
+    text-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    margin: 0 0 16px;
+    letter-spacing: -1px;
 
     span {
       display: inline;
-      color: #FFF; /* Ensure all text lines stay White */
+      color: #86EFAC;
     }
   }
-}
 
-@keyframes typeWriterSweep {
-  to {
-    clip-path: polygon(0 0, 110% 0, 110% 100%, 0 100%); /* Sweep to fully revealed */
+  .hero-subtitle {
+    margin: 0;
+    max-width: 620px;
+    color: rgba(236, 253, 245, 0.95);
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.45;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
   }
 }
 
@@ -4339,7 +4355,7 @@
 
 @media (max-width: 1024px) {
   .hero-carousel-wrapper {
-    height: 78svh;
+    height: 56svh;
   }
 
   .hero-slide {
@@ -4348,9 +4364,14 @@
     gap: 20px;
   }
 
+  .hero-slide-inner .container {
+    padding-left: calc(var(--home-gutter) + 60px);
+    padding-right: calc(var(--home-gutter) + 60px);
+  }
+
   .hero-text-content {
-    h1 { font-size: 42px; }
-    p { font-size: 16px; }
+    h1 { font-size: 34px; }
+    p { font-size: 14px; }
   }
 
   .feature-container {
@@ -4382,7 +4403,17 @@
 
 @media (max-width: 600px) {
   .hero-carousel-wrapper {
-    height: 68svh;
+    height: 48svh;
+  }
+
+  .hero-text-content {
+    h1 { font-size: 26px; }
+    p { font-size: 13px; }
+  }
+
+  .hero-slide-inner .container {
+    padding-left: calc(var(--home-gutter) + 12px);
+    padding-right: calc(var(--home-gutter) + 12px);
   }
 
   .deals-grid {

@@ -475,20 +475,29 @@ declare var lucide: any;
     .container-footer { max-width: 1300px; margin: 0 auto; padding: 0 20px; width: 100%; }
 
     .marketing-banner { background: #10B981; color: #FFF; }
-    .marketing-inner { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 10px 40px; flex-wrap: nowrap; }
-    .marketing-left { display: flex; align-items: center; gap: 18px; min-width: 0; }
+    .marketing-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 32px; flex-wrap: nowrap; line-height: 1; }
+    .marketing-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
 
-    .marketing-stores { display: flex; gap: 18px; align-items: center; flex-wrap: nowrap; overflow-x: auto; }
-    .marketing-store { color: #FFF; text-decoration: none; font-size: 13px; font-weight: 600; white-space: nowrap; opacity: 0.95; border-bottom: 1px solid transparent; }
+    .marketing-stores {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: nowrap;
+      overflow: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .marketing-stores::-webkit-scrollbar { display: none; }
+    .marketing-store { color: #FFF; text-decoration: none; font-size: 12px; font-weight: 500; white-space: nowrap; opacity: 0.95; border-bottom: 1px solid transparent; }
     .marketing-store:hover { opacity: 1; border-bottom-color: rgba(255,255,255,0.75); }
 
     .marketing-right { display: flex; align-items: center; gap: 0; flex: 0 0 auto; }
-    .marketing-right > * { padding: 0 12px; }
+    .marketing-right > * { padding: 0 9px; }
     .marketing-right > *:not(:first-child) { border-left: 1px solid rgba(255,255,255,0.55); }
 
-    .marketing-action { color: #FFF; text-decoration: none; font-size: 13px; font-weight: 600; white-space: nowrap; border-bottom: none; }
+    .marketing-action { color: #FFF; text-decoration: none; font-size: 12px; font-weight: 500; white-space: nowrap; border-bottom: none; }
     .marketing-action:hover { opacity: 0.95; }
-    .free-ship-btn { border: none; background: transparent; color: #FFF; font-size: 13px; font-weight: 600; cursor: pointer; padding: 0; text-decoration: none; white-space: nowrap; }
+    .free-ship-btn { border: none; background: transparent; color: #FFF; font-size: 12px; font-weight: 500; cursor: pointer; padding: 0; text-decoration: none; white-space: nowrap; }
 
     /* Utility Top Bar */
     .top-util-bar { background: #000; padding: 6px 0; font-size: 13px; font-weight: 700; color: var(--text-gray); }
@@ -857,8 +866,8 @@ declare var lucide: any;
     }
 
     .promo-bar { background: #10B981; color: #FFF; }
-    .promo-inner { display: flex; justify-content: center; align-items: center; gap: 10px; min-height: 44px; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; }
-    .promo-arrow { font-size: 18px; }
+    .promo-inner { display: flex; justify-content: center; align-items: center; gap: 8px; min-height: 34px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; line-height: 1; }
+    .promo-arrow { font-size: 15px; }
 
     .promo-carousel { background: #FFF; border-bottom: 1px solid #E5E7EB; }
     .promo-carousel-inner { position: relative; width: 100%; margin: 0; padding: 0; }
