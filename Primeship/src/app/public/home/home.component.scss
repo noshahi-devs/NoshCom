@@ -22,7 +22,8 @@
   inset: 0;
   z-index: 5000;
   background: rgba(2, 12, 10, 0.72);
-  backdrop-filter: blur(3px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   display: grid;
   place-items: center;
   padding: 18px;
@@ -931,6 +932,7 @@
     box-shadow:
       0 0 0 1px rgba(255, 255, 255, 0.8) inset,
       0 12px 24px rgba(15, 23, 42, 0.12);
+    transform: none;
   }
 
   .prod-card-front .card-media {
@@ -1403,7 +1405,9 @@
   background: linear-gradient(145deg, #ffffff 0%, #f3f4f6 100%);
 }
 
-.prod-card:hover .prod-card-inner {
+.prod-card:hover .prod-card-inner,
+.prod-card:focus-within .prod-card-inner,
+.prod-card:focus-visible .prod-card-inner {
   transform: rotateY(180deg);
 }
 
@@ -1433,6 +1437,12 @@
 @media (hover: none) {
   .prod-card:hover .prod-card-inner {
     transform: none;
+  }
+
+  .prod-card:active .prod-card-inner,
+  .prod-card:focus-within .prod-card-inner,
+  .prod-card:focus-visible .prod-card-inner {
+    transform: rotateY(180deg);
   }
 }
 .rec-controls {
@@ -2620,8 +2630,8 @@
 
 .hero-carousel-wrapper {
   position: relative;
-  height: 64vh;
-  min-height: 64svh;
+  height: 68vh;
+  min-height: 68svh;
   overflow: hidden;
   outline: none; /* remove focus outline for keydown */
   background: #0b3a2e;
@@ -4128,7 +4138,7 @@
 }
 
 /* Ensure consistent carousel card sizing (name + price) */
-.deal-card.rec-card {
+.deal-card.rec-card:not(.prod-card) {
   min-width: 180px;
   max-width: 180px;
   min-height: 230px;
@@ -4137,14 +4147,14 @@
   flex-direction: column;
 }
 
-.deal-card.rec-card .card-media {
+.deal-card.rec-card:not(.prod-card) .card-media {
   height: 150px;
   flex: 0 0 auto;
   overflow: hidden;
   background: #fff;
 }
 
-.deal-card.rec-card .card-media img {
+.deal-card.rec-card:not(.prod-card) .card-media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -4153,7 +4163,7 @@
   display: block;
 }
 
-.deal-card.rec-card .card-info {
+.deal-card.rec-card:not(.prod-card) .card-info {
   min-height: 60px;
 }
 
@@ -4355,7 +4365,7 @@
 
 @media (max-width: 1024px) {
   .hero-carousel-wrapper {
-    height: 56svh;
+    height: 60svh;
   }
 
   .hero-slide {
@@ -4403,7 +4413,7 @@
 
 @media (max-width: 600px) {
   .hero-carousel-wrapper {
-    height: 48svh;
+    height: 52svh;
   }
 
   .hero-text-content {
