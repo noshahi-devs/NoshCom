@@ -8,6 +8,7 @@
 
 /* --- SIDEBAR 3D (Emerald & Alabaster) --- */
 .sidebar-3d {
+  --top-bar-height: 88px;
   position: fixed;
   left: 0;
   top: 0;
@@ -32,26 +33,32 @@
 }
 
 .sidebar-header {
-  padding: 20px 18px;
-  height: 90px;
+  padding: 12px 14px;
+  min-height: var(--top-bar-height);
   display: flex;
   align-items: center;
   justify-content: flex-start;
   border-bottom: 1px solid var(--border-color);
+  background:
+    radial-gradient(circle at 8% 0%, rgba(16, 185, 129, 0.12), transparent 50%),
+    linear-gradient(180deg, #f8fdfb 0%, #ffffff 100%);
 
   .logo-sidebar-img {
-    height: 44px;
+    height: 62px;
     width: auto;
     object-fit: contain;
+    max-width: 100%;
   }
 
-  .logo-icon { display: none; height: 34px; }
+  .logo-icon { display: none; height: 38px; }
 }
 
 .logo-section {
+  width: 100%;
   min-width: 0;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
 }
 
 .user-profile {
@@ -218,8 +225,9 @@
 
   .sidebar-header {
     justify-content: center;
-    padding: 16px 8px;
-    height: 90px;
+    padding: 12px 8px;
+    min-height: var(--top-bar-height);
+    background: #ffffff;
 
     .logo-full { display: none; }
     .logo-icon { display: block; }
@@ -301,7 +309,9 @@
 .sidebar-3d.collapsed {
   .sidebar-header {
     justify-content: center;
-    padding: 18px 10px;
+    padding: 12px 8px;
+    min-height: var(--top-bar-height);
+    background: #ffffff;
 
     .logo-full { display: none; }
     .logo-icon { display: block; }
@@ -359,8 +369,11 @@
 
     .sidebar-header {
       justify-content: flex-start;
-      padding: 20px 18px;
-      height: 90px;
+      padding: 14px;
+      min-height: var(--top-bar-height);
+      background:
+        radial-gradient(circle at 8% 0%, rgba(16, 185, 129, 0.12), transparent 50%),
+        linear-gradient(180deg, #f8fdfb 0%, #ffffff 100%);
 
       .logo-full { display: block; }
       .logo-icon { display: none; }

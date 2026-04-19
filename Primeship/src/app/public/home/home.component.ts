@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -138,10 +138,10 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   private homepageAdPopupTimerId?: number;
   private homepagePopupAutoCloseTimerId?: number;
   private homepagePopupCountdownTimerId?: number;
-  private readonly homepagePopupInitialDelayMs = 5000;
-  private readonly homepagePopupReopenDelayMs = 5000;
+  private readonly homepagePopupStepDelaysMs = [5000, 7000, 9000];
   private readonly homepagePopupAutoCloseMs = 6000;
   private homepagePopupAdIndex = 0;
+  private homepagePopupNeedsActivity = true;
   homepagePopupAds: HomePopupAd[] = [
     {
       title: 'Flash Offer: Sponsored Picks',
@@ -475,6 +475,21 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     this.scheduleHeroVideoPlay();
   }
 
+  @HostListener('window:mousemove')
+  onWindowMouseMove(): void {
+    this.handleHomepagePopupActivity();
+  }
+
+  @HostListener('window:touchstart')
+  onWindowTouchStart(): void {
+    this.handleHomepagePopupActivity();
+  }
+
+  @HostListener('window:keydown')
+  onWindowKeyDown(): void {
+    this.handleHomepagePopupActivity();
+  }
+
   private loadBackendData(): void {
     this.categoryTabs = [];
     this.miniCategories = [];
@@ -752,7 +767,24 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!this.homepagePopupAds.length) {
       return;
     }
-    this.queueHomepageAdPopup(this.homepagePopupInitialDelayMs);
+    this.homepagePopupNeedsActivity = true;
+  }
+
+  private handleHomepagePopupActivity(): void {
+    if (!this.homepagePopupNeedsActivity || this.showHomepageAdPopup || this.homepageAdPopupTimerId || !this.homepagePopupAds.length) {
+      return;
+    }
+
+    this.homepagePopupNeedsActivity = false;
+    this.queueHomepageAdPopup(this.getHomepagePopupDelayMs());
+  }
+
+  private getHomepagePopupDelayMs(): number {
+    if (!this.homepagePopupStepDelaysMs.length) {
+      return 5000;
+    }
+
+    return this.homepagePopupStepDelaysMs[this.homepagePopupAdIndex % this.homepagePopupStepDelaysMs.length] ?? 5000;
   }
 
   private queueHomepageAdPopup(delayMs: number): void {
@@ -760,18 +792,23 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       clearTimeout(this.homepageAdPopupTimerId);
     }
     this.homepageAdPopupTimerId = setTimeout(() => {
+      this.homepageAdPopupTimerId = undefined;
       this.showHomepageAdPopup = true;
       this.startHomepagePopupAutoCloseTimer();
     }, delayMs) as unknown as number;
   }
 
   closeHomepageAdPopup(reopenAfterDelay: boolean = true): void {
+    if (this.homepageAdPopupTimerId) {
+      clearTimeout(this.homepageAdPopupTimerId);
+      this.homepageAdPopupTimerId = undefined;
+    }
     this.clearHomepagePopupAutoCloseTimer();
     this.homepagePopupCountdown = 0;
     this.showHomepageAdPopup = false;
     if (reopenAfterDelay) {
       this.moveToNextHomepagePopupAd();
-      this.queueHomepageAdPopup(this.homepagePopupReopenDelayMs);
+      this.homepagePopupNeedsActivity = true;
     }
   }
 

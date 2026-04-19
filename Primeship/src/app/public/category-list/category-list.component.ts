@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { EMPTY, Observable, forkJoin } from 'rxjs';
+import { catchError, expand, map, reduce } from 'rxjs/operators';
 import { PublicService } from '../../core/services/public.service';
 import { CategoryDto } from '../../core/services/category.service';
 
@@ -95,7 +96,6 @@ interface CategoryWithCount extends CategoryDto {
             <div class="category-info">
               <h3>{{ cat.name }}</h3>
               <div class="category-meta">
-                <span class="count">{{ cat.productCount }} Products</span>
                 <i class="pi pi-arrow-right"></i>
               </div>
               </div>
@@ -538,7 +538,8 @@ interface CategoryWithCount extends CategoryDto {
     .category-meta {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
+      margin-top: 0.35rem;
       color: var(--primary);
     }
 
@@ -550,6 +551,14 @@ interface CategoryWithCount extends CategoryDto {
 
     .category-meta i {
       font-size: 1.25rem;
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(16, 185, 129, 0.12);
+      color: #0f766e;
       transition: transform 0.3s;
     }
 
@@ -717,19 +726,20 @@ export class CategoryListComponent implements OnInit {
     this.startLoadingMessages();
     forkJoin({
       categories: this.publicService.getCategories(),
-      products: this.publicService.getProducts()
+      products: this.loadAllProductsForStats()
     }).subscribe({
       next: ({ categories, products }) => {
+        const allProducts = this.deduplicateProducts(products || []);
         const mappedCategories = (categories || []).map(cat => ({
           ...cat,
-          productCount: (products || []).filter(p =>
+          productCount: allProducts.filter(p =>
             p.categoryId === cat.id ||
             (p.categoryName && cat.name && p.categoryName.toLowerCase() === cat.name.toLowerCase())
           ).length
         }));
         this.categories = mappedCategories;
         this.featuredCategories = [...mappedCategories].sort((a, b) => b.productCount - a.productCount).slice(0, 4);
-        this.totalProducts = (products || []).length;
+        this.totalProducts = allProducts.length;
         this.isLoading = false;
         this.stopLoadingMessages();
       },
@@ -757,6 +767,46 @@ export class CategoryListComponent implements OnInit {
     if (this.messageInterval) {
       clearInterval(this.messageInterval);
     }
+  }
+
+  private loadAllProductsForStats(pageSize: number = 100): Observable<any[]> {
+    return this.publicService.getProducts('', 0, pageSize).pipe(
+      map((items) => ({ items: items || [], skip: 0 })),
+      expand((page) => {
+        if (page.items.length < pageSize) {
+          return EMPTY;
+        }
+        const nextSkip = page.skip + pageSize;
+        return this.publicService.getProducts('', nextSkip, pageSize).pipe(
+          map((items) => ({ items: items || [], skip: nextSkip })),
+          catchError(() => EMPTY)
+        );
+      }),
+      reduce((all, page) => all.concat(page.items), [] as any[])
+    );
+  }
+
+  private deduplicateProducts(products: any[]): any[] {
+    const seen = new Set<string>();
+    const unique: any[] = [];
+
+    (products || []).forEach((product) => {
+      const key = (
+        product?.id ||
+        product?.productId ||
+        product?.sku ||
+        product?.name
+      )?.toString()?.trim();
+
+      if (!key || seen.has(key)) {
+        return;
+      }
+
+      seen.add(key);
+      unique.push(product);
+    });
+
+    return unique;
   }
 
 

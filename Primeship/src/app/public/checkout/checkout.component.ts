@@ -65,7 +65,7 @@ export class CheckoutComponent implements OnInit {
     { id: 'mastercard', name: 'Master Card', icon: 'fab fa-cc-mastercard', logoSrc: 'assets/brands/mastercard.svg' },
     { id: 'discover', name: 'Discover', icon: 'fab fa-cc-mastercard', logoSrc: 'assets/brands/discover.svg' },
     { id: 'amex', name: 'American Express', icon: 'fab fa-cc-mastercard', logoSrc: 'assets/brands/amex.svg' },
-    { id: 'easy_finora', name: 'NoshCom', icon: 'fas fa-wallet', logoSrc: 'assets/brands/easy-finora.svg' }
+    { id: 'easy_finora', name: 'NoshPay', icon: 'fas fa-wallet', logoSrc: 'assets/brands/easy-finora.svg' }
   ];
 
   constructor(
@@ -89,6 +89,7 @@ export class CheckoutComponent implements OnInit {
       zipCode: ['', Validators.required],
       city: ['', Validators.required],
       paymentMethod: ['mastercard', Validators.required],
+      cardHolderName: [''],
       cardNumber: [''],
       expiryDate: [''],
       cvv: [''],
@@ -102,6 +103,7 @@ export class CheckoutComponent implements OnInit {
       this.updatePaymentValidations(method);
     });
 
+    this.updatePaymentValidations(this.checkoutForm.get('paymentMethod')?.value);
     this.setupMasking();
   }
 
@@ -139,7 +141,7 @@ export class CheckoutComponent implements OnInit {
   }
 
   private updatePaymentValidations(method: string): void {
-    const cardControls = ['cardNumber', 'expiryDate', 'cvv'];
+    const cardControls = ['cardHolderName', 'cardNumber', 'expiryDate', 'cvv'];
     const bankControls = ['bankAccountName', 'bankAccountNumber'];
     const cryptoControls = ['cryptoWalletAddress'];
 
@@ -149,6 +151,7 @@ export class CheckoutComponent implements OnInit {
     });
 
     if (['mastercard', 'discover', 'amex', 'easy_finora'].includes(method)) {
+      this.checkoutForm.get('cardHolderName')?.setValidators([Validators.required, Validators.pattern(/^[A-Za-z][A-Za-z\s.'-]*$/)]);
       this.checkoutForm.get('cardNumber')?.setValidators([Validators.required, Validators.pattern(/^\d{4} \d{4} \d{4} \d{4}$/)]);
       this.checkoutForm.get('expiryDate')?.setValidators([Validators.required, Validators.pattern(/^(0[1-9]|1[0-2])\/\d{2}$/)]);
       this.checkoutForm.get('cvv')?.setValidators([Validators.required, Validators.pattern(/^\d{3,4}$/)]);
@@ -170,6 +173,7 @@ export class CheckoutComponent implements OnInit {
 
   private resetPaymentFields(): void {
     this.checkoutForm.patchValue({
+      cardHolderName: '',
       cardNumber: '',
       expiryDate: '',
       cvv: '',
@@ -214,6 +218,7 @@ export class CheckoutComponent implements OnInit {
           address1: string;
           city: string;
           zipCode: string;
+          cardHolderName: string;
         }> = {};
         const fullName = (profile.fullName || '').trim();
         if (fullName) {
@@ -225,6 +230,9 @@ export class CheckoutComponent implements OnInit {
           }
           if (!this.checkoutForm.get('lastName')?.value) {
             patch.lastName = last || '';
+          }
+          if (!this.checkoutForm.get('cardHolderName')?.value) {
+            patch.cardHolderName = fullName;
           }
         }
         if (!this.checkoutForm.get('email')?.value && profile.email) {

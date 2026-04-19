@@ -338,6 +338,10 @@ export class SellerDashboardComponent implements OnInit {
     this.router.navigate(['/categories']);
   }
 
+  goToShopPage(): void {
+    this.router.navigate(['/shop']);
+  }
+
   getPrimaryItemName(order: any): string {
     return this.getPrimaryProductName(order) || 'Product unavailable';
   }

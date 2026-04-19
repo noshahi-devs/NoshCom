@@ -67,7 +67,6 @@
                   <div class="form-group full address-stack">
                     <label>Delivery Address</label>
                     <input type="text" class="form-control" formControlName="address1" placeholder="Street Address, P.O. box, company name">
-                    <input type="text" class="form-control" formControlName="address2" placeholder="Apartment, suite, unit, building, floor, etc.">
                   </div>
 
                   <div class="form-group half">
@@ -144,10 +143,10 @@
                 </div>
 
                 <div class="method-logo-wrap" aria-hidden="true">
-                  <ng-container *ngIf="method.id !== 'easy_finora'; else noshcomFallbackLogo">
+                  <ng-container *ngIf="method.id !== 'easy_finora'; else noshpayFallbackLogo">
                     <img [src]="method.logoSrc" [alt]="method.name" class="method-logo">
                   </ng-container>
-                  <ng-template #noshcomFallbackLogo>
+                  <ng-template #noshpayFallbackLogo>
                     <div class="method-logo-fallback">
                       <i class="fas fa-building"></i>
                     </div>
@@ -160,6 +159,10 @@
             <!-- Card Details (If Card) -->
             <div class="card-details-box animate-fade-in" *ngIf="['mastercard', 'discover', 'amex', 'easy_finora'].includes(checkoutForm.get('paymentMethod')?.value)">
               <div class="payment-form-grid">
+                <div class="form-group full">
+                  <label>Card Holder Name</label>
+                  <input type="text" class="form-control" formControlName="cardHolderName" placeholder="e.g. John Doe">
+                </div>
                 <div class="form-group full">
                   <label>Card Number</label>
                   <input type="text" class="form-control" formControlName="cardNumber" placeholder="0000 0000 0000 0000">
@@ -177,7 +180,7 @@
               <div class="verify-box" *ngIf="checkoutForm.get('paymentMethod')?.value === 'easy_finora'">
                 <i class="fas fa-shield-alt"></i>
                 <div class="info">
-                  <h6>NoshCom Verification</h6>
+                  <h6>NoshPay Verification</h6>
                   <p *ngIf="!isBalanceVerified && !verificationError">Verify balance before final confirmation.</p>
                   <p *ngIf="isBalanceVerified">Balance verified: {{ verifiedBalance | currency }}</p>
                   <p *ngIf="verificationError">{{ verificationError }}</p>
@@ -237,12 +240,16 @@
                     <div class="review-label">Method</div>
                     <div class="review-value">{{ selectedPaymentMethodName }}</div>
                   </div>
-                  <div class="review-row" *ngIf="cardLast4">
-                    <div class="review-label">Card</div>
-                    <div class="review-value review-value--muted">Ending in {{ cardLast4 }}</div>
-                  </div>
+                <div class="review-row" *ngIf="cardLast4">
+                  <div class="review-label">Card</div>
+                  <div class="review-value review-value--muted">Ending in {{ cardLast4 }}</div>
+                </div>
+                <div class="review-row" *ngIf="checkoutForm.get('cardHolderName')?.value">
+                  <div class="review-label">Card Holder</div>
+                  <div class="review-value review-value--muted">{{ checkoutForm.get('cardHolderName')?.value }}</div>
                 </div>
               </div>
+            </div>
             </div>
 
             <div class="checkout-actions checkout-actions--split">
@@ -290,7 +297,7 @@
 
           <div class="order-summary-note">
             <i class="fas fa-info-circle me-2" style="color: var(--primary);"></i>
-            By placing your order, you agree to Noshahibaba's sourcing terms and conditions.
+            By placing your order, you agree to NoshPay's sourcing terms and conditions.
           </div>
         </div>
       </aside>

@@ -222,6 +222,15 @@
                 <div class="category-count">{{ category.count }}</div>
               </article>
             </div>
+            <button
+              type="button"
+              class="categories-see-all"
+              *ngIf="topCategories.length > 0"
+              (click)="goToShopPage()"
+            >
+              See all categories
+              <i class="pi pi-arrow-right"></i>
+            </button>
 
             <ng-template #categoriesEmpty>
               <div class="empty-state categories-empty">
