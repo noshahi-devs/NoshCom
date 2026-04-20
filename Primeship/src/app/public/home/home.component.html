@@ -233,7 +233,7 @@
               </div>
 
               <div class="rec-shell" *ngIf="allProducts.length > 0">
-                <button type="button" class="rec-btn rec-btn-left" (click)="scrollRecommended('left')" aria-label="Scroll left">
+                <button type="button" class="rec-btn rec-btn-left" (mousedown)="$event.preventDefault()" (click)="scrollRecommended('left', $event)" aria-label="Scroll left">
                   <i class="fas fa-chevron-left"></i>
                 </button>
 
@@ -254,7 +254,7 @@
                   </div>
                 </div>
 
-                <button type="button" class="rec-btn rec-btn-right" (click)="scrollRecommended('right')" aria-label="Scroll right">
+                <button type="button" class="rec-btn rec-btn-right" (mousedown)="$event.preventDefault()" (click)="scrollRecommended('right', $event)" aria-label="Scroll right">
                   <i class="fas fa-chevron-right"></i>
                 </button>
               </div>
@@ -310,7 +310,7 @@
               </div>
 
               <div class="rec-shell">
-                <button type="button" class="rec-btn rec-btn-left" (click)="scrollDealsRow('left')" aria-label="Scroll left">
+                <button type="button" class="rec-btn rec-btn-left" (mousedown)="$event.preventDefault()" (click)="scrollDealsRow('left', $event)" aria-label="Scroll left">
                   <i class="fas fa-chevron-left"></i>
                 </button>
 
@@ -331,7 +331,7 @@
                   </div>
                 </div>
 
-                <button type="button" class="rec-btn rec-btn-right" (click)="scrollDealsRow('right')" aria-label="Scroll right">
+                <button type="button" class="rec-btn rec-btn-right" (mousedown)="$event.preventDefault()" (click)="scrollDealsRow('right', $event)" aria-label="Scroll right">
                   <i class="fas fa-chevron-right"></i>
                 </button>
               </div>
@@ -384,7 +384,7 @@
     <section class="home-collections" *ngIf="collectionItems.length">
         <div class="container">
           <div class="rec-shell">
-            <button type="button" class="rec-btn rec-btn-left" (click)="scrollCollections('left')" aria-label="Scroll left">
+            <button type="button" class="rec-btn rec-btn-left" (mousedown)="$event.preventDefault()" (click)="scrollCollections('left', $event)" aria-label="Scroll left">
               <i class="fas fa-chevron-left"></i>
             </button>
 
@@ -399,7 +399,7 @@
               </button>
             </div>
 
-            <button type="button" class="rec-btn rec-btn-right" (click)="scrollCollections('right')" aria-label="Scroll right">
+            <button type="button" class="rec-btn rec-btn-right" (mousedown)="$event.preventDefault()" (click)="scrollCollections('right', $event)" aria-label="Scroll right">
               <i class="fas fa-chevron-right"></i>
             </button>
           </div>
@@ -464,7 +464,7 @@
 
         <ng-template #productGridLoaded>
           <div class="rec-shell squares-shell" *ngIf="allProducts.length">
-            <button type="button" class="rec-btn rec-btn-left" (click)="scrollProducts('left')" aria-label="Scroll left">
+            <button type="button" class="rec-btn rec-btn-left" (mousedown)="$event.preventDefault()" (click)="scrollProducts('left', $event)" aria-label="Scroll left">
               <i class="fas fa-chevron-left"></i>
             </button>
 
@@ -491,7 +491,7 @@
               </div>
             </div>
 
-            <button type="button" class="rec-btn rec-btn-right" (click)="scrollProducts('right')" aria-label="Scroll right">
+            <button type="button" class="rec-btn rec-btn-right" (mousedown)="$event.preventDefault()" (click)="scrollProducts('right', $event)" aria-label="Scroll right">
               <i class="fas fa-chevron-right"></i>
             </button>
           </div>
@@ -673,7 +673,7 @@
           <h2 class="section-title">New trends &amp; ideas to try now</h2>
         </div>
         <div class="rec-shell spaces-shell">
-          <button type="button" class="rec-btn rec-btn-left" (click)="scrollSpaces('left')" aria-label="Scroll left">
+          <button type="button" class="rec-btn rec-btn-left" (mousedown)="$event.preventDefault()" (click)="scrollSpaces('left', $event)" aria-label="Scroll left">
             <i class="fas fa-chevron-left"></i>
           </button>
 
@@ -686,7 +686,7 @@
             </a>
           </div>
 
-          <button type="button" class="rec-btn rec-btn-right" (click)="scrollSpaces('right')" aria-label="Scroll right">
+          <button type="button" class="rec-btn rec-btn-right" (mousedown)="$event.preventDefault()" (click)="scrollSpaces('right', $event)" aria-label="Scroll right">
             <i class="fas fa-chevron-right"></i>
           </button>
         </div>
@@ -727,7 +727,7 @@
           </div>
 
           <div class="rec-shell budget-shell" *ngIf="allProducts.length">
-            <button type="button" class="rec-btn rec-btn-left" (click)="scrollBudget('left')" aria-label="Scroll left">
+            <button type="button" class="rec-btn rec-btn-left" (mousedown)="$event.preventDefault()" (click)="scrollBudget('left', $event)" aria-label="Scroll left">
               <i class="fas fa-chevron-left"></i>
             </button>
 
@@ -752,7 +752,7 @@
               </div>
             </div>
 
-            <button type="button" class="rec-btn rec-btn-right" (click)="scrollBudget('right')" aria-label="Scroll right">
+            <button type="button" class="rec-btn rec-btn-right" (mousedown)="$event.preventDefault()" (click)="scrollBudget('right', $event)" aria-label="Scroll right">
               <i class="fas fa-chevron-right"></i>
             </button>
           </div>
@@ -819,7 +819,7 @@
           </div>
 
           <div class="rec-shell wf-deals-shell" *ngIf="allProducts.length">
-            <button type="button" class="rec-btn rec-btn-left" (click)="scrollWfDeals('left')" aria-label="Scroll left">
+            <button type="button" class="rec-btn rec-btn-left" (mousedown)="$event.preventDefault()" (click)="scrollWfDeals('left', $event)" aria-label="Scroll left">
               <i class="fas fa-chevron-left"></i>
             </button>
 
@@ -853,7 +853,7 @@
               </div>
             </div>
 
-            <button type="button" class="rec-btn rec-btn-right" (click)="scrollWfDeals('right')" aria-label="Scroll right">
+            <button type="button" class="rec-btn rec-btn-right" (mousedown)="$event.preventDefault()" (click)="scrollWfDeals('right', $event)" aria-label="Scroll right">
               <i class="fas fa-chevron-right"></i>
             </button>
           </div>
@@ -884,16 +884,51 @@
 
     <section class="home-inspiration-end" *ngIf="spaceCards.length">
       <div class="container">
-        <h2 class="inspiration-end-heading">Looking for inspiration? Explore and shop these spaces.</h2>
+        <h2 class="inspiration-end-heading">Shop by Space: Discover Looks You Will Love.</h2>
         <div class="inspiration-end-grid">
           <a
             class="inspiration-end-card"
-            *ngFor="let s of spaceCards | slice:0:8"
+            *ngFor="let s of spaceCards | slice:0:16"
             [routerLink]="['/category', s.slug]"
             [attr.aria-label]="s.label"
           >
             <img [src]="s.image" [alt]="s.label" loading="lazy" decoding="async" (error)="setDefaultImage($event)">
           </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-end-value-strip" aria-label="Store benefits">
+      <div class="container">
+        <div class="end-value-head">
+          <span class="end-value-kicker">Choose by Choice</span>
+          <h2 class="end-value-title">Choose by Choice</h2>
+          <p class="end-value-subtitle">Handpicked quality, trusted delivery, and support that stays with you after checkout.</p>
+        </div>
+
+        <div class="end-value-proofbar" aria-label="Trust highlights">
+          <span class="proof-pill"><i class="fas fa-shield-alt" aria-hidden="true"></i>Secure Checkout</span>
+          <span class="proof-pill"><i class="fas fa-undo-alt" aria-hidden="true"></i>Easy Returns</span>
+          <span class="proof-pill"><i class="fas fa-check-circle" aria-hidden="true"></i>Verified Sellers</span>
+        </div>
+
+        <div class="end-value-grid">
+          <div class="end-value-item">
+            <span class="end-value-icon"><i class="fas fa-couch" aria-hidden="true"></i></span>
+            <span class="end-value-text">Curated<br>Best Picks</span>
+          </div>
+          <div class="end-value-item">
+            <span class="end-value-icon"><i class="fas fa-headset" aria-hidden="true"></i></span>
+            <span class="end-value-text">Live Support<br>When You Need It</span>
+          </div>
+          <div class="end-value-item">
+            <span class="end-value-icon"><i class="fas fa-truck" aria-hidden="true"></i></span>
+            <span class="end-value-text">Fast &amp; Free Shipping<br>Over $35*</span>
+          </div>
+          <div class="end-value-item">
+            <span class="end-value-icon"><i class="fas fa-shopping-bag" aria-hidden="true"></i></span>
+            <span class="end-value-text">Great Prices,<br>Everyday Value</span>
+          </div>
         </div>
       </div>
     </section>
@@ -944,26 +979,5 @@
       </div>
     </section>
 
-    <section class="home-end-value-strip" aria-label="Store benefits">
-      <div class="container">
-        <div class="end-value-grid">
-          <div class="end-value-item">
-            <span class="end-value-icon"><i class="fas fa-couch" aria-hidden="true"></i></span>
-            <span class="end-value-text">Curated<br>Best Picks</span>
-          </div>
-          <div class="end-value-item">
-            <span class="end-value-icon"><i class="fas fa-headset" aria-hidden="true"></i></span>
-            <span class="end-value-text">Live Support<br>When You Need It</span>
-          </div>
-          <div class="end-value-item">
-            <span class="end-value-icon"><i class="fas fa-truck" aria-hidden="true"></i></span>
-            <span class="end-value-text">Fast &amp; Free Shipping<br>Over $35*</span>
-          </div>
-          <div class="end-value-item">
-            <span class="end-value-icon"><i class="fas fa-shopping-bag" aria-hidden="true"></i></span>
-            <span class="end-value-text">Great Prices,<br>Everyday Value</span>
-          </div>
-        </div>
-      </div>
-    </section>
+
 

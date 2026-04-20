@@ -414,94 +414,133 @@
   <!-- Add Order Modal -->
   <div class="modal-overlay" *ngIf="addOrderModalVisible" (click)="closeAddOrder()">
     <div class="modal-content add-order-modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
+      <div class="modal-header add-order-header">
         <div class="modal-title">
-          <i class="pi pi-plus"></i>
-          <h3>Add New Order</h3>
-        </div>
-        <button type="button" class="btn icon close-btn" (click)="closeAddOrder()" title="Close">
-          <i class="pi pi-times"></i>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <div class="form-section">
-          <h4>Customer Information</h4>
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Customer Name *</label>
-              <input id="new-order-customer-name" name="newOrderCustomerName" type="text"
-                [(ngModel)]="newOrder.customerName" placeholder="Enter customer name" />
-            </div>
-            <div class="form-group">
-              <label>Phone *</label>
-              <input id="new-order-phone" name="newOrderPhone" type="text" [(ngModel)]="newOrder.phone"
-                placeholder="Enter phone number" />
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Address *</label>
-            <input id="new-order-address" name="newOrderAddress" type="text" [(ngModel)]="newOrder.address"
-              placeholder="Enter delivery address" />
-          </div>
-        </div>
-
-        <div class="form-section">
-          <h4>Order Items</h4>
-
-          <div class="sku-search-box">
-            <label>Add by SKU</label>
-            <div class="search-input-group">
-              <input id="new-order-sku-search" name="newOrderSkuSearch" type="text" [(ngModel)]="skuSearchTerm"
-                placeholder="Enter SKU (e.g. SHO-001)"
-                (keyup.enter)="searchProduct()">
-              <button type="button" class="btn primary" (click)="searchProduct()">
-                <i class="pi pi-search"></i>
-              </button>
-            </div>
-            <div class="found-product-preview" *ngIf="foundProduct">
-              <div class="product-info">
-                <strong>{{ foundProduct.name }}</strong>
-                <span>Price: {{ formatPrice(foundProduct.resellerPrice || foundProduct.price) }}</span>
-              </div>
-              <button type="button" class="btn small primary" (click)="addProductToOrder()">
-                <i class="pi pi-plus"></i> Add to Order
-              </button>
-            </div>
-          </div>
-
-          <div class="items-list">
-            <div class="item-row" *ngFor="let item of newOrder.items; let i = index">
-              <div class="item-inputs">
-                <input [id]="'new-order-item-name-' + i" [name]="'newOrderItemName' + i" type="text"
-                  [(ngModel)]="item.name" placeholder="Item name" />
-                <input [id]="'new-order-item-qty-' + i" [name]="'newOrderItemQty' + i" type="number"
-                  [(ngModel)]="item.qty" min="1" placeholder="Qty" />
-                <input [id]="'new-order-item-price-' + i" [name]="'newOrderItemPrice' + i" type="number"
-                  [(ngModel)]="item.price" min="0" step="0.01" placeholder="Price" />
-                <span class="item-total">{{ formatPrice(item.qty * item.price) }}</span>
-              </div>
-              <button type="button" class="btn icon danger" (click)="removeOrderItem(i)"
-                *ngIf="newOrder.items.length > 1" title="Remove item">
-                <i class="pi pi-trash"></i>
-              </button>
-            </div>
-          </div>
-          <button type="button" class="btn secondary" (click)="addOrderItem()">
+          <span class="title-icon">
             <i class="pi pi-plus"></i>
-            Add Item
+          </span>
+          <div class="title-copy">
+            <h3>Create Sourcing Request</h3>
+            <p>Add customer details, attach items, and send the order to admin.</p>
+          </div>
+        </div>
+        <div class="header-meta">
+          <span class="meta-chip">{{ newOrder.items.length }} items</span>
+          <span class="meta-chip strong">{{ formatPrice(getNewOrderTotal()) }}</span>
+          <button type="button" class="btn icon close-btn" (click)="closeAddOrder()" title="Close">
+            <i class="pi pi-times"></i>
           </button>
         </div>
+      </div>
 
-        <div class="order-summary">
-          <div class="summary-row">
-            <span>Total Amount:</span>
-            <span class="total-amount">{{ formatPrice(getNewOrderTotal()) }}</span>
+      <div class="modal-body add-order-body">
+        <div class="add-order-layout">
+          <div class="add-order-main">
+            <section class="form-section customer-panel">
+              <h4>Customer Information</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Customer Name *</label>
+                  <input id="new-order-customer-name" name="newOrderCustomerName" type="text"
+                    [(ngModel)]="newOrder.customerName" placeholder="Enter customer name" />
+                </div>
+                <div class="form-group">
+                  <label>Phone *</label>
+                  <input id="new-order-phone" name="newOrderPhone" type="text" [(ngModel)]="newOrder.phone"
+                    placeholder="Enter phone number" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Address *</label>
+                <input id="new-order-address" name="newOrderAddress" type="text" [(ngModel)]="newOrder.address"
+                  placeholder="Enter delivery address" />
+              </div>
+            </section>
+
+            <section class="form-section items-panel">
+              <h4>Order Items</h4>
+
+              <div class="sku-search-box">
+                <label>Add by SKU</label>
+                <div class="search-input-group">
+                  <input id="new-order-sku-search" name="newOrderSkuSearch" type="text" [(ngModel)]="skuSearchTerm"
+                    placeholder="Enter SKU (e.g. SHO-001)"
+                    (keyup.enter)="searchProduct()">
+                  <button type="button" class="btn primary" (click)="searchProduct()">
+                    <i class="pi pi-search"></i>
+                  </button>
+                </div>
+                <div class="found-product-preview" *ngIf="foundProduct">
+                  <div class="product-info">
+                    <strong>{{ foundProduct.name }}</strong>
+                    <span>Price: {{ formatPrice(foundProduct.resellerPrice || foundProduct.price) }}</span>
+                  </div>
+                  <button type="button" class="btn small primary" (click)="addProductToOrder()">
+                    <i class="pi pi-plus"></i> Add to Order
+                  </button>
+                </div>
+              </div>
+
+              <div class="items-list">
+                <div class="item-row" *ngFor="let item of newOrder.items; let i = index">
+                  <div class="item-row-head">
+                    <span>Line {{ i + 1 }}</span>
+                    <button type="button" class="btn icon danger" (click)="removeOrderItem(i)"
+                      *ngIf="newOrder.items.length > 1" title="Remove item">
+                      <i class="pi pi-trash"></i>
+                    </button>
+                  </div>
+                  <div class="item-inputs">
+                    <input [id]="'new-order-item-name-' + i" [name]="'newOrderItemName' + i" type="text"
+                      [(ngModel)]="item.name" placeholder="Item name" />
+                    <input [id]="'new-order-item-qty-' + i" [name]="'newOrderItemQty' + i" type="number"
+                      [(ngModel)]="item.qty" min="1" placeholder="Qty" />
+                    <input [id]="'new-order-item-price-' + i" [name]="'newOrderItemPrice' + i" type="number"
+                      [(ngModel)]="item.price" min="0" step="0.01" placeholder="Price" />
+                  </div>
+                  <div class="item-total-row">
+                    <span>Line Total</span>
+                    <strong>{{ formatPrice(item.qty * item.price) }}</strong>
+                  </div>
+                </div>
+              </div>
+
+              <button type="button" class="btn secondary add-item-btn" (click)="addOrderItem()">
+                <i class="pi pi-plus"></i>
+                Add Item
+              </button>
+            </section>
           </div>
+
+          <aside class="add-order-aside">
+            <div class="order-summary">
+              <h5>Request Summary</h5>
+              <div class="summary-row">
+                <span>Total Amount</span>
+                <span class="total-amount">{{ formatPrice(getNewOrderTotal()) }}</span>
+              </div>
+              <div class="summary-row">
+                <span>Total Line Items</span>
+                <strong>{{ newOrder.items.length }}</strong>
+              </div>
+              <div class="summary-row">
+                <span>Customer</span>
+                <strong>{{ newOrder.customerName || 'Not added' }}</strong>
+              </div>
+              <div class="summary-row">
+                <span>Phone</span>
+                <strong>{{ newOrder.phone || 'Not added' }}</strong>
+              </div>
+              <div class="summary-row">
+                <span>Address</span>
+                <strong>{{ newOrder.address || 'Not added' }}</strong>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
 
-      <div class="modal-actions">
+      <div class="modal-actions add-order-actions">
         <button type="button" class="btn secondary" (click)="closeAddOrder()">
           <i class="pi pi-times"></i>
           Cancel

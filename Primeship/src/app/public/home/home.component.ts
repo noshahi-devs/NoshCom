@@ -385,6 +385,36 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       slug: 'small-spaces',
       label: 'Small spaces',
       image: 'https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?auto=format&fit=crop&w=1800&q=80'
+    },
+    {
+      slug: 'rugs',
+      label: 'Rugs',
+      image: 'https://images.unsplash.com/photo-1601760562234-9814eea6663a?auto=format&fit=crop&w=1800&q=80'
+    },
+    {
+      slug: 'decor',
+      label: 'Decor',
+      image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1800&q=80'
+    },
+    {
+      slug: 'lighting',
+      label: 'Lighting',
+      image: 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=1800&q=80'
+    },
+    {
+      slug: 'organization',
+      label: 'Organization',
+      image: 'https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&w=1800&q=80'
+    },
+    {
+      slug: 'dining',
+      label: 'Dining',
+      image: 'https://images.unsplash.com/photo-1617104551722-3b2d5136641f?auto=format&fit=crop&w=1800&q=80'
+    },
+    {
+      slug: 'balcony',
+      label: 'Balcony',
+      image: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1800&q=80'
     }
   ];
 
@@ -701,20 +731,20 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     Swal.fire({
       title: `Keep shopping for ${this.keepShoppingQuery}`,
       html: `
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;align-items:start">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;align-items:stretch;">
           ${this.wfKeepShoppingProducts
             .slice(0, 6)
             .map(
               p => `
-                <div style="border:1px solid #E5E7EB;border-radius:10px;overflow:hidden;box-shadow:0 8px 20px rgba(15,23,42,0.08);">
+                <div style="border:1px solid #E5E7EB;border-radius:10px;overflow:hidden;box-shadow:0 8px 20px rgba(15,23,42,0.08);display:flex;flex-direction:column;height:100%;">
                   <div style="width:100%;padding-bottom:100%;position:relative;background:#f8fafb;">
                     <img src="${p.image}" alt="${p.name}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" loading="lazy" />
                   </div>
-                  <div style="padding:10px;text-align:center;">
-                    <div style="font-weight:700;font-size:13px;color:#111;">${p.name || 'Product'}</div>
-                    <div style="font-weight:800;font-size:14px;color:#0f172a;">${p.price ? '$' + p.price.toFixed(0) : ''}</div>
+                  <div style="padding:10px;text-align:center;display:flex;flex-direction:column;gap:6px;flex:1;">
+                    <div style="font-weight:700;font-size:13px;line-height:1.35;color:#111;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:36px;">${p.name || 'Product'}</div>
+                    <div style="font-weight:800;font-size:14px;color:#0f172a;margin-top:auto;">${p.price ? '$' + p.price.toFixed(0) : ''}</div>
                   </div>
-                  <div style="background:#10B981;color:#fff;font-weight:700;font-size:11px;padding:6px 10px;border-radius:0 10px 0 0;">5 Days of Deals</div>
+                  <div style="background:#10B981;color:#fff;font-weight:700;font-size:11px;padding:6px 10px;">5 Days of Deals</div>
                 </div>`
             )
             .join('')}
@@ -895,64 +925,65 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     return this.visibleJustForYouCount < this.dealsJustForYou.length;
   }
 
-  scrollRecommended(dir: 'left' | 'right'): void {
-    const el = this.recList?.nativeElement;
+  private handleCarouselNav(event?: Event): void {
+    if (!event) return;
+    event.preventDefault();
+    event.stopPropagation();
+    (event.currentTarget as HTMLElement | null)?.blur();
+  }
+
+  private scrollCarousel(el: HTMLElement | undefined, dir: 'left' | 'right', fallbackStep = 320): void {
     if (!el) return;
-    const delta = dir === 'left' ? -320 : 320;
+
+    // Use viewport-aware step for consistent movement and to avoid hard jump on different card widths.
+    const viewportStep = Math.round(el.clientWidth * 0.82);
+    const step = Math.max(220, viewportStep || fallbackStep);
+    const delta = dir === 'left' ? -step : step;
     el.scrollBy({ left: delta, behavior: 'smooth' });
   }
 
-  scrollDealsRow(dir: 'left' | 'right'): void {
-    const el = this.dealList?.nativeElement;
-    if (!el) return;
-    const delta = dir === 'left' ? -320 : 320;
-    el.scrollBy({ left: delta, behavior: 'smooth' });
+  scrollRecommended(dir: 'left' | 'right', event?: Event): void {
+    this.handleCarouselNav(event);
+    this.scrollCarousel(this.recList?.nativeElement, dir, 320);
   }
 
-  scrollCollections(dir: 'left' | 'right'): void {
-    const el = this.collList?.nativeElement;
-    if (!el) return;
-    const delta = dir === 'left' ? -320 : 320;
-    el.scrollBy({ left: delta, behavior: 'smooth' });
+  scrollDealsRow(dir: 'left' | 'right', event?: Event): void {
+    this.handleCarouselNav(event);
+    this.scrollCarousel(this.dealList?.nativeElement, dir, 320);
+  }
+
+  scrollCollections(dir: 'left' | 'right', event?: Event): void {
+    this.handleCarouselNav(event);
+    this.scrollCarousel(this.collList?.nativeElement, dir, 320);
   }
 
   get collectionItems(): DealItem[] {
     return this.allProducts.slice(0, 12);
   }
 
-  scrollProducts(dir: 'left' | 'right'): void {
-    const el = this.prodList?.nativeElement;
-    if (!el) return;
-    const delta = dir === 'left' ? -360 : 360;
-    el.scrollBy({ left: delta, behavior: 'smooth' });
+  scrollProducts(dir: 'left' | 'right', event?: Event): void {
+    this.handleCarouselNav(event);
+    this.scrollCarousel(this.prodList?.nativeElement, dir, 360);
   }
 
-  scrollSquares2(dir: 'left' | 'right'): void {
-    const el = this.squareList2?.nativeElement;
-    if (!el) return;
-    const delta = dir === 'left' ? -300 : 300;
-    el.scrollBy({ left: delta, behavior: 'smooth' });
+  scrollSquares2(dir: 'left' | 'right', event?: Event): void {
+    this.handleCarouselNav(event);
+    this.scrollCarousel(this.squareList2?.nativeElement, dir, 300);
   }
 
-  scrollSpaces(dir: 'left' | 'right'): void {
-    const el = this.spaceList?.nativeElement;
-    if (!el) return;
-    const delta = dir === 'left' ? -420 : 420;
-    el.scrollBy({ left: delta, behavior: 'smooth' });
+  scrollSpaces(dir: 'left' | 'right', event?: Event): void {
+    this.handleCarouselNav(event);
+    this.scrollCarousel(this.spaceList?.nativeElement, dir, 420);
   }
 
-  scrollBudget(dir: 'left' | 'right'): void {
-    const el = this.budgetList?.nativeElement;
-    if (!el) return;
-    const delta = dir === 'left' ? -420 : 420;
-    el.scrollBy({ left: delta, behavior: 'smooth' });
+  scrollBudget(dir: 'left' | 'right', event?: Event): void {
+    this.handleCarouselNav(event);
+    this.scrollCarousel(this.budgetList?.nativeElement, dir, 420);
   }
 
-  scrollWfDeals(dir: 'left' | 'right'): void {
-    const el = this.wfDealList?.nativeElement;
-    if (!el) return;
-    const delta = dir === 'left' ? -420 : 420;
-    el.scrollBy({ left: delta, behavior: 'smooth' });
+  scrollWfDeals(dir: 'left' | 'right', event?: Event): void {
+    this.handleCarouselNav(event);
+    this.scrollCarousel(this.wfDealList?.nativeElement, dir, 420);
   }
 
   getRewardExtra(p: DealItem): number {

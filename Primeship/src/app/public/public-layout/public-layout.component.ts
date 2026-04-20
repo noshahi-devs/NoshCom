@@ -43,14 +43,18 @@ declare var lucide: any;
         <div class="header-main-bar">
           <div class="container-header header-main-flex">
             <div class="search-section">
+              <a routerLink="/home" class="header-main-logo" aria-label="Eliship Home">
+                <span class="header-main-logo-mark" aria-hidden="true">E</span>
+                <span class="header-main-logo-text">ELISHIP</span>
+              </a>
               <div class="search-box">
                 <input type="text" [(ngModel)]="searchTerm" placeholder="Find anything home..." (keyup.enter)="onSearch()" />
                 <button class="search-icon-btn" (click)="onSearch()"><i class="fas fa-search"></i></button>
               </div>
             </div>
 
-            <div class="action-section">
-               <div class="account-wrap" (click)="$event.stopPropagation()">
+            <div class="action-section" [class.notifications-only]="showNotificationPanel">
+               <div class="account-wrap" *ngIf="!showNotificationPanel" (click)="$event.stopPropagation()">
                  <button type="button" class="action-link account-trigger" (click)="toggleAccountDropdown($event)">
                     <svg class="action-icon account-icon" viewBox="0 0 28 28" aria-hidden="true" focusable="false">
                       <path d="M14 4.5a9.5 9.5 0 109.5 9.5A9.51 9.51 0 0014 4.5zM9.26 21.05v-2.17a3.37 3.37 0 013.36-3.36h2.74a3.37 3.37 0 013.36 3.36v2.19a8.47 8.47 0 01-9.48 0zM14 14.5a2.5 2.5 0 112.5-2.5 2.5 2.5 0 01-2.5 2.5zm5.73 5.76v-1.38a4.37 4.37 0 00-3.44-4.26A3.45 3.45 0 0017.5 12a3.5 3.5 0 00-7 0 3.45 3.45 0 001.21 2.62 4.37 4.37 0 00-3.44 4.26v1.38a8.5 8.5 0 1111.46 0z"></path>
@@ -102,12 +106,31 @@ declare var lucide: any;
                        </ng-template>
                      </div>
                    </div>
-                 </div>
+                  </div>
+                  </div>
+
+                <div class="notification-wrap" (click)="$event.stopPropagation()">
+                  <button type="button" class="action-link notification-trigger" (click)="toggleNotificationPanel($event)" aria-label="Notifications">
+                     <svg class="action-icon notification-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                       <path d="M12 3a5 5 0 00-5 5v2.76c0 .7-.24 1.39-.67 1.94L5.2 14.1A1.5 1.5 0 006.4 16.5h11.2a1.5 1.5 0 001.2-2.4l-1.13-1.4a3.1 3.1 0 01-.67-1.94V8a5 5 0 00-5-5zm0 18a2.5 2.5 0 002.45-2h-4.9A2.5 2.5 0 0012 21z"></path>
+                     </svg>
+                     <span>Notifications</span>
+                   </button>
+
+                  <div class="notification-panel" *ngIf="showNotificationPanel" role="dialog" aria-label="Notifications panel">
+                    <div class="notification-panel-header">
+                      <span>Notifications</span>
+                      <button type="button" class="notification-panel-close" (click)="closeNotificationPanel($event)" aria-label="Close notifications">×</button>
+                    </div>
+                    <div class="notification-panel-body">
+                      <div class="notification-empty">No new notifications right now.</div>
+                    </div>
+                  </div>
                 </div>
 
-                <a routerLink="/cart" class="action-link cart-trigger" (click)="onCartClick($event)">
-                   <svg class="action-icon" focusable="false" viewBox="2 2 24 24" aria-hidden="true">
-                     <path d="M21 15.54a.51.51 0 00.49-.38l2-8a.51.51 0 00-.1-.43.49.49 0 00-.39-.19H8.28L8 4.9a.51.51 0 00-.49-.4H5a.5.5 0 000 1h2.05L9 15l-2.36 4.74a.53.53 0 000 .49.5.5 0 00.42.23H21a.5.5 0 00.5-.5.5.5 0 00-.5-.5H7.89l1.92-3.92zm1.34-8l-1.73 7H9.92l-1.43-7zM10 21a1 1 0 101 1 1 1 0 00-1-1zM18 21a1 1 0 101 1 1 1 0 00-1-1z"></path>
+                 <a routerLink="/cart" *ngIf="!showNotificationPanel" class="action-link cart-trigger" (click)="onCartClick($event)">
+                    <svg class="action-icon" focusable="false" viewBox="2 2 24 24" aria-hidden="true">
+                      <path d="M21 15.54a.51.51 0 00.49-.38l2-8a.51.51 0 00-.1-.43.49.49 0 00-.39-.19H8.28L8 4.9a.51.51 0 00-.49-.4H5a.5.5 0 000 1h2.05L9 15l-2.36 4.74a.53.53 0 000 .49.5.5 0 00.42.23H21a.5.5 0 00.5-.5.5.5 0 00-.5-.5H7.89l1.92-3.92zm1.34-8l-1.73 7H9.92l-1.43-7zM10 21a1 1 0 101 1 1 1 0 00-1-1zM18 21a1 1 0 101 1 1 1 0 00-1-1z"></path>
                    </svg>
                    <span>Cart</span>
                    <span class="badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
@@ -117,7 +140,7 @@ declare var lucide: any;
                 <div class="cart-modal" *ngIf="showCartPopup" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Cart popup">
                   <div class="cart-modal-header">
                     <div class="cart-modal-title">In Your Cart</div>
-                    <button type="button" class="cart-modal-close" (click)="closeCartPopup()" aria-label="Close">×</button>
+                    <button type="button" class="cart-modal-close" (click)="closeCartPopup()" aria-label="Close">Ã—</button>
                   </div>
                   <div class="cart-modal-body">
                     <div class="cart-empty-title">Oh-no! Looks like your cart is empty.</div>
@@ -166,7 +189,7 @@ declare var lucide: any;
                           </div>
                           <div class="verified-pop-title">Your shortcut to the good stuff.</div>
                           <div class="verified-pop-sub">
-                            Verified items are hand‑vetted for quality by our product specialists.
+                            Verified items are handâ€‘vetted for quality by our product specialists.
                           </div>
                         </div>
                         <div class="verified-pop-grid">
@@ -273,69 +296,79 @@ declare var lucide: any;
           </div>
         </div>
 
-        <div class="promo-bar">
-          <div class="container-header promo-inner">
-            <span>UP TO 70% OFF | 5 DAYS OF DEALS</span>
-            <span class="promo-arrow">→</span>
-          </div>
-        </div>
-      </header>
+        <ng-container *ngIf="showPromoCarousel && !isAuthPage && !isHomePage && !isShopPage; else promoBarOnly">
+          <section class="promo-carousel" (click)="$event.stopPropagation()" aria-label="Promotions carousel">
+            <div class="promo-bar promo-carousel-bar">
+              <div class="container-header promo-inner">
+                <span>UP TO 70% OFF | 5 DAYS OF DEALS</span>
+                <span class="promo-arrow">â†’</span>
+              </div>
+            </div>
 
-      <section class="promo-carousel" *ngIf="showPromoCarousel && !isAuthPage && !isHomePage && !isShopPage" (click)="$event.stopPropagation()" aria-label="Promotions carousel">
-        <div class="promo-carousel-inner">
-          <button type="button" class="promo-carousel-nav prev" (click)="prevPromo($event)" aria-label="Previous promotion">
-            <span class="promo-carousel-nav-ico" aria-hidden="true">
-              <svg focusable="false" viewBox="0 0 24 24" role="img" aria-label="Previous Slide">
-                <title>Previous Slide</title>
-                <path d="M9.5 4.5c.13 0 .26.05.35.15l7 7c.2.2.2.51 0 .71l-7 7c-.2.2-.51.2-.71 0s-.2-.51 0-.71L15.79 12 9.14 5.35c-.2-.2-.2-.51 0-.71.1-.1.23-.15.35-.15z"></path>
-              </svg>
-            </span>
-          </button>
+            <div class="promo-carousel-inner">
+              <button type="button" class="promo-carousel-nav prev" (click)="prevPromo($event)" aria-label="Previous promotion">
+                <span class="promo-carousel-nav-ico" aria-hidden="true">
+                  <svg focusable="false" viewBox="0 0 24 24" role="img" aria-label="Previous Slide">
+                    <title>Previous Slide</title>
+                    <path d="M9.5 4.5c.13 0 .26.05.35.15l7 7c.2.2.2.51 0 .71l-7 7c-.2.2-.51.2-.71 0s-.2-.51 0-.71L15.79 12 9.14 5.35c-.2-.2-.2-.51 0-.71.1-.1.23-.15.35-.15z"></path>
+                  </svg>
+                </span>
+              </button>
 
-          <div class="promo-carousel-viewport">
-            <div class="promo-carousel-track" [style.transform]="'translateX(-' + (promoIndex * 100) + '%)'">
-              <a
-                *ngFor="let slide of promoSlides; let i = index"
-                class="promo-carousel-slide"
-                [class.active]="i === promoIndex"
-                [routerLink]="slide.routerLink"
-                [queryParams]="slide.queryParams"
-              >
-                <ng-container *ngIf="slide.video; else promoImage">
-                  <video class="promo-carousel-media" autoplay muted loop playsinline preload="metadata" [attr.poster]="slide.poster || null">
-                    <source [src]="slide.video" type="video/mp4" />
-                  </video>
-                </ng-container>
-                <ng-template #promoImage>
-                  <img class="promo-carousel-media" [src]="slide.image" [alt]="slide.alt" loading="lazy" />
-                </ng-template>
-              </a>
+              <div class="promo-carousel-viewport">
+                <div class="promo-carousel-track" [style.transform]="'translateX(-' + (promoIndex * 100) + '%)'">
+                  <a
+                    *ngFor="let slide of promoSlides; let i = index"
+                    class="promo-carousel-slide"
+                    [class.active]="i === promoIndex"
+                    [routerLink]="slide.routerLink"
+                    [queryParams]="slide.queryParams"
+                  >
+                    <ng-container *ngIf="slide.video; else promoImage">
+                      <video class="promo-carousel-media" autoplay muted loop playsinline preload="metadata" [attr.poster]="slide.poster || null">
+                        <source [src]="slide.video" type="video/mp4" />
+                      </video>
+                    </ng-container>
+                    <ng-template #promoImage>
+                      <img class="promo-carousel-media" [src]="slide.image" [alt]="slide.alt" loading="lazy" />
+                    </ng-template>
+                  </a>
+                </div>
+              </div>
+
+              <button type="button" class="promo-carousel-nav next" (click)="nextPromo($event)" aria-label="Next promotion">
+                <span class="promo-carousel-nav-ico" aria-hidden="true">
+                  <svg focusable="false" viewBox="0 0 24 24" role="img" aria-label="Next Slide">
+                    <title>Next Slide</title>
+                    <path d="M9.5 4.5c.13 0 .26.05.35.15l7 7c.2.2.2.51 0 .71l-7 7c-.2.2-.51.2-.71 0s-.2-.51 0-.71L15.79 12 9.14 5.35c-.2-.2-.2-.51 0-.71.1-.1.23-.15.35-.15z"></path>
+                  </svg>
+                </span>
+              </button>
+
+              <div class="promo-carousel-dots" aria-hidden="true">
+                <button
+                  type="button"
+                  class="promo-carousel-dot"
+                  *ngFor="let _ of promoSlides; let i = index"
+                  [class.active]="i === promoIndex"
+                  (click)="goToPromo(i, $event)"
+                ></button>
+              </div>
+            </div>
+          </section>
+        </ng-container>
+        <ng-template #promoBarOnly>
+          <div class="promo-bar">
+            <div class="container-header promo-inner">
+              <span>UP TO 70% OFF | 5 DAYS OF DEALS</span>
+              <span class="promo-arrow">â†’</span>
             </div>
           </div>
-
-          <button type="button" class="promo-carousel-nav next" (click)="nextPromo($event)" aria-label="Next promotion">
-            <span class="promo-carousel-nav-ico" aria-hidden="true">
-              <svg focusable="false" viewBox="0 0 24 24" role="img" aria-label="Next Slide">
-                <title>Next Slide</title>
-                <path d="M9.5 4.5c.13 0 .26.05.35.15l7 7c.2.2.2.51 0 .71l-7 7c-.2.2-.51.2-.71 0s-.2-.51 0-.71L15.79 12 9.14 5.35c-.2-.2-.2-.51 0-.71.1-.1.23-.15.35-.15z"></path>
-              </svg>
-            </span>
-          </button>
-
-          <div class="promo-carousel-dots" aria-hidden="true">
-            <button
-              type="button"
-              class="promo-carousel-dot"
-              *ngFor="let _ of promoSlides; let i = index"
-              [class.active]="i === promoIndex"
-              (click)="goToPromo(i, $event)"
-            ></button>
-          </div>
-        </div>
-      </section>
+        </ng-template>
+      </header>
 
       <!-- Content Area -->
-      <main class="nosh-main">
+      <main class="nosh-main" [class.home-route]="isHomePage">
         <router-outlet></router-outlet>
       </main>
 
@@ -351,7 +384,7 @@ declare var lucide: any;
         <div class="help-popover" *ngIf="showHelpWidget" role="dialog" aria-label="Help" (click)="$event.stopPropagation()">
           <div class="help-popover-top">
             <div class="help-popover-title">Help</div>
-            <button type="button" class="help-popover-close" aria-label="Close" (click)="closeHelpWidget($event)">×</button>
+            <button type="button" class="help-popover-close" aria-label="Close" (click)="closeHelpWidget($event)">Ã—</button>
           </div>
 
           <div class="help-popover-body">
@@ -440,7 +473,7 @@ declare var lucide: any;
             </section>
 
             <div class="wf-footer-bottom" aria-label="Footer bottom">
-              <div class="wf-footer-copy">Copyright © 2026 Eliship. All rights reserved.</div>
+              <div class="wf-footer-copy">Copyright Â© 2026 Eliship. All rights reserved.</div>
               <div class="wf-footer-social">
                 <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
                 <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
@@ -549,18 +582,42 @@ declare var lucide: any;
     .header-main-bar { padding: 6px 0 8px; }
     .header-main-flex { display: grid; grid-template-columns: minmax(320px, 1fr) auto; align-items: center; gap: 22px; }
 
-    .search-section { width: 100%; display: flex; align-items: center; justify-content: center; }
-    .search-box { display: flex; width: 100%; max-width: 700px; height: 52px; border-radius: 10px; background: #FFF; border: 1px solid #D1D5DB; box-shadow: 0 6px 14px rgba(15, 23, 42, 0.07); overflow: hidden; }
-    .search-box input { flex: 1; border: none; padding: 0 22px; font-size: 15px; font-weight: 500; outline: none; color: #111827; }
+    .search-section { width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 14px; }
+    .header-main-logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; flex: 0 0 auto; }
+    .header-main-logo-mark { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #10B981 0%, #065F46 100%); color: #FFF; font-weight: 900; font-size: 20px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 8px 16px rgba(6, 95, 70, 0.22); }
+    .header-main-logo-text { font-size: 22px; font-weight: 900; letter-spacing: 0.08em; color: #065F46; line-height: 1; }
+    .search-section .search-box { flex: 1; max-width: none; }
+    .search-box { display: flex; width: 100%; max-width: 700px; height: 52px; border-radius: 10px; background: #FFF; border: 1px solid #A7F3D0; box-shadow: 0 6px 14px rgba(6, 95, 70, 0.10); overflow: hidden; }
+    .search-box input { flex: 1; border: none; padding: 0 22px; font-size: 15px; font-weight: 500; outline: none; color: #14532D; }
     .search-box input::placeholder { color: #9CA3AF; }
     .search-icon-btn { width: 64px; border: none; background: #10B981; color: #FFF; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; border-radius: 0 10px 10px 0; padding: 0 10px; }
     .search-icon-btn:focus { outline: none; }
 
     .action-section { display: flex; align-items: center; gap: 12px; justify-content: flex-end; margin-right: 10px; }
-    .action-link { text-decoration: none; color: #111827; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 999px; background: transparent; border: none; cursor: pointer; font-family: inherit; }
+    .action-section.notifications-only { gap: 0; }
+    .action-link { text-decoration: none; color: #14532D; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 999px; background: transparent; border: none; cursor: pointer; font-family: inherit; }
     .action-link:hover { color: #10B981; }
     .action-icon { width: 26px; height: 26px; display: inline-block; flex: 0 0 auto; fill: #10B981; color: #10B981; stroke: #10B981; }
     .account-icon { width: 32px; height: 32px; }
+    .notification-icon { width: 24px; height: 24px; }
+    .notification-wrap { position: relative; display: inline-flex; align-items: center; }
+    .notification-panel {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: 320px;
+      background: #FFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      box-shadow: 0 18px 40px rgba(6, 95, 70, 0.20);
+      z-index: 2400;
+      overflow: hidden;
+    }
+    .notification-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid #D1FAE5; font-weight: 800; color: #14532D; }
+    .notification-panel-close { border: none; background: transparent; font-size: 20px; line-height: 1; cursor: pointer; color: #6B7280; padding: 0 4px; }
+    .notification-panel-close:hover { color: #14532D; }
+    .notification-panel-body { padding: 14px; }
+    .notification-empty { color: #4B5563; font-weight: 600; font-size: 13px; }
     .account-wrap { position: relative; display: inline-flex; align-items: center; }
     .account-trigger { user-select: none; }
 
@@ -572,17 +629,17 @@ declare var lucide: any;
       background: #FFF;
       border: 1px solid #E5E7EB;
       border-radius: 12px;
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+      box-shadow: 0 18px 40px rgba(6, 95, 70, 0.20);
       padding: 10px;
       z-index: 2400;
       max-height: min(70vh, 520px);
       overflow-y: auto;
       overscroll-behavior: contain;
     }
-    .account-dd-header { font-size: 18px; font-weight: 700; padding: 10px 10px 12px; color: #111827; border-bottom: 1px solid #E5E7EB; }
+    .account-dd-header { font-size: 18px; font-weight: 700; padding: 10px 10px 12px; color: #14532D; border-bottom: 1px solid #D1FAE5; }
     .account-dd-name { font-weight: 800; }
     .account-dd-group { padding: 6px 2px 2px; display: grid; gap: 2px; }
-    .account-dd-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 10px; border-radius: 10px; color: #111827; text-decoration: none; font-size: 14px; font-weight: 600; background: transparent; border: none; cursor: pointer; text-align: left; font-family: inherit; line-height: 1.3; }
+    .account-dd-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 10px; border-radius: 10px; color: #14532D; text-decoration: none; font-size: 14px; font-weight: 600; background: transparent; border: none; cursor: pointer; text-align: left; font-family: inherit; line-height: 1.3; }
     .account-dd-item i { width: 18px; text-align: center; color: #10B981; opacity: 0.9; font-size: 15px; }
     .account-dd-item:hover { background: #F3F4F6; }
 
@@ -594,35 +651,35 @@ declare var lucide: any;
     .account-dd-sep { height: 1px; background: #E5E7EB; margin: 8px 8px; }
     .account-dd-footer { border-top: 1px solid #E5E7EB; margin-top: 10px; padding: 10px 10px 6px; font-size: 12px; color: #6B7280; display: flex; align-items: center; justify-content: flex-start; gap: 6px; }
     .account-dd-footer > span { flex: 0 1 auto; }
-    .account-dd-signout { border: none; background: transparent; color: #111827; font-weight: 700; cursor: pointer; padding: 0; text-decoration: underline; }
+    .account-dd-signout { border: none; background: transparent; color: #14532D; font-weight: 700; cursor: pointer; padding: 0; text-decoration: underline; }
     .account-dd-ctas { display: inline-flex; gap: 10px; align-items: center; flex: 0 0 auto; }
-    .account-dd-cta { color: #111827; font-weight: 800; text-decoration: underline; cursor: pointer; white-space: nowrap; }
+    .account-dd-cta { color: #14532D; font-weight: 800; text-decoration: underline; cursor: pointer; white-space: nowrap; }
 
     .cart-trigger { position: relative; }
     .cart-trigger .badge { position: absolute; top: -5px; right: -8px; background: #F43F5E; color: #FFF; font-size: 11px; font-weight: 900; padding: 2px 6px; border-radius: 12px; line-height: 1; border: 2px solid #FFF; }
 
-    .cart-modal-backdrop { position: fixed; inset: 0; background: rgba(17, 24, 39, 0.35); z-index: 2500; }
-    .cart-modal { position: fixed; top: 110px; right: 24px; width: 420px; max-width: calc(100vw - 32px); background: #FFF; border: 1px solid #E5E7EB; border-radius: 14px; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22); z-index: 2600; overflow: hidden; }
+    .cart-modal-backdrop { position: fixed; inset: 0; background: rgba(6, 78, 59, 0.30); z-index: 2500; }
+    .cart-modal { position: fixed; top: 110px; right: 24px; width: 420px; max-width: calc(100vw - 32px); background: #FFF; border: 1px solid #D1FAE5; border-radius: 14px; box-shadow: 0 24px 60px rgba(6, 95, 70, 0.22); z-index: 2600; overflow: hidden; }
     .cart-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #E5E7EB; }
-    .cart-modal-title { font-weight: 900; font-size: 20px; color: #111827; }
+    .cart-modal-title { font-weight: 900; font-size: 20px; color: #14532D; }
     .cart-modal-close { border: none; background: transparent; font-size: 22px; line-height: 1; cursor: pointer; color: #6B7280; padding: 0 6px; }
-    .cart-modal-close:hover { color: #111827; }
+    .cart-modal-close:hover { color: #14532D; }
     .cart-modal-body { padding: 16px; }
-    .cart-empty-title { font-size: 22px; font-weight: 900; color: #111827; margin: 8px 0 6px; }
+    .cart-empty-title { font-size: 22px; font-weight: 900; color: #14532D; margin: 8px 0 6px; }
     .cart-empty-sub { color: #4B5563; font-weight: 600; margin-bottom: 14px; }
     .cart-empty-options { display: grid; gap: 10px; }
-    .cart-empty-option { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 12px; border: 1px solid #E5E7EB; border-radius: 12px; background: #FFF; cursor: pointer; text-align: left; font-weight: 700; color: #111827; }
+    .cart-empty-option { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 12px; border: 1px solid #D1FAE5; border-radius: 12px; background: #FFF; cursor: pointer; text-align: left; font-weight: 700; color: #14532D; }
     .cart-empty-option:hover { background: #F9FAFB; border-color: #D1D5DB; }
     .cart-empty-icon { width: 40px; height: 40px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; background: rgba(16, 185, 129, 0.12); color: #10B981; flex: 0 0 auto; }
     .cart-empty-icon i { font-size: 18px; }
     .cart-empty-link { color: #10B981; text-decoration: underline; }
 
     .category-links { display: flex; gap: 22px; flex-wrap: nowrap; overflow-x: auto; padding: 10px 0; align-items: center; justify-content: center; width: 100%; }
-    .category-link { color: #111827; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; opacity: 0.92; transition: opacity 0.2s ease, color 0.2s ease; }
+    .category-link { color: #14532D; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; opacity: 0.92; transition: opacity 0.2s ease, color 0.2s ease; }
     .category-link:hover { color: #10B981; opacity: 1; text-decoration: none; }
 
     .feature-links { display: flex; gap: 16px; flex-wrap: wrap; overflow: visible; padding: 6px 0; align-items: center; justify-content: center; width: 100%; border-bottom: 1px solid #34D399; }
-    .feature-link { color: #111827; font-size: 12px; font-weight: 500; text-decoration: none; white-space: nowrap; opacity: 0.95; transition: opacity 0.2s ease, color 0.2s ease; display: inline-flex; align-items: center; gap: 6px; }
+    .feature-link { color: #14532D; font-size: 12px; font-weight: 500; text-decoration: none; white-space: nowrap; opacity: 0.95; transition: opacity 0.2s ease, color 0.2s ease; display: inline-flex; align-items: center; gap: 6px; }
     .feature-link:hover { color: #10B981; opacity: 1; text-decoration: none; }
     .feature-link.verified { color: #10B981; }
     .feature-link i { font-size: 13px; }
@@ -774,7 +831,7 @@ declare var lucide: any;
       border: 1px solid rgba(16,185,129,0.35);
       border-radius: 22px;
       padding: 24px 26px;
-      box-shadow: 0 28px 60px rgba(15, 23, 42, 0.2);
+      box-shadow: 0 28px 60px rgba(6, 95, 70, 0.2);
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
@@ -794,7 +851,7 @@ declare var lucide: any;
     .mega-col { padding: 0 18px; }
     .mega-col:first-child { padding-left: 0; }
     .mega-col:last-child { padding-right: 0; }
-    .mega-col + .mega-col { border-left: 1px solid rgba(17, 24, 39, 0.10); }
+    .mega-col + .mega-col { border-left: 1px solid rgba(6, 95, 70, 0.14); }
     .mega-col-title { font-weight: 900; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: #0F766E; margin-bottom: 12px; }
     .mega-item {
       display: flex;
@@ -802,7 +859,7 @@ declare var lucide: any;
       gap: 12px;
       font-size: 14px;
       font-weight: 700;
-      color: #111827;
+      color: #14532D;
       text-decoration: none;
       padding: 8px 10px;
       margin: 0 -10px;
@@ -820,7 +877,7 @@ declare var lucide: any;
       flex: 0 0 auto;
       background: #F3F4F6;
       border: 1px solid rgba(16,185,129,0.22);
-      box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
+      box-shadow: 0 8px 16px rgba(6, 95, 70, 0.10);
       margin-top: 1px;
       transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
     }
@@ -848,11 +905,11 @@ declare var lucide: any;
     }
 
     .mega-item.hot .mega-item-thumb { border-color: rgba(16,185,129,0.55); }
-    .mega-side { display: grid; grid-template-columns: repeat(2, minmax(170px, 1fr)); gap: 0; align-content: start; padding-left: 24px; border-left: 1px solid rgba(17, 24, 39, 0.10); }
+    .mega-side { display: grid; grid-template-columns: repeat(2, minmax(170px, 1fr)); gap: 0; align-content: start; padding-left: 24px; border-left: 1px solid rgba(6, 95, 70, 0.14); }
     .mega-side-group { display: grid; gap: 8px; align-content: start; padding: 0 18px; }
     .mega-side-group:first-child { padding-left: 0; }
     .mega-side-group:last-child { padding-right: 0; }
-    .mega-side-group + .mega-side-group { border-left: 1px solid rgba(17, 24, 39, 0.10); }
+    .mega-side-group + .mega-side-group { border-left: 1px solid rgba(6, 95, 70, 0.14); }
     .mega-side-title { font-weight: 900; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: #0F766E; margin-bottom: 8px; }
 
     @media (max-width: 1024px) {
@@ -869,19 +926,19 @@ declare var lucide: any;
     .promo-inner { display: flex; justify-content: center; align-items: center; gap: 8px; min-height: 34px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; line-height: 1; }
     .promo-arrow { font-size: 15px; }
 
-    .promo-carousel { background: #FFF; border-bottom: 1px solid #E5E7EB; }
+    .promo-carousel { margin-top: 0; background: #FFF; border-bottom: 1px solid #E5E7EB; }
     .promo-carousel-inner { position: relative; width: 100%; margin: 0; padding: 0; }
-    .promo-carousel-viewport { border-radius: 0; overflow: hidden; border-top: 1px solid #E5E7EB; border-bottom: 1px solid #E5E7EB; background: #111827; }
+    .promo-carousel-viewport { border-radius: 0; overflow: hidden; border-top: 0; border-bottom: 1px solid #D1FAE5; background: #064E3B; }
     .promo-carousel-track { display: flex; width: 100%; transition: transform 420ms ease; }
     .promo-carousel-slide { min-width: 100%; height: 340px; position: relative; display: block; text-decoration: none; color: inherit; }
     .promo-carousel-media { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .promo-carousel-overlay { position: absolute; inset: 0; display: flex; align-items: center; padding: 18px 18px; background: linear-gradient(90deg, rgba(17, 24, 39, 0.58) 0%, rgba(17, 24, 39, 0.14) 60%, rgba(17, 24, 39, 0) 100%); }
+    .promo-carousel-overlay { position: absolute; inset: 0; display: flex; align-items: center; padding: 18px 18px; background: linear-gradient(90deg, rgba(6, 78, 59, 0.62) 0%, rgba(6, 78, 59, 0.20) 60%, rgba(6, 78, 59, 0) 100%); }
     .promo-carousel-text { max-width: 520px; color: #FFF; }
     .promo-carousel-kicker { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.92; margin-bottom: 6px; }
     .promo-carousel-title { font-size: 30px; font-weight: 900; line-height: 1.05; margin-bottom: 10px; }
-    .promo-carousel-cta { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,0.95); color: #111827; font-size: 12px; font-weight: 900; width: fit-content; }
+    .promo-carousel-cta { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,0.95); color: #14532D; font-size: 12px; font-weight: 900; width: fit-content; }
 
-    .promo-carousel-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 999px; border: 1px solid #E5E7EB; background: rgba(255, 255, 255, 0.98); color: #111827; cursor: pointer; z-index: 2; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18); }
+    .promo-carousel-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 999px; border: 1px solid #A7F3D0; background: rgba(255, 255, 255, 0.98); color: #14532D; cursor: pointer; z-index: 2; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 10px 22px rgba(6, 95, 70, 0.18); }
     .promo-carousel-nav:hover { background: #FFF; }
     .promo-carousel-nav.prev { left: 14px; }
     .promo-carousel-nav.next { right: 14px; }
@@ -907,6 +964,7 @@ declare var lucide: any;
       .header-main-flex { grid-template-columns: 1fr; gap: 16px; }
       .action-section { justify-content: flex-start; width: 100%; }
       .search-box { max-width: 100%; }
+      .header-main-logo-text { font-size: 20px; }
       .marketing-inner { flex-wrap: wrap; justify-content: center; }
       .marketing-right { flex-wrap: wrap; justify-content: center; }
     }
@@ -915,6 +973,9 @@ declare var lucide: any;
       .brand-bar-inner, .header-main-flex, .nav-bar-inner, .promo-inner { flex-wrap: wrap; justify-content: center; }
       .brand-links, .utility-links, .category-links { justify-content: center; gap: 12px; }
       .header-main-flex { grid-template-columns: 1fr; }
+      .search-section { gap: 10px; }
+      .header-main-logo-mark { width: 34px; height: 34px; font-size: 16px; border-radius: 9px; }
+      .header-main-logo-text { display: none; }
       .action-link { width: 100%; justify-content: center; }
       .marketing-inner { padding-left: 16px; padding-right: 16px; }
       .promo-carousel-slide { height: 240px; }
@@ -1028,6 +1089,7 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
   selectedCategorySlug = '';
   showAccountDropdown = false;
   showCartPopup = false;
+  showNotificationPanel = false;
   showHelpWidget = false;
   promoIndex = 0;
   showVerifiedPopup = false;
@@ -1506,7 +1568,10 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
 
   toggleAccountDropdown(event?: Event): void {
     event?.preventDefault();
-    this.showAccountDropdown = !this.showAccountDropdown;
+    event?.stopPropagation();
+    const shouldOpen = !this.showAccountDropdown;
+    this.closeOverlays();
+    this.showAccountDropdown = shouldOpen;
   }
 
   closeAccountDropdown(): void {
@@ -1526,13 +1591,29 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
   closeOverlays(): void {
     this.closeAccountDropdown();
     this.closeCartPopup();
+    this.showNotificationPanel = false;
     this.showHelpWidget = false;
     this.showVerifiedPopup = false;
+  }
+
+  toggleNotificationPanel(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const shouldOpen = !this.showNotificationPanel;
+    this.closeOverlays();
+    this.showNotificationPanel = shouldOpen;
+  }
+
+  closeNotificationPanel(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.showNotificationPanel = false;
   }
 
   onCartClick(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
+    this.closeOverlays();
 
     if (this.cartCount > 0) {
       this.router.navigate(['/cart']);
@@ -1555,13 +1636,17 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
   toggleHelpWidget(event?: Event): void {
     event?.preventDefault();
     event?.stopPropagation();
-    this.showHelpWidget = !this.showHelpWidget;
+    const shouldOpen = !this.showHelpWidget;
+    this.closeOverlays();
+    this.showHelpWidget = shouldOpen;
   }
 
   toggleVerifiedPopup(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
-    this.showVerifiedPopup = !this.showVerifiedPopup;
+    const shouldOpen = !this.showVerifiedPopup;
+    this.closeOverlays();
+    this.showVerifiedPopup = shouldOpen;
   }
 
   goToLiveShopping(event?: Event): void {
@@ -1626,8 +1711,8 @@ export class PublicLayoutComponent implements OnInit, AfterViewChecked {
 
   showWeeklyHours(team: string): void {
     const hours = team === 'Shopping Assistance'
-      ? 'Mon–Sun: 9:00 AM – 6:00 PM (PKT)'
-      : 'Mon–Sun: 9:00 AM – 10:00 PM (PKT)';
+      ? 'Monâ€“Sun: 9:00 AM â€“ 6:00 PM (PKT)'
+      : 'Monâ€“Sun: 9:00 AM â€“ 10:00 PM (PKT)';
 
     Swal.fire({
       title: `${team} Hours`,
