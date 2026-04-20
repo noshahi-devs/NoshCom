@@ -205,6 +205,20 @@ export class CheckoutComponent implements OnInit {
     return digits.length >= 4 ? digits.slice(-4) : '';
   }
 
+  private isNoshPaySelected(): boolean {
+    return this.checkoutForm.get('paymentMethod')?.value === 'easy_finora';
+  }
+
+  private showNoshPayOnlyPopup(): void {
+    void Swal.fire({
+      icon: 'info',
+      title: 'In Progress',
+      text: 'Use only NoshPay method.',
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#10B981'
+    });
+  }
+
   private loadProfile(): void {
     this.profileService.getMyProfile().subscribe({
       next: (profile) => {
@@ -401,6 +415,10 @@ export class CheckoutComponent implements OnInit {
       return;
     }
     if (this.checkoutForm.valid && this.isAddressSubmitted && this.selectedShippingMethod) {
+      if (!this.isNoshPaySelected()) {
+        this.showNoshPayOnlyPopup();
+        return;
+      }
       this.isPaymentSubmitted = true;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -423,6 +441,11 @@ export class CheckoutComponent implements OnInit {
     if (sanitized.items.length === 0) {
       this.toastService.showError('Your cart contains invalid items. Please add products again.');
       this.router.navigate(['/cart']);
+      return;
+    }
+    if (!this.isNoshPaySelected()) {
+      this.showNoshPayOnlyPopup();
+      this.goBackToPayment();
       return;
     }
     if (this.checkoutForm.valid && this.isAddressSubmitted && this.selectedShippingMethod) {

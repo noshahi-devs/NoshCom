@@ -162,8 +162,8 @@
           <div class="ph-card-body">
             <div class="ph-card-title" [innerHTML]="p.name"></div>
             <div class="ph-card-rating">
-              <i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star-half-alt text-warning"></i>
-              <span>(120)</span>
+              <i *ngFor="let icon of p.starIcons" [ngClass]="icon" class="star-icon"></i>
+              <span>({{ p.reviewCount }})</span>
             </div>
             <div class="ph-card-price">{{ p.price | currency:'USD':'symbol':'1.0-0' }}</div>
           </div>

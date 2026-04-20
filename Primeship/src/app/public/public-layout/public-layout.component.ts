@@ -769,11 +769,11 @@ declare var lucide: any;
       position: absolute;
       top: calc(100% + 14px);
       left: 0;
-      width: min(1050px, calc(100vw - 48px));
+      width: min(1320px, calc(100vw - 28px));
       background: #fff;
       border: 1px solid rgba(16,185,129,0.35);
-      border-radius: 20px;
-      padding: 18px;
+      border-radius: 22px;
+      padding: 24px 26px;
       box-shadow: 0 28px 60px rgba(15, 23, 42, 0.2);
       opacity: 0;
       visibility: hidden;
@@ -789,23 +789,23 @@ declare var lucide: any;
       pointer-events: auto;
       transform: translateY(0);
     }
-    .mega-pop-content { display: grid; grid-template-columns: 1fr 0.7fr; gap: 0; }
-    .mega-columns { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; padding-right: 18px; }
-    .mega-col { padding: 0 14px; }
+    .mega-pop-content { display: grid; grid-template-columns: 1.15fr 0.95fr; gap: 0; }
+    .mega-columns { display: grid; grid-template-columns: repeat(4, minmax(170px, 1fr)); gap: 0; padding-right: 24px; }
+    .mega-col { padding: 0 18px; }
     .mega-col:first-child { padding-left: 0; }
     .mega-col:last-child { padding-right: 0; }
     .mega-col + .mega-col { border-left: 1px solid rgba(17, 24, 39, 0.10); }
-    .mega-col-title { font-weight: 900; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #0F766E; margin-bottom: 8px; }
+    .mega-col-title { font-weight: 900; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: #0F766E; margin-bottom: 12px; }
     .mega-item {
       display: flex;
       align-items: flex-start;
-      gap: 10px;
-      font-size: 12px;
+      gap: 12px;
+      font-size: 14px;
       font-weight: 700;
       color: #111827;
       text-decoration: none;
-      padding: 6px 8px;
-      margin: 0 -8px;
+      padding: 8px 10px;
+      margin: 0 -10px;
       border-radius: 12px;
       transition: background 0.18s ease, color 0.18s ease;
     }
@@ -813,9 +813,9 @@ declare var lucide: any;
     .mega-item.hot { color: #10B981; font-weight: 800; }
 
     .mega-item-thumb {
-      width: 28px;
-      height: 28px;
-      border-radius: 10px;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
       overflow: hidden;
       flex: 0 0 auto;
       background: #F3F4F6;
@@ -834,7 +834,7 @@ declare var lucide: any;
 
     .mega-item-label {
       min-width: 0;
-      line-height: 1.2;
+      line-height: 1.35;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
@@ -848,15 +848,15 @@ declare var lucide: any;
     }
 
     .mega-item.hot .mega-item-thumb { border-color: rgba(16,185,129,0.55); }
-    .mega-side { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; align-content: start; padding-left: 18px; border-left: 1px solid rgba(17, 24, 39, 0.10); }
-    .mega-side-group { display: grid; gap: 6px; align-content: start; padding: 0 14px; }
+    .mega-side { display: grid; grid-template-columns: repeat(2, minmax(170px, 1fr)); gap: 0; align-content: start; padding-left: 24px; border-left: 1px solid rgba(17, 24, 39, 0.10); }
+    .mega-side-group { display: grid; gap: 8px; align-content: start; padding: 0 18px; }
     .mega-side-group:first-child { padding-left: 0; }
     .mega-side-group:last-child { padding-right: 0; }
     .mega-side-group + .mega-side-group { border-left: 1px solid rgba(17, 24, 39, 0.10); }
-    .mega-side-title { font-weight: 900; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #0F766E; margin-bottom: 6px; }
+    .mega-side-title { font-weight: 900; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: #0F766E; margin-bottom: 8px; }
 
     @media (max-width: 1024px) {
-      .mega-popover { width: min(840px, calc(100vw - 32px)); }
+      .mega-popover { width: min(980px, calc(100vw - 24px)); }
       .mega-pop-content { grid-template-columns: 1fr; }
       .mega-columns { padding-right: 0; }
       .mega-side { padding-left: 0; border-left: none; margin-top: 14px; }

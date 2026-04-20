@@ -4534,6 +4534,61 @@
   -webkit-text-fill-color: #ffffff;
 }
 
+/* Keep home-page buttons stable on touch (no jump/shift on tap). */
+@media (hover: none), (pointer: coarse) {
+  button,
+  .btn-emerald-outline,
+  .banner-cta,
+  .story-banner__cta,
+  .deal-banner-photo__cta,
+  .cash-banner__cta,
+  .rewards-cta,
+  .rec-btn,
+  .wf-panel-head-button,
+  .marquee-card {
+    transition-property: background, color, border-color, box-shadow, opacity !important;
+  }
+
+  button:hover,
+  button:active,
+  button:focus-visible,
+  .btn-emerald-outline:hover,
+  .btn-emerald-outline:active,
+  .btn-emerald-outline:focus-visible,
+  .banner-cta:hover,
+  .banner-cta:active,
+  .banner-cta:focus-visible,
+  .story-banner__cta:hover,
+  .story-banner__cta:active,
+  .story-banner__cta:focus-visible,
+  .deal-banner-photo__cta:hover,
+  .deal-banner-photo__cta:active,
+  .deal-banner-photo__cta:focus-visible,
+  .cash-banner__cta:hover,
+  .cash-banner__cta:active,
+  .cash-banner__cta:focus-visible,
+  .rewards-cta:hover,
+  .rewards-cta:active,
+  .rewards-cta:focus-visible,
+  .rec-btn:hover,
+  .rec-btn:active,
+  .rec-btn:focus-visible,
+  .wf-panel-head-button:hover,
+  .wf-panel-head-button:active,
+  .wf-panel-head-button:focus-visible,
+  .marquee-card:hover,
+  .marquee-card:active,
+  .marquee-card:focus-visible {
+    transform: none !important;
+  }
+
+  .carousel-nav:hover,
+  .carousel-nav:active,
+  .carousel-nav:focus-visible {
+    transform: translateY(-50%) !important;
+  }
+}
+
 
 
 

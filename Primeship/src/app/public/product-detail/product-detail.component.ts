@@ -265,19 +265,24 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
         this.relatedProducts = (products || [])
           .filter(p => p.slug !== this.product?.slug)
           .slice(0, 12)
-          .map(p => ({
-            ...p,
-            images: this.productService.parseImages(p.images),
-            image: this.getFirstImage(p),
-            ...this.resolveDisplayPrices(p),
-            reviewCount: Math.floor(Math.random() * 20) + 5
-          }));
+          .map(p => {
+            const ratingValue = this.buildRelatedRating(p);
+            return {
+              ...p,
+              images: this.productService.parseImages(p.images),
+              image: this.getFirstImage(p),
+              ...this.resolveDisplayPrices(p),
+              reviewCount: this.buildRelatedReviewCount(p),
+              ratingValue,
+              starIcons: this.buildStarIcons(ratingValue)
+            };
+          });
 
         // ADDING THREE MORE DUMMY PRODUCTS FOR A RICHER UI
         this.relatedProducts.push(
-          { name: 'Minimalist Ceramic Vase', price: 45.99, image: 'https://images.unsplash.com/photo-1578500494198-246f612d3b3d?auto=format&fit=crop&w=400&h=400', reviewCount: 88, slug: 'item' },
-          { name: 'Artisan Woven Basket', price: 29.50, image: 'https://images.unsplash.com/photo-1620189507195-68309c04c4d0?auto=format&fit=crop&w=400&h=400', reviewCount: 42, slug: 'item' },
-          { name: 'Nordic Velvet Cushion', price: 34.00, image: 'https://images.unsplash.com/photo-1584347719230-0582522eeded?auto=format&fit=crop&w=400&h=400', reviewCount: 156, slug: 'item' }
+          this.decorateRelatedProduct({ name: 'Minimalist Ceramic Vase', price: 45.99, image: 'https://images.unsplash.com/photo-1578500494198-246f612d3b3d?auto=format&fit=crop&w=400&h=400', slug: 'minimalist-ceramic-vase' }),
+          this.decorateRelatedProduct({ name: 'Artisan Woven Basket', price: 29.50, image: 'https://images.unsplash.com/photo-1620189507195-68309c04c4d0?auto=format&fit=crop&w=400&h=400', slug: 'artisan-woven-basket' }),
+          this.decorateRelatedProduct({ name: 'Nordic Velvet Cushion', price: 34.00, image: 'https://images.unsplash.com/photo-1584347719230-0582522eeded?auto=format&fit=crop&w=400&h=400', slug: 'nordic-velvet-cushion' })
         );
 
         this.isLoadingRelated = false;
@@ -352,6 +357,65 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   getFirstImage(p: any): string {
     const images = this.productService.parseImages(p.images);
     return images.length > 0 ? images[0] : `https://placehold.co/600x400/f85606/ffffff?text=${encodeURIComponent(p.name)}`;
+  }
+
+  private decorateRelatedProduct(product: any): any {
+    const ratingValue = this.buildRelatedRating(product);
+    return {
+      ...product,
+      reviewCount: this.buildRelatedReviewCount(product),
+      ratingValue,
+      starIcons: this.buildStarIcons(ratingValue)
+    };
+  }
+
+  private buildRelatedReviewCount(product: any): number {
+    const existing = Number(product?.reviewCount ?? product?.reviewsCount ?? product?.reviewTotal ?? 0);
+    if (Number.isFinite(existing) && existing > 0) {
+      return Math.floor(existing);
+    }
+    const hash = this.hashFromProduct(product);
+    return 12 + (hash % 289); // 12..300
+  }
+
+  private buildRelatedRating(product: any): number {
+    const existing = Number(product?.rating ?? product?.averageRating ?? product?.avgRating ?? 0);
+    if (Number.isFinite(existing) && existing > 0) {
+      return Math.max(1, Math.min(5, Math.round(existing * 2) / 2));
+    }
+    const hash = this.hashFromProduct(product);
+    const generated = 3.5 + (hash % 16) / 10; // 3.5..5.0
+    return Math.max(1, Math.min(5, Math.round(generated * 2) / 2));
+  }
+
+  private buildStarIcons(rating: number): string[] {
+    const normalized = Math.max(0, Math.min(5, rating));
+    const fullStars = Math.floor(normalized);
+    const hasHalf = normalized - fullStars >= 0.5;
+    const icons: string[] = [];
+
+    for (let i = 0; i < fullStars; i++) {
+      icons.push('fas fa-star');
+    }
+
+    if (hasHalf) {
+      icons.push('fas fa-star-half-alt');
+    }
+
+    while (icons.length < 5) {
+      icons.push('far fa-star');
+    }
+
+    return icons;
+  }
+
+  private hashFromProduct(product: any): number {
+    const seed = `${product?.id ?? ''}|${product?.slug ?? ''}|${product?.sku ?? ''}|${product?.name ?? ''}`;
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+      hash = (hash * 31 + seed.charCodeAt(i)) % 2147483647;
+    }
+    return Math.abs(hash);
   }
 
   private getBasePrice(p: any): number {

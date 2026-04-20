@@ -211,45 +211,49 @@
             </div>
 
             <div class="review-grid">
-              <div class="review-card">
+              <div class="review-panel">
                 <div class="review-title">Shipping Summary</div>
-                <div class="review-body">
-                  <div class="review-row">
-                    <div class="review-label">Recipient</div>
-                    <div class="review-value">{{ checkoutForm.get('firstName')?.value }} {{ checkoutForm.get('lastName')?.value }}</div>
-                  </div>
-                  <div class="review-row">
-                    <div class="review-label">Address</div>
-                    <div class="review-value review-value--muted">{{ checkoutForm.get('address1')?.value }}</div>
-                  </div>
-                  <div class="review-row">
-                    <div class="review-label">City / ZIP</div>
-                    <div class="review-value review-value--muted">{{ checkoutForm.get('city')?.value }}, {{ checkoutForm.get('zipCode')?.value }}</div>
-                  </div>
-                  <div class="review-row">
-                    <div class="review-label">Delivery</div>
-                    <div class="review-value review-value--muted">{{ selectedShippingMethod === 'warehouse' ? 'Nearest Warehouse' : 'In-Store Pickup' }}</div>
+                <div class="review-card">
+                  <div class="review-body">
+                    <div class="review-row">
+                      <div class="review-label">Recipient</div>
+                      <div class="review-value">{{ checkoutForm.get('firstName')?.value }} {{ checkoutForm.get('lastName')?.value }}</div>
+                    </div>
+                    <div class="review-row">
+                      <div class="review-label">Address</div>
+                      <div class="review-value review-value--muted">{{ checkoutForm.get('address1')?.value }}</div>
+                    </div>
+                    <div class="review-row">
+                      <div class="review-label">City / ZIP</div>
+                      <div class="review-value review-value--muted">{{ checkoutForm.get('city')?.value }}, {{ checkoutForm.get('zipCode')?.value }}</div>
+                    </div>
+                    <div class="review-row">
+                      <div class="review-label">Delivery</div>
+                      <div class="review-value review-value--muted">{{ selectedShippingMethod === 'warehouse' ? 'Nearest Warehouse' : 'In-Store Pickup' }}</div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div class="review-card">
+              <div class="review-panel">
                 <div class="review-title">Payment Summary</div>
-                <div class="review-body">
-                  <div class="review-row">
-                    <div class="review-label">Method</div>
-                    <div class="review-value">{{ selectedPaymentMethodName }}</div>
+                <div class="review-card">
+                  <div class="review-body">
+                    <div class="review-row">
+                      <div class="review-label">Method</div>
+                      <div class="review-value">{{ selectedPaymentMethodName }}</div>
+                    </div>
+                    <div class="review-row" *ngIf="cardLast4">
+                      <div class="review-label">Card</div>
+                      <div class="review-value review-value--muted">Ending in {{ cardLast4 }}</div>
+                    </div>
+                    <div class="review-row" *ngIf="checkoutForm.get('cardHolderName')?.value">
+                      <div class="review-label">Card Holder</div>
+                      <div class="review-value review-value--muted">{{ checkoutForm.get('cardHolderName')?.value }}</div>
+                    </div>
                   </div>
-                <div class="review-row" *ngIf="cardLast4">
-                  <div class="review-label">Card</div>
-                  <div class="review-value review-value--muted">Ending in {{ cardLast4 }}</div>
-                </div>
-                <div class="review-row" *ngIf="checkoutForm.get('cardHolderName')?.value">
-                  <div class="review-label">Card Holder</div>
-                  <div class="review-value review-value--muted">{{ checkoutForm.get('cardHolderName')?.value }}</div>
                 </div>
               </div>
-            </div>
             </div>
 
             <div class="checkout-actions checkout-actions--split">
