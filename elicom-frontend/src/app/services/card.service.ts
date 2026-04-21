@@ -8,7 +8,7 @@ export interface ValidateCardInput {
     expiryDate: string;
     cvv: string;
     amount: number;
-    sourcePlatform?: string;
+    sourcePlatform: string;
 }
 
 export interface CardValidationResultDto {

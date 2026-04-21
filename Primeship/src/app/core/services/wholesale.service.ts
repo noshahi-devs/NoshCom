@@ -7,7 +7,6 @@ import { environment } from '../../../environments/environment';
 export interface WholesaleOrderItemInput {
     productId: string;
     quantity: number;
-    purchasePrice?: number;
 }
 
 export interface CreateWholesaleOrderInput {
@@ -34,11 +33,36 @@ export class WholesaleService {
 
     placeWholesaleOrder(input: CreateWholesaleOrderInput): Observable<any> {
         const headers = this.authService.getAuthHeaders();
+        const guidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+        const normalizedItems: WholesaleOrderItemInput[] = (input.items || [])
+            .map(item => ({
+                productId: (item?.productId ?? '').toString().trim(),
+                quantity: Number(item?.quantity)
+            }))
+            .filter(item => guidRegex.test(item.productId) && Number.isFinite(item.quantity) && item.quantity > 0)
+            .map(item => ({
+                productId: item.productId,
+                quantity: Math.floor(item.quantity)
+            }));
+
         const wholesalePayload: CreateWholesaleOrderInput = {
-            ...input,
+            items: normalizedItems,
+            shippingAddress: (input.shippingAddress || '').toString().trim(),
+            customerName: (input.customerName || '').toString().trim(),
             paymentMethod: (input.paymentMethod || '').trim().toLowerCase(),
             cardNumber: input.cardNumber?.replace(/\s/g, '')
         };
+
+        if (wholesalePayload.items.length === 0) {
+            return throwError(() => ({
+                status: 400,
+                error: {
+                    error: {
+                        message: 'Invalid cart payload. Please refresh your cart and try again.'
+                    }
+                }
+            }));
+        }
 
         const endpointCandidates = this.buildCheckoutEndpointCandidates();
         return this.tryPlaceWholesaleOrder(endpointCandidates, wholesalePayload, headers);
@@ -57,9 +81,15 @@ export class WholesaleService {
             map(response => response?.result ?? response),
             catchError((wholesaleErr) => {
                 const isEndpointMismatch = wholesaleErr?.status === 404 || wholesaleErr?.status === 405;
+                const hasBackendMessage =
+                    !!wholesaleErr?.error?.error?.message ||
+                    !!wholesaleErr?.error?.message ||
+                    (typeof wholesaleErr?.error === 'string' && wholesaleErr.error.trim().length > 0);
+                const isPossiblyProxyBadRequest = wholesaleErr?.status === 400 && !hasBackendMessage;
+                const shouldTryNextEndpoint = isEndpointMismatch || isPossiblyProxyBadRequest;
                 const hasNext = index < endpoints.length - 1;
 
-                if (isEndpointMismatch && hasNext) {
+                if (shouldTryNextEndpoint && hasNext) {
                     return this.tryPlaceWholesaleOrder(endpoints, payload, headers, index + 1);
                 }
 

@@ -41,7 +41,7 @@ namespace Elicom.Cards
         public string CardNumber { get; set; }
         public string ExpiryDate { get; set; }
         public string Cvv { get; set; }
-        public decimal Amount { get; set; }
+        public decimal? Amount { get; set; }
         public string SourcePlatform { get; set; }
     }
 

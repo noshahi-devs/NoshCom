@@ -324,12 +324,28 @@ export class CheckoutComponent implements OnInit {
   }
 
   verifyEasyFinoraBalance(): void {
-    const cardNumber = this.checkoutForm.get('cardNumber')?.value;
-    const expiryDate = this.checkoutForm.get('expiryDate')?.value;
-    const cvv = this.checkoutForm.get('cvv')?.value;
+    const cardNumber = (this.checkoutForm.get('cardNumber')?.value || '').toString().replace(/\D/g, '');
+    const expiryDate = (this.checkoutForm.get('expiryDate')?.value || '').toString().trim();
+    const cvv = (this.checkoutForm.get('cvv')?.value || '').toString().replace(/\D/g, '');
+    const amount = Number(this.total);
 
     if (!cardNumber || !expiryDate || !cvv) {
       this.toastService.showError('Please enter full card details to verify balance');
+      return;
+    }
+
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiryDate)) {
+      this.toastService.showError('Please enter expiry in MM/YY format.');
+      return;
+    }
+
+    if (!/^\d{3,4}$/.test(cvv)) {
+      this.toastService.showError('Please enter a valid CVV.');
+      return;
+    }
+
+    if (!Number.isFinite(amount) || amount < 0) {
+      this.toastService.showError('Order total is invalid. Please refresh and try again.');
       return;
     }
 
@@ -342,8 +358,7 @@ export class CheckoutComponent implements OnInit {
       cardNumber,
       expiryDate,
       cvv,
-      amount: this.total,
-      sourcePlatform: 'PrimeShip'
+      amount
     }).subscribe({
       next: (result) => {
         this.isVerifyingBalance = false;
@@ -360,8 +375,22 @@ export class CheckoutComponent implements OnInit {
       error: (err) => {
         this.isVerifyingBalance = false;
         if (this.handleAuthError(err)) return;
-        this.verificationError = 'Verification failed. Please check card info.';
-        this.toastService.showError('Could not verify card balance');
+        console.error('[Checkout] ValidateCard failed', {
+          status: err?.status,
+          message: err?.message,
+          error: err?.error
+        });
+        const validationMessages = (err?.error?.error?.validationErrors || [])
+          .map((v: any) => v?.message)
+          .filter((m: any) => !!m)
+          .join(' ');
+        const apiMessage =
+          err?.error?.error?.message ||
+          validationMessages ||
+          err?.error?.message ||
+          err?.message;
+        this.verificationError = apiMessage || 'Verification failed. Please check card info.';
+        this.toastService.showError(apiMessage || 'Could not verify card balance');
         this.cdr.detectChanges();
       }
     });

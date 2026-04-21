@@ -76,6 +76,7 @@ namespace Elicom.Cards
         {
             // Clean card number (remove spaces)
             var cleanCardNumber = NormalizeCardNumber(input.CardNumber);
+            var amount = input.Amount ?? 0m;
 
             // Cross-tenant lookup: Ignore filters to find the card in any tenant (usually Tenant 3)
             using (UnitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
@@ -101,14 +102,14 @@ namespace Elicom.Cards
                     return new CardValidationResultDto { IsValid = false, Message = $"Card is {card.Status}." };
                 }
 
-                var limitError = await ValidateCardTransactionLimitsAsync(card, input.Amount);
+                var limitError = await ValidateCardTransactionLimitsAsync(card, amount);
                 if (!string.IsNullOrWhiteSpace(limitError))
                 {
                     return new CardValidationResultDto { IsValid = false, Message = limitError };
                 }
 
                 var availableBalance = await GetWalletBalanceAsync(card);
-                if (availableBalance < input.Amount)
+                if (availableBalance < amount)
                 {
                     return new CardValidationResultDto 
                     { 
@@ -131,6 +132,7 @@ namespace Elicom.Cards
         public async Task ProcessPayment(ProcessCardPaymentInput input)
         {
             var cleanCardNumber = NormalizeCardNumber(input.CardNumber);
+            var amount = input.Amount ?? 0m;
             var referenceId = string.IsNullOrWhiteSpace(input.ReferenceId)
                 ? $"CARD-{DateTime.Now:yyyyMMddHHmmss}"
                 : input.ReferenceId.Trim();
@@ -151,14 +153,19 @@ namespace Elicom.Cards
                     throw new UserFriendlyException("Verification failed during payment processing.");
                 }
 
-                var limitError = await ValidateCardTransactionLimitsAsync(card, input.Amount);
+                if (amount <= 0m)
+                {
+                    throw new UserFriendlyException("Payment amount must be greater than zero.");
+                }
+
+                var limitError = await ValidateCardTransactionLimitsAsync(card, amount);
                 if (!string.IsNullOrWhiteSpace(limitError))
                 {
                     throw new UserFriendlyException(limitError);
                 }
 
                 // Debit from Wallet instead of Card Balance
-                var debited = await TryDebitWalletAsync(card, input.Amount, referenceId, paymentDescription);
+                var debited = await TryDebitWalletAsync(card, amount, referenceId, paymentDescription);
                 if (!debited)
                 {
                     throw new UserFriendlyException("Insufficient balance in the wallet.");
@@ -170,7 +177,7 @@ namespace Elicom.Cards
                     TenantId = card.TenantId,
                     UserId = card.UserId,
                     CardId = card.Id,
-                    Amount = -input.Amount,
+                    Amount = -amount,
                     MovementType = "Debit",
                     Category = "Card Transaction",
                     ReferenceId = referenceId,

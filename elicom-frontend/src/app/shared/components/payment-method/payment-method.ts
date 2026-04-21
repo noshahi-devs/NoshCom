@@ -219,7 +219,7 @@ export class PaymentMethod {
       expiryDate: this.card.expiry,
       cvv: this.card.cvv,
       amount: this.totalAmount || 0,
-      sourcePlatform: resolvePlatformName()
+      sourcePlatform: resolvePlatformName() || 'Elicom'
     };
 
     this.cardService.validateCard(input).subscribe({

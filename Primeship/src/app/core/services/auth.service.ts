@@ -323,12 +323,34 @@ export class AuthService {
      * Get auth headers with token
      */
     getAuthHeaders(): HttpHeaders {
-        const token = this.getToken();
-        return new HttpHeaders({
+        const token = this.getNormalizedToken();
+        const headers: Record<string, string> = {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
             'Abp-TenantId': this.tenantId
-        });
+        };
+
+        // Do not send a malformed bearer token (e.g. "Bearer null").
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        return new HttpHeaders(headers);
+    }
+
+    private getNormalizedToken(): string | null {
+        const raw = this.getToken();
+        if (!raw) return null;
+
+        let token = raw.trim();
+        token = token.replace(/^Bearer\s+/i, '').trim();
+        token = token.replace(/^"+|"+$/g, '').trim();
+
+        // JWT should be 3 dot-separated base64url segments.
+        if (!/^[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+$/.test(token)) {
+            return null;
+        }
+
+        return token;
     }
 
     private getDecodedTokenPayload(): any | null {

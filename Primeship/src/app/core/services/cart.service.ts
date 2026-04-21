@@ -107,8 +107,10 @@ export class CartService {
 
     getCartTotal(): number {
         return this.cartItemsSubject.value.reduce((total, item) => {
-            const price = item.product.supplierPrice || item.product.purchasePrice || item.product.price || 0;
-            return total + (price * item.quantity);
+            const rawPrice = item.product?.supplierPrice ?? item.product?.purchasePrice ?? item.product?.price ?? 0;
+            const normalizedPrice = this.toNumber(rawPrice);
+            const normalizedQty = this.toNumber(item.quantity);
+            return total + (normalizedPrice * normalizedQty);
         }, 0);
     }
 
@@ -116,5 +118,21 @@ export class CartService {
         return this.cartItemsSubject.value.reduce((count, item) =>
             count + item.quantity, 0
         );
+    }
+
+    private toNumber(value: unknown): number {
+        if (typeof value === 'number') {
+            return Number.isFinite(value) ? value : 0;
+        }
+
+        if (typeof value === 'string') {
+            // Handle values like "$1,299.50" safely.
+            const cleaned = value.replace(/[^0-9.-]/g, '');
+            const parsed = Number(cleaned);
+            return Number.isFinite(parsed) ? parsed : 0;
+        }
+
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : 0;
     }
 }
