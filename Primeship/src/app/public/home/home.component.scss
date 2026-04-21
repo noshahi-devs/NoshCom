@@ -1684,7 +1684,7 @@
   min-height: 34px;
   padding: 0 14px;
   border-radius: 8px;
-  background: #6d5efc;
+  background: #10B981;
   color: #fff;
   font-size: 12px;
   font-weight: 800;
@@ -1715,17 +1715,17 @@
 }
 
 .story-banner .banner-cta {
-  background: linear-gradient(135deg, #6d5efc 0%, #5538c7 100%);
-  border-color: #6d5efc;
+  background: linear-gradient(135deg, #16a34a 0%, #0f8a42 100%);
+  border-color: #16a34a;
   color: #ffffff;
-  box-shadow: 0 12px 24px rgba(109, 94, 252, 0.26);
+  box-shadow: 0 12px 24px rgba(15, 138, 66, 0.28);
 }
 
 .story-banner .banner-cta:hover {
-  background: linear-gradient(135deg, #7c6cff 0%, #4b2fb5 100%);
-  border-color: #7c6cff;
+  background: linear-gradient(135deg, #1fba57 0%, #0c7a39 100%);
+  border-color: #1fba57;
   color: #ffffff;
-  box-shadow: 0 12px 26px rgba(109, 94, 252, 0.32);
+  box-shadow: 0 12px 26px rgba(15, 138, 66, 0.34);
 }
 
 .story-banner__dots {
@@ -1740,14 +1740,14 @@
   height: 10px;
   border: 0;
   border-radius: 999px;
-  background: rgba(63, 29, 136, 0.2);
+  background: rgba(16, 185, 129, 0.25);
   cursor: pointer;
   transition: width 0.2s ease, background 0.2s ease, transform 0.2s ease;
 }
 
 .story-banner__dot.active {
   width: 28px;
-  background: #6d5efc;
+  background: #10B981;
 }
 
 .story-banner__dot:hover {

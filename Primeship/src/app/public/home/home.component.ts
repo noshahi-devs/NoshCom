@@ -160,7 +160,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     {
       title: 'Unboxing Weekend Offer',
       subtitle: 'Don’t miss curated sponsored bundles for home essentials.',
-      image: 'https://media.istockphoto.com/id/686645878/photo/young-asian-small-business-owner-carrying-product-boxes-at-home-office-online-marketing.jpg?s=1024x1024&w=is&k=20&c=p2Hgs2P3I67oZ4P2JEAIYFF-D3ft6-yXoxXfDGNt0pQ=',
+      image: 'https://images.pexels.com/photos/7674976/pexels-photo-7674976.jpeg?auto=compress&cs=tinysrgb&w=1920',
       cta: 'Explore Offer',
       badge: 'Sponsored'
     }
