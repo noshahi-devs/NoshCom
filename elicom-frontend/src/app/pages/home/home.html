@@ -95,6 +95,26 @@
   </div>
   -->
 
+  <section class="deal-banner-wrap">
+    <div class="deal-banner deal-banner-photo">
+      <img
+        src="https://plus.unsplash.com/premium_photo-1758313946963-b34ee0b492fb?w=600&amp;auto=format&amp;fit=crop&amp;q=60&amp;ixlib=rb-4.1.0&amp;ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzN8fGFjY2Vzc29yaWVzJTIwZm9yJTIwZ2lybHMlMjBzdG9ja3xlbnwwfDB8MHx8fDA%3D"
+        alt="Accessories collection for girls"
+        loading="lazy"
+        decoding="async"
+      />
+      <div aria-hidden="true" class="deal-banner-photo__overlay"></div>
+      <div class="deal-banner-photo__content">
+        <span class="deal-banner-photo__eyebrow">Today&apos;s Top Deals</span>
+        <h3 class="deal-banner-photo__title">Everything you need, all in one place.</h3>
+        <p class="deal-banner-photo__subtitle">
+          Shop trending picks, everyday essentials, and best-value offers with fast delivery.
+        </p>
+        <a class="btn-emerald-outline deal-banner-photo__cta" href="/shop">Shop Now</a>
+      </div>
+    </div>
+  </section>
+
   <section class="categories-showcase">
     <div class="categories-header">
       <div class="categories-header-copy">
@@ -192,19 +212,71 @@
   </div>
 
   <div class="home-sections" *ngIf="!productError && !isLoadingProducts">
-    <div class="home-section" *ngFor="let section of sections">
-      <div class="section-header">
-        <div>
-          <div class="section-kicker">
-            <span class="section-badge" [ngClass]="section.tone">{{ section.badge }}</span>
+    <ng-container *ngFor="let section of sections">
+      <div
+        role="img"
+        aria-label="Auto rotating banner with fashion and retail inspiration."
+        class="deal-banner story-banner"
+        *ngIf="section.id === 'for-you'"
+      >
+        <div class="story-banner__copy">
+          <div
+            class="story-banner__copy-slide"
+            *ngFor="let slide of storySlides; let i = index"
+            [style.animation-delay]="(i * 3.2) + 's'"
+          >
+            <span class="story-banner__pill">{{ slide.pill }}</span>
+            <h3 class="story-banner__title">{{ slide.title }}</h3>
+            <p class="story-banner__text">
+              {{ slide.text }}
+            </p>
+            <a class="btn-emerald-outline banner-cta story-banner__cta" href="/shop?sortBy=newest">Explore Now</a>
           </div>
-          <h2>{{ section.title }}</h2>
-          <p>{{ section.subtitle }}</p>
+          <div class="story-banner__dots" aria-label="Banner slides">
+            <span
+              *ngFor="let _ of storySlides; let i = index"
+              class="story-banner__dot"
+              [class.active]="i === 0"
+              [style.animation-delay]="(i * 3.2) + 's'"
+            ></span>
+          </div>
         </div>
-        <div class="section-action">View all</div>
+        <div aria-hidden="true" class="story-banner__circle">
+          <img
+            *ngFor="let slide of storySlides; let i = index"
+            class="story-banner__circle-slide"
+            loading="lazy"
+            decoding="async"
+            [src]="slide.circleImage"
+            alt="Stylish modern clothing store interior shot."
+            [style.animation-delay]="(i * 3.2) + 's'"
+          />
+        </div>
+        <div aria-hidden="true" class="story-banner__wide">
+          <img
+            *ngFor="let slide of storySlides; let i = index"
+            class="story-banner__wide-slide"
+            loading="lazy"
+            decoding="async"
+            [src]="slide.wideImage"
+            alt="Seamstress selling clothes online."
+            [style.animation-delay]="(i * 3.2) + 's'"
+          />
+        </div>
       </div>
+      <div class="home-section">
+        <div class="section-header">
+          <div>
+            <div class="section-kicker">
+              <span class="section-badge" [ngClass]="section.tone">{{ section.badge }}</span>
+            </div>
+            <h2>{{ section.title }}</h2>
+            <p>{{ section.subtitle }}</p>
+          </div>
+          <div class="section-action">View all</div>
+        </div>
 
-      <div class="section-body" [ngSwitch]="section.style">
+        <div class="section-body" [ngSwitch]="section.style">
         <!-- Gallery grid -->
         <div class="gallery-grid" *ngSwitchCase="'gallery'" #gallerySection>
           <a class="gallery-card" *ngFor="let product of getVisibleProducts(section); let i = index"
@@ -453,9 +525,10 @@
         </div>
       </div>
 
-      <div class="section-more" *ngIf="section.initialCount && (section.initialCount > section.products.length)">
-        <button class="more-btn" (click)="showMore(section.id, 8)">Show more</button>
+        <div class="section-more" *ngIf="section.initialCount && (section.initialCount > section.products.length)">
+          <button class="more-btn" (click)="showMore(section.id, 8)">Show more</button>
+        </div>
       </div>
-    </div>
+    </ng-container>
   </div>
 </div>

@@ -65,6 +65,29 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   categoryError: string = '';
   isLoadingCategories: boolean = false;
   isLoadingProducts: boolean = false;
+  readonly storySlides = [
+    {
+      pill: 'Studio Edit',
+      title: 'Styled Spaces',
+      text: 'A clean retail mood with soft textures, bold displays, and polished finishing touches.',
+      circleImage: 'https://images.pexels.com/photos/32549954/pexels-photo-32549954.jpeg?cs=srgb&dl=pexels-kriss-32549954.jpg&fm=jpg',
+      wideImage: 'https://images.pexels.com/photos/12935042/pexels-photo-12935042.jpeg?cs=srgb&dl=pexels-imin-technology-276315592-12935042.jpg&fm=jpg'
+    },
+    {
+      pill: 'Fresh Drop',
+      title: 'Trend-Ready Looks',
+      text: 'New arrivals with premium finish, curated for everyday style and standout moments.',
+      circleImage: 'https://images.pexels.com/photos/7679720/pexels-photo-7679720.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      wideImage: 'https://images.pexels.com/photos/1007018/pexels-photo-1007018.jpeg?auto=compress&cs=tinysrgb&w=1600'
+    },
+    {
+      pill: 'Retail Mood',
+      title: 'Modern Fashion Floor',
+      text: 'Browse polished collections, seasonal picks, and smart essentials in one smooth flow.',
+      circleImage: 'https://images.pexels.com/photos/5698851/pexels-photo-5698851.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      wideImage: 'https://images.pexels.com/photos/994517/pexels-photo-994517.jpeg?auto=compress&cs=tinysrgb&w=1600'
+    }
+  ] as const;
 
   constructor(
     private productService: ProductService,
