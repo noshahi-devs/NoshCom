@@ -5,7 +5,7 @@ import { CartService, CartItem } from '../../services/cart.service';
 import { SearchService } from '../../services/search.service';
 import { AuthService, User } from '../../services/auth.service';
 import { CategoryService } from '../../services/category';
-import { ProductService } from '../../services/product.service';
+import { ProductService as HomepageProductService } from '../../services/product';
 import { environment } from '../../../environments/environment';
 import { FormsModule } from '@angular/forms';
 import { AuthModalComponent } from '../components/auth-modal/auth-modal.component';
@@ -54,9 +54,13 @@ export class Header implements OnInit, AfterViewChecked {
   searchService = inject(SearchService);
   authService = inject(AuthService); // Inject AuthService
   categoryService = inject(CategoryService);
-  productService = inject(ProductService);
+  productService = inject(HomepageProductService);
   router = inject(Router);
   private categoryProductCache = new Map<string, any[]>();
+  private listedProducts: any[] = [];
+  private isListedProductsLoading = false;
+  private isListedProductsLoaded = false;
+  private pendingCategoryNames = new Set<string>();
 
   // currentUser signal derived from AuthService
   currentUser = this.authService.currentUser$;
@@ -113,6 +117,7 @@ export class Header implements OnInit, AfterViewChecked {
 
   ngOnInit() {
     this.loadCategories();
+    this.ensureListedProductsLoaded();
     if (this.authService.isAuthenticated) {
       this.cartService.refreshFromBackend().subscribe();
     }
@@ -187,23 +192,7 @@ export class Header implements OnInit, AfterViewChecked {
       return;
     }
 
-    this.productService.search(categoryName).subscribe({
-      next: (res: any) => {
-        const items = this.extractItems(res)
-          .filter((item: any) => {
-            const cat = this.normalizeCategoryName(item?.categoryName || item?.category?.name || item?.category);
-            return !cat || cat.toLowerCase() === categoryName.toLowerCase();
-          })
-          .map((item: any) => this.mapProductToMenuItem(item))
-          .filter((item: MegaMenuItem | null): item is MegaMenuItem => !!item);
-
-        this.categoryProductCache.set(key, items);
-      },
-      error: (err) => {
-        console.error('Failed to load products for mega menu', err);
-        this.categoryProductCache.set(key, []);
-      }
-    });
+    this.ensureListedProductsLoaded(categoryName);
   }
 
   private buildAllCategoriesMegaMenu(): MegaMenu {
@@ -254,14 +243,6 @@ export class Header implements OnInit, AfterViewChecked {
     return this.normalizeCategoryName(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   }
 
-  private extractItems(res: any): any[] {
-    if (Array.isArray(res)) return res;
-    if (res?.result?.items && Array.isArray(res.result.items)) return res.result.items;
-    if (res?.result && Array.isArray(res.result)) return res.result;
-    if (res?.items && Array.isArray(res.items)) return res.items;
-    return [];
-  }
-
   private mapCategoryToMenuItem(cat: any): MegaMenuItem | null {
     const label = this.normalizeCategoryName(cat?.name || cat?.categoryName || cat?.title);
     if (!label) return null;
@@ -277,11 +258,12 @@ export class Header implements OnInit, AfterViewChecked {
     const label = this.normalizeCategoryName(product?.name || product?.title || product?.productName);
     if (!label) return null;
 
+    const imagesField = product?.images;
     const rawImage =
       product?.image1 ||
       product?.productImage ||
       product?.imageUrl ||
-      (Array.isArray(product?.images) ? product.images[0] : null) ||
+      (Array.isArray(imagesField) ? imagesField[0] : imagesField) ||
       'assets/images/placeholder.jpg';
 
     return {
@@ -355,8 +337,16 @@ export class Header implements OnInit, AfterViewChecked {
       return 'assets/images/placeholder.jpg';
     }
 
-    if (value.startsWith('http') || value.startsWith('/') || value.startsWith('assets/')) {
+    if (value.startsWith('http') || value.startsWith('assets/')) {
       return value;
+    }
+
+    if (value.startsWith('/')) {
+      return `${environment.apiUrl}${value}`;
+    }
+
+    if (value.includes('/')) {
+      return `${environment.apiUrl}/${value}`;
     }
 
     return `${environment.apiUrl}/images/products/${value}`;
@@ -366,12 +356,20 @@ export class Header implements OnInit, AfterViewChecked {
     let value = (rawValue ?? '').toString().trim();
     if (!value) return '';
 
+    // Some APIs return escaped JSON-ish strings like: [\"https://...\".
+    // Remove backslashes first so downstream normalization can parse consistently.
+    value = value.replace(/\\/g, '');
+
     value = value
       .replace(/^\["/, '')
       .replace(/"\]$/, '')
       .replace(/^"/, '')
-      .replace(/"$/, '')
-      .replace(/\\"/g, '');
+      .replace(/"$/, '');
+
+    value = value
+      .replace(/^\[/, '')
+      .replace(/\]$/, '')
+      .trim();
 
     if (value.startsWith('[') && value.endsWith(']')) {
       try {
@@ -385,6 +383,103 @@ export class Header implements OnInit, AfterViewChecked {
     }
 
     return value;
+  }
+
+  private ensureListedProductsLoaded(targetCategoryName?: string) {
+    if (this.isListedProductsLoaded) {
+      if (targetCategoryName) {
+        this.cacheCategoryFromListedProducts(targetCategoryName);
+      }
+      return;
+    }
+
+    if (targetCategoryName) {
+      this.pendingCategoryNames.add(targetCategoryName);
+      this.cacheCategoryFromListedProducts(targetCategoryName);
+    }
+
+    if (this.isListedProductsLoading) {
+      return;
+    }
+
+    this.isListedProductsLoading = true;
+    this.fetchListedProductsPage(0, 200);
+  }
+
+  private fetchListedProductsPage(skipCount: number, maxResultCount: number) {
+    this.productService.getProductsForCards(skipCount, maxResultCount).subscribe({
+      next: (res: any) => {
+        const items = Array.isArray(res?.items) ? res.items : [];
+        const totalCount = Number(res?.totalCount || 0);
+
+        this.listedProducts = [...this.listedProducts, ...items];
+        this.appendProductsToCategoryCache(items);
+
+        const nextSkip = skipCount + items.length;
+        const hasMore = nextSkip < totalCount && items.length > 0;
+
+        if (hasMore) {
+          this.pendingCategoryNames.forEach((name: string) => this.cacheCategoryFromListedProducts(name));
+          this.fetchListedProductsPage(nextSkip, maxResultCount);
+          return;
+        }
+
+        this.isListedProductsLoaded = true;
+        this.isListedProductsLoading = false;
+
+        this.pendingCategoryNames.forEach((name: string) => this.cacheCategoryFromListedProducts(name));
+        this.pendingCategoryNames.clear();
+
+        const allCategories = this.categories();
+        for (const category of allCategories) {
+          const name = this.normalizeCategoryName(category?.name);
+          if (name) {
+            this.cacheCategoryFromListedProducts(name);
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load listed products for mega menu', err);
+        this.isListedProductsLoading = false;
+        this.isListedProductsLoaded = true;
+        this.pendingCategoryNames.forEach((name: string) => {
+          this.categoryProductCache.set(this.normalizeMenuKey(name), []);
+        });
+        this.pendingCategoryNames.clear();
+      }
+    });
+  }
+
+  private cacheCategoryFromListedProducts(categoryName: string) {
+    const key = this.normalizeMenuKey(categoryName);
+    if (!key) {
+      return;
+    }
+
+    const normalizedCategoryKey = this.normalizeMenuKey(categoryName);
+
+    const filtered = this.listedProducts
+      .filter((item: any) => this.normalizeMenuKey(item?.categoryName) === normalizedCategoryKey)
+      .map((item: any) => this.mapProductToMenuItem(item))
+      .filter((item: MegaMenuItem | null): item is MegaMenuItem => !!item);
+
+    this.categoryProductCache.set(key, filtered);
+  }
+
+  private appendProductsToCategoryCache(items: any[]) {
+    for (const item of items) {
+      const categoryKey = this.normalizeMenuKey(item?.categoryName);
+      const mapped = this.mapProductToMenuItem(item);
+      if (!categoryKey || !mapped) {
+        continue;
+      }
+
+      const existing = this.categoryProductCache.get(categoryKey) || [];
+      const duplicate = existing.some(entry => entry.label === mapped.label && entry.image === mapped.image);
+      if (!duplicate) {
+        this.categoryProductCache.set(categoryKey, [...existing, mapped]);
+      }
+    }
   }
 
   trackByCategory(index: number, item: any) {

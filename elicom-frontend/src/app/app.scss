@@ -19,14 +19,21 @@
 
 .app-header-wrap {
     position: relative;
-    z-index: 1300;
+    z-index: 5000;
+    isolation: isolate;
     transition: transform 0.28s ease;
     will-change: transform;
+
+    &.search-result-layout {
+        z-index: 5000;
+    }
 }
 
 .app-main {
     flex: 1 0 auto;
     min-width: 0;
+    position: relative;
+    z-index: 1;
 }
 
 .app-footer {

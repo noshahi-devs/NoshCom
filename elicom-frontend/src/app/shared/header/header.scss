@@ -77,6 +77,15 @@
   z-index: 1401;
 }
 
+:host-context(.search-result-layout) .category-nav {
+  position: relative;
+  z-index: 5100;
+}
+
+:host-context(.search-result-layout) .mega-menu {
+  z-index: 5200;
+}
+
 .logo {
   font-size: 28px;
   font-weight: 900;
