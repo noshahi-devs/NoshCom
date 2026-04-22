@@ -159,37 +159,67 @@
 </header>
 
 <!-- Category Sub-Nav -->
-<nav class="category-nav" #navbar>
-  <ul>
-    <li><a routerLink="/search-result" [queryParams]="{ sort: 'newest' }" class="active">All Categories</a></li>
-    <li><a href="#">Electronics</a></li>
-    <li><a href="#">Fashion</a></li>
-    <li><a href="#">Home & Living</a></li>
-    <li><a href="#">Personal Care</a></li>
-    <li><a href="#">Smart Gadgets</a></li>
-    <li><a href="#">Sports</a></li>
-    <li><a href="#">Gaming</a></li>
-    <li><a href="#">Mobiles</a></li>
-    <li><a href="#">Laptops</a></li>
-    <li><a href="#">Accessories</a></li>
-    <li><a href="#">Watches</a></li>
-    <li><a href="#">Shoes</a></li>
-    <li><a href="#">Beauty Products</a></li>
-    <li><a href="#">Health & Fitness</a></li>
-    <li><a href="#">Kitchen Appliances</a></li>
-    <li><a href="#">Furniture</a></li>
-    <li><a href="#">Books</a></li>
-    <li><a href="#">Kids & Toys</a></li>
-    <li><a href="#">Travel & Bags</a></li>
-    <li><a href="#">Jewelry</a></li>
-    <li><a href="#">Pet Supplies</a></li>
-    <li><a href="#">Groceries</a></li>
-    <li *ngFor="let cat of categories()">
-      <a [routerLink]="['/search-result']" [queryParams]="{ category: cat.name }">
-        {{ cat.name }}
-      </a>
-    </li>
-  </ul>
+<nav class="category-nav" #navbar (mouseleave)="closeMegaMenu()">
+  <div class="category-nav-scroll">
+    <ul class="category-nav-list">
+      <li class="category-nav-item" (mouseenter)="openAllCategoriesMegaMenu()">
+        <a
+          [routerLink]="['/search-result']"
+          [queryParams]="{ sort: 'newest' }"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          All Categories
+        </a>
+      </li>
+
+      <li
+        *ngFor="let cat of categories(); trackBy: trackByCategory"
+        class="category-nav-item"
+        [class.has-mega-menu]="!!getCategoryMenuKey(cat)"
+        [class.menu-open]="activeMegaMenu() === getCategoryMenuKey(cat)"
+        (mouseenter)="openMegaMenu(cat)"
+      >
+        <a
+          [routerLink]="['/search-result']"
+          [queryParams]="getCategoryQuery(cat)"
+          routerLinkActive="active"
+        >
+          {{ cat.name }}
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div
+    class="mega-menu mega-menu-shell"
+    *ngIf="activeMegaMenu() as activeMenuKey"
+    [class.is-open]="!!activeMenuKey"
+    (mouseenter)="keepMegaMenuOpen(activeMenuKey)"
+    (mouseleave)="closeMegaMenu()"
+  >
+    <ng-container *ngIf="getMegaMenu(activeMenuKey) as menu">
+      <div class="mega-pop-content">
+        <div class="mega-menu-heading">{{ menu.heading }}</div>
+        <div class="mega-columns">
+          <div class="mega-col" *ngFor="let group of menu.sections; let sectionIndex = index; trackBy: trackByMenuGroup">
+            <div class="mega-col-title">{{ group.title }}</div>
+            <a
+              class="mega-item"
+              *ngFor="let link of group.items; trackBy: trackByMenuItem"
+              [routerLink]="['/search-result']"
+              [queryParams]="sectionIndex === 0 ? { category: link.query } : { q: link.query }"
+            >
+              <span class="mega-item-thumb" aria-hidden="true">
+                <img [src]="link.image" [alt]="link.label" loading="lazy" decoding="async" (error)="$event.target.src='assets/images/placeholder.jpg'" />
+              </span>
+              <span class="mega-item-label">{{ link.label }}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
 </nav>
 
 <app-auth-modal

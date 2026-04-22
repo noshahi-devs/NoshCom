@@ -29,7 +29,8 @@ namespace Elicom.Web.Host.Startup
     {
         private const string _defaultCorsPolicyName = "localhost";
 
-        private const string _apiVersion = "v1";
+        private const string _apiDocumentName = "v1";
+        private const string _apiInfoVersion = "1.0";
 
         private readonly IConfigurationRoot _appConfiguration;
         private readonly IWebHostEnvironment _hostingEnvironment;
@@ -167,9 +168,7 @@ namespace Elicom.Web.Host.Startup
             app.UseSwaggerUI(options =>
             {
                 // specifying the Swagger JSON endpoint.
-                options.SwaggerEndpoint($"/swagger/{_apiVersion}/swagger.json", $"Elicom API {_apiVersion}");
-                options.IndexStream = () => Assembly.GetExecutingAssembly()
-                    .GetManifestResourceStream("Elicom.Web.Host.wwwroot.swagger.ui.index.html");
+                options.SwaggerEndpoint($"/swagger/{_apiDocumentName}/swagger.json", $"Elicom API {_apiDocumentName}");
                 options.DisplayRequestDuration(); // Controls the display of the request duration (in milliseconds) for "Try it out" requests.
             }); // URL: /swagger
 
@@ -205,9 +204,9 @@ namespace Elicom.Web.Host.Startup
         {
             services.AddSwaggerGen(options =>
             {
-                options.SwaggerDoc(_apiVersion, new OpenApiInfo
+                options.SwaggerDoc(_apiDocumentName, new OpenApiInfo
                 {
-                    Version = _apiVersion,
+                    Version = _apiInfoVersion,
                     Title = "Elicom API",
                     Description = "Elicom",
                     // uncomment if needed TermsOfService = new Uri("https://example.com/terms"),
