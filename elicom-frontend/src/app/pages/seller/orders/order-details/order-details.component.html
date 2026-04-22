@@ -212,12 +212,12 @@
                 <article class="od-item-card" *ngFor="let item of order?.orderItems">
                     <div class="od-item-media">
                         <img [src]="item.image" alt="Product" (error)="onProductImageError($event)">
+                        <div class="od-item-price">${{ item.price | number:'1.2-2' }}</div>
                     </div>
 
                     <div class="od-item-copy">
                         <div class="od-item-top">
                             <div class="od-item-title">{{ item.name || 'Product' }}</div>
-                            <div class="od-item-price">${{ item.price | number:'1.2-2' }}</div>
                         </div>
 
                         <div class="od-item-meta">

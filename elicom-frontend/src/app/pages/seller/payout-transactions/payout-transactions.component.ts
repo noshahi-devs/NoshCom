@@ -118,7 +118,7 @@ export class PayoutTransactionsComponent implements OnInit {
 
     getMethodLabel(method?: string): string {
         const normalized = this.normalizeStatus(method);
-        if (normalized === 'easyfinora') return 'NashPay';
+        if (normalized === 'easyfinora') return 'NoshPay';
         return method || 'Third Party';
     }
 
@@ -127,8 +127,8 @@ export class PayoutTransactionsComponent implements OnInit {
         return paymentDetails
             .replace(/Easy\s*Finora\s*Wallet\s*ID\s*:/i, 'NoshPay Wallet ID:')
             .replace(/EasyFinora\s*Wallet\s*ID\s*:/i, 'NoshPay Wallet ID:')
-            .replace(/Easy\s*Finora/gi, 'NashPay')
-            .replace(/EasyFinora/gi, 'NashPay');
+            .replace(/Easy\s*Finora/gi, 'NoshPay')
+            .replace(/EasyFinora/gi, 'NoshPay');
     }
 
     getRelativeDate(dateValue: string): string {

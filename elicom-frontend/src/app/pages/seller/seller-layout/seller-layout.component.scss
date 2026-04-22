@@ -10,6 +10,11 @@
     --text-muted: #6b6b6b;
 }
 
+/* Remove analog clock widgets across all seller dashboard pages */
+:host ::ng-deep .seller-layout [class*="analog-clock"] {
+    display: none !important;
+}
+
 .seller-layout {
     &.sidebar-collapsed {
         .sidebar {

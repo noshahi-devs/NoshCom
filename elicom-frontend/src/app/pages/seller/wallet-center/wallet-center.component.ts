@@ -340,8 +340,8 @@ export class WalletCenterComponent implements OnInit {
         return paymentDetails
             .replace(/Easy\s*Finora\s*Wallet\s*ID\s*:/i, 'NoshPay Wallet ID:')
             .replace(/EasyFinora\s*Wallet\s*ID\s*:/i, 'NoshPay Wallet ID:')
-            .replace(/Easy\s*Finora/gi, 'NashPay')
-            .replace(/EasyFinora/gi, 'NashPay');
+            .replace(/Easy\s*Finora/gi, 'NoshPay')
+            .replace(/EasyFinora/gi, 'NoshPay');
     }
 
     getRelativeDate(dateValue: string): string {
@@ -525,7 +525,7 @@ export class WalletCenterComponent implements OnInit {
         this.activeMethod = {
             method: displayMethod,
             methodKey: normalizedMethod,
-            receiveIn: normalizedMethod === 'easyfinora' ? 'NashPay' : 'World Cart API',
+            receiveIn: normalizedMethod === 'easyfinora' ? 'NoshPay' : 'World Cart API',
             walletId: extractedWalletId,
             accountTitle: 'Not set',
             country: '',
@@ -552,7 +552,7 @@ export class WalletCenterComponent implements OnInit {
         const receiveIn = normalizedMethod === 'bank'
             ? [saved.country, saved.accountType].filter(Boolean).join(' • ') || 'Bank Transfer'
             : normalizedMethod === 'easyfinora'
-                ? 'NashPay'
+                ? 'NoshPay'
                 : 'World Cart API';
 
         const payoutTarget = normalizedMethod === 'bank'
@@ -590,7 +590,7 @@ export class WalletCenterComponent implements OnInit {
         const receiveIn = normalizedMethod === 'bank'
             ? [saved.country || parsedBankDetails?.country, saved.accountType || parsedBankDetails?.accountType].filter(Boolean).join(' • ') || 'Bank Transfer'
             : normalizedMethod === 'easyfinora'
-                ? 'NashPay'
+                ? 'NoshPay'
                 : 'World Cart API';
 
         const payoutTarget = normalizedMethod === 'bank'
@@ -615,7 +615,7 @@ export class WalletCenterComponent implements OnInit {
 
     private getPayoutDisplayLabel(methodKey: string, fallback: string): string {
         if (methodKey === 'easyfinora') {
-            return 'NashPay';
+            return 'NoshPay';
         }
 
         return fallback || 'Not set';

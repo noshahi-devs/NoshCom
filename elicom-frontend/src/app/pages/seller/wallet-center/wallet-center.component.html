@@ -140,58 +140,69 @@
             </div>
 
             <div *ngIf="currentStore?.withdrawLimit !== null && currentStore?.withdrawLimit !== undefined && (currentStore?.withdrawLimit || currentStore?.withdrawAllowedUntil)"
-                class="premium-rules-card mb-3" [class.expired]="isWithdrawalUnlocked">
-                <div class="card-inner">
-                    <div class="card-header">
-                        <i class="fas fa-shield-halved"></i>
-                        <span>Withdrawal Protocol</span>
+                class="premium-rules-card protocol-lab-card mb-3" [class.expired]="isWithdrawalUnlocked">
+                <div class="protocol-noise"></div>
+                <div class="card-inner protocol-lab-shell">
+                    <div class="protocol-grid-layout">
+                        <aside class="protocol-side-panel">
+                            <div class="protocol-badge-row">
+                                <i class="fas fa-shield-halved"></i>
+                                <span>Withdrawal Protocol</span>
+                            </div>
+                            <small class="protocol-subline">{{ isWithdrawalUnlocked ? 'Window is active now' : 'Countdown is running' }}</small>
+                            <span class="protocol-live-chip protocol-tag-chip" [class.unlocked]="isWithdrawalUnlocked">
+                                {{ isWithdrawalUnlocked ? 'UNLOCKED' : 'LOCKED' }}
+                            </span>
+
+                            <div class="protocol-kpi-box">
+                                <span class="box-label">Limit</span>
+                                <span class="box-value">${{ currentStore.withdrawLimit | number:'1.2-2' }}</span>
+                            </div>
+                            <div class="protocol-kpi-box">
+                                <span class="box-label">Deadline</span>
+                                <span class="box-value">{{ currentStore.withdrawAllowedUntil | date:'dd MMM, hh:mm a'
+                                    }}</span>
+                            </div>
+                        </aside>
+
+                        <section class="protocol-main-panel">
+                            <div class="protocol-main-title">
+                                {{ isWithdrawalUnlocked ? 'Protocol Complete' : 'Unlock Countdown' }}
+                            </div>
+                            <div class="countdown-panel countdown-panel-modern protocol-counter-stage">
+                                <div class="main-clock modern-main-clock protocol-orbit-track">
+                                    <div class="clock-unit modern-clock-unit protocol-orbit-node">
+                                        <span class="val">{{ countdownDaysDisplay }}</span>
+                                        <span class="lbl">Days</span>
+                                    </div>
+                                    <div class="protocol-orbit-divider"></div>
+                                    <div class="clock-unit modern-clock-unit protocol-orbit-node">
+                                        <span class="val">{{ countdownHoursDisplay }}</span>
+                                        <span class="lbl">Hours</span>
+                                    </div>
+                                    <div class="protocol-orbit-divider"></div>
+                                    <div class="clock-unit modern-clock-unit protocol-orbit-node">
+                                        <span class="val">{{ countdownMinutesDisplay }}</span>
+                                        <span class="lbl">Minutes</span>
+                                    </div>
+                                    <div class="protocol-orbit-divider"></div>
+                                    <div class="clock-unit modern-clock-unit protocol-orbit-node">
+                                        <span class="val">{{ countdownSecondsDisplay }}</span>
+                                        <span class="lbl">Seconds</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="status-bar protocol-ribbon" *ngIf="!isWithdrawalUnlocked">
+                                <span class="dot pulse-green"></span> COUNTDOWN ACTIVE - WITHDRAWAL LOCKED
+                            </div>
+                            <div class="status-bar expired protocol-ribbon" *ngIf="isWithdrawalUnlocked">
+                                <span class="dot pulse-green"></span> PROTOCOL COMPLETE - WITHDRAWAL UNLOCKED
+                            </div>
+                        </section>
                     </div>
 
-                    <div class="rules-grid">
-                        <div class="rule-box 3d-effect">
-                            <span class="box-label">Limit</span>
-                            <span class="box-value">${{ currentStore.withdrawLimit | number:'1.2-2' }}</span>
-                        </div>
-                        <div class="rule-box 3d-effect">
-                            <span class="box-label">Deadline</span>
-                            <span class="box-value">{{ currentStore.withdrawAllowedUntil | date:'dd MMM, hh:mm a'
-                                }}</span>
-                        </div>
-                    </div>
-
-                    <div class="countdown-panel 3d-effect">
-                        <div class="clock-title">{{ isWithdrawalUnlocked ? 'PROTOCOL COMPLETE' : 'REMAINING TIME' }}</div>
-                        <div class="main-clock">
-                            <div class="clock-unit">
-                                <span class="val">{{ countdownDaysDisplay }}</span>
-                                <span class="lbl">DAYS</span>
-                            </div>
-                            <div class="clock-sep">:</div>
-                            <div class="clock-unit">
-                                <span class="val">{{ countdownHoursDisplay }}</span>
-                                <span class="lbl">HOURS</span>
-                            </div>
-                            <div class="clock-sep">:</div>
-                            <div class="clock-unit">
-                                <span class="val">{{ countdownMinutesDisplay }}</span>
-                                <span class="lbl">MINS</span>
-                            </div>
-                            <div class="clock-sep">:</div>
-                            <div class="clock-unit">
-                                <span class="val">{{ countdownSecondsDisplay }}</span>
-                                <span class="lbl">SECS</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="status-bar" *ngIf="!isWithdrawalUnlocked">
-                        <span class="dot pulse-green"></span> COUNTDOWN ACTIVE - WITHDRAWAL LOCKED
-                    </div>
-                    <div class="status-bar expired" *ngIf="isWithdrawalUnlocked">
-                        <span class="dot pulse-green"></span> PROTOCOL COMPLETE - WITHDRAWAL UNLOCKED
-                    </div>
-
-                    <div class="instructions-footer" *ngIf="currentStore?.adminWithdrawRemarks">
+                    <div class="instructions-footer protocol-note" *ngIf="currentStore?.adminWithdrawRemarks">
                         <i class="fas fa-info-circle"></i>
                         <span>{{ currentStore.adminWithdrawRemarks }}</span>
                     </div>

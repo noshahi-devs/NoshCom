@@ -50,7 +50,7 @@ export class AddPaymentMethodComponent implements OnInit, OnDestroy {
     // Options
     thirdPartyOptions = [
         { label: 'Big Commerce', value: 'Big Commerce' },
-        { label: 'NashPay', value: 'Easy Finora' },
+        { label: 'NoshPay', value: 'Easy Finora' },
         { label: 'Eastnets', value: 'Eastnets' },
         { label: 'Facilita Pay', value: 'Facilita Pay' },
         { label: 'Paddle', value: 'Paddle' }
@@ -291,7 +291,7 @@ export class AddPaymentMethodComponent implements OnInit, OnDestroy {
             }
 
             if (this.selectedThirdParty !== 'Easy Finora') {
-                this.alert.error('Please use NashPay wallet only');
+                this.alert.error('Please use NoshPay wallet only');
                 return;
             }
 
