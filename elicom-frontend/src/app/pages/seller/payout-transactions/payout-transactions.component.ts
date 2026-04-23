@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { WithdrawalService, WithdrawRequestDto } from '../../../services/withdrawal.service';
-import { catchError, finalize, of, timeout } from 'rxjs';
+import { catchError, finalize, of } from 'rxjs';
 import Swal from 'sweetalert2';
 
 type PayoutMode = 'pending' | 'completed' | 'refunds';
@@ -78,9 +78,9 @@ export class PayoutTransactionsComponent implements OnInit {
     }
 
     get actionButtonLabel(): string {
-        if (this.mode === 'completed') return 'View Receipt';
+        if (this.mode === 'completed') return 'Review';
         if (this.mode === 'refunds') return 'View Details';
-        return 'Review Payout';
+        return 'Review';
     }
 
     get filteredRequests(): WithdrawRequestDto[] {
@@ -119,16 +119,34 @@ export class PayoutTransactionsComponent implements OnInit {
     getMethodLabel(method?: string): string {
         const normalized = this.normalizeStatus(method);
         if (normalized === 'easyfinora') return 'NoshPay';
-        return method || 'Third Party';
+        if (normalized === 'bank') return 'Bank';
+        return method ? method.charAt(0).toUpperCase() + method.slice(1) : 'Third Party';
     }
 
     getReceiveInLabel(paymentDetails?: string): string {
         if (!paymentDetails) return 'API Payout';
-        return paymentDetails
+        const normalized = paymentDetails
             .replace(/Easy\s*Finora\s*Wallet\s*ID\s*:/i, 'NoshPay Wallet ID:')
             .replace(/EasyFinora\s*Wallet\s*ID\s*:/i, 'NoshPay Wallet ID:')
             .replace(/Easy\s*Finora/gi, 'NoshPay')
             .replace(/EasyFinora/gi, 'NoshPay');
+
+        const getField = (label: string) => {
+            const regex = new RegExp(`(?:^|[,;\\n])\\s*${label}\\s*:\\s*([^,;\\n]*)`, 'i');
+            const match = normalized.match(regex);
+            return match?.[1]?.trim() || '';
+        };
+
+        const iban = getField('IBAN') || getField('IBAN Number') || getField('IBAN No') || getField('International Bank Account Number');
+        if (iban) return iban;
+
+        const account = getField('Account Number') || getField('Account No') || getField('Acc') || getField('A/C') || getField('Acct') || getField('Account');
+        if (account) return account;
+
+        const walletId = getField('Wallet ID') || getField('Wallet') || getField('NoshPay Wallet ID');
+        if (walletId) return walletId;
+
+        return '';
     }
 
     getRelativeDate(dateValue: string): string {
@@ -157,23 +175,122 @@ export class PayoutTransactionsComponent implements OnInit {
         const receiveIn = this.escapeHtml(this.getReceiveInLabel(req?.paymentDetails));
         const createdAt = req?.creationTime ? new Date(req.creationTime).toLocaleString() : '-';
         const remarks = this.escapeHtml(req?.adminRemarks?.trim() || 'N/A');
+        const paymentDetailsHtml = this.buildPaymentDetailsHtml(req?.paymentDetails, req?.method);
 
         Swal.fire({
             title,
             icon: this.mode === 'completed' ? 'success' : this.mode === 'refunds' ? 'warning' : 'info',
             html: `
-                <div style="text-align:left;line-height:1.65">
-                    <div><b>Request ID:</b> ${this.escapeHtml(String(payoutId))}</div>
-                    <div><b>Amount:</b> $${amount}</div>
-                    <div><b>Method:</b> ${method}</div>
-                    <div><b>Receive In:</b> ${receiveIn}</div>
-                    <div><b>Status:</b> ${this.escapeHtml(normalizedStatus)}</div>
-                    <div><b>Created At:</b> ${this.escapeHtml(createdAt)}</div>
-                    <div><b>Remarks:</b> ${remarks}</div>
+                <div style="text-align:left;line-height:1.45;display:flex;flex-wrap:wrap;gap:10px 14px;max-width:100%;overflow-wrap:anywhere;word-break:break-word">
+                    <div style="display:flex;flex-direction:column;gap:2px;flex:1 1 220px;min-width:0">
+                        <span style="color:#64748b;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em">Request ID</span>
+                        <span style="color:#111827;font-weight:800">${this.escapeHtml(String(payoutId))}</span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:2px;flex:1 1 220px;min-width:0">
+                        <span style="color:#64748b;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em">Amount</span>
+                        <span style="color:#111827;font-weight:800">$${amount}</span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:2px;flex:1 1 220px;min-width:0">
+                        <span style="color:#64748b;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em">Method</span>
+                        <span style="color:#111827;font-weight:800">${method}</span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:2px;flex:1 1 220px;min-width:0">
+                        <span style="color:#64748b;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em">Receive In</span>
+                        <span style="color:#111827;font-weight:800;word-break:break-word">${receiveIn}</span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:2px;flex:1 1 220px;min-width:0">
+                        <span style="color:#64748b;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em">Status</span>
+                        <span style="color:#111827;font-weight:800">${this.escapeHtml(normalizedStatus)}</span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:2px;flex:1 1 220px;min-width:0">
+                        <span style="color:#64748b;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em">Created At</span>
+                        <span style="color:#111827;font-weight:800">${this.escapeHtml(createdAt)}</span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:2px;flex:1 1 220px;min-width:0">
+                        <span style="color:#64748b;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em">Remarks</span>
+                        <span style="color:#111827;font-weight:800">${remarks}</span>
+                    </div>
+                    ${paymentDetailsHtml}
                 </div>
             `,
             confirmButtonText: 'Close'
         });
+    }
+
+    private buildPaymentDetailsHtml(paymentDetails?: string, method?: string): string {
+        if (!paymentDetails) return '';
+
+        const normalizedMethod = this.normalizeStatus(method);
+        if (normalizedMethod !== 'bank') {
+            return `
+                <details style="margin-top:2px;padding-top:10px;border-top:1px solid #e5e7eb">
+                    <summary style="cursor:pointer;color:#183153;font-weight:800">Payment Details</summary>
+                    <div style="margin-top:8px;color:#111827;word-break:break-word">${this.escapeHtml(paymentDetails)}</div>
+                </details>
+            `;
+        }
+
+        const details = this.parsePaymentDetails(paymentDetails);
+        if (!details.length) {
+            return `
+                <details style="margin-top:2px;padding-top:10px;border-top:1px solid #e5e7eb">
+                    <summary style="cursor:pointer;color:#183153;font-weight:800">Payment Details</summary>
+                    <div style="margin-top:8px;color:#111827;word-break:break-word">${this.escapeHtml(paymentDetails)}</div>
+                </details>
+            `;
+        }
+
+        const rows = details.map(item => `
+            <div style="display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px solid #f1f5f9">
+                <span style="color:#64748b;font-size:0.74rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;flex:0 0 auto">${this.escapeHtml(item.label)}</span>
+                <span style="color:#111827;font-weight:800;word-break:break-word;text-align:right;flex:1 1 auto">${this.escapeHtml(item.value)}</span>
+            </div>
+        `).join('');
+
+        return `
+            <details style="margin-top:2px;padding-top:10px;border-top:1px solid #e5e7eb">
+                <summary style="cursor:pointer;color:#183153;font-weight:800">Payment Details</summary>
+                <div style="display:flex;flex-direction:column;gap:2px;margin-top:8px">${rows}</div>
+            </details>
+        `;
+    }
+
+    private parsePaymentDetails(paymentDetails: string): Array<{ label: string; value: string }> {
+        const segments = paymentDetails
+            .split(/[,;\n]+/)
+            .map(part => part.trim())
+            .filter(Boolean);
+
+        const preferredOrder = ['Country', 'Bank', 'Account Type', 'Account Title', 'Account', 'IBAN', 'Routing', 'Reference', 'Wallet ID', 'CryptoId', 'CryptoTitle'];
+        const entries = new Map<string, string>();
+
+        for (const segment of segments) {
+            const colonIndex = segment.indexOf(':');
+            if (colonIndex === -1) continue;
+
+            const key = segment.slice(0, colonIndex).trim();
+            const value = segment.slice(colonIndex + 1).trim();
+            if (key && value) {
+                entries.set(key, value);
+            }
+        }
+
+        const result: Array<{ label: string; value: string }> = [];
+        for (const wanted of preferredOrder) {
+            for (const [key, value] of entries.entries()) {
+                if (key.toLowerCase() === wanted.toLowerCase()) {
+                    result.push({ label: key, value });
+                    entries.delete(key);
+                    break;
+                }
+            }
+        }
+
+        for (const [key, value] of entries.entries()) {
+            result.push({ label: key, value });
+        }
+
+        return result;
     }
 
     private loadRequests(): void {
@@ -190,7 +307,6 @@ export class PayoutTransactionsComponent implements OnInit {
         }, 6000);
 
         this.withdrawalService.getMyWithdrawRequests(0, 200).pipe(
-            timeout(8000),
             catchError((err) => {
                 console.error('Failed to load payout transactions:', err);
                 return of([]);

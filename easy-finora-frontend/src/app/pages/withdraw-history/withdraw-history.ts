@@ -40,17 +40,47 @@ export class WithdrawHistory implements OnInit {
     getBankDetails(details: string) {
         if (!details) return { bank: '', title: '', account: '', iban: '' };
 
-        const getField = (label: string) => {
-            const regex = new RegExp(`${label}:\\s*([^,]*)`, 'i');
-            const match = details.match(regex);
-            return match ? match[1].trim() : '';
+        const segments = details
+            .split(/[,;\n]+/)
+            .map(part => part.trim())
+            .filter(Boolean);
+
+        const fields = new Map<string, string>();
+        for (const segment of segments) {
+            const colonIndex = segment.indexOf(':');
+            if (colonIndex === -1) continue;
+
+            const key = segment.slice(0, colonIndex).trim().toLowerCase();
+            const value = segment.slice(colonIndex + 1).trim();
+            if (key && value) {
+                fields.set(key, value);
+            }
+        }
+
+        const getField = (...labels: string[]) => {
+            for (const label of labels) {
+                const normalized = label.toLowerCase();
+                for (const [key, value] of fields.entries()) {
+                    if (key === normalized || key.startsWith(normalized)) {
+                        return value;
+                    }
+                }
+            }
+
+            for (const label of labels) {
+                const regex = new RegExp(`${label}\\s*[:\\-]\\s*([^,;\\n]*)`, 'i');
+                const match = details.match(regex);
+                if (match?.[1]) return match[1].trim();
+            }
+
+            return '';
         };
 
         return {
-            bank: getField('Bank'),
-            title: getField('Title'),
-            account: getField('Acc'),
-            iban: getField('IBAN')
+            bank: getField('Bank', 'Bank Name'),
+            title: getField('Title', 'Account Title', 'A/C Title', 'Account Holder'),
+            account: getField('Acc', 'Account', 'Account Number', 'A/C', 'Acct'),
+            iban: getField('IBAN', 'IBAN Number', 'IBAN No', 'International Bank Account Number')
         };
     }
 

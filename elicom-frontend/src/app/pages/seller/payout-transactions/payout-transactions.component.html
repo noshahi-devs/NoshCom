@@ -68,29 +68,22 @@
                         <td class="date-col">
                             <div class="cell-box cell-date">
                                 <div class="date-relative">{{ getRelativeDate(req.creationTime) }}</div>
-                                <div class="detail-row">
-                                    <span class="detail-label">Date</span>
-                                    <span class="detail-value">{{ req.creationTime | date:'dd/MM/yyyy' }}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-label">Time</span>
-                                    <span class="detail-value">{{ req.creationTime | date:'hh:mm:ss a' }}</span>
-                                </div>
+                                <div class="date-line date-label">Date</div>
+                                <div class="date-line date-value">{{ req.creationTime | date:'dd/MM/yyyy' }}</div>
+                                <div class="date-line date-label">Time</div>
+                                <div class="date-line date-value">{{ req.creationTime | date:'hh:mm:ss a' }}</div>
                             </div>
                         </td>
 
                         <td class="method-col">
                             <div class="cell-box cell-method">
                                 <div class="method-main">{{ getMethodLabel(req.method) }}</div>
-                                <div class="detail-row">
-                                    <span class="detail-label">Request</span>
-                                    <span class="detail-value">Payout transfer</span>
-                                </div>
                             </div>
                         </td>
 
                         <td class="receive-col">
                             <div class="cell-box cell-receive">
+                                <div class="receive-label">Account</div>
                                 <div class="receive-main">{{ getReceiveInLabel(req.paymentDetails) }}</div>
                             </div>
                         </td>
@@ -98,13 +91,11 @@
                         <td class="amount-col">
                             <div class="cell-box cell-amount">
                                 <div class="amount-value">${{ req.amount || 0 | number:'1.2-2' }}</div>
-                                <div class="amount-note">Transfer amount</div>
                             </div>
                         </td>
 
                         <td>
                             <div class="cell-box cell-box-status">
-                                <div class="status-caption">Current Status</div>
                                 <span class="status-pill" [ngClass]="getStatusClass(req.status)">
                                     {{ getStatusLabel(req.status) }}
                                 </span>

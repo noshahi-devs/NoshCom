@@ -56,6 +56,7 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
     isViewOnly: boolean = false;
     showListingConfig: boolean = true;
     currentMappingId: string | null = null;
+    isPublishing: boolean = false;
     private readonly titlePreviewLength = 92;
     private readonly previewCardCount = 10;
     currentDate: string = '';
@@ -538,6 +539,9 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
             return;
         }
 
+        this.isPublishing = true;
+        this.cdr.detectChanges();
+
         const mapping: any = {
             storeId: this.currentStore.id,
             productId: this.product.id,
@@ -554,6 +558,8 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
             this.storeProductService.update(mapping).subscribe({
                 next: async () => {
                     this.stopGlobalLoader();
+                    this.isPublishing = false;
+                    this.cdr.detectChanges();
                     const result = await this.alert.success('Listing updated successfully!');
                     if (!result.isConfirmed) {
                         return;
@@ -564,6 +570,8 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
                 },
                 error: (err) => {
                     this.stopGlobalLoader();
+                    this.isPublishing = false;
+                    this.cdr.detectChanges();
                     this.alert.error(err?.error?.error?.message || 'Failed to update listing.');
                 }
             });
@@ -572,6 +580,8 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
             this.storeProductService.mapProductToStore(mapping).subscribe({
                 next: async () => {
                     this.stopGlobalLoader();
+                    this.isPublishing = false;
+                    this.cdr.detectChanges();
                     try {
                         const publishedId = (mapping?.productId || this.product?.id || '').toString();
                         if (publishedId) {
@@ -590,6 +600,8 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
                 },
                 error: (err) => {
                     this.stopGlobalLoader();
+                    this.isPublishing = false;
+                    this.cdr.detectChanges();
                     const errorMsg = err?.error?.error?.message || 'Failed to map product.';
                     if (errorMsg.toLowerCase().includes('already mapped')) {
                         Swal.fire({

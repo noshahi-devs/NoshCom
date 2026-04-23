@@ -326,8 +326,11 @@
                 <button class="btn btn-cancel" (click)="cancelSearch()">
                     <i class="fas fa-times"></i> {{ isViewOnly ? 'Back to Listings' : 'Cancel' }}
                 </button>
-                <button class="btn btn-primary px-4" (click)="publishToStore()" *ngIf="!isViewOnly">
-                    <i class="fas fa-check-circle"></i> Publish to Store
+                <button class="btn btn-primary px-4 publish-btn" (click)="publishToStore()" *ngIf="!isViewOnly"
+                    [disabled]="isPublishing">
+                    <span class="btn-spinner" *ngIf="isPublishing"></span>
+                    <i class="fas fa-check-circle" *ngIf="!isPublishing"></i>
+                    <span>{{ isPublishing ? 'Publishing...' : 'Publish to Store' }}</span>
                 </button>
             </div>
         </div>

@@ -641,7 +641,7 @@
         font-size: 0.82rem;
         font-weight: 900;
         text-transform: uppercase;
-        text-align: left;
+        text-align: center;
         letter-spacing: 0.1em;
         border-top: 1px solid rgba(255, 202, 93, 0.35);
         border-bottom: 1px solid rgba(255, 202, 93, 0.35);
@@ -664,6 +664,7 @@
             border-top: 1px solid #edf2f7;
             border-bottom: 1px solid #edf2f7;
             vertical-align: middle;
+            text-align: center;
 
             &:first-child { 
                 border-left: 1px solid #edf2f7;
@@ -685,10 +686,17 @@
         }
     }
 
+    tr td:first-child .cell-3d {
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
     .cell-3d {
         display: flex;
         flex-direction: column;
         gap: 8px;
+        align-items: center;
         .relative-time { color: #b67800; font-weight: 900; font-size: 1rem; }
         .full-date, .full-time { color: #7c8fa6; font-size: 0.88rem; font-weight: 700; }
         .order-link { 
