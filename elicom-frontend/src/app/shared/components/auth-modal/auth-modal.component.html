@@ -1,5 +1,5 @@
 <div class="auth-modal-overlay" [class.page-mode]="pageMode">
-    <div class="auth-modal-container" [class.page-mode]="pageMode" [class.signing-in]="isSigningIn" (click)="$event.stopPropagation()">
+    <div class="auth-modal-container" [class.page-mode]="pageMode" [class.signing-in]="isSigningIn" [class.signup-mode]="view === 'signup'" (click)="$event.stopPropagation()">
 
         <button class="close-btn" (click)="onClose()" [disabled]="isLoading || isSigningIn">&times;</button>
 
@@ -37,12 +37,15 @@
                 </div>
             </aside>
 
-            <section class="auth-panel">
+            <section class="auth-panel" [class.signup-mode]="view === 'signup'">
                 <div *ngIf="view === 'signin'" class="auth-view" [class.is-signing-in]="isSigningIn">
                     <div class="auth-heading">
                         <span class="auth-kicker">Welcome Back</span>
-                        <h2>Sign In</h2>
-                        <p class="auth-subtitle">Jump back into NoshCom with a sharper, cleaner, more immersive login experience.</p>
+                        <div class="auth-brand-mark">
+                            <img src="assets/images/logo1.png" alt="NoshCom logo">
+                        </div>
+                        <h2>Sign In to NoshCom</h2>
+                        <p class="auth-subtitle">Access your NoshCom account to continue shopping, manage orders, and explore your personalized experience.</p>
                     </div>
 
                     <form [formGroup]="signInForm" (ngSubmit)="onSignIn()">
@@ -94,7 +97,7 @@
                 <div *ngIf="view === 'signup'" class="auth-view signup-view">
                     <div class="auth-heading">
                         <span class="auth-kicker">Get Started</span>
-                        <h2>Create Account</h2>
+                        <h2>Create Your NoshCom Account</h2>
                         <p class="auth-subtitle">Set up your NoshCom account through a cleaner, more elegant signup experience.</p>
                     </div>
 
@@ -105,7 +108,6 @@
                             </span>
                             <span class="role-selector-copy">
                                 <strong>Customer</strong>
-                                <small>Shop and manage orders</small>
                             </span>
                         </button>
                         <button [class.active]="userRole === 'seller'" (click)="setUserRole('seller')">
@@ -114,7 +116,6 @@
                             </span>
                             <span class="role-selector-copy">
                                 <strong>Seller</strong>
-                                <small>Manage products and sales</small>
                             </span>
                         </button>
                     </div>
