@@ -10,6 +10,16 @@ import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { SmartPricePipe } from '../../shared/pipes/smart-price.pipe';
 
+interface PremiumSpotlightSlide {
+  eyebrow: string;
+  title: string;
+  text: string;
+  cta: string;
+  link: string;
+  image: string;
+  imagePosition?: string;
+}
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -40,6 +50,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   private forYouObserver?: IntersectionObserver;
   private galleryObserver?: IntersectionObserver;
   private premiumObserver?: IntersectionObserver;
+  private premiumSpotlightTimer?: ReturnType<typeof setInterval>;
   favoriteKeys = new Set<string>();
   burstingFavoriteKeys = new Set<string>();
 
@@ -65,6 +76,72 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   categoryError: string = '';
   isLoadingCategories: boolean = false;
   isLoadingProducts: boolean = false;
+  premiumSpotlightCurrentSlide = 0;
+  readonly premiumSpotlightSlides: PremiumSpotlightSlide[] = [
+    {
+      eyebrow: 'Premium Spotlight',
+      title: 'Design That Feels Curated',
+      text: 'A polished showcase for standout products, crafted to make your best picks feel premium.',
+      cta: 'Explore Now',
+      link: '/search-result?sort=newest',
+      image: 'https://plus.unsplash.com/premium_photo-1661351404790-dd90f03228eb?q=80&w=869&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      imagePosition: 'center 30%'
+    },
+    {
+      eyebrow: 'Trending Picks',
+      title: 'Fresh Drops, Clean Presentation',
+      text: 'Highlight new arrivals with a bold visual story and a smooth browsing feel.',
+      cta: 'Shop Trends',
+      link: '/search-result?sort=popular',
+      image: 'https://plus.unsplash.com/premium_photo-1683147858150-d1f96bae7d8f?q=80&w=871&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      imagePosition: 'center 30%'
+    },
+    {
+      eyebrow: 'Best Value',
+      title: 'Premium Looks, Smart Deals',
+      text: 'Bring attention to high-value products with a stylish banner that keeps the section lively.',
+      cta: 'View Deals',
+      link: '/search-result?sort=price_asc',
+      image: 'https://images.unsplash.com/photo-1758520387687-38a92a7ee42f?q=80&w=1032&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      imagePosition: 'center 30%'
+    },
+    {
+      eyebrow: 'Style Edit',
+      title: 'Bold Looks For Everyday',
+      text: 'Fresh fashion visuals that keep the premium spotlight section feeling modern and energetic.',
+      cta: 'Explore Now',
+      link: '/search-result?sort=newest',
+      image: 'https://i.pinimg.com/1200x/c8/68/9b/c8689b4588914a03f0df96f5f779417f.jpg',
+      imagePosition: 'center 30%'
+    },
+    {
+      eyebrow: 'New Arrival',
+      title: 'Polished Picks In Focus',
+      text: 'Add a clean lifestyle feel to the carousel with a sharper retail-inspired visual story.',
+      cta: 'Shop Trends',
+      link: '/search-result?sort=popular',
+      image: 'https://i.pinimg.com/1200x/d9/f6/0f/d9f60f1f7c5ff08f8b4c248ce1fd8a1d.jpg',
+      imagePosition: 'center 30%'
+    },
+    {
+      eyebrow: 'Fashion Mood',
+      title: 'Premium Styling, Clean Frame',
+      text: 'A bright editorial slide that keeps the carousel feeling curated, stylish, and premium.',
+      cta: 'Browse Offers',
+      link: '/search-result?sort=newest',
+      image: 'https://i.pinimg.com/1200x/83/12/32/83123202fa2a92a1511593ed8f1fe2c8.jpg',
+      imagePosition: 'center 30%'
+    },
+    {
+      eyebrow: 'Modern Picks',
+      title: 'Fresh Visuals For The Carousel',
+      text: 'Bring in another clean shopping visual to make the slider feel richer and more alive.',
+      cta: 'View Collection',
+      link: '/search-result?sort=popular',
+      image: 'https://i.pinimg.com/1200x/09/5e/1c/095e1ce87da849590e3925f99f9a2ffe.jpg',
+      imagePosition: 'center 30%'
+    }
+  ];
   readonly storySlides = [
     {
       pill: 'Studio Edit',
@@ -100,6 +177,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.loadProducts();
     this.loadCategories();
+    this.startPremiumSpotlightAutoSlide();
   }
 
   ngAfterViewInit(): void {
@@ -203,6 +281,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.forYouObserver?.disconnect();
     this.galleryObserver?.disconnect();
     this.premiumObserver?.disconnect();
+    this.clearPremiumSpotlightAutoSlide();
   }
 
   @HostListener('window:scroll')
@@ -212,6 +291,27 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.updateForYouVisibleRows();
     this.updateGalleryVisibleRows();
     this.updatePremiumVisibleRows();
+  }
+
+  nextPremiumSpotlightSlide(): void {
+    this.premiumSpotlightCurrentSlide =
+      (this.premiumSpotlightCurrentSlide + 1) % this.premiumSpotlightSlides.length;
+    this.restartPremiumSpotlightAutoSlide();
+    this.cdr.detectChanges();
+  }
+
+  prevPremiumSpotlightSlide(): void {
+    this.premiumSpotlightCurrentSlide =
+      (this.premiumSpotlightCurrentSlide - 1 + this.premiumSpotlightSlides.length) %
+      this.premiumSpotlightSlides.length;
+    this.restartPremiumSpotlightAutoSlide();
+    this.cdr.detectChanges();
+  }
+
+  goToPremiumSpotlightSlide(index: number): void {
+    this.premiumSpotlightCurrentSlide = index;
+    this.restartPremiumSpotlightAutoSlide();
+    this.cdr.detectChanges();
   }
 
   private updateFeaturesInView(): void {
@@ -317,6 +417,27 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     if (hasChanged) {
       this.premiumVisibleRows = mergedVisibleRows;
       this.cdr.detectChanges();
+    }
+  }
+
+  private startPremiumSpotlightAutoSlide(): void {
+    this.clearPremiumSpotlightAutoSlide();
+    this.premiumSpotlightTimer = setInterval(() => {
+      this.premiumSpotlightCurrentSlide =
+        (this.premiumSpotlightCurrentSlide + 1) % this.premiumSpotlightSlides.length;
+      this.cdr.detectChanges();
+    }, 4500);
+  }
+
+  private restartPremiumSpotlightAutoSlide(): void {
+    this.clearPremiumSpotlightAutoSlide();
+    this.startPremiumSpotlightAutoSlide();
+  }
+
+  private clearPremiumSpotlightAutoSlide(): void {
+    if (this.premiumSpotlightTimer) {
+      clearInterval(this.premiumSpotlightTimer);
+      this.premiumSpotlightTimer = undefined;
     }
   }
 

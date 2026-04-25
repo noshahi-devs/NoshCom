@@ -53,8 +53,10 @@ footer::after {
 
 .footer-top {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 50px;
+  grid-template-columns: minmax(240px, 1.1fr) repeat(4, minmax(150px, 185px));
+  column-gap: 20px;
+  row-gap: 50px;
+  justify-content: start;
   margin-bottom: 60px;
 }
 
@@ -164,6 +166,11 @@ footer::after {
 }
 
 @media (max-width: 768px) {
+  .footer-top {
+    grid-template-columns: 1fr;
+    gap: 34px;
+  }
+
   .footer-bottom {
     flex-direction: column;
     gap: 20px;

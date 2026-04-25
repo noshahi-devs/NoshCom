@@ -18,43 +18,39 @@
   <app-category-carousel *ngIf="!categoryError && !isLoadingCategories" [categories]="categories"></app-category-carousel>
 
   <div class="features-container" #featuresSection [class.in-view]="featuresInView">
-    <div class="feature-card">
+    <div class="feature-card feature-card--shipping">
       <div class="icon-box">
         <i class="fa-solid fa-paper-plane"></i>
       </div>
       <div class="content">
         <h3>Free Worldwide Shipping</h3>
-        <p>Free shipping for all orders over $100</p>
       </div>
     </div>
 
-    <div class="feature-card">
+    <div class="feature-card feature-card--moneyback">
       <div class="icon-box">
         <i class="fa-solid fa-rotate-left"></i>
       </div>
       <div class="content">
         <h3>Money Back Guarantee</h3>
-        <p>We return money within 30 days</p>
       </div>
     </div>
 
-    <div class="feature-card">
+    <div class="feature-card feature-card--support">
       <div class="icon-box">
         <i class="fa-solid fa-headset"></i>
       </div>
       <div class="content">
         <h3>24/7 Customer Support</h3>
-        <p>Friendly 24/7 customer support</p>
       </div>
     </div>
 
-    <div class="feature-card">
+    <div class="feature-card feature-card--payment">
       <div class="icon-box">
         <i class="fa-solid fa-lock"></i>
       </div>
       <div class="content">
         <h3>Secure Online Payment</h3>
-        <p>We possess SSL / Secure Certificate</p>
       </div>
     </div>
   </div>
@@ -264,6 +260,41 @@
           />
         </div>
       </div>
+      <section class="premium-spotlight-carousel" *ngIf="section.style === 'premium'">
+        <div class="premium-spotlight-track">
+          <article
+            class="premium-spotlight-slide"
+            *ngFor="let slide of premiumSpotlightSlides; let i = index"
+            [class.active]="premiumSpotlightCurrentSlide === i"
+          >
+            <img
+              class="premium-spotlight-bg"
+              [src]="slide.image"
+              [alt]="slide.title"
+              [style.object-position]="slide.imagePosition || 'center 30%'"
+            />
+            <div class="premium-spotlight-overlay"></div>
+          </article>
+        </div>
+
+        <button class="premium-spotlight-arrow prev" type="button" (click)="prevPremiumSpotlightSlide()">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button class="premium-spotlight-arrow next" type="button" (click)="nextPremiumSpotlightSlide()">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+
+        <div class="premium-spotlight-dots">
+          <button
+            *ngFor="let slide of premiumSpotlightSlides; let i = index"
+            type="button"
+            class="premium-spotlight-dot"
+            [class.active]="premiumSpotlightCurrentSlide === i"
+            (click)="goToPremiumSpotlightSlide(i)"
+            [attr.aria-label]="'Go to premium spotlight slide ' + (i + 1)"
+          ></button>
+        </div>
+      </section>
       <div class="home-section">
         <div class="section-header">
           <div>

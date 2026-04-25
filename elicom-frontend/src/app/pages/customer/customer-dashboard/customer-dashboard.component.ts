@@ -11,7 +11,7 @@ import { take } from 'rxjs';
     standalone: true,
     imports: [CommonModule, RouterModule],
     templateUrl: './customer-dashboard.component.html',
-    styleUrl: './customer-dashboard.component.scss'
+    styleUrls: ['./customer-dashboard.component.scss']
 })
 export class CustomerDashboardComponent implements OnInit {
     userName = 'prismaticadeel';

@@ -32,7 +32,7 @@ export class HeroCarouselComponent implements OnInit, OnDestroy {
         'Pure sound, no noise. The new generation of noise-cancelling wireless headphones is here for professionals like you.',
       cta: 'Shop Collection',
       link: '/search-result',
-      image: 'https://images.pexels.com/photos/7679453/pexels-photo-7679453.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=2200',
+      image: 'https://i.pinimg.com/1200x/87/17/14/871714161665ca651fd24f9a6bdd988f.jpg',
       imagePosition: 'center 5%',
     },
     {
@@ -42,7 +42,7 @@ export class HeroCarouselComponent implements OnInit, OnDestroy {
         'Track your health, manage your day, and look premium with our latest 3D smart watch series. Now with sapphire glass.',
       cta: 'View Details',
       link: '/search-result',
-      image: 'https://images.pexels.com/photos/36730471/pexels-photo-36730471.jpeg',
+      image: 'https://i.pinimg.com/1200x/fe/6b/68/fe6b68700ed8fcad1391b990db84c9aa.jpg',
       imagePosition: 'center 5%',
     },
     {
@@ -52,7 +52,7 @@ export class HeroCarouselComponent implements OnInit, OnDestroy {
         'Unleash the beast with the ultimate gaming hardware. Max settings, 4K resolution, zero lag gaming experience.',
       cta: 'Explore Gear',
       link: '/search-result',
-      image: 'https://images.pexels.com/photos/3865906/pexels-photo-3865906.jpeg',
+      image: 'https://i.pinimg.com/1200x/c0/b2/3a/c0b23a1d5ff81e8bf043f5b0856ab339.jpg',
       imagePosition: 'center 25%',
     },
     {
@@ -62,7 +62,7 @@ export class HeroCarouselComponent implements OnInit, OnDestroy {
         'Browse standout deals curated for style, value and everyday essentials in one smooth shopping journey.',
       cta: 'Browse Offers',
       link: '/search-result',
-      image: 'https://images.pexels.com/photos/6612552/pexels-photo-6612552.jpeg',
+      image: 'https://i.pinimg.com/1200x/8b/c0/65/8bc065532c06b91e114b141ec35a5464.jpg',
       imagePosition: 'center 55%',
     },
   ];

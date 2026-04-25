@@ -1,60 +1,61 @@
 <div class="customer-dashboard sui-fade-in">
-    <section class="dashboard-hero">
-        <div class="hero-copy">
-            <div class="hero-kicker">NoshCom Customer Space</div>
-            <h1>Welcome back, {{ userName }}</h1>
-            <p>
-                Your shopping dashboard is now designed like the main storefront:
-                bright, premium, and fast to scan with live order, wallet, and rewards insight.
-            </p>
+    <section class="overview-shell">
+        <div class="overview-main">
+            <div class="hero-kicker">NoshCom Account</div>
+            <div class="overview-heading">
+                <h1>Welcome <span>{{ userName }}</span></h1>
+                <p class="overview-copy">
+                    A focused view of your account activity, delivery progress, and shopping value across NoshCom.
+                </p>
+            </div>
 
-            <div class="hero-signal-row">
-                <div class="signal-pill" *ngFor="let signal of shoppingSignals" [ngClass]="signal.tone">
+            <div class="signal-list">
+                <article class="signal-item" *ngFor="let signal of shoppingSignals">
                     <span>{{ signal.label }}</span>
                     <strong>{{ signal.value }}</strong>
-                </div>
+                </article>
             </div>
 
             <div class="hero-actions">
                 <button class="hero-btn primary" (click)="goShopping()">
-                    Explore NoshCom
+                    Continue Shopping
                     <i class="fas fa-arrow-right"></i>
                 </button>
                 <a class="hero-btn secondary" [routerLink]="['/customer/orders']">
-                    View Orders
+                    Order History
                     <i class="fas fa-box-open"></i>
                 </a>
             </div>
         </div>
 
-        <div class="hero-visual">
-            <div class="orb orb-one"></div>
-            <div class="orb orb-two"></div>
-            <div class="hero-stack">
-                <article class="floating-card spend-card" [routerLink]="['/customer/orders']">
-                    <div class="floating-label">Total Spend</div>
-                    <div class="floating-value">${{ totalSpend | number:'1.0-0' }}</div>
-                    <p>All purchases synced from your NoshCom account.</p>
+        <div class="overview-side">
+            <article class="summary-card progress-card" [routerLink]="['/customer/orders/Pending']">
+                <div class="summary-topline">
+                    <div>
+                        <span class="card-label">Current Order</span>
+                        <strong class="card-title">{{ orderStatus }}</strong>
+                    </div>
+                    <span class="summary-badge">{{ orderProgress }}%</span>
+                </div>
+                <div class="journey-progress">
+                    <div class="journey-progress-fill" [style.width.%]="orderProgress"></div>
+                </div>
+                <div class="progress-foot">
+                    <span>Latest stage</span>
+                    <strong>{{ trackingSteps[currentStep] }}</strong>
+                </div>
+            </article>
+
+            <div class="summary-split">
+                <article class="summary-card strong-card" [routerLink]="['/customer/orders']">
+                    <span class="card-label">Total Spend</span>
+                    <strong class="card-value">${{ totalSpend | number:'1.0-0' }}</strong>
+                    <p>Tracked from all completed purchases.</p>
                 </article>
 
-                <article class="floating-card progress-card" [routerLink]="['/customer/orders/Pending']">
-                    <div class="floating-head">
-                        <span>Live Progress</span>
-                        <strong>{{ orderStatus }}</strong>
-                    </div>
-                    <div class="hero-progress">
-                        <div class="hero-progress-fill" [style.width.%]="orderProgress"></div>
-                    </div>
-                    <div class="mini-track">
-                        <span *ngFor="let step of trackingSteps; let i = index" [class.active]="i <= currentStep">
-                            {{ step }}
-                        </span>
-                    </div>
-                </article>
-
-                <article class="floating-card member-card">
-                    <div class="floating-label">Member Tier</div>
-                    <div class="member-tier">{{ loyaltyTier }}</div>
+                <article class="summary-card soft-card">
+                    <span class="card-label">Member Tier</span>
+                    <strong class="card-value">{{ loyaltyTier }}</strong>
                     <div class="member-meta">
                         <span>{{ completionRate }}% fulfilled</span>
                         <span>{{ activeOrders }} active orders</span>
@@ -64,103 +65,115 @@
         </div>
     </section>
 
-    <section class="snapshot-grid">
-        <article class="snapshot-card primary-card" [routerLink]="['/customer/orders']">
-            <div class="snapshot-top">
+    <section class="metrics-grid">
+        <article class="metric-card accent" [routerLink]="['/customer/orders']">
+            <div class="metric-head">
                 <span>Orders placed</span>
                 <i class="fas fa-bag-shopping"></i>
             </div>
             <h3>{{ totalOrders }}</h3>
-            <p>Your complete order history in one premium view.</p>
+            <p>Complete order history in one place.</p>
         </article>
 
-        <article class="snapshot-card glass-card" [routerLink]="['/customer/orders/Pending']">
-            <div class="snapshot-top">
+        <article class="metric-card" [routerLink]="['/customer/orders/Pending']">
+            <div class="metric-head">
                 <span>Active deliveries</span>
                 <i class="fas fa-truck-fast"></i>
             </div>
             <h3>{{ activeOrders }}</h3>
-            <p>Pending and shipped orders that still need your attention.</p>
+            <p>Orders that still need your attention.</p>
         </article>
 
-        <article class="snapshot-card glass-card">
-            <div class="snapshot-top">
+        <article class="metric-card">
+            <div class="metric-head">
                 <span>Wallet balance</span>
                 <i class="fas fa-wallet"></i>
             </div>
             <h3>{{ walletAsset.unit }}{{ walletAsset.value }}</h3>
-            <p>Ready for your next checkout and promotional unlock.</p>
+            <p>Available for upcoming checkout use.</p>
         </article>
 
-        <article class="snapshot-card accent-card">
-            <div class="snapshot-top">
+        <article class="metric-card accent-soft">
+            <div class="metric-head">
                 <span>Reward points</span>
                 <i class="fas fa-star"></i>
             </div>
             <h3>{{ pointsAsset.value }}</h3>
-            <p>Points available to boost savings across upcoming orders.</p>
+            <p>Ready to help lower your next order total.</p>
         </article>
     </section>
 
-    <section class="panel orders-panel">
-        <div class="panel-header">
-            <div>
-                <span class="panel-kicker">Orders Overview</span>
-                <h2>Status command center</h2>
-            </div>
-            <a class="panel-link" [routerLink]="['/customer/orders']">
-                Open all orders
-                <i class="fas fa-chevron-right"></i>
-            </a>
-        </div>
-
-        <div class="orders-grid">
-            <div class="order-status" *ngFor="let status of orderStatuses"
-                [routerLink]="['/customer/orders', status.label === 'All' ? '' : status.label]">
-                <div class="status-glow"></div>
-                <div class="status-icon">
-                    <i class="fas {{status.icon}}"></i>
+    <section class="content-grid">
+        <section class="panel orders-panel">
+            <div class="panel-header">
+                <div>
+                    <span class="panel-kicker">Orders Overview</span>
+                    <h2>Track every order status</h2>
                 </div>
-                <div class="status-label">{{status.label}}</div>
-                <div class="status-count-outside">{{ status.count }}</div>
-            </div>
-        </div>
-    </section>
-
-    <section class="panel order-journey" [routerLink]="['/customer/orders/Pending']">
-        <div class="panel-header">
-            <div>
-                <span class="panel-kicker">Order Flow</span>
-                <h2>Delivery journey</h2>
-            </div>
-            <span class="panel-chip">{{ orderStatus }}</span>
-        </div>
-
-        <div class="journey-hero">
-            <div class="journey-progress-wrap">
-                <div class="journey-progress">
-                    <div class="journey-progress-fill" [style.width.%]="orderProgress"></div>
-                </div>
-                <div class="journey-progress-copy">
-                    <strong>{{ orderProgress }}% complete</strong>
-                    <span>Real-time progress for your latest NoshCom order.</span>
-                </div>
+                <a class="panel-link" [routerLink]="['/customer/orders']">
+                    View all
+                    <i class="fas fa-chevron-right"></i>
+                </a>
             </div>
 
-            <div class="journey-timeline">
-                <div class="journey-node" *ngFor="let step of trackingSteps; let i = index" [class.active]="i <= currentStep">
-                    <div class="journey-node-top">
-                        <div class="journey-dot">{{ i + 1 }}</div>
-                        <div class="journey-line" *ngIf="i < trackingSteps.length - 1"></div>
+            <div class="orders-grid">
+                <a class="order-row" *ngFor="let status of orderStatuses"
+                    [routerLink]="['/customer/orders', status.label === 'All' ? '' : status.label]">
+                    <div class="order-row-icon">
+                        <i class="fas {{ status.icon }}"></i>
                     </div>
-                    <div class="journey-node-copy">
-                        <strong>{{ step }}</strong>
-                        <span *ngIf="i < currentStep">Completed</span>
-                        <span *ngIf="i === currentStep">Current step</span>
-                        <span *ngIf="i > currentStep">Coming next</span>
+                    <div class="order-row-copy">
+                        <strong>{{ status.label }}</strong>
+                        <span>Open related orders</span>
+                    </div>
+                    <div class="order-row-count">{{ status.count }}</div>
+                </a>
+            </div>
+        </section>
+
+        <div class="side-stack">
+            <section class="panel journey-panel" [routerLink]="['/customer/orders/Pending']">
+                <div class="panel-header">
+                    <div>
+                        <span class="panel-kicker">Latest Delivery</span>
+                        <h2>Current order journey</h2>
+                    </div>
+                    <span class="panel-chip">{{ orderStatus }}</span>
+                </div>
+
+                <div class="journey-steps">
+                    <div class="journey-step" *ngFor="let step of trackingSteps; let i = index" [class.active]="i <= currentStep">
+                        <div class="journey-step-number">{{ i + 1 }}</div>
+                        <div class="journey-step-copy">
+                            <strong>{{ step }}</strong>
+                            <span *ngIf="i < currentStep">Completed</span>
+                            <span *ngIf="i === currentStep">Current step</span>
+                            <span *ngIf="i > currentStep">Coming next</span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
+
+            <section class="panel notes-panel">
+                <div class="panel-header">
+                    <div>
+                        <span class="panel-kicker">Quick Access</span>
+                        <h2>Useful account tools</h2>
+                    </div>
+                </div>
+
+                <div class="notes-list">
+                    <article class="note-item" *ngFor="let note of experienceNotes">
+                        <div class="note-icon">
+                            <i class="fas {{ note.icon }}"></i>
+                        </div>
+                        <div class="note-copy">
+                            <strong>{{ note.title }}</strong>
+                            <p>{{ note.description }}</p>
+                        </div>
+                    </article>
+                </div>
+            </section>
         </div>
     </section>
 </div>
