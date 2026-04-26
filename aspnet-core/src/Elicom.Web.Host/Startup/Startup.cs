@@ -21,6 +21,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 
 namespace Elicom.Web.Host.Startup
@@ -147,6 +148,22 @@ namespace Elicom.Web.Host.Startup
             app.UseStaticFiles();
             ConfigureUploadsStaticFiles(app);
 
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path.StartsWithSegments("/swagger"))
+                {
+                    context.Response.OnStarting(() =>
+                    {
+                        context.Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
+                        context.Response.Headers["Pragma"] = "no-cache";
+                        context.Response.Headers["Expires"] = "0";
+                        return Task.CompletedTask;
+                    });
+                }
+
+                await next();
+            });
+
             app.UseRouting();
 
             app.UseAuthentication();
@@ -167,8 +184,15 @@ namespace Elicom.Web.Host.Startup
             // Enable middleware to serve swagger-ui assets (HTML, JS, CSS etc.)
             app.UseSwaggerUI(options =>
             {
+                var swaggerBuildTrigger = Uri.EscapeDataString(
+                    _appConfiguration["Swagger:BuildTrigger"] ?? DateTime.UtcNow.Ticks.ToString()
+                );
+
                 // specifying the Swagger JSON endpoint.
-                options.SwaggerEndpoint($"/swagger/{_apiDocumentName}/swagger.json", $"Elicom API {_apiDocumentName}");
+                options.SwaggerEndpoint(
+                    $"/swagger/{_apiDocumentName}/swagger.json?v={swaggerBuildTrigger}",
+                    $"Elicom API {_apiDocumentName}"
+                );
                 options.DisplayRequestDuration(); // Controls the display of the request duration (in milliseconds) for "Try it out" requests.
             }); // URL: /swagger
 
