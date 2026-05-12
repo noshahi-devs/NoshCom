@@ -73,6 +73,16 @@ export class ShippingPartnersComponent implements OnInit, OnDestroy {
         },
         {
             id: 6,
+            name: 'FreightPOP Logistics',
+            serviceLine: 'Supply Chain Visibility',
+            tagline: 'Streamlines shipping with a focus on rate shopping, tracking, and multi-modal transport management.',
+            address: '2200 E College Ave, Suite 204, Decatur, GA, USA',
+            zipCode: '30030',
+            website: 'https://freightpop.com',
+            country: 'USA'
+        },
+        {
+            id: 7,
             name: 'NHS Supply Link',
             serviceLine: 'Structured UK Logistics',
             tagline: 'Best suited for organized stock transfer planning and dependable UK-based routing support.',
@@ -82,7 +92,7 @@ export class ShippingPartnersComponent implements OnInit, OnDestroy {
             country: 'UK'
         },
         {
-            id: 7,
+            id: 8,
             name: 'DHL Commerce Lane',
             serviceLine: 'Express Export Channel',
             tagline: 'Strong for fast-moving parcels, international labeling, and streamlined export-ready operations.',
@@ -92,7 +102,7 @@ export class ShippingPartnersComponent implements OnInit, OnDestroy {
             country: 'UK'
         },
         {
-            id: 8,
+            id: 9,
             name: 'Fortec Delivery Grid',
             serviceLine: 'Retail Route Coverage',
             tagline: 'A good fit for stores that need scheduled transport, replenishment support, and route discipline.',
@@ -102,7 +112,7 @@ export class ShippingPartnersComponent implements OnInit, OnDestroy {
             country: 'UK'
         },
         {
-            id: 9,
+            id: 10,
             name: 'Menzies Route Control',
             serviceLine: 'Parcel Movement Team',
             tagline: 'Useful for consistent handoff between warehouse teams, parcel sorting, and delivery route control.',
@@ -112,7 +122,7 @@ export class ShippingPartnersComponent implements OnInit, OnDestroy {
             country: 'UK'
         },
         {
-            id: 10,
+            id: 11,
             name: 'Wincanton Fulfillment Base',
             serviceLine: 'Large Volume Support',
             tagline: 'Works well for heavier order volume, scheduled store replenishment, and structured outbound flow.',
@@ -122,7 +132,7 @@ export class ShippingPartnersComponent implements OnInit, OnDestroy {
             country: 'UK'
         },
         {
-            id: 11,
+            id: 12,
             name: 'M&H Parcel Desk',
             serviceLine: 'Flexible Delivery Support',
             tagline: 'Helpful for mixed parcel loads, seller pickup coordination, and smoother local delivery handling.',
@@ -132,13 +142,33 @@ export class ShippingPartnersComponent implements OnInit, OnDestroy {
             country: 'UK'
         },
         {
-            id: 12,
+            id: 13,
             name: 'Allport Cargo Gateway',
             serviceLine: 'International Freight Access',
             tagline: 'Ideal when your catalog needs broader freight access and better support for routed global movement.',
             address: '12-16 Swan Street, Manchester, UK',
             zipCode: 'M4 5JW',
             website: 'https://allportcargoservices.com',
+            country: 'UK'
+        },
+        {
+            id: 14,
+            name: 'Samskip Cargo Network',
+            serviceLine: 'Multimodal Solutions',
+            tagline: 'Specialized in pan-European transport with a focus on sustainable and efficient logistics services.',
+            address: '3rd Floor, 68-70 Carter Lane, London, UK',
+            zipCode: 'EC4V 5EL',
+            website: 'https://www.samskip.com',
+            country: 'UK'
+        },
+        {
+            id: 15,
+            name: 'DPD UK Logistics',
+            serviceLine: 'Parcel Delivery Solutions',
+            tagline: 'Market-leading parcel delivery with a focus on technology, customer experience, and reliability.',
+            address: 'Roebuck Lane, Smethwick, UK',
+            zipCode: 'B66 1BY',
+            website: 'https://www.dpd.co.uk',
             country: 'UK'
         }
     ];

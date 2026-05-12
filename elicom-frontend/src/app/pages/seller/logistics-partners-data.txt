@@ -77,10 +77,15 @@ LOGISTICS PARTNERS IN UK
    Zip code: EC4V 5EL
    Website: Samskip
 
+9. DPD UK
+   Address: Roebuck Lane, Smethwick, UK
+   Zip code: B66 1BY
+   Website: DPD UK
+
 SUMMARY
 =======
 Total USA Partners: 6
-Total UK Partners: 8
-Total Partners: 14
+Total UK Partners: 9
+Total Partners: 15
 
-Last Updated: January 26, 2026
+Last Updated: May 12, 2026

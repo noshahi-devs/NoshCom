@@ -115,135 +115,157 @@
         <article class="panel-card withdrawal-redesign-card" *ngIf="isWithdrawalView">
             <h3>Withdraw Your Payment</h3>
 
-            <div *ngIf="currentStore?.withdrawLimit === null || currentStore?.withdrawLimit === undefined"
-                class="withdraw-unavailable-shell">
-                <div class="withdraw-unavailable-alert">
-                    <div class="withdraw-unavailable-icon">
-                        <i class="fas fa-ban"></i>
+            <!-- Loading Skeleton for Withdrawal Card -->
+            <div class="withdraw-skeleton-shell" *ngIf="isLoading">
+                <div class="s-protocol-box">
+                    <div class="s-side">
+                        <div class="s s-line w-80"></div>
+                        <div class="s s-pill w-60"></div>
+                        <div class="s s-box w-100"></div>
+                        <div class="s s-box w-100"></div>
                     </div>
-                    <div class="withdraw-unavailable-copy">
-                        <strong>You cannot withdraw funds at this time.</strong>
-                        <p>Please wait for admin to set your withdrawal permission.</p>
+                    <div class="s-main">
+                        <div class="s s-line w-40"></div>
+                        <div class="s s-clock"></div>
+                        <div class="s s-ribbon"></div>
                     </div>
                 </div>
-
-                <div class="withdraw-input-wrap locked unavailable">
-                    <span>$</span>
-                    <input type="number" value="0" disabled>
-                </div>
-
-                <button type="button" class="btn-withdraw unavailable-btn" disabled>
-                    <i class="fas fa-lock me-2"></i> Withdrawal Locked
-                </button>
-
-                <p class="hint">Request goes to admin approval first.</p>
+                <div class="s s-input w-100 mt-4"></div>
+                <div class="s s-btn w-100 mt-3"></div>
             </div>
 
-            <div *ngIf="currentStore?.withdrawLimit !== null && currentStore?.withdrawLimit !== undefined && (currentStore?.withdrawLimit || currentStore?.withdrawAllowedUntil)"
-                class="premium-rules-card protocol-lab-card mb-3" [class.expired]="isWithdrawalUnlocked">
-                <div class="protocol-noise"></div>
-                <div class="card-inner protocol-lab-shell">
-                    <div class="protocol-grid-layout">
-                        <aside class="protocol-side-panel">
-                            <div class="protocol-badge-row">
-                                <i class="fas fa-shield-halved"></i>
-                                <span>Withdrawal Protocol</span>
-                            </div>
-                            <small class="protocol-subline">{{ isWithdrawalUnlocked ? 'Window is active now' : 'Countdown is running' }}</small>
-                            <span class="protocol-live-chip protocol-tag-chip" [class.unlocked]="isWithdrawalUnlocked">
-                                {{ isWithdrawalUnlocked ? 'UNLOCKED' : 'LOCKED' }}
-                            </span>
+            <!-- Actual Content -->
+            <ng-container *ngIf="!isLoading">
+                <div *ngIf="currentStore?.withdrawLimit === null || currentStore?.withdrawLimit === undefined"
+                    class="withdraw-unavailable-shell">
+                    <div class="withdraw-unavailable-alert">
+                        <div class="withdraw-unavailable-icon">
+                            <i class="fas fa-ban"></i>
+                        </div>
+                        <div class="withdraw-unavailable-copy">
+                            <strong>You cannot withdraw funds at this time.</strong>
+                            <p>Please wait for admin to set your withdrawal permission.</p>
+                        </div>
+                    </div>
 
-                            <div class="protocol-kpi-box">
-                                <span class="box-label">Limit</span>
-                                <span class="box-value">${{ currentStore.withdrawLimit | number:'1.2-2' }}</span>
-                            </div>
-                            <div class="protocol-kpi-box">
-                                <span class="box-label">Deadline</span>
-                                <span class="box-value">{{ currentStore.withdrawAllowedUntil | date:'dd MMM, hh:mm a'
-                                    }}</span>
-                            </div>
-                        </aside>
+                    <div class="withdraw-input-wrap locked unavailable">
+                        <span>$</span>
+                        <input type="number" value="0" disabled>
+                    </div>
 
-                        <section class="protocol-main-panel">
-                            <div class="protocol-main-title">
-                                {{ isWithdrawalUnlocked ? 'Protocol Complete' : 'Unlock Countdown' }}
-                            </div>
-                            <div class="countdown-panel countdown-panel-modern protocol-counter-stage">
-                                <div class="main-clock modern-main-clock protocol-orbit-track">
-                                    <div class="clock-unit modern-clock-unit protocol-orbit-node">
-                                        <span class="val">{{ countdownDaysDisplay }}</span>
-                                        <span class="lbl">Days</span>
-                                    </div>
-                                    <div class="protocol-orbit-divider"></div>
-                                    <div class="clock-unit modern-clock-unit protocol-orbit-node">
-                                        <span class="val">{{ countdownHoursDisplay }}</span>
-                                        <span class="lbl">Hours</span>
-                                    </div>
-                                    <div class="protocol-orbit-divider"></div>
-                                    <div class="clock-unit modern-clock-unit protocol-orbit-node">
-                                        <span class="val">{{ countdownMinutesDisplay }}</span>
-                                        <span class="lbl">Minutes</span>
-                                    </div>
-                                    <div class="protocol-orbit-divider"></div>
-                                    <div class="clock-unit modern-clock-unit protocol-orbit-node">
-                                        <span class="val">{{ countdownSecondsDisplay }}</span>
-                                        <span class="lbl">Seconds</span>
+                    <button type="button" class="btn-withdraw unavailable-btn" disabled>
+                        <i class="fas fa-lock me-2"></i> Withdrawal Locked
+                    </button>
+
+                    <p class="hint">Request goes to admin approval first.</p>
+                </div>
+
+                <div *ngIf="currentStore?.withdrawLimit !== null && currentStore?.withdrawLimit !== undefined && (currentStore?.withdrawLimit || currentStore?.withdrawAllowedUntil)"
+                    class="premium-rules-card protocol-lab-card mb-3" [class.expired]="isWithdrawalUnlocked">
+                    <div class="protocol-noise"></div>
+                    <div class="card-inner protocol-lab-shell">
+                        <div class="protocol-grid-layout">
+                            <aside class="protocol-side-panel">
+                                <div class="protocol-badge-row">
+                                    <i class="fas fa-shield-halved"></i>
+                                    <span>Withdrawal Protocol</span>
+                                </div>
+                                <small class="protocol-subline">{{ isWithdrawalUnlocked ? 'Window is active now' : 'Countdown is running' }}</small>
+                                <span class="protocol-live-chip protocol-tag-chip" [class.unlocked]="isWithdrawalUnlocked">
+                                    {{ isWithdrawalUnlocked ? 'UNLOCKED' : 'LOCKED' }}
+                                </span>
+
+                                <div class="protocol-kpi-box">
+                                    <span class="box-label">Limit</span>
+                                    <span class="box-value">${{ currentStore.withdrawLimit | number:'1.2-2' }}</span>
+                                </div>
+                                <div class="protocol-kpi-box">
+                                    <span class="box-label">Deadline</span>
+                                    <span class="box-value">{{ currentStore.withdrawAllowedUntil | date:'dd MMM, hh:mm a'
+                                        }}</span>
+                                </div>
+                            </aside>
+
+                            <section class="protocol-main-panel">
+                                <div class="protocol-main-title">
+                                    {{ isWithdrawalUnlocked ? 'Protocol Complete' : 'Unlock Countdown' }}
+                                </div>
+                                <div class="countdown-panel countdown-panel-modern protocol-counter-stage">
+                                    <div class="main-clock modern-main-clock protocol-orbit-track">
+                                        <div class="clock-unit modern-clock-unit protocol-orbit-node">
+                                            <span class="val">{{ countdownDaysDisplay }}</span>
+                                            <span class="lbl">Days</span>
+                                        </div>
+                                        <div class="protocol-orbit-divider"></div>
+                                        <div class="clock-unit modern-clock-unit protocol-orbit-node">
+                                            <span class="val">{{ countdownHoursDisplay }}</span>
+                                            <span class="lbl">Hours</span>
+                                        </div>
+                                        <div class="protocol-orbit-divider"></div>
+                                        <div class="clock-unit modern-clock-unit protocol-orbit-node">
+                                            <span class="val">{{ countdownMinutesDisplay }}</span>
+                                            <span class="lbl">Minutes</span>
+                                        </div>
+                                        <div class="protocol-orbit-divider"></div>
+                                        <div class="clock-unit modern-clock-unit protocol-orbit-node">
+                                            <span class="val">{{ countdownSecondsDisplay }}</span>
+                                            <span class="lbl">Seconds</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="status-bar protocol-ribbon" *ngIf="!isWithdrawalUnlocked">
-                                <span class="dot pulse-green"></span> COUNTDOWN ACTIVE - WITHDRAWAL LOCKED
-                            </div>
-                            <div class="status-bar expired protocol-ribbon" *ngIf="isWithdrawalUnlocked">
-                                <span class="dot pulse-green"></span> PROTOCOL COMPLETE - WITHDRAWAL UNLOCKED
-                            </div>
-                        </section>
-                    </div>
+                                <div class="status-bar protocol-ribbon" *ngIf="!isWithdrawalUnlocked">
+                                    <span class="dot pulse-green"></span> COUNTDOWN ACTIVE - WITHDRAWAL LOCKED
+                                </div>
+                                <div class="status-bar expired protocol-ribbon" *ngIf="isWithdrawalUnlocked">
+                                    <span class="dot pulse-green"></span> PROTOCOL COMPLETE - WITHDRAWAL UNLOCKED
+                                </div>
+                            </section>
+                        </div>
 
-                    <div class="instructions-footer protocol-note" *ngIf="currentStore?.adminWithdrawRemarks">
-                        <i class="fas fa-info-circle"></i>
-                        <span>{{ currentStore.adminWithdrawRemarks }}</span>
+                        <div class="instructions-footer protocol-note" *ngIf="currentStore?.adminWithdrawRemarks">
+                            <i class="fas fa-info-circle"></i>
+                            <span>{{ currentStore.adminWithdrawRemarks }}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="unlock-notice mb-3" *ngIf="!isWithdrawalUnlocked && currentStore?.withdrawAllowedUntil">
-                <i class="fas fa-unlock me-2 text-warning"></i>
-                <span class="text-warning fw-bold small">Withdrawal unlocks when the countdown completes</span>
-            </div>
-
-            <div class="withdraw-input-wrap" [class.locked]="!isWithdrawalUnlocked"
-                *ngIf="currentStore?.withdrawLimit !== null && currentStore?.withdrawLimit !== undefined">
-                <span>$</span>
-                <input type="number" [(ngModel)]="withdrawAmount" min="1" step="0.01" placeholder="0">
-            </div>
-
-            <div class="withdraw-meta-info mt-2" *ngIf="currentStore?.withdrawLimit">
-                <div class="d-flex flex-column gap-1">
-                    <span class="text-muted x-small">Remaining limit: {{ currentStore.withdrawLimit | currency }}</span>
-
-                    <span class="text-danger x-small fw-bold"
-                        *ngIf="withdrawAmount && withdrawAmount > currentStore.withdrawLimit">
-                        <i class="fas fa-exclamation-triangle me-1"></i> Amount exceeds permitted withdrawal limit!
-                    </span>
-
-                    <span class="text-success x-small fw-bold" *ngIf="isWithdrawalUnlocked">
-                        <i class="fas fa-unlock me-1"></i> Withdrawal window is active.
-                    </span>
+                <div class="unlock-notice mb-3" *ngIf="!isWithdrawalUnlocked && currentStore?.withdrawAllowedUntil">
+                    <i class="fas fa-unlock me-2 text-warning"></i>
+                    <span class="text-warning fw-bold small">Withdrawal unlocks when the countdown completes</span>
                 </div>
-            </div>
 
-            <button type="button" class="btn-withdraw mt-3"
-                *ngIf="currentStore?.withdrawLimit !== null && currentStore?.withdrawLimit !== undefined"
-                [disabled]="!canWithdraw || isSubmitting"
-                (click)="submitWithdraw()">
-                <i class="fas" [class.fa-paper-plane]="!isSubmitting" [class.fa-spinner]="isSubmitting"
-                    [class.fa-spin]="isSubmitting" [class.me-2]="true"></i>
-                {{ isSubmitting ? 'Processing...' : (isWithdrawalUnlocked ? 'Withdraw Now' : 'Withdrawal Locked') }}
-            </button>
-            <p class="hint" *ngIf="currentStore?.withdrawLimit !== null && currentStore?.withdrawLimit !== undefined">Request goes to admin approval first.</p>
+                <div class="withdraw-input-wrap" [class.locked]="!isWithdrawalUnlocked"
+                    *ngIf="currentStore?.withdrawLimit !== null && currentStore?.withdrawLimit !== undefined">
+                    <span>$</span>
+                    <input type="number" [(ngModel)]="withdrawAmount" min="1" step="0.01" placeholder="0">
+                </div>
+
+                <div class="withdraw-meta-info mt-2" *ngIf="currentStore?.withdrawLimit">
+                    <div class="d-flex flex-column gap-1">
+                        <span class="text-muted x-small">Remaining limit: {{ currentStore.withdrawLimit | currency }}</span>
+
+                        <span class="text-danger x-small fw-bold"
+                            *ngIf="withdrawAmount && withdrawAmount > currentStore.withdrawLimit">
+                            <i class="fas fa-exclamation-triangle me-1"></i> Amount exceeds permitted withdrawal limit!
+                        </span>
+
+                        <span class="text-success x-small fw-bold" *ngIf="isWithdrawalUnlocked">
+                            <i class="fas fa-unlock me-1"></i> Withdrawal window is active.
+                        </span>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-withdraw mt-3"
+                    *ngIf="currentStore?.withdrawLimit !== null && currentStore?.withdrawLimit !== undefined"
+                    [disabled]="!canWithdraw || isSubmitting"
+                    (click)="submitWithdraw()">
+                    <i class="fas" [class.fa-paper-plane]="!isSubmitting" [class.fa-spinner]="isSubmitting"
+                        [class.fa-spin]="isSubmitting" [class.me-2]="true"></i>
+                    {{ isSubmitting ? 'Processing...' : (isWithdrawalUnlocked ? 'Withdraw Now' : 'Withdrawal Locked') }}
+                </button>
+                <p class="hint" *ngIf="currentStore?.withdrawLimit !== null && currentStore?.withdrawLimit !== undefined">Request goes to admin approval first.</p>
+            </ng-container>
         </article>
     </section>
 

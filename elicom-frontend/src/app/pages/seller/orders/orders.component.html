@@ -91,165 +91,122 @@
             </div>
         </div>
 
-        <div class="table-responsive">
-            <table class="orders-table">
-                <thead>
-                    <tr>
-                        <th class="col-date">{{ viewConfig.dateHeading }}</th>
-                        <th class="col-details">Order details</th>
-                        <th class="col-customer">Customer option</th>
-                        <th class="col-ship" *ngIf="viewConfig.showShipVia">Ship Via</th>
-                        <th class="col-status">Order status</th>
-                        <th class="col-action">Action</th>
-                    </tr>
-                </thead>
+        <div class="orders-workspace-stack">
+            <!-- Loading Skeleton -->
+            <div *ngIf="isLoading" class="skeleton-stack">
+                <div *ngFor="let row of [1,2,3]" class="skeleton-card"></div>
+            </div>
 
-                <!-- Skeleton Shimmer Body -->
-                <tbody *ngIf="isLoading">
-                    <tr *ngFor="let row of [1,2,3,4]">
-                        <td [attr.colspan]="viewConfig.showShipVia ? 6 : 5">
-                            <div class="row-skeleton">
-                                <div class="sk sk-date"></div>
-                                <div class="sk sk-details"></div>
-                                <div class="sk sk-customer"></div>
-                                <div class="sk sk-status"></div>
-                                <div class="sk sk-action"></div>
+            <!-- Orders Content -->
+            <div *ngIf="!isLoading && pagedOrders.length > 0" class="orders-cards-container">
+                <div *ngFor="let order of pagedOrders; let i = index" class="order-item-card" [ngClass]="'theme-' + (i % 6)">
+                    <div class="status-accent-strip" [ngClass]="'status-' + order.statusKey"></div>
+                    
+                    <!-- Top Section: Identity & Summary -->
+                    <div class="card-row card-main-row">
+                        <div class="col col-id">
+                            <div class="icon-wrap" [ngClass]="'icon-' + order.statusKey">
+                                <i class="fa-solid" [ngClass]="order.statusKey === 'delivered' ? 'fa-circle-check' : 'fa-clock'"></i>
                             </div>
-                        </td>
-                    </tr>
-                </tbody>
-
-                <tbody *ngIf="!isLoading && pagedOrders.length > 0">
-                    <tr *ngFor="let order of pagedOrders; let i = index">
-                        <td class="date-col">
-                            <div class="cell-box date-cell-box">
-                                <div class="relative-time">{{ getRelativeTime(order) }}</div>
-                                <div class="date-panel">
-                                    <div class="date-panel-row">
-                                        <span class="meta-label">Date</span>
-                                        <span class="meta-value">{{ formatDate(order.createdAt) }}</span>
-                                    </div>
-                                    <div class="date-panel-row">
-                                        <span class="meta-label">Time</span>
-                                        <span class="meta-value">{{ formatTime(order.createdAt) }}</span>
-                                    </div>
-                                </div>
+                            <div class="id-group">
+                                <p class="mini-label">Order ID</p>
+                                <p class="id-val">#{{ order.orderId }}</p>
                             </div>
-                        </td>
+                        </div>
+                        
+                        <div class="col col-customer">
+                            <p class="mini-label">Customer & Channel</p>
+                            <p class="customer-name">{{ order.customerName }}</p>
+                            <p class="channel-link">{{ order.salesChannel }}</p>
+                        </div>
 
-                        <td class="details-col">
-                            <div class="cell-box details-cell-box">
-                                <div class="order-id">#{{ order.orderId }}</div>
-                                <div class="order-detail-list">
-                                    <div class="order-detail-row">
-                                        <span class="meta-label">Buyer</span>
-                                        <span class="meta-value">{{ order.customerName }}</span>
-                                    </div>
-                                    <div class="order-detail-row">
-                                        <span class="meta-label">Fulfillment</span>
-                                        <span class="meta-value">Seller</span>
-                                    </div>
-                                    <div class="order-detail-row">
-                                        <span class="meta-label">Channel</span>
-                                        <span class="meta-value">{{ order.salesChannel }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
+                        <div class="col col-status">
+                            <p class="mini-label">Current Status</p>
+                            <span class="status-pill-modern" [ngClass]="'pill-' + order.statusKey">
+                                {{ order.statusLabel }}
+                            </span>
+                        </div>
 
-                        <td class="customer-col">
-                            <div class="cell-box info-card-box">
-                                <div class="customer-option">Standard Shipping</div>
-                                <div class="ship-info-row">
-                                    <span class="meta-label">Ship by</span>
-                                    <span class="meta-value value-block range-stack">
-                                        <span class="range-start">{{ getRangeStart(order.shipBy) }}</span>
-                                        <span class="range-mid" *ngIf="getRangeEnd(order.shipBy)">to</span>
-                                        <span class="range-end" *ngIf="getRangeEnd(order.shipBy)">{{ getRangeEnd(order.shipBy) }}</span>
-                                    </span>
-                                </div>
-                                <div class="ship-info-row">
-                                    <span class="meta-label">Deliver by</span>
-                                    <span class="meta-value value-block range-stack">
-                                        <span class="range-start">{{ getRangeStart(order.deliverBy) }}</span>
-                                        <span class="range-mid" *ngIf="getRangeEnd(order.deliverBy)">to</span>
-                                        <span class="range-end" *ngIf="getRangeEnd(order.deliverBy)">{{ getRangeEnd(order.deliverBy) }}</span>
-                                    </span>
-                                </div>
-                            </div>
-                        </td>
-
-                        <td class="ship-col" *ngIf="viewConfig.showShipVia">
-                            <div class="cell-box info-card-box">
-                                <div class="ship-info-row">
-                                    <span class="meta-label">Carrier</span>
-                                    <span class="meta-value value-block">{{ order.shipVia }}</span>
-                                </div>
-                                <div class="ship-info-row">
-                                    <span class="meta-label">Tracking</span>
-                                    <span class="meta-value value-block tracking-value">{{ order.trackingId }}</span>
-                                </div>
-                            </div>
-                        </td>
-
-                        <td>
-                            <div class="cell-box status-cell-box">
-                                <div class="status-mini-label">Current Status</div>
-                                <span class="status-pill" [ngClass]="getStatusClass(order.statusKey)">
-                                    {{ order.statusLabel }}
-                                </span>
-                            </div>
-                        </td>
-
-                        <td>
-                            <div class="actions-col" *ngIf="orderView === 'unshipped'; else genericActions">
-                                <button type="button" class="btn-action btn-confirm"
-                                    (click)="viewOrderDetails(order)">
+                        <div class="col col-action">
+                            <!-- Unshipped State -->
+                            <div class="actions-group" *ngIf="orderView === 'unshipped'; else genericActions">
+                                <button class="btn-primary-glow btn-sm" (click)="viewOrderDetails(order)">
                                     Confirm Shipment
                                 </button>
-                                <button type="button" class="btn-action btn-cancel" (click)="cancelOrder(order)">
-                                    Cancel Order
+                                <button class="btn-secondary-flat btn-sm text-danger" (click)="cancelOrder(order)">
+                                    Cancel
                                 </button>
                             </div>
 
                             <ng-template #genericActions>
-                                <div class="actions-col" *ngIf="orderView === 'canceled'; else viewOnlyAction">
-                                    <button type="button" class="btn-action btn-view"
-                                        (click)="viewOrderDetails(order)">
-                                        Order Details
+                                <!-- Canceled or Rejected States -->
+                                <div class="actions-group" *ngIf="orderView === 'canceled' || orderView === 'rejected-trackings'; else standardActions">
+                                    <button class="btn-primary-glow btn-sm" (click)="viewOrderDetails(order)">
+                                        Confirm Shipment
                                     </button>
-                                    <button type="button" class="btn-action btn-cancel"
-                                        (click)="rejectOrder(order)">
-                                        Reject Order
+                                    <button class="btn-secondary-flat btn-sm text-danger" (click)="rejectOrder(order)" *ngIf="orderView === 'canceled'">
+                                        Reject
                                     </button>
                                 </div>
-                                <ng-template #viewOnlyAction>
-                                    <button type="button" class="btn-action btn-view"
-                                        (click)="viewOrderDetails(order)">
-                                        View Details
+
+                                <ng-template #standardActions>
+                                    <button class="btn-primary-glow" (click)="viewOrderDetails(order)">
+                                        View Order
                                     </button>
                                 </ng-template>
                             </ng-template>
-                        </td>
-                    </tr>
-                </tbody>
+                        </div>
+                    </div>
 
-                <tbody *ngIf="!isLoading && pagedOrders.length === 0">
-                    <tr>
-                        <td [attr.colspan]="viewConfig.showShipVia ? 6 : 5" class="empty-row">
-                            <div class="empty-state-shell">
-                                <div class="empty-state-icon">
-                                    <i class="fa-solid fa-box-open"></i>
-                                </div>
-                                <div class="empty-state-title">No orders found</div>
-                                <div class="empty-state-copy">
-                                    There are currently no orders available in this order view.
-                                </div>
+                    <div class="row-divider"></div>
+
+                    <!-- Bottom Section: Logistics & Timeline -->
+                    <div class="card-row card-meta-row">
+                        <div class="col col-timeline">
+                            <i class="fa-solid fa-calendar-days meta-icon"></i>
+                            <div class="timeline-group">
+                                <p class="mini-label">Order Timeline</p>
+                                <p class="timeline-val">
+                                    Placed: {{ formatDate(order.createdAt) }} 
+                                    <span class="time-dim">{{ formatTime(order.createdAt) }}</span>
+                                </p>
                             </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                        </div>
+
+                        <div class="col col-carrier">
+                            <p class="mini-label">Carrier & Method</p>
+                            <div class="carrier-group">
+                                <span class="carrier-name">{{ order.shipVia || 'Pending' }}</span>
+                                <span class="method-chip">Standard</span>
+                            </div>
+                            <p class="tracking-val">{{ order.trackingId || 'N/A' }}</p>
+                        </div>
+
+                        <div class="col col-window">
+                            <p class="mini-label">Delivery Window</p>
+                            <p class="window-val">
+                                {{ getRangeStart(order.deliverBy) }} – {{ getRangeEnd(order.deliverBy) || 'TBD' }}
+                            </p>
+                        </div>
+
+                        <div class="col col-elapsed">
+                            <p class="mini-label">Elapsed</p>
+                            <p class="elapsed-val">{{ getRelativeTime(order) }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="!isLoading && pagedOrders.length === 0" class="empty-workspace">
+                <div class="empty-shell">
+                    <div class="empty-icon-ring">
+                        <i class="fa-solid fa-box-open"></i>
+                    </div>
+                    <h5>No Orders Found</h5>
+                    <p>There are currently no orders available in this workspace view.</p>
+                </div>
+            </div>
         </div>
 
         <!-- Symmetrical Footer & Pager -->

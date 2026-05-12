@@ -554,7 +554,7 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
             },
             'rejected-trackings': {
                 key: 'rejected-trackings',
-                title: 'Trackings Rejected',
+                title: 'Rejected',
                 description: 'The following tracking IDs have been rejected and could not be processed.',
                 iconClass: 'fa-solid fa-circle-xmark',
                 dateHeading: 'Ship date',

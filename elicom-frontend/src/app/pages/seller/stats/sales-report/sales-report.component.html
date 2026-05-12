@@ -156,85 +156,87 @@
     </div>
 
     <!-- Recent Orders Table -->
-    <div class="table-card-3d">
-        <div class="table-header">
+    <!-- Hyper-Luxe Order Cards -->
+    <div class="workspace-shell" *ngIf="stats">
+        <div class="orders-card-top">
             <div class="table-header-copy">
-                <span class="table-kicker">Recent Activity</span>
+                <span class="table-kicker">Performance Activity</span>
                 <h5><i class="fa-solid fa-list-check me-2"></i> Recent Sale Orders</h5>
             </div>
         </div>
-        <div class="table-responsive">
-            <table class="orders-table-3d">
-                <thead>
-                    <tr>
-                        <th>Ship date</th>
-                        <th>Order Details</th>
-                        <th>Customer option</th>
-                        <th>Order status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody *ngIf="stats">
-                    <tr *ngFor="let order of stats.recentOrders">
-                        <td class="col-date">
-                            <div class="cell-3d">
-                                <span class="relative-time">{{ getRelativeTime(order.creationTime) }}</span>
-                                <span class="full-date">{{ order.creationTime | date:'yyyy-MM-dd' }}</span>
-                                <span class="full-time">{{ order.creationTime | date:'HH:mm:ss' }}</span>
+
+        <div class="orders-grid">
+            <div *ngFor="let order of stats.recentOrders; let i = index" 
+                 class="order-card-3d"
+                 [style.--theme-primary]="['#2563eb','#059669','#6366f1','#e11d48','#d97706','#7c3aed'][i % 6]"
+                 [style.--theme-bg]="['#eff6ff','#ecfdf5','#f5f3ff','#fff1f2','#fffbeb','#f5f3ff'][i % 6]"
+                 [style.--theme-glow]="['rgba(37,99,235,0.1)','rgba(5,150,105,0.1)','rgba(99,102,241,0.1)','rgba(225,29,72,0.1)','rgba(217,119,6,0.1)','rgba(124,58,237,0.1)'][i % 6]">
+                
+                <!-- Ribbon & Header -->
+                <div class="card-accent-strip"></div>
+                <div class="card-head">
+                    <div class="order-id-pill">
+                        <span class="id-label">ID</span>
+                        <span class="id-val">#{{ order.orderNumber }}</span>
+                    </div>
+                    <div class="status-pill-wrap">
+                        <span class="status-pill" [ngClass]="getStatusClass(order.status)">
+                            {{ order.status }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Body Grid -->
+                <div class="card-body-grid">
+                    <!-- Section 1: Customer -->
+                    <div class="body-sec customer-sec">
+                        <div class="sec-icon"><i class="fa-solid fa-user-tie"></i></div>
+                        <div class="sec-content">
+                            <p class="mini-label">Buyer Details</p>
+                            <h4 class="cust-name">{{ order.recipientName || 'Retail Customer' }}</h4>
+                            <p class="channel-val">NoshCom.com</p>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Timeline -->
+                    <div class="body-sec time-sec">
+                        <div class="sec-icon"><i class="fa-solid fa-calendar-day"></i></div>
+                        <div class="sec-content">
+                            <p class="mini-label">Order Date</p>
+                            <p class="date-val">
+                                {{ order.creationTime | date:'dd MMM yyyy' }} 
+                                <span class="time-dim">{{ order.creationTime | date:'HH:mm' }}</span>
+                            </p>
+                            <p class="elapsed-val">{{ getRelativeTime(order.creationTime) }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Fulfillment -->
+                    <div class="body-sec fulfill-sec">
+                        <div class="sec-icon"><i class="fa-solid fa-truck-ramp-box"></i></div>
+                        <div class="sec-content">
+                            <p class="mini-label">Shipping Service</p>
+                            <div class="carrier-group">
+                                <span class="carrier-name">Standard</span>
+                                <span class="method-chip">SELLER</span>
                             </div>
-                        </td>
-                        <td class="col-details">
-                            <div class="cell-3d">
-                                <div class="order-id">Order id: {{ order.orderNumber }}</div>
-                                <div class="meta">Buyer Name: <b>{{ order.recipientName || 'N/A' }}</b></div>
-                                <div class="meta">Fulfillment Method: <b>Seller</b></div>
-                                <div class="meta">Sales Channel: <b>NoshCom</b></div>
-                            </div>
-                        </td>
-                        <td class="col-customer">
-                            <div class="cell-3d">
-                                <div class="option-type">Standard Shipping</div>
-                                <div class="deliver-by">By {{ order.creationTime | date:'MMM d, yyyy' }}</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="cell-3d text-center">
-                                <span class="status-badge" [ngClass]="'status-' + getStatusClass(order.status)">
-                                    {{ order.status }}
-                                </span>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="cell-3d text-center">
-                                <button class="btn-3d" (click)="goToOrderDetails(order.id)">
-                                    <i class="fa-solid fa-eye me-1"></i> View Details
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-                <!-- Skeleton Table -->
-                <tbody *ngIf="!stats">
-                    <tr *ngFor="let i of [1,2,3,4,5]">
-                        <td>
-                            <div class="skeleton skeleton-text" style="width: 80px;"></div>
-                        </td>
-                        <td>
-                            <div class="skeleton skeleton-text" style="width: 150px; margin-bottom: 5px;"></div>
-                            <div class="skeleton skeleton-text" style="width: 100px;"></div>
-                        </td>
-                        <td>
-                            <div class="skeleton skeleton-text" style="width: 120px;"></div>
-                        </td>
-                        <td>
-                            <div class="skeleton skeleton-text" style="width: 100px;"></div>
-                        </td>
-                        <td>
-                            <div class="skeleton btn-3d" style="width: 120px; height: 40px; opacity: 0.5;"></div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                            <p class="window-val">Delivered By {{ order.creationTime | date:'MMM d, yyyy' }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Actions -->
+                    <div class="body-sec action-sec">
+                        <button class="btn-primary-glow" (click)="goToOrderDetails(order.id)">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
+
+    <!-- Skeleton Loader -->
+    <div *ngIf="!stats" class="skeleton-stack">
+        <div *ngFor="let i of [1,2,3]" class="skeleton-card"></div>
     </div>
 </div>

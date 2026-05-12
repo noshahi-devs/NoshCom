@@ -306,7 +306,15 @@ export class OrderDetailsComponent implements OnInit {
     canShowFulfillmentPanel(): boolean {
         if (this.authService.isAdmin()) return false;
         const status = this.normalizedStatus();
-        return status === 'pending' || status === 'processing' || status === 'cancelled' || status === 'canceled';
+        
+        // Re-enabled for canceled and rejected orders as requested by the user
+        return status === 'pending' 
+            || status === 'processing' 
+            || status === 'cancelled' 
+            || status === 'canceled'
+            || status === 'rejected'
+            || status === 'rejectedtracking' 
+            || status === 'trackingrejected';
     }
 
     shipActionLabel(): string {
