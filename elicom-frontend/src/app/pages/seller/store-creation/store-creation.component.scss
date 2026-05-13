@@ -771,24 +771,6 @@
     }
 }
 
-.nav-btn-primary {
-    background: linear-gradient(180deg, #111111, #252525);
-    color: #ffd54a;
-    box-shadow: 0 16px 28px rgba(17, 17, 17, 0.18);
-
-    &:hover:not(:disabled) {
-        transform: translateY(-2px);
-        background: linear-gradient(180deg, #ffd54a, #ffc107);
-        color: #111111;
-        box-shadow: 0 18px 34px rgba(255, 193, 7, 0.24);
-    }
-
-    &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        box-shadow: none;
-    }
-}
 
 
 @keyframes orbitSpin {

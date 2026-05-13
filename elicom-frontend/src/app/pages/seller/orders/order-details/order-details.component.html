@@ -297,10 +297,14 @@
             </div>
 
             <div class="od-form-actions">
-                <button *ngIf="!isCancelledStatus()" class="btn-cancel-outline" (click)="cancelOrder()">Cancel Order</button>
-                <button *ngIf="isCancelledStatus() && !isRejectedStatus()" class="btn-cancel-outline" (click)="rejectOrder()">Reject Order</button>
+                <button *ngIf="!isCancelledStatus()" class="btn-cancel-outline" (click)="cancelOrder()">
+                    <i class="fas fa-times-circle"></i> Cancel Order
+                </button>
+                <button *ngIf="isCancelledStatus() && !isRejectedStatus()" class="btn-cancel-outline" (click)="rejectOrder()">
+                    <i class="fas fa-ban"></i> Reject Order
+                </button>
                 <button class="btn-confirm-solid" (click)="fulfillOrder()" [disabled]="fulfilling || isRejectedStatus()">
-                    <span *ngIf="!fulfilling">Confirm Shipment</span>
+                    <span *ngIf="!fulfilling"><i class="fas fa-truck-fast"></i> Confirm Shipment</span>
                     <span *ngIf="fulfilling"><i class="fas fa-spinner fa-spin"></i> Processing...</span>
                 </button>
             </div>

@@ -74,18 +74,6 @@
         }
     }
 
-    .btn-primary-custom {
-        background: #4f46e5;
-        color: white;
-        border: none;
-        transition: all 0.3s;
-
-        &:hover {
-            background: #4338ca;
-            box-shadow: 0 8px 16px rgba(79, 70, 229, 0.25);
-            transform: translateY(-2px);
-        }
-    }
 
     .btn-outline-custom {
         border: 1px solid #e2e8f0;

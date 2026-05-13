@@ -511,11 +511,11 @@
 
 /* ─────────────── PREMIUM THEMES ROTATION ─────────────── */
 .order-item-card {
-    &.theme-0 { // Blue
-        --theme-primary: #2563eb;
-        --theme-accent: linear-gradient(180deg, #3b82f6 0%, #60a5fa 100%);
-        --theme-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        --theme-shadow: rgba(37, 99, 235, 0.18);
+    &.theme-0 { // NoshCom Yellow (Replaced Blue)
+        --theme-primary: #F2BB13;
+        --theme-accent: linear-gradient(180deg, #F2BB13 0%, #ffc51f 100%);
+        --theme-gradient: linear-gradient(135deg, #F2BB13 0%, #ffc51f 100%);
+        --theme-shadow: rgba(242, 187, 19, 0.18);
     }
     &.theme-1 { // Emerald
         --theme-primary: #059669;
@@ -550,11 +550,6 @@
 
     .channel-link { color: var(--theme-primary); }
     .elapsed-val { color: var(--theme-primary); }
-    .btn-primary-glow {
-        background: var(--theme-gradient);
-        box-shadow: 0 4px 10px var(--theme-shadow);
-        &:hover { box-shadow: 0 6px 15px var(--theme-shadow); }
-    }
     .status-accent-strip {
         background: var(--theme-accent);
         box-shadow: 1px 0 8px rgba(0, 0, 0, 0.05);
@@ -605,22 +600,15 @@
     z-index: 5;
 }
 
-.status-delivered, .pill-delivered {
-    background: linear-gradient(180deg, #10b981 60%, #34d399 100%);
-    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
-    color: #ffffff;
-}
-
-.status-transit, .status-unshipped, .pill-transit, .pill-unshipped {
-    background: linear-gradient(180deg, #f59e0b 60%, #fbbf24 100%);
-    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);
-    color: #ffffff;
-}
-
-.status-canceled, .pill-canceled {
-    background: linear-gradient(180deg, #f43f5e 60%, #fb7185 100%);
-    box-shadow: 0 4px 10px rgba(244, 63, 94, 0.2);
-    color: #ffffff;
+.status-delivered, .pill-delivered,
+.status-transit, .status-unshipped, .pill-transit, .pill-unshipped,
+.status-canceled, .pill-canceled,
+.status-rejected, .pill-rejected,
+.status-returned, .pill-returned,
+.status-verified, .pill-verified {
+    background: linear-gradient(180deg, #F2BB13 60%, #ffc51f 100%);
+    box-shadow: 0 4px 10px rgba(242, 187, 19, 0.2);
+    color: #17304d;
 }
 
 /* Card Rows */
@@ -720,9 +708,11 @@
     font-size: 1.25rem;
     flex-shrink: 0;
 
-    &.icon-delivered { background: #ecfdf5; color: #10b981; }
-    &.icon-transit, &.icon-unshipped { background: #fffbeb; color: #f59e0b; }
-    &.icon-canceled { background: #fef2f2; color: #ef4444; }
+    &.icon-delivered, &.icon-transit, &.icon-unshipped, &.icon-canceled, &.icon-rejected, &.icon-verified { 
+        background: #fffbeb; 
+        color: #F2BB13; 
+        border: 1px solid rgba(242, 187, 19, 0.2);
+    }
     
     i { transition: transform 0.3s ease; }
 }
@@ -737,7 +727,7 @@
 .channel-link {
     font-size: 0.9rem;
     font-weight: 800;
-    color: var(--theme-primary, #2563eb);
+    color: var(--theme-primary, #F2BB13);
     font-style: italic;
     margin: 0;
 }
@@ -763,31 +753,6 @@
     align-items: center;
 }
 
-.btn-primary-glow {
-    background: var(--theme-gradient, linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%));
-    color: #ffffff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 12px;
-    font-size: 0.82rem;
-    font-weight: 800;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 10px var(--theme-shadow, rgba(37, 99, 235, 0.25));
-    width: fit-content;
-    white-space: nowrap;
-
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px var(--theme-shadow, rgba(37, 99, 235, 0.4));
-        background: var(--theme-gradient, linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%));
-    }
-
-    &.btn-sm {
-        padding: 8px 14px;
-        font-size: 0.78rem;
-    }
-}
 
 .btn-secondary-flat {
     background: #ffffff;
@@ -883,7 +848,7 @@
 .elapsed-val {
     font-size: 1.1rem;
     font-weight: 900;
-    color: var(--theme-primary, #2563eb);
+    color: var(--theme-primary, #F2BB13);
     margin: 0;
 }
 

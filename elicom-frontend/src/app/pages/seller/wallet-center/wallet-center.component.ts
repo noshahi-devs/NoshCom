@@ -618,6 +618,10 @@ export class WalletCenterComponent implements OnInit {
             return 'NoshPay';
         }
 
+        if (methodKey === 'bank') {
+            return 'Bank';
+        }
+
         return fallback || 'Not set';
     }
 

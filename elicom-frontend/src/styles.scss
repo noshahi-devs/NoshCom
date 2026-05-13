@@ -75,15 +75,68 @@ h6,
     letter-spacing: 0.5px;
 }
 
-.sui-btn-primary {
-    color: #fff;
-    background-color: var(--sui-primary);
-    border-color: var(--sui-primary);
-}
+.sui-btn-primary,
+.btn-primary,
+.btn-primary-custom,
+.btn-primary-glow,
+.btn-publish-custom,
+.btn-success,
+.btn-success-3d,
+.btn-warning,
+.nav-btn-primary,
+.filter-clear-btn,
+.search-action-btn,
+.add-btn {
+    color: #17304d !important;
+    background: #F2BB13 !important;
+    border: none !important;
+    border-radius: 12px !important;
+    font-weight: 800 !important;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 0 #b88d0e, 0 8px 15px rgba(242, 187, 19, 0.2) !important;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    outline: none;
 
-.sui-btn-primary:hover {
-    background-color: var(--sui-primary-dark);
-    border-color: var(--sui-primary-dark);
+    &:hover {
+        transform: translateY(-1px) !important;
+        background: #ffc51f !important;
+        box-shadow: 0 5px 0 #b88d0e, 0 10px 20px rgba(242, 187, 19, 0.3) !important;
+        color: #17304d !important;
+    }
+
+    &:active {
+        transform: translateY(3px) !important;
+        box-shadow: 0 1px 0 #b88d0e, 0 4px 8px rgba(242, 187, 19, 0.2) !important;
+    }
+
+    &.btn-sm {
+        padding: 8px 16px !important;
+        font-size: 0.8rem !important;
+        border-radius: 10px !important;
+        box-shadow: 0 3px 0 #b88d0e, 0 6px 12px rgba(242, 187, 19, 0.15) !important;
+
+        &:hover {
+            box-shadow: 0 4px 0 #b88d0e, 0 8px 16px rgba(242, 187, 19, 0.25) !important;
+        }
+
+        &:active {
+            transform: translateY(2px) !important;
+            box-shadow: 0 1px 0 #b88d0e, 0 3px 6px rgba(242, 187, 19, 0.15) !important;
+        }
+    }
+
+    &.btn-full {
+        width: 100% !important;
+    }
+
+    i {
+        font-size: 1.1em;
+    }
 }
 
 .sui-btn-outline {
@@ -220,6 +273,7 @@ h6,
     color: #fff;
     border-color: var(--sui-primary);
 }
+
 
 /* ===== SweetAlert2 Pro Styling ===== */
 .swal2-container {

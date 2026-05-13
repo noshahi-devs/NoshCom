@@ -1,21 +1,6 @@
 .warehouse-content {
     padding: 20px;
 
-    .btn-primary-custom {
-        background: #4f46e5;
-        color: white;
-        padding: 12px 24px;
-        border-radius: 12px;
-        font-weight: 600;
-        border: none;
-        transition: all 0.3s;
-
-        &:hover {
-            background: #4338ca;
-            box-shadow: 0 8px 16px rgba(79, 70, 229, 0.25);
-            transform: translateY(-2px);
-        }
-    }
 
     /* Modal Styles */
     .modal-overlay {
@@ -203,8 +188,8 @@
     }
 
     .form-check-input:checked {
-        background-color: #17b26a;
-        border-color: #17b26a;
+        background-color: #F2BB13;
+        border-color: #F2BB13;
     }
 
     .form-check-label {
@@ -238,19 +223,6 @@
     }
 }
 
-.btn-primary-custom {
-    padding: 10px 18px !important;
-    border-radius: 14px !important;
-    background: linear-gradient(180deg, #ffb400 0%, #f5a300 100%) !important;
-    color: #183153 !important;
-    font-weight: 900 !important;
-    box-shadow: 0 7px 0 #cf8600;
-
-    &:hover {
-        background: linear-gradient(180deg, #ffc233 0%, #ffb400 100%) !important;
-        box-shadow: 0 9px 18px rgba(245, 163, 0, 0.24);
-    }
-}
 
 .stats-shell {
     padding: 26px 26px 10px;
@@ -329,8 +301,8 @@
     color: #c88600;
 
     &.success {
-        background: rgba(52, 199, 123, 0.14);
-        color: #1d8b57;
+        background: rgba(242, 187, 19, 0.14);
+        color: #F2BB13;
     }
 
     &.warning {
@@ -529,9 +501,9 @@
     border: 1px solid rgba(151, 178, 198, 0.3);
 
     &.active {
-        background: rgba(22, 163, 74, 0.14);
-        color: #127836;
-        border-color: rgba(67, 192, 129, 0.3);
+        background: rgba(242, 187, 19, 0.14);
+        color: #9a6a00;
+        border-color: rgba(242, 187, 19, 0.3);
     }
 }
 
@@ -597,19 +569,6 @@
     }
 }
 
-.btn-publish-custom {
-    background: linear-gradient(180deg, #ffb400 0%, #f5a300 100%);
-    color: #183153;
-    padding: 12px 14px;
-    border-radius: 16px;
-    font-weight: 900;
-    border: none;
-    box-shadow: 0 7px 0 #cf8600;
-
-    &:hover {
-        background: linear-gradient(180deg, #ffc233 0%, #ffb400 100%);
-    }
-}
 
 .btn-status-custom {
     width: 50px;
@@ -623,20 +582,20 @@
     justify-content: center;
 
     &.active {
-        background: linear-gradient(180deg, #fff0f2 0%, #ffe1e6 100%);
-        color: #df4168;
-        border-color: rgba(255, 141, 171, 0.28);
+        background: linear-gradient(180deg, #fff9e6 0%, #fff0b3 100%);
+        color: #F2BB13;
+        border-color: rgba(242, 187, 19, 0.28);
 
         &:hover {
-            background: #ef476f;
+            background: #F2BB13;
             color: #ffffff;
         }
     }
 
     &:not(.active):hover {
-        background: #17b26a;
+        background: #F2BB13;
         color: #ffffff;
-        border-color: #17b26a;
+        border-color: #F2BB13;
     }
 }
 

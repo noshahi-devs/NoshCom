@@ -616,44 +616,44 @@
     }
 
     &.variant-indigo {
-        background: linear-gradient(180deg, #ffffff 0%, #f3f8ff 100%);
+        background: linear-gradient(180deg, #ffffff 0%, #fff9e6 100%);
 
         .card-icon {
-            color: #3569c5;
-            background: linear-gradient(180deg, #e5f2ff 0%, #cfe5ff 100%);
-            box-shadow: 0 12px 20px rgba(93, 155, 255, 0.14);
+            color: #F2BB13;
+            background: linear-gradient(180deg, #fff5cf 0%, #ffecb3 100%);
+            box-shadow: 0 12px 20px rgba(242, 187, 19, 0.14);
         }
 
         &::after {
-            background: linear-gradient(90deg, #79b6ff 0%, #3478f6 100%);
+            background: linear-gradient(90deg, #F2BB13 0%, #d9a800 100%);
         }
     }
 
     &.variant-violet {
-        background: linear-gradient(180deg, #ffffff 0%, #f8f4ff 100%);
+        background: linear-gradient(180deg, #ffffff 0%, #fff9e6 100%);
 
         .card-icon {
-            color: #7d4ac7;
-            background: linear-gradient(180deg, #efe6ff 0%, #ddd0ff 100%);
-            box-shadow: 0 12px 20px rgba(155, 118, 255, 0.14);
+            color: #F2BB13;
+            background: linear-gradient(180deg, #fff5cf 0%, #ffecb3 100%);
+            box-shadow: 0 12px 20px rgba(242, 187, 19, 0.14);
         }
 
         &::after {
-            background: linear-gradient(90deg, #c8a3ff 0%, #8655e8 100%);
+            background: linear-gradient(90deg, #F2BB13 0%, #d9a800 100%);
         }
     }
 
     &.variant-purple {
-        background: linear-gradient(180deg, #ffffff 0%, #fff4f8 100%);
+        background: linear-gradient(180deg, #ffffff 0%, #fff9e6 100%);
 
         .card-icon {
-            color: #cb4b7b;
-            background: linear-gradient(180deg, #ffe7ef 0%, #ffd4e3 100%);
-            box-shadow: 0 12px 20px rgba(255, 138, 180, 0.14);
+            color: #F2BB13;
+            background: linear-gradient(180deg, #fff5cf 0%, #ffecb3 100%);
+            box-shadow: 0 12px 20px rgba(242, 187, 19, 0.14);
         }
 
         &::after {
-            background: linear-gradient(90deg, #ff9ec2 0%, #ef5b94 100%);
+            background: linear-gradient(90deg, #F2BB13 0%, #d9a800 100%);
         }
     }
 }
@@ -771,21 +771,21 @@
 }
 
 .stats-section:nth-of-type(2) .col-md-3:nth-child(2) .mini-icon {
-    color: #3569c5;
-    background: linear-gradient(180deg, #e5f2ff 0%, #cfe5ff 100%);
-    box-shadow: 0 12px 20px rgba(93, 155, 255, 0.14);
+    color: #F2BB13;
+    background: linear-gradient(180deg, #fff5cf 0%, #ffecb3 100%);
+    box-shadow: 0 12px 20px rgba(242, 187, 19, 0.14);
 }
 
 .stats-section:nth-of-type(2) .col-md-3:nth-child(3) .mini-icon {
-    color: #7d4ac7;
-    background: linear-gradient(180deg, #efe6ff 0%, #ddd0ff 100%);
-    box-shadow: 0 12px 20px rgba(155, 118, 255, 0.14);
+    color: #F2BB13;
+    background: linear-gradient(180deg, #fff5cf 0%, #ffecb3 100%);
+    box-shadow: 0 12px 20px rgba(242, 187, 19, 0.14);
 }
 
 .stats-section:nth-of-type(2) .col-md-3:nth-child(4) .mini-icon {
-    color: #cb4b7b;
-    background: linear-gradient(180deg, #ffe7ef 0%, #ffd4e3 100%);
-    box-shadow: 0 12px 20px rgba(255, 138, 180, 0.14);
+    color: #F2BB13;
+    background: linear-gradient(180deg, #fff5cf 0%, #ffecb3 100%);
+    box-shadow: 0 12px 20px rgba(242, 187, 19, 0.14);
 }
 
 /* ─────────────── HYPER-LUXE ORDER CARDS ─────────────── */
@@ -996,25 +996,7 @@
     margin: 4px 0 0;
 }
 
-.btn-primary-glow {
-    width: 100%;
-    height: 52px;
-    border-radius: 14px;
-    border: none;
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    color: #ffffff;
-    font-size: 0.9rem;
-    font-weight: 900;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 8px 16px var(--theme-glow);
-
-    &:hover {
-        transform: translateY(-2px);
-        background: var(--theme-primary);
-        box-shadow: 0 12px 24px var(--theme-glow);
-    }
-}
+/* Using global .btn-primary-glow */
 
 .skeleton-stack {
     display: flex;
