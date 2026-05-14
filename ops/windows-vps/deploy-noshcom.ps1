@@ -161,7 +161,7 @@ function Deploy-Api {
 
     Write-Step "Publishing NoshCom API"
     New-Item -ItemType Directory -Path $tempPublish -Force | Out-Null
-    "Maintenance — deploying new API build" | Set-Content $offlineFile -Encoding UTF8
+    "Maintenance - deploying new API build" | Set-Content $offlineFile -Encoding UTF8
     Start-Sleep -Seconds 2
 
     try {
@@ -184,11 +184,11 @@ if (-not (Test-Path $RepoRoot)) {
 }
 
 Write-Host ""
-Write-Host "╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║   NoshCom VPS Deploy                                    ║" -ForegroundColor Cyan
-Write-Host "║   Repo : $RepoRoot" -ForegroundColor Cyan
-Write-Host "║   Branch: $Branch" -ForegroundColor Cyan
-Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host "==========================================================" -ForegroundColor Cyan
+Write-Host "   NoshCom VPS Deploy                                     " -ForegroundColor Cyan
+Write-Host "   Repo : $RepoRoot" -ForegroundColor Cyan
+Write-Host "   Branch: $Branch" -ForegroundColor Cyan
+Write-Host "==========================================================" -ForegroundColor Cyan
 
 # ── 1. Git pull ──────────────────────────────────────────────────────────────
 if (-not $SkipGitPull) {
@@ -251,10 +251,10 @@ if (-not $SkipIisReset) {
 }
 
 Write-Host ""
-Write-Host "╔══════════════════════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "║   DEPLOY COMPLETE                                        ║" -ForegroundColor Green
-Write-Host "╠══════════════════════════════════════════════════════════╣" -ForegroundColor Green
-Write-Host "║   NoshCom   → http://YOUR-VPS-IP:8083                   ║" -ForegroundColor Green
-Write-Host "║   Eliship   → http://YOUR-VPS-IP:8084                   ║" -ForegroundColor Green
-Write-Host "║   API       → http://YOUR-VPS-IP:8085                   ║" -ForegroundColor Green
-Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Host "==========================================================" -ForegroundColor Green
+Write-Host "   DEPLOY COMPLETE                                        " -ForegroundColor Green
+Write-Host "==========================================================" -ForegroundColor Green
+Write-Host "   NoshCom   -> http://YOUR-VPS-IP:8083                   " -ForegroundColor Green
+Write-Host "   Eliship   -> http://YOUR-VPS-IP:8084                   " -ForegroundColor Green
+Write-Host "   API       -> http://YOUR-VPS-IP:8085                   " -ForegroundColor Green
+Write-Host "==========================================================" -ForegroundColor Green

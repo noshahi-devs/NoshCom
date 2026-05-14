@@ -155,15 +155,10 @@ foreach ($path in $grantPaths) {
 # 6. Summary
 # ────────────────────────────────────────────────────────────────────────────
 Write-Host ""
-Write-Host "╔══════════════════════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "║           SETUP COMPLETE — NoshCom VPS                  ║" -ForegroundColor Green
-Write-Host "╠══════════════════════════════════════════════════════════╣" -ForegroundColor Green
-Write-Host "║  Site          Port                                      ║" -ForegroundColor Green
-Write-Host "║  NoshCom       :$NoshComPort   → $NoshComSitePath" -ForegroundColor Green
-Write-Host "║  Eliship       :$ElishipPort   → $ElishipSitePath" -ForegroundColor Green
-Write-Host "║  NoshCom-API   :$ApiPort   → $ApiSitePath" -ForegroundColor Green
-Write-Host "╠══════════════════════════════════════════════════════════╣" -ForegroundColor Green
-Write-Host "║  Repo: $RepoRoot" -ForegroundColor Green
-Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Host "SETUP COMPLETE - NoshCom VPS" -ForegroundColor Green
+Write-Host "NoshCom: $NoshComSitePath ($NoshComPort)" -ForegroundColor Green
+Write-Host "Eliship: $ElishipSitePath ($ElishipPort)" -ForegroundColor Green
+Write-Host "API: $ApiSitePath ($ApiPort)" -ForegroundColor Green
+Write-Host "Repo: $RepoRoot" -ForegroundColor Green
 Write-Host ""
-Write-Host "Next step → run deploy-noshcom.ps1 to build & copy files." -ForegroundColor Yellow
+Write-Host "Next step -> run deploy-noshcom.ps1 to build and copy files." -ForegroundColor Yellow
