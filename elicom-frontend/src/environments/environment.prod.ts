@@ -1,4 +1,5 @@
-﻿export const environment = {
+export const environment = {
     production: true,
-    apiUrl: 'http://93.127.138.66:8085'
+    apiUrl: 'https://api.globalmart.uk.com'
 };
+
