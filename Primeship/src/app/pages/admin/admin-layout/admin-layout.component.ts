@@ -15,15 +15,15 @@ import { ToastService } from '../../../core/services/toast.service';
 export class AdminLayoutComponent implements OnInit {
     sidebarCollapsed = false;
     mobileSidebarOpen = false;
-    sellerSidebarExpanded = false;
+    sellerSidebarExpanded = true;
     isUserDropdownOpen = false;
     isAdminView = false;
     isSellerView = false;
-    userEmail = 'portal@primeship.com';
+    userEmail = 'portal@globalmartuk.com';
     userFirstName = 'Seller';
 
     get sellerPortalName(): string {
-        return `${this.userFirstName} PS Seller`;
+        return this.userFirstName;
     }
 
     get profileDisplayName(): string {

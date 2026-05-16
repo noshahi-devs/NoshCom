@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Observable, catchError, map, throwError } from 'rxjs';
+import { Observable, catchError, map, throwError, of } from 'rxjs';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
 
@@ -80,5 +80,14 @@ export class CardService {
         } catch {
             return null;
         }
+    }
+
+    // Dummy methods for EasyFinora Integration Port
+    getUserCards(): Observable<any> {
+        return of({ result: [] });
+    }
+
+    getBalance(): Observable<any> {
+        return of({ result: { totalBalance: 0 } });
     }
 }

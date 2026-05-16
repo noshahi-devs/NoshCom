@@ -11,6 +11,7 @@ namespace Elicom.Transactions.Dto
         public string Category { get; set; } // "Deposit", "Transfer", "Withdrawal"
         public string ReferenceId { get; set; }
         public string Description { get; set; }
+        public string Status { get; set; }
         public DateTime CreationTime { get; set; }
     }
 }

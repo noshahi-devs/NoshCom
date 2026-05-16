@@ -9,6 +9,8 @@ import { ThreeplPartnersComponent } from './pages/admin/threepl-partners/threepl
 import { CustomersComponent } from './pages/admin/customers/customers.component';
 import { SellersComponent } from './pages/admin/sellers/sellers.component';
 import { FinanceComponent } from './pages/admin/finance/finance.component';
+import { DepositApprovalComponent } from './pages/admin/finance/deposit-approval/deposit-approval.component';
+import { WithdrawApprovalComponent } from './pages/admin/finance/withdraw-approval/withdraw-approval.component';
 import { UsersComponent } from './pages/admin/users/users.component';
 import { HomeComponent } from './public/home/home.component';
 import { AuthGuard } from './core/guards/auth.guard';
@@ -206,6 +208,14 @@ export const routes: Routes = [
         component: FinanceComponent
       },
       {
+        path: 'approve-deposits',
+        component: DepositApprovalComponent
+      },
+      {
+        path: 'approve-withdrawals',
+        component: WithdrawApprovalComponent
+      },
+      {
         path: 'reports',
         component: DashboardComponent // Placeholder
       },
@@ -248,6 +258,22 @@ export const routes: Routes = [
       {
         path: 'profile',
         loadComponent: () => import('./pages/seller/profile/seller-profile.component').then(m => m.SellerProfileComponent)
+      },
+      {
+        path: 'wallet',
+        loadComponent: () => import('./pages/seller/wallet/seller-wallet.component').then(m => m.SellerWalletComponent)
+      },
+      {
+        path: 'transfer',
+        loadComponent: () => import('./pages/seller/transfer/seller-transfer.component').then(m => m.SellerTransferComponent)
+      },
+      {
+        path: 'deposit',
+        loadComponent: () => import('./pages/seller/deposit/seller-deposit.component').then(m => m.SellerDepositComponent)
+      },
+      {
+        path: 'withdraw',
+        loadComponent: () => import('./pages/seller/withdraw/seller-withdraw.component').then(m => m.SellerWithdrawComponent)
       }
     ]
   },

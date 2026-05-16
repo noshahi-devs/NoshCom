@@ -1,4 +1,4 @@
-﻿using Abp.Application.Services;
+using Abp.Application.Services;
 using Abp.Application.Services.Dto;
 using Elicom.Products.Dto;
 using System;
@@ -11,6 +11,7 @@ namespace Elicom.Products
 {
     public interface IProductAppService : IApplicationService
     {
+        Task<ProductDto> Get(Guid id);
         Task<ListResultDto<ProductDto>> GetAll();
         Task<ListResultDto<ProductDto>> GetByCategory(Guid categoryId);
         Task<ListResultDto<ProductDto>> Search(string query);

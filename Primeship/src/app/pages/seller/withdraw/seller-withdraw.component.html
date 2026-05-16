@@ -1,0 +1,252 @@
+<div class="page-container">
+    <div class="studio-header">
+        <div class="header-main">
+            <div class="header-text">
+                <span class="studio-tag">GLOBAL MART UK STUDIO</span>
+                <h1 class="header-title">{{ showWithdrawForm ? 'Withdrawal Hub' : 'Withdrawal History' }}</h1>
+                <p class="header-description">
+                    {{ showWithdrawForm ? 'Withdraw your earnings safely to your bank or crypto account.' : 'Review your recent withdrawal requests and processing status.' }}
+                </p>
+                <div class="header-stats">
+                    <div class="stat-pill">
+                        <i class="fas fa-wallet"></i>
+                        <span>Available: {{ walletBalance | currency:'USD' }}</span>
+                    </div>
+                    <div class="stat-pill">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Total Records: {{ totalCount }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-3d btn-primary-glass" (click)="showWithdrawForm = !showWithdrawForm">
+                    <i class="fas" [class.fa-history]="showWithdrawForm" [class.fa-plus-circle]="!showWithdrawForm"></i>
+                    {{ showWithdrawForm ? 'View History' : 'Withdraw Money' }}
+                </button>
+                <button class="btn-secondary-glass" (click)="currentPage = 1; loadTransactions()">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh View
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdraw Form Flow -->
+    <div class="withdraw-form-flow" *ngIf="showWithdrawForm">
+        <!-- Method Selection Grid -->
+        <div class="method-selection-grid">
+            <div class="method-card" [class.active]="withdrawMethod === 'bank'" (click)="withdrawMethod = 'bank'">
+                <div class="card-glow"></div>
+                <div class="card-content">
+                    <div class="icon-container">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <h4>Bank Transfer</h4>
+                    <p>Withdraw to any local or international bank account</p>
+                </div>
+                <div class="card-selection-badge" *ngIf="withdrawMethod === 'bank'">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+
+            <div class="method-card" [class.active]="withdrawMethod === 'crypto'" (click)="withdrawMethod = 'crypto'">
+                <div class="card-glow"></div>
+                <div class="card-content">
+                    <div class="icon-container crypto">
+                        <i class="fab fa-bitcoin"></i>
+                    </div>
+                    <h4>Crypto Wallet</h4>
+                    <p>Fast withdrawal to BTC, USDT, or Binance Pay</p>
+                </div>
+                <div class="card-selection-badge" *ngIf="withdrawMethod === 'crypto'">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="withdraw-main-card" [class.loading-overlay]="isLoading">
+            <div class="wallet-balance-studio">
+                <div class="balance-info">
+                    <span class="label">CURRENT BALANCE</span>
+                    <h2 class="amount">{{ walletBalance | currency: 'USD' }}</h2>
+                </div>
+                <div class="status-indicator">
+                    <span class="pulse-dot"></span>
+                    Available for Withdrawal
+                </div>
+            </div>
+
+            <form (ngSubmit)="submitWithdraw()" class="studio-form">
+                <div class="form-grid">
+                    <!-- Dynamic Details based on Method -->
+                    <ng-container *ngIf="withdrawMethod === 'bank'">
+                        <div class="form-group-studio">
+                            <label>Bank Name</label>
+                            <input type="text" name="bankName" [(ngModel)]="bankDetails.bankName" 
+                                placeholder="e.g. JPMorgan Chase" required [disabled]="isLoading">
+                        </div>
+                        <div class="form-group-studio">
+                            <label>Account Title</label>
+                            <input type="text" name="accountTitle" [(ngModel)]="bankDetails.accountTitle" 
+                                placeholder="Name as per Bank" required [disabled]="isLoading">
+                        </div>
+                        <div class="form-group-studio">
+                            <label>Account / IBAN Number</label>
+                            <input type="text" name="accountNumber" [(ngModel)]="bankDetails.accountNumber" 
+                                placeholder="Enter Full Number" required [disabled]="isLoading">
+                        </div>
+                    </ng-container>
+
+                    <ng-container *ngIf="withdrawMethod === 'crypto'">
+                        <div class="form-group-studio">
+                            <label>Crypto Wallet Address / Binance ID</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-wallet"></i>
+                                <input type="text" name="cryptoId" [(ngModel)]="cryptoDetails.cryptoId" 
+                                    placeholder="Enter address" required [disabled]="isLoading">
+                            </div>
+                        </div>
+                        <div class="form-group-studio">
+                            <label>Wallet Tag / Title</label>
+                            <input type="text" name="cryptoTitle" [(ngModel)]="cryptoDetails.cryptoTitle" 
+                                placeholder="e.g. Personal Ledger" required [disabled]="isLoading">
+                        </div>
+                    </ng-container>
+
+                    <!-- Common Amount Field -->
+                    <div class="form-group-studio amount-field">
+                        <label>Amount to Withdraw (USD)</label>
+                        <div class="amount-input-studio">
+                            <span class="prefix">$</span>
+                            <input type="number" name="amount" [(ngModel)]="amount" 
+                                placeholder="0.00" min="10" required [disabled]="isLoading">
+                            <span class="suffix">USD</span>
+                        </div>
+                        <p class="min-hint">Minimum withdrawal amount is $10.00</p>
+                    </div>
+                </div>
+
+                <!-- Summary Panel -->
+                <div class="withdrawal-summary-studio" *ngIf="amount && amount >= 10">
+                    <div class="summary-header">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        <span>Transaction Summary</span>
+                    </div>
+                    <div class="summary-body">
+                        <div class="summary-row">
+                            <span>Requested Amount</span>
+                            <span class="val">{{ amount | currency:'USD' }}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Platform Processing Fee (3%)</span>
+                            <span class="val fee">-{{ getServiceFee() | currency:'USD' }}</span>
+                        </div>
+                        <div class="summary-divider"></div>
+                        <div class="summary-row total">
+                            <span>Net to Receive</span>
+                            <span class="val net">{{ getNetAmount() | currency:'USD' }}</span>
+                        </div>
+                        <div class="summary-row local">
+                            <span>Estimated PKR Amount</span>
+                            <span class="val pkr">Rs {{ calculateLocalAmount() | number }} PKR</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions-studio">
+                    <button type="submit" class="btn-studio-primary" [disabled]="!amount || amount < 10 || isLoading">
+                        <i class="fas fa-check-circle" *ngIf="!isLoading"></i>
+                        <span *ngIf="!isLoading">Confirm Withdrawal</span>
+                        <span *ngIf="isLoading" class="btn-spinner"></span>
+                        <span *ngIf="isLoading">Processing...</span>
+                    </button>
+                    <p class="security-note">
+                        <i class="fas fa-shield-alt"></i>
+                        Secure, encrypted transaction
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Withdrawal History Table -->
+    <div class="history-view" *ngIf="!showWithdrawForm">
+        <div class="filter-header" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+            <div class="filter-buttons">
+                <button class="filter-btn" [class.active]="filterType === 'all'" (click)="setFilter('all')">All</button>
+                <button class="filter-btn" [class.active]="filterType === 'approved'" (click)="setFilter('approved')">Approved</button>
+                <button class="filter-btn" [class.active]="filterType === 'pending'" (click)="setFilter('pending')">Pending</button>
+                <button class="filter-btn" [class.active]="filterType === 'rejected'" (click)="setFilter('rejected')">Rejected</button>
+            </div>
+            <div class="inline-loader" *ngIf="isLoading">
+                <span class="dot"></span>
+                <span>Updating...</span>
+            </div>
+        </div>
+
+        <div class="transactions-table-3d">
+            <div class="table-header">
+                <div class="col">Transaction ID</div>
+                <div class="col">Type</div>
+                <div class="col">Description</div>
+                <div class="col">Amount</div>
+                <div class="col">Status</div>
+                <div class="col">Date</div>
+            </div>
+
+            <ng-container *ngIf="isLoading && !allTransactions.length">
+                <div class="table-row ghost-row" *ngFor="let _ of skeletonRows">
+                    <div class="col"><span class="ghost-line id"></span></div>
+                    <div class="col"><span class="ghost-pill"></span></div>
+                    <div class="col"><span class="ghost-line desc"></span></div>
+                    <div class="col"><span class="ghost-line amt"></span></div>
+                    <div class="col"><span class="ghost-pill muted"></span></div>
+                    <div class="col"><span class="ghost-line date"></span></div>
+                </div>
+            </ng-container>
+
+            <ng-container *ngIf="!isLoading || allTransactions.length">
+                <div class="table-row" *ngFor="let txn of filteredTransactions">
+                    <div class="col id-col">
+                        <span class="transaction-id-chip" [attr.title]="getTransactionIdTooltip(txn)">
+                            {{ getDisplayTransactionId(txn) }}
+                        </span>
+                    </div>
+                    <div class="col">
+                        <span class="type-badge" [ngClass]="(txn.type || 'unknown').toLowerCase()">{{ txn.type }}</span>
+                    </div>
+                    <div class="col">{{ txn.description }}</div>
+                    <div class="col amount-col" [class.negative]="txn.amount < 0" [class.positive]="txn.amount > 0">
+                        <span class="amount-pill">
+                            {{ txn.amount | currency: 'USD' }}
+                        </span>
+                    </div>
+                    <div class="col">
+                        <span class="status-badge" [ngClass]="(txn.status || 'completed').toLowerCase()">{{ txn.status }}</span>
+                    </div>
+                    <div class="col">{{ txn.date | date: 'MMM d, h:mm a' }}</div>
+                </div>
+
+                <div class="empty-state" *ngIf="!filteredTransactions.length">
+                    <p>No withdrawals found.</p>
+                </div>
+            </ng-container>
+
+            <!-- Pagination -->
+            <div class="pagination-container" *ngIf="totalCount > 0">
+                <div class="pagination-info">
+                    Showing {{ getStartIndex() }} - {{ getEndIndex() }} of {{ totalCount }}
+                </div>
+                <div class="pagination-controls">
+                    <button class="btn-pagination" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">‹</button>
+                    <div class="page-numbers">
+                        <button *ngFor="let page of getPageNumbers()" class="page-btn" [class.active]="page === currentPage" (click)="changePage(page)">
+                            {{ page }}
+                        </button>
+                    </div>
+                    <button class="btn-pagination" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">›</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

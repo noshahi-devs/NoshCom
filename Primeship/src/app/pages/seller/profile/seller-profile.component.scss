@@ -13,16 +13,31 @@
 .profile-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 18px;
+  gap: 24px;
   align-items: center;
-  border: 1px solid var(--profile-border);
-  border-radius: 24px;
-  padding: 24px;
-  box-shadow: var(--profile-shadow);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 28px;
+  padding: 32px;
+  box-shadow: 
+    0 20px 40px rgba(16, 185, 129, 0.08),
+    0 1px 3px rgba(16, 185, 129, 0.02);
   background:
-    radial-gradient(circle at 10% 16%, rgba(16, 185, 129, 0.18), transparent 38%),
-    radial-gradient(circle at 86% 8%, rgba(52, 211, 153, 0.16), transparent 36%),
-    linear-gradient(130deg, #f4fdf8 0%, #ffffff 54%, #ebf8f2 100%);
+    radial-gradient(circle at 10% 16%, rgba(16, 185, 129, 0.12), transparent 38%),
+    radial-gradient(circle at 86% 8%, rgba(52, 211, 153, 0.1), transparent 36%),
+    linear-gradient(130deg, #f4fdf8 0%, #ffffff 54%, #f1fcf7 100%);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
 }
 
 .hero-left {

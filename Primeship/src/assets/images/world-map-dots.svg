@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" fill="#e9edec">
+  <path d="M150,150 L180,140 L220,160 L250,150 L280,180 L250,220 L200,210 L150,180 Z" /> <!-- North America approx -->
+  <path d="M250,250 L300,240 L350,280 L320,350 L280,380 L240,320 Z" /> <!-- South America approx -->
+  <path d="M480,120 L550,100 L600,120 L620,160 L580,200 L500,180 L480,140 Z" /> <!-- Europe approx -->
+  <path d="M500,220 L580,200 L650,250 L630,350 L550,380 L480,320 Z" /> <!-- Africa approx -->
+  <path d="M600,120 L800,100 L950,150 L900,300 L700,350 L600,250 Z" /> <!-- Asia approx -->
+  <path d="M800,350 L880,340 L920,380 L880,450 L820,420 Z" /> <!-- Australia approx -->
+</svg>

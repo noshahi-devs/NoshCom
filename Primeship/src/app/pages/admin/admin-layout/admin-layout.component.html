@@ -46,6 +46,22 @@
             </a>
           </li>
         </ul>
+
+        <h5 class="menu-title">Finance Center</h5>
+        <ul class="nav-list">
+          <li class="nav-item" routerLinkActive="active">
+            <a routerLink="/admin/approve-deposits" class="nav-link" [attr.title]="sidebarCollapsed ? 'Approve Deposits' : null">
+              <i class="fas fa-check-double nav-icon"></i>
+              <span class="nav-text">Approve Deposits</span>
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active">
+            <a routerLink="/admin/approve-withdrawals" class="nav-link" [attr.title]="sidebarCollapsed ? 'Approve Withdrawals' : null">
+              <i class="fas fa-money-check-alt nav-icon"></i>
+              <span class="nav-text">Approve Withdrawals</span>
+            </a>
+          </li>
+        </ul>
       </div>
 
       <!-- Seller Section -->
@@ -53,21 +69,59 @@
         <h5 class="menu-title">Sourcing Hub</h5>
         <ul class="nav-list">
           <li class="nav-item" routerLinkActive="active">
-            <a routerLink="/seller/dashboard" class="nav-link" [attr.title]="(sidebarCollapsed || sellerIconOnly) ? 'Overview' : null">
-              <i class="fas fa-tachometer-alt nav-icon"></i>
-              <span class="nav-text">Overview</span>
+            <a routerLink="/seller/dashboard" class="nav-link" [attr.title]="(sidebarCollapsed || sellerIconOnly) ? 'Dashboard' : null">
+              <i class="fas fa-tachometer-alt nav-icon icon-3d"></i>
+              <span class="nav-text">Dashboard</span>
             </a>
           </li>
           <li class="nav-item" routerLinkActive="active">
             <a routerLink="/shop" class="nav-link" [attr.title]="(sidebarCollapsed || sellerIconOnly) ? 'Source Products' : null">
-              <i class="fas fa-shopping-basket nav-icon"></i>
+              <i class="fas fa-cube nav-icon icon-3d"></i>
               <span class="nav-text">Source Products</span>
             </a>
           </li>
           <li class="nav-item" routerLinkActive="active">
             <a routerLink="/seller/orders" class="nav-link" [attr.title]="(sidebarCollapsed || sellerIconOnly) ? 'Order Center' : null">
-              <i class="fas fa-clipboard-list nav-icon"></i>
+              <i class="fas fa-layer-group nav-icon icon-3d"></i>
               <span class="nav-text">Order Center</span>
+            </a>
+          </li>
+
+          <!-- Financial Studio Section -->
+          <li class="nav-item" routerLinkActive="active">
+            <a routerLink="/seller/wallet" class="nav-link" [attr.title]="(sidebarCollapsed || sellerIconOnly) ? 'My Wallet' : null">
+              <i class="fas fa-wallet nav-icon icon-3d"></i>
+              <span class="nav-text">My Wallet</span>
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active">
+            <a routerLink="/seller/deposit" class="nav-link" [attr.title]="(sidebarCollapsed || sellerIconOnly) ? 'Topup' : null">
+              <i class="fas fa-coins nav-icon icon-3d"></i>
+              <span class="nav-text">Topup</span>
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active">
+            <a routerLink="/seller/withdraw" class="nav-link" [attr.title]="(sidebarCollapsed || sellerIconOnly) ? 'Withdrawals' : null">
+              <i class="fas fa-hand-holding-usd nav-icon icon-3d"></i>
+              <span class="nav-text">Withdrawals</span>
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active">
+            <a routerLink="/seller/transfer" class="nav-link" [attr.title]="(sidebarCollapsed || sellerIconOnly) ? 'Transfer Money' : null">
+              <i class="fas fa-random nav-icon icon-3d"></i>
+              <span class="nav-text">Transfer Money</span>
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active">
+            <a routerLink="/contact-support" class="nav-link" [attr.title]="(sidebarCollapsed || sellerIconOnly) ? 'Support' : null">
+              <i class="fas fa-headset nav-icon icon-3d"></i>
+              <span class="nav-text">Support</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="javascript:void(0)" (click)="logout()" class="nav-link" [attr.title]="(sidebarCollapsed || sellerIconOnly) ? 'Logout' : null">
+              <i class="fas fa-power-off nav-icon icon-3d logout-icon"></i>
+              <span class="nav-text">Logout</span>
             </a>
           </li>
         </ul>
@@ -91,56 +145,54 @@
               <i class="fas" [ngClass]="sidebarToggleIcon"></i>
             </button>
 
-            <div class="seller-header-copy">
-              <span class="seller-header-kicker">Seller Workspace</span>
-              <p>Orders, sourcing, and delivery flow in one place.</p>
+            <div class="seller-search-wrapper">
+              <div class="search-input-group">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="seller-search-input" placeholder="Search orders, transactions, or help..." />
+              </div>
             </div>
 
-            <span class="seller-header-badge">
-              <i class="fas fa-check-circle"></i>
-              Live Portal
-            </span>
-
-            <button class="notification-btn" (click)="showNotifications()">
-              <span class="notification-icon-shell">
-                <i class="fas fa-bell"></i>
+            <div class="seller-header-actions-group">
+              <span class="seller-header-badge">
+                <i class="fas fa-check-circle"></i>
+                Live Portal
               </span>
-              <span class="notification-badge">3</span>
-            </button>
 
-            <div class="user-menu-dropdown-wrapper" (click)="$event.stopPropagation()">
-              <button type="button" class="user-menu-btn" [class.open]="isUserDropdownOpen" (click)="toggleUserDropdown($event)">
-                <div class="user-avatar-small">
-                  <i class="fas fa-store"></i>
-                </div>
-                <div class="user-meta">
-                  <span class="user-role">Seller Account</span>
-                  <span class="user-name">{{ headerProfileLabel }}</span>
-                </div>
-                <i class="fas fa-chevron-down small"></i>
+              <button class="notification-btn" (click)="showNotifications()">
+                <span class="notification-icon-shell">
+                  <i class="fas fa-bell"></i>
+                </span>
+                <span class="notification-badge">3</span>
               </button>
 
-              <div class="user-dropdown-menu" [class.show]="isUserDropdownOpen">
-                <div class="dropdown-header">
-                  <div class="dropdown-avatar">
-                     <i class="fas fa-id-badge"></i>
+              <div class="user-menu-dropdown-wrapper" (click)="$event.stopPropagation()">
+                <button type="button" class="user-menu-btn" [class.open]="isUserDropdownOpen" (click)="toggleUserDropdown($event)">
+                  <div class="user-avatar-small">
+                    <i class="fas fa-store"></i>
                   </div>
-                  <div class="dropdown-user-info">
-                    <h4>{{ profileDisplayName }}</h4>
-                    <p>{{ userEmail }}</p>
+                  <div class="user-meta">
+                    <span class="user-role">Seller Account</span>
+                    <span class="user-name">{{ sellerPortalName }}</span>
                   </div>
-                </div>
-                
-                <div class="dropdown-list">
-                  <button type="button" class="dropdown-item" (click)="openProfile()">
-                    <i class="fas fa-user-circle"></i>
-                    <span>Profile Settings</span>
-                  </button>
-                  <div class="dropdown-divider"></div>
-                  <button type="button" class="dropdown-item logout" (click)="logout()">
-                    <i class="fas fa-power-off"></i>
-                    <span>Sign Out</span>
-                  </button>
+                  <i class="fas fa-chevron-down small"></i>
+                </button>
+
+                <div class="user-dropdown-3d" [class.show]="isUserDropdownOpen">
+                  <div class="dropdown-header">
+                    <div class="user-avatar-large">
+                      <i class="fas fa-store"></i>
+                    </div>
+                    <div class="user-info-large">
+                      <strong>{{ sellerPortalName }}</strong>
+                      <span>{{ userEmail }}</span>
+                    </div>
+                  </div>
+                  <ul class="dropdown-menu-list">
+                    <li><a (click)="openProfile()"><i class="fas fa-user-circle"></i> Profile Settings</a></li>
+                    <li><a (click)="showNotifications()"><i class="fas fa-bell"></i> Notifications</a></li>
+                    <li class="divider"></li>
+                    <li><a (click)="logout()" class="logout-link"><i class="fas fa-sign-out-alt"></i> Sign Out</a></li>
+                  </ul>
                 </div>
               </div>
             </div>

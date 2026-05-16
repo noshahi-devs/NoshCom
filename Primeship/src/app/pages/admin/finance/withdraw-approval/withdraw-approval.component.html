@@ -1,0 +1,78 @@
+<div class="approval-container">
+    <div class="approval-header">
+        <div class="header-content">
+            <h1>Withdrawal Approvals</h1>
+            <p>Process seller withdrawal requests and verify payment details.</p>
+        </div>
+        <div class="filter-group">
+            <button (click)="setStatusFilter('all')" [class.active]="statusFilter === 'all'">All</button>
+            <button (click)="setStatusFilter('pending')" [class.active]="statusFilter === 'pending'">Pending</button>
+            <button (click)="setStatusFilter('approved')" [class.active]="statusFilter === 'approved'">Approved</button>
+            <button (click)="setStatusFilter('rejected')" [class.active]="statusFilter === 'rejected'">Rejected</button>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <div class="loading-overlay" *ngIf="isLoading">
+            <div class="spinner"></div>
+        </div>
+
+        <table class="approval-table">
+            <thead>
+                <tr>
+                    <th>Seller</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Payment Details</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let withdrawal of filteredWithdrawals">
+                    <td>
+                        <div class="user-info">
+                            <strong>{{ withdrawal.userName }}</strong>
+                            <span>{{ formatEmail(withdrawal.userEmailAddress) }}</span>
+                        </div>
+                    </td>
+                    <td class="amount-cell">
+                        <strong>{{ withdrawal.amount | currency:'USD' }}</strong>
+                        <span class="fee">Fee: {{ (withdrawal.amount * 0.03) | currency:'USD' }}</span>
+                    </td>
+                    <td>
+                        <span class="method-badge" [ngClass]="withdrawal.method?.toLowerCase()">{{ withdrawal.method }}</span>
+                    </td>
+                    <td>
+                        <div class="payment-info-box">
+                            <code>{{ withdrawal.paymentDetails }}</code>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="status-pill" [ngClass]="normalizeStatus(withdrawal.status)">
+                            {{ withdrawal.status }}
+                        </span>
+                    </td>
+                    <td>{{ withdrawal.creationTime | date:'MMM d, yyyy HH:mm' }}</td>
+                    <td>
+                        <div class="action-buttons" *ngIf="normalizeStatus(withdrawal.status) === 'pending'">
+                            <button class="btn-approve" (click)="approve(withdrawal)" title="Approve & Process">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn-reject" (click)="reject(withdrawal)" title="Reject">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="remarks" *ngIf="withdrawal.adminRemarks">
+                            <i class="fas fa-comment-alt" [title]="withdrawal.adminRemarks"></i>
+                        </div>
+                    </td>
+                </tr>
+                <tr *ngIf="filteredWithdrawals.length === 0 && !isLoading">
+                    <td colspan="7" class="empty-state">No withdrawal requests found.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

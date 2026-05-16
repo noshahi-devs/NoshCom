@@ -1,0 +1,81 @@
+<div class="approval-container">
+    <div class="approval-header">
+        <div class="header-content">
+            <h1>Deposit Approvals</h1>
+            <p>Review and approve seller deposit requests from Primeship & EasyFinora.</p>
+        </div>
+        <div class="filter-group">
+            <button (click)="setStatusFilter('all')" [class.active]="statusFilter === 'all'">All</button>
+            <button (click)="setStatusFilter('pending')" [class.active]="statusFilter === 'pending'">Pending</button>
+            <button (click)="setStatusFilter('approved')" [class.active]="statusFilter === 'approved'">Approved</button>
+            <button (click)="setStatusFilter('rejected')" [class.active]="statusFilter === 'rejected'">Rejected</button>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <div class="loading-overlay" *ngIf="isLoading">
+            <div class="spinner"></div>
+        </div>
+
+        <table class="approval-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Reference</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let deposit of filteredDeposits">
+                    <td>
+                        <div class="user-info">
+                            <strong>{{ deposit.userName }}</strong>
+                            <span>{{ formatEmail(deposit.userEmailAddress) }}</span>
+                        </div>
+                    </td>
+                    <td class="amount-cell">
+                        <strong>{{ deposit.amount | currency:'USD' }}</strong>
+                        <span *ngIf="deposit.localAmount">{{ deposit.localAmount }} {{ deposit.localCurrency }}</span>
+                    </td>
+                    <td>
+                        <span class="method-badge">{{ deposit.method }}</span>
+                    </td>
+                    <td>
+                        <div class="ref-info">
+                            <code>{{ deposit.referenceId || 'N/A' }}</code>
+                            <button class="btn-view-proof" (click)="viewProof(deposit)" *ngIf="deposit.hasProof">
+                                <i class="fas fa-image"></i> Proof
+                            </button>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="status-pill" [ngClass]="normalizeStatus(deposit.status)">
+                            {{ deposit.status }}
+                        </span>
+                    </td>
+                    <td>{{ deposit.creationTime | date:'MMM d, yyyy HH:mm' }}</td>
+                    <td>
+                        <div class="action-buttons" *ngIf="normalizeStatus(deposit.status) === 'pending'">
+                            <button class="btn-approve" (click)="approve(deposit)" title="Approve">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn-reject" (click)="reject(deposit)" title="Reject">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="remarks" *ngIf="deposit.adminRemarks">
+                            <i class="fas fa-comment-alt" [title]="deposit.adminRemarks"></i>
+                        </div>
+                    </td>
+                </tr>
+                <tr *ngIf="filteredDeposits.length === 0 && !isLoading">
+                    <td colspan="7" class="empty-state">No deposit requests found.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

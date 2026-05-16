@@ -1,253 +1,176 @@
-<div class="seller-dashboard-container">
-  <section class="dashboard-hero">
-    <div class="overview-page-header">
-      <div class="overview-page-left">
-        <h1 class="overview-page-title">Overview</h1>
-      </div>
-      <div class="overview-toolbar">
-        <label class="overview-search" aria-label="Search dashboard">
-          <i class="pi pi-search"></i>
-          <input type="search" placeholder="Search" />
-        </label>
-      </div>
-    </div>
-
-    <div class="overview-layout">
-      <article class="overview-card overview-graph-card">
-        <header class="overview-card-header">
-          <div>
-            <p class="overview-card-kicker">Overview</p>
-            <h2>Sales Graph</h2>
-          </div>
-        </header>
-
-        <div class="overview-summary">
-          <div class="overview-stat">
-            <span>Total Sales</span>
-            <strong>{{ getOverviewTotalAmount() | currency:'USD':'symbol':'1.2-2' }}</strong>
-          </div>
-          <div class="overview-stat">
-            <span>Orders</span>
-            <strong>{{ getOverviewTotalOrders() }}</strong>
-          </div>
+<div class="studio-dashboard-wrapper">
+    <!-- Top Metrics Cards -->
+    <section class="top-metrics-grid">
+        <div class="metric-card orange">
+            <div class="metric-info">
+                <span class="label">Purchase Amount</span>
+                <h2 class="value">{{ getOverviewTotalAmount() | currency:'USD' }}</h2>
+            </div>
+            <i class="fas fa-money-bill-wave card-icon icon-3d"></i>
         </div>
-
-        <div class="overview-chart" *ngIf="overviewSeries.length > 0; else overviewEmpty">
-          <div class="chart-bars">
-            <div class="chart-column" *ngFor="let point of overviewSeries">
-              <span class="chart-amount">{{ point.amount | currency:'USD':'symbol':'1.0-0' }}</span>
-              <div class="chart-track">
-                <div class="chart-bar" [style.height.px]="getOverviewBarHeight(point.amount)"></div>
-              </div>
-              <div class="chart-labels">
-                <strong>{{ point.label }}</strong>
-                <span>{{ point.orders }} orders</span>
-              </div>
+        <div class="metric-card peach">
+            <div class="metric-info">
+                <span class="label">Stock Count</span>
+                <h2 class="value">{{ statsCards[0].value }}</h2>
             </div>
-          </div>
+            <i class="fas fa-boxes card-icon icon-3d"></i>
         </div>
-
-        <ng-template #overviewEmpty>
-          <div class="overview-empty">
-            <i class="pi pi-chart-bar"></i>
-            <p>No overview data yet</p>
-          </div>
-        </ng-template>
-      </article>
-
-      <article class="overview-card overview-balance-card">
-        <header class="overview-card-header balance-header">
-          <div>
-            <p class="overview-card-kicker balance-kicker">Balance</p>
-            <h2>Current Balance</h2>
-          </div>
-        </header>
-
-        <div class="balance-amount">
-          {{ getOverviewTotalAmount() | currency:'USD':'symbol':'1.2-2' }}
+        <div class="metric-card cream">
+            <div class="metric-info">
+                <span class="label">All Orders</span>
+                <h2 class="value">{{ statsCards[2].value }}</h2>
+            </div>
+            <i class="fas fa-shopping-cart card-icon icon-3d"></i>
         </div>
-
-        <div class="balance-divider"></div>
-
-        <p class="balance-note">Updated approximately every 10 minutes</p>
-
-        <button class="balance-action" type="button">Withdraw Now</button>
-      </article>
-    </div>
-
-    <section class="dashboard-lower-grid">
-      <div class="dashboard-left-stack">
-        <section class="metrics-grid hero-metrics">
-          <ng-container *ngIf="!isLoadingStats; else metricsSkeleton">
-            <article class="metric-card" *ngFor="let card of statsCards">
-              <div class="metric-icon">
-                <i class="pi" [ngClass]="card.iconClass"></i>
-              </div>
-              <div class="metric-body">
-                <p class="metric-value">{{ card.value }}</p>
-                <p class="metric-label">{{ card.title }}</p>
-              </div>
-            </article>
-          </ng-container>
-
-          <ng-template #metricsSkeleton>
-            <article class="metric-card skeleton-card" *ngFor="let _ of [1,2,3]">
-              <div class="skeleton-circle"></div>
-              <div class="skeleton-lines">
-                <span class="skeleton-line short"></span>
-                <span class="skeleton-line"></span>
-              </div>
-            </article>
-          </ng-template>
-        </section>
-
-        <article class="panel panel-recent-sold">
-          <header class="panel-header">
-            <div class="panel-heading">
-              <span class="panel-kicker">Recent Sold</span>
-              <h3>Recent Sold</h3>
+        <div class="metric-card navy">
+            <div class="metric-info">
+                <span class="label">Awaiting Delivery</span>
+                <h2 class="value">{{ pendingDeliveriesCount }}</h2>
             </div>
-            <div class="panel-actions">
-              <span class="range-chip">
-                Last 7 Days
-                <i class="pi pi-chevron-down"></i>
-              </span>
-            </div>
-          </header>
-
-          <div class="panel-body recent-sold-body">
-            <div class="orders-list" *ngIf="!isLoadingOrders; else ordersSkeleton">
-              <div class="recent-sold-table" *ngIf="recentOrders.length > 0; else ordersEmptyState">
-                <div class="recent-sold-head">
-                  <span>Product</span>
-                  <span>Category</span>
-                  <span>Amount</span>
-                  <span>Date</span>
-                  <span>Customer</span>
-                  <span>Status</span>
-                </div>
-
-                <article class="recent-sold-row" *ngFor="let order of recentOrders">
-                  <div class="sold-product-cell">
-                    <div class="sold-thumb">
-                      <i class="pi pi-box"></i>
-                    </div>
-                    <div class="sold-product-copy">
-                      <p class="sold-product">{{ getPrimaryItemName(order) }}</p>
-                      <p class="sold-subtext">{{ getOrderItemsCount(order) }} item<span *ngIf="getOrderItemsCount(order) !== 1">s</span></p>
-                    </div>
-                  </div>
-
-                  <div class="sold-category">{{ getOrderCategory(order) }}</div>
-                  <div class="sold-amount">{{ getOrderAmount(order) | currency:'USD':'symbol':'1.0-0' }}</div>
-                  <div class="sold-date">{{ order.creationTime | date:'dd/MM/yyyy' }}</div>
-                  <div class="sold-customer">{{ getOrderCustomerName(order) }}</div>
-                  <div>
-                    <span class="status-badge" [class]="'status-' + getStatusColor(order.status)">
-                      {{ getStatusLabel(order.status) }}
-                    </span>
-                  </div>
-                </article>
-              </div>
-
-              <ng-template #ordersEmptyState>
-                <div class="empty-state purchase-empty-state">
-                  <h4>No recent sales found</h4>
-                  <p>Your latest sold products will appear here once orders come in.</p>
-                  <button class="create-source-btn purchase-empty-btn" type="button" (click)="createSourcingRequest()">
-                    Create Sourcing Request
-                  </button>
-                </div>
-              </ng-template>
-
-            </div>
-
-            <ng-template #ordersSkeleton>
-              <div class="orders-list">
-                <article class="recent-sold-row skeleton-row" *ngFor="let _ of [1,2,3]">
-                  <div class="skeleton-block">
-                    <span class="skeleton-line wide"></span>
-                    <span class="skeleton-line short"></span>
-                  </div>
-                  <div class="skeleton-block">
-                    <span class="skeleton-line short"></span>
-                  </div>
-                  <div class="skeleton-block">
-                    <span class="skeleton-line short"></span>
-                  </div>
-                  <div class="skeleton-block">
-                    <span class="skeleton-line short"></span>
-                  </div>
-                  <div class="skeleton-block">
-                    <span class="skeleton-line wide"></span>
-                  </div>
-                  <div class="skeleton-block">
-                    <span class="skeleton-line short"></span>
-                  </div>
-                </article>
-              </div>
-            </ng-template>
-          </div>
-        </article>
-      </div>
-
-      <article class="panel panel-top-categories">
-        <header class="panel-header">
-          <div class="panel-heading">
-            <span class="panel-kicker">Categories</span>
-            <h3>Top Categories</h3>
-          </div>
-        </header>
-
-        <div class="panel-body categories-body">
-          <ng-container *ngIf="!isLoadingCategories; else categoriesLoading">
-            <div class="categories-list" *ngIf="topCategories.length > 0; else categoriesEmpty">
-              <article
-                class="category-row"
-                *ngFor="let category of topCategories"
-                [ngClass]="category.accentClass"
-                role="link"
-                tabindex="0"
-                (click)="goToCategories()"
-                (keydown.enter)="goToCategories()"
-                (keydown.space)="$event.preventDefault(); goToCategories()"
-              >
-                <div class="category-icon">
-                  <i class="pi" [ngClass]="category.iconClass"></i>
-                </div>
-                <div class="category-copy">
-                  <strong>{{ category.name }}</strong>
-                  <span>Trending category</span>
-                </div>
-                <div class="category-count">{{ category.count }}</div>
-              </article>
-            </div>
-            <button
-              type="button"
-              class="categories-see-all"
-              *ngIf="topCategories.length > 0"
-              (click)="goToShopPage()"
-            >
-              See all categories
-              <i class="pi pi-arrow-right"></i>
-            </button>
-
-            <ng-template #categoriesEmpty>
-              <div class="empty-state categories-empty">
-                <h4>No category data yet</h4>
-                <p>Category insights will appear here once product data is available.</p>
-              </div>
-            </ng-template>
-          </ng-container>
-
-          <ng-template #categoriesLoading>
-            <div class="empty-state categories-empty">
-              <h4>Loading categories</h4>
-              <p>We are fetching your product catalog to build the latest category summary.</p>
-            </div>
-          </ng-template>
+            <i class="fas fa-truck card-icon icon-3d"></i>
         </div>
-      </article>
     </section>
-  </section>
+
+    <!-- Middle Row: Trend, Sales, Transactions -->
+    <section class="dashboard-middle-row">
+        <!-- Trend Panel -->
+        <div class="card-panel">
+            <div class="card-header">
+                <h3>Trend</h3>
+                <select class="time-select">
+                    <option value="today">Today</option>
+                    <option value="yesterday">Yesterday</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="year" selected>This Year</option>
+                </select>
+            </div>
+            <div class="trend-chart">
+                <div class="chart-legend">
+                    <div class="legend-item new"><span></span> NEW</div>
+                    <div class="legend-item renewals"><span></span> RENEWALS</div>
+                    <div class="legend-item churns"><span></span> CHURNS</div>
+                </div>
+                <div class="bars-container">
+                    <div class="month-group" *ngFor="let m of ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']">
+                        <div class="bars-stack">
+                            <div class="bar bg"></div>
+                            <div class="bar md"></div>
+                            <div class="bar sm"></div>
+                        </div>
+                        <span class="month-label">{{ m }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Panel -->
+        <div class="card-panel">
+            <div class="card-header">
+                <h3>Sales</h3>
+                <select class="time-select">
+                    <option value="today">Today</option>
+                    <option value="yesterday">Yesterday</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="year" selected>This Year</option>
+                </select>
+            </div>
+            <div class="sales-donut-container">
+                <div class="donut-graphic">
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                        <path class="circle-bg" stroke="#f2f2d9" stroke-width="4" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path class="circle" stroke="#10b981" stroke-width="4" stroke-dasharray="35, 100" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path class="circle" stroke="#004d7a" stroke-width="4" stroke-dasharray="25, 100" stroke-dashoffset="-35" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path class="circle" stroke="#ff6a3d" stroke-width="4" stroke-dasharray="15, 100" stroke-dashoffset="-60" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <div class="donut-center">
+                        <strong>342</strong>
+                        <span>SALES</span>
+                    </div>
+                </div>
+                <div class="donut-legend">
+                    <div class="item basic"><span></span> BASIC PLAN</div>
+                    <div class="item pre"><span></span> PRE PLAN</div>
+                    <div class="item advanced"><span></span> ADVANCED PLAN</div>
+                    <div class="item enterprise"><span></span> ENTERPRISE PLAN</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions Panel -->
+        <div class="card-panel">
+            <div class="card-header">
+                <h3>Transactions</h3>
+            </div>
+            <div class="transactions-list">
+                <div class="transaction-item" *ngFor="let t of [
+                    { name: 'Deposit', tag: 'SUCCESS', val: '+$500', cls: 'ent' },
+                    { name: 'Pending Withdraw', tag: 'PENDING', val: '-$1000', cls: 'adv' },
+                    { name: 'Transfer Wallet', tag: 'TRANSFER', val: '-$150', cls: 'basic' },
+                    { name: 'Deposit', tag: 'SUCCESS', val: '+$200', cls: 'ent' },
+                    { name: 'Withdraw', tag: 'COMPLETED', val: '-$300', cls: 'pro' },
+                    { name: 'Transfer Wallet', tag: 'TRANSFER', val: '-$50', cls: 'basic' },
+                    { name: 'Deposit', tag: 'SUCCESS', val: '+$1200', cls: 'ent' }
+                ]">
+                    <div class="txn-info">
+                        <strong>{{ t.name }}</strong>
+                        <span class="tag" [ngClass]="t.cls">{{ t.tag }}</span>
+                    </div>
+                    <div class="txn-val">{{ t.val }}</div>
+                </div>
+                <button class="view-all-btn" (click)="goToTransfer()">View all transactions</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bottom Row: Support Tickets, Demographics -->
+    <section class="dashboard-bottom-row">
+        <!-- Recent Orders Panel -->
+        <div class="card-panel">
+            <div class="card-header">
+                <h3>Recent Orders</h3>
+                <button class="view-all-btn-small" (click)="goToOrders()">View All</button>
+            </div>
+            <div class="support-filters">
+                <button class="filter-btn" [class.active]="activeOrderFilter === 'All'" (click)="setOrderFilter('All')">All</button>
+                <button class="filter-btn pending" [class.active]="activeOrderFilter === 'Pending'" (click)="setOrderFilter('Pending')">Pending</button>
+                <button class="filter-btn delivered" [class.active]="activeOrderFilter === 'Delivered'" (click)="setOrderFilter('Delivered')">Delivered</button>
+                <button class="filter-btn rejected" [class.active]="activeOrderFilter === 'Rejected'" (click)="setOrderFilter('Rejected')">Rejected</button>
+            </div>
+            <div class="tickets-list">
+                <div class="ticket-item" *ngFor="let o of filteredDashboardOrders">
+                    <div class="user-dot"></div>
+                    <div class="user-email">{{ o.id }}</div>
+                    <div class="ticket-subject">{{ o.tracking }}</div>
+                    <div class="status-badge" [ngClass]="o.status.toLowerCase()">{{ o.status }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links Panel -->
+        <div class="card-panel quick-links-panel">
+            <div class="card-header">
+                <h3>Quick Links</h3>
+            </div>
+            <div class="quick-links-grid">
+                <button class="quick-link-item" (click)="goToHome()">
+                    <i class="fas fa-home icon-3d link-icon blue-gradient"></i>
+                    <span>Home</span>
+                </button>
+                <button class="quick-link-item" (click)="goToWallet()">
+                    <i class="fas fa-wallet icon-3d link-icon emerald-gradient"></i>
+                    <span>My Wallet</span>
+                </button>
+                <button class="quick-link-item" (click)="goToShopPage()">
+                    <i class="fas fa-shopping-basket icon-3d link-icon orange-gradient"></i>
+                    <span>Buy Product</span>
+                </button>
+                <button class="quick-link-item" (click)="goToOrders()">
+                    <i class="fas fa-clipboard-list icon-3d link-icon purple-gradient"></i>
+                    <span>Review Order</span>
+                </button>
+            </div>
+        </div>
+    </section>
 </div>

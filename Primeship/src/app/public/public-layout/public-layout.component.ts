@@ -1,6 +1,6 @@
 import { Component, HostListener, OnInit, ChangeDetectorRef, AfterViewChecked } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { RouterOutlet, RouterLink, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CartService } from '../../core/services/cart.service';
 import { WishlistService } from '../../core/services/wishlist.service';
@@ -16,7 +16,7 @@ declare var lucide: any;
 @Component({
   selector: 'app-public-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, CurrencyPipe, FormsModule, ReactiveFormsModule],
+  imports: [RouterOutlet, RouterLink, CommonModule, FormsModule, ReactiveFormsModule],
   template: `
     <div class="nosh-shell" (click)="closeOverlays()">
       <header class="eliship-header" *ngIf="!isAuthPage && !isCheckoutPage">
@@ -72,7 +72,11 @@ declare var lucide: any;
                        <i class="far fa-user"></i>
                        <span>My Account</span>
                      </a>
-                     <a routerLink="/account/orders" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
+                      <a [routerLink]="getPortalUrl()" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Dashboard</span>
+                      </a>
+                      <a routerLink="/account/orders" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
                        <i class="fas fa-box"></i>
                        <span>My Orders</span>
                      </a>

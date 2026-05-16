@@ -67,7 +67,7 @@ export class ProfileComponent implements OnInit {
   readonly accountNavItems: AccountNavItem[] = [
     { label: 'Dashboard', icon: 'fa-solid fa-chart-line', route: '/home' },
     { label: 'My Account', icon: 'fa-solid fa-user', route: '/account/profile', exact: true },
-    { label: 'Portfolio', icon: 'fa-solid fa-briefcase', route: '/wishlist' },
+    // { label: 'Portfolio', icon: 'fa-solid fa-briefcase', route: '/wishlist' },
     { label: 'Plans', icon: 'fa-solid fa-clipboard-list', route: '/account/reviews' },
     { label: 'Saved', icon: 'fa-solid fa-bookmark', route: '/wishlist' },
     { label: 'Helpdesk', icon: 'fa-solid fa-life-ring', route: '/contact-support' },

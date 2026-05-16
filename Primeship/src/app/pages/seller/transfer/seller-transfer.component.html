@@ -1,0 +1,181 @@
+<div class="page-container">
+    <div class="studio-header">
+        <div class="header-main">
+            <div class="header-text">
+                <span class="studio-tag">PRIME FINANCIAL STUDIO</span>
+                <h1 class="header-title">{{ showTransferForm ? 'Transfer Studio' : 'Transfer History' }}</h1>
+                <p class="header-description">
+                    {{ showTransferForm ? 'Move funds between wallets instantly and securely across the network.' : 'Track your internal wallet-to-wallet transfers and transaction records.' }}
+                </p>
+                <div class="header-stats">
+                    <div class="stat-pill">
+                        <i class="fas fa-wallet"></i>
+                        <span>Balance: {{ senderBalance | currency:'USD' }}</span>
+                    </div>
+                    <div class="stat-pill">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Total Records: {{ totalCount }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-3d btn-primary-glass" (click)="showTransferForm = !showTransferForm">
+                    <i class="fas" [class.fa-history]="showTransferForm" [class.fa-exchange-alt]="!showTransferForm"></i>
+                    {{ showTransferForm ? 'View History' : 'Transfer Money' }}
+                </button>
+                <button class="btn-secondary-glass" (click)="currentPage = 1; loadTransactions()">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh View
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Money Form -->
+    <div class="transfer-form-3d" *ngIf="showTransferForm">
+        <div class="form-container">
+            <table class="form-table">
+                <tbody>
+                    <tr>
+                        <td class="label-cell">Sender Wallet ID</td>
+                        <td class="input-cell">
+                            <div class="input-with-validation">
+                                <input type="text" [(ngModel)]="sender" (input)="validateSender()" placeholder="Your Wallet ID"
+                                    class="input-3d" [disabled]="isLoadingWallet" />
+                                <span *ngIf="senderValid && !isLoadingWallet" class="validation-icon">✓</span>
+                                <span *ngIf="isLoadingWallet" class="mini-loader-inline"></span>
+                            </div>
+                            <p *ngIf="isLoadingWallet" class="field-hint loading">Loading wallet info...</p>
+                            <p *ngIf="senderBalance !== null" class="field-hint recipient-name">Balance: <strong>{{ senderBalance | currency: 'USD' }}</strong></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">Recipient Wallet ID</td>
+                        <td class="input-cell">
+                            <div class="input-with-validation">
+                                <input type="text" [(ngModel)]="recipient" (input)="validateRecipient()" (blur)="verifyRecipient()"
+                                    placeholder="Enter recipient wallet ID" class="input-3d" />
+                                <button class="btn-verify" (click)="verifyRecipient()" [disabled]="isVerifyingRecipient || !recipient">
+                                    {{ isVerifyingRecipient ? 'Verifying...' : 'Verify' }}
+                                </button>
+                            </div>
+                            <p *ngIf="recipientName" class="field-hint recipient-name">Recipient: <strong>{{ recipientName }}</strong></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">Amount (USD)</td>
+                        <td class="input-cell">
+                            <div class="amount-input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" [(ngModel)]="amount" placeholder="0.00" class="input-3d" min="0" step="0.01" />
+                            </div>
+                            <p class="fee-info">Fee: <strong>Free</strong> (Internal transfers are free)</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">Description (Optional)</td>
+                        <td class="input-cell">
+                            <textarea [(ngModel)]="description" placeholder="What is this for?" class="input-3d" rows="3"></textarea>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="form-actions">
+            <button class="btn-3d btn-submit" (click)="submitTransfer()" [disabled]="isLoading || !senderValid || !recipient.trim() || !amount || amount <= 0">
+                <i class="fas fa-paper-plane" *ngIf="!isLoading"></i>
+                {{ isLoading ? 'Processing...' : 'Confirm Transfer' }}
+            </button>
+        </div>
+    </div>
+
+    <!-- Transaction History Table -->
+    <div class="history-view" *ngIf="!showTransferForm">
+        <div class="filter-header" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+            <div class="filter-buttons">
+                <button class="filter-btn" [class.active]="filterType === 'all'" (click)="setFilter('all')">All</button>
+                <button class="filter-btn" [class.active]="filterType === 'deposit'" (click)="setFilter('deposit')">Deposits</button>
+                <button class="filter-btn" [class.active]="filterType === 'withdrawal'" (click)="setFilter('withdrawal')">Withdrawals</button>
+                <button class="filter-btn" [class.active]="filterType === 'transfer'" (click)="setFilter('transfer')">Transfers</button>
+            </div>
+            <div class="inline-loader" *ngIf="isLoading">
+                <span class="dot"></span>
+                <span>Updating...</span>
+            </div>
+        </div>
+
+        <div class="transactions-table-3d">
+            <div class="table-header">
+                <div class="col">Transaction ID</div>
+                <div class="col">Type</div>
+                <div class="col">Description</div>
+                <div class="col">Amount</div>
+                <div class="col">Status</div>
+                <div class="col">Date</div>
+            </div>
+
+            <ng-container *ngIf="isLoading && !allTransactions.length">
+                <div class="table-row ghost-row" *ngFor="let _ of skeletonRows">
+                    <div class="col"><span class="ghost-line id"></span></div>
+                    <div class="col"><span class="ghost-pill"></span></div>
+                    <div class="col"><span class="ghost-line desc"></span></div>
+                    <div class="col"><span class="ghost-line amt"></span></div>
+                    <div class="col"><span class="ghost-pill muted"></span></div>
+                    <div class="col"><span class="ghost-line date"></span></div>
+                </div>
+            </ng-container>
+
+            <ng-container *ngIf="!isLoading || allTransactions.length">
+                <div class="table-row" *ngFor="let txn of filteredTransactions">
+                    <div class="col id-col">
+                        <span class="transaction-id-chip" [attr.title]="getTransactionIdTooltip(txn)">
+                            {{ getDisplayTransactionId(txn) }}
+                        </span>
+                    </div>
+                    <div class="col">
+                        <span class="type-badge" [ngClass]="(txn.type || 'unknown').toLowerCase()">{{ txn.type }}</span>
+                    </div>
+                    <div class="col">{{ txn.description }}</div>
+                    <div class="col amount-col" [class.negative]="txn.amount < 0" [class.positive]="txn.amount > 0">
+                        <span class="amount-pill">
+                            {{ txn.amount | currency: 'USD' }}
+                        </span>
+                    </div>
+                    <div class="col">
+                        <span class="status-badge" [ngClass]="(txn.status || 'completed').toLowerCase()">{{ txn.status }}</span>
+                    </div>
+                    <div class="col">{{ txn.date | date: 'MMM d, h:mm a' }}</div>
+                </div>
+
+                <div class="empty-state" *ngIf="!filteredTransactions.length">
+                    <p>No transactions found for this category.</p>
+                </div>
+            </ng-container>
+
+            <!-- Pagination Section -->
+            <div class="pagination-container" *ngIf="totalCount > 0">
+                <div class="pagination-info">
+                    Showing {{ getStartIndex() }} - {{ getEndIndex() }} of {{ totalCount }}
+                </div>
+
+                <div class="pagination-controls">
+                    <button class="btn-pagination" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+
+                    <div class="page-numbers">
+                        <button *ngFor="let page of getPageNumbers()" class="page-btn" [class.active]="page === currentPage"
+                            (click)="changePage(page)">
+                            {{ page }}
+                        </button>
+                    </div>
+
+                    <button class="btn-pagination" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

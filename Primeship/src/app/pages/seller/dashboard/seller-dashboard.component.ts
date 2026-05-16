@@ -22,23 +22,34 @@ export class SellerDashboardComponent implements OnInit {
   topCategories: { name: string; count: number; iconClass: string; accentClass: string }[] = [];
   statsCards = [
     {
-      title: 'All Product',
+      title: 'Total Products',
       value: '0',
-      iconClass: 'pi-box'
+      iconClass: 'pi-box',
+      accentClass: 'blue'
     },
     {
-      title: 'Sales Product',
+      title: 'Success Sales',
       value: '0',
-      iconClass: 'pi-chart-bar'
+      iconClass: 'pi-chart-line',
+      accentClass: 'emerald'
     },
     {
-      title: 'New Order',
+      title: 'Active Orders',
       value: '0',
-      iconClass: 'pi-shopping-cart'
+      iconClass: 'pi-shopping-cart',
+      accentClass: 'gold'
     }
   ];
 
   recentOrders: any[] = [];
+  
+  activeOrderFilter: string = 'All';
+  dashboardRecentOrders = [
+    { id: 'ORD-99382', tracking: 'TRK-12345678', status: 'PENDING' },
+    { id: 'ORD-99381', tracking: 'TRK-87654321', status: 'DELIVERED' },
+    { id: 'ORD-99380', tracking: 'TRK-11223344', status: 'REJECTED' },
+    { id: 'ORD-99379', tracking: 'TRK-55667788', status: 'DELIVERED' }
+  ];
 
   constructor(
     public router: Router,
@@ -340,6 +351,39 @@ export class SellerDashboardComponent implements OnInit {
 
   goToShopPage(): void {
     this.router.navigate(['/shop']);
+  }
+
+  goToWithdraw(): void {
+    this.router.navigate(['/seller/withdraw']);
+  }
+
+  goToDeposit(): void {
+    this.router.navigate(['/seller/deposit']);
+  }
+
+  goToTransfer(): void {
+    this.router.navigate(['/seller/transfer']);
+  }
+
+  goToHome(): void {
+    this.router.navigate(['/home']);
+  }
+
+  goToWallet(): void {
+    this.router.navigate(['/seller/wallet']);
+  }
+
+  goToOrders(): void {
+    this.router.navigate(['/seller/orders']);
+  }
+
+  get filteredDashboardOrders() {
+    if (this.activeOrderFilter === 'All') return this.dashboardRecentOrders;
+    return this.dashboardRecentOrders.filter(o => o.status === this.activeOrderFilter.toUpperCase());
+  }
+
+  setOrderFilter(filter: string) {
+    this.activeOrderFilter = filter;
   }
 
   getPrimaryItemName(order: any): string {

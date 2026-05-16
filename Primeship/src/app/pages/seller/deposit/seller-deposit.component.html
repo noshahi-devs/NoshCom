@@ -1,0 +1,438 @@
+<div class="page-container">
+    <div class="studio-header">
+        <div class="header-main">
+            <div class="header-text">
+                <span class="studio-tag">GLOBAL MART UK STUDIO</span>
+                <h1 class="header-title">{{ showDepositForm ? 'Deposit Center' : 'Deposit History' }}</h1>
+                <p class="header-description">
+                    {{ showDepositForm ? 'Add funds to your wallet using secure P2P or Crypto methods.' : 'Review your recent wallet deposit activity and status.' }}
+                </p>
+                <div class="header-stats">
+                    <div class="stat-pill">
+                        <i class="fas fa-wallet"></i>
+                        <span>Balance: {{ walletBalance | currency:'USD' }}</span>
+                    </div>
+                    <div class="stat-pill">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Total Records: {{ totalCount }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-3d btn-primary-glass" (click)="showDepositForm = !showDepositForm">
+                    <i class="fas" [class.fa-history]="showDepositForm" [class.fa-plus-circle]="!showDepositForm"></i>
+                    {{ showDepositForm ? 'View History' : 'Deposit Money' }}
+                </button>
+                <button class="btn-secondary-glass" (click)="currentPage = 1; loadTransactions()">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh View
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deposit Form Flow -->
+
+    <div class="deposit-form-flow" *ngIf="showDepositForm">
+
+
+        <!-- Initial View: Amount & Method Selection -->
+        <div *ngIf="(!depositMethod || depositMethod === 'cards') && !isLoading" class="initial-view">
+
+
+            <!-- Amount Input (Always First) -->
+            <div class="amount-section">
+                <label for="depositUsdAmountInput">Amount <span class="required">*</span></label>
+                <div class="amount-input-group">
+                    <span class="currency-symbol">$</span>
+                    <input type="number" id="depositUsdAmountInput" [(ngModel)]="enteredUsdAmount"
+                        (ngModelChange)="onAmountChange($event)" placeholder="Enter amount" min="10" step="0.01"
+                        class="amount-input" [disabled]="isLoading">
+                    <span class="currency-code">USD</span>
+                </div>
+                <div class="fee-info">
+                    <span>Transaction Fee:</span>
+                    <span><del>$1.20</del> <span class="free-badge">FREE</span></span>
+                </div>
+            </div>
+
+            <!-- Payment Methods Grid -->
+            <div *ngIf="shouldShowPaymentCards" class="payment-cards-grid">
+                <div *ngFor="let method of paymentMethodsGrid" class="payment-card" [attr.data-card-id]="method.id"
+                    [style.background]="method.gradient" (click)="selectPaymentCard(method.id)">
+                    <div class="card-content">
+                        <span class="card-icon">
+                            <!-- Crypto SVG -->
+                            <svg *ngIf="method.id === 'crypto'" class="binance-icon" viewBox="0 0 96 96">
+                                <g fill="#F3BA2F">
+                                    <rect x="41" y="9" width="14" height="14" rx="2" transform="rotate(45 48 16)" />
+                                    <rect x="18" y="32" width="14" height="14" rx="2" transform="rotate(45 25 39)" />
+                                    <rect x="41" y="32" width="14" height="14" rx="2" transform="rotate(45 48 39)" />
+                                    <rect x="64" y="32" width="14" height="14" rx="2" transform="rotate(45 71 39)" />
+                                    <rect x="30" y="44" width="14" height="14" rx="2" transform="rotate(45 37 51)" />
+                                    <rect x="52" y="44" width="14" height="14" rx="2" transform="rotate(45 59 51)" />
+                                    <rect x="41" y="55" width="14" height="14" rx="2" transform="rotate(45 48 62)" />
+                                    <rect x="41" y="44" width="14" height="14" rx="2" transform="rotate(45 48 51)" />
+                                </g>
+                            </svg>
+                            <!-- Image Icon -->
+                            <img *ngIf="method.id !== 'crypto' && method.iconSrc" [src]="method.iconSrc"
+                                [alt]="method.iconAlt || method.name">
+                            <!-- FontAwesome Icon -->
+                            <i *ngIf="method.iconClass" [class]="method.iconClass"></i>
+                        </span>
+                        <h4>{{ method.name }}</h4>
+                    </div>
+                    <div class="card-footer">
+                        <span class="status-badge" [class.active]="method.functional" [class.inactive]="!method.functional">
+                            {{ method.functional ? 'Available' : 'Coming Soon' }}
+                        </span>
+                        <i class="fas fa-arrow-right arrow-hint"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary (Commented out as requested) -->
+            <!-- <div *ngIf="enteredUsdAmount && enteredUsdAmount > 0" class="deposit-summary">
+                <span>You'll Deposit:</span>
+                <h3>${{ enteredUsdAmount }}</h3>
+            </div> -->
+        </div>
+
+        <!-- Next Button (Separate Block) -->
+        <div *ngIf="(depositMethod === 'p2p' || depositMethod === 'crypto') && currentStep === 0" class="initial-view">
+            <!-- <div class="deposit-summary">
+                <span>You'll Deposit:</span>
+                <h3>${{ enteredUsdAmount }}</h3>
+            </div> -->
+
+            <div class="action-section">
+                <button class="btn-3d btn-primary" (click)="proceedWithPayment()">
+                    Continue →
+                </button>
+            </div>
+        </div>
+
+        <!-- P2P Flow (Existing) -->
+        <div *ngIf="depositMethod === 'p2p' && currentStep > 0">
+            <!-- Stepper -->
+            <div class="stepper-card">
+                <div class="stepper">
+                    <div class="step-item" [class.completed]="currentStep > 1" [class.active]="currentStep === 1">
+                        <div class="step-circle" (click)="goToStep(1)">
+                            <span *ngIf="currentStep > 1">✓</span>
+                            <span *ngIf="currentStep <= 1">1</span>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step-label">Select Bank</div>
+                    </div>
+                    <div class="step-item" [class.completed]="currentStep > 2" [class.active]="currentStep === 2">
+                        <div class="step-circle" (click)="goToStep(2)">
+                            <span *ngIf="currentStep > 2">✓</span>
+                            <span *ngIf="currentStep <= 2">2</span>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step-label">Pay & Confirm</div>
+                    </div>
+                    <div class="step-item" [class.active]="currentStep === 3">
+                        <div class="step-circle">
+                            <span>3</span>
+                        </div>
+                        <div class="step-label">Upload Proof</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Cards -->
+            <div class="info-card success-card">
+                <h4>P2P Payments</h4>
+                <p>Choose bank account from your country region only</p>
+            </div>
+
+            <!-- Step 1: Select Bank Account -->
+            <div *ngIf="currentStep === 1" class="step-content">
+                <div *ngFor="let region of regions" class="region-section">
+                    <h4 class="region-title">{{ region }} Region</h4>
+                    <div class="accounts-grid">
+                        <div *ngFor="let account of getAccountsByRegion(region)" class="account-card"
+                            (click)="selectAccount(account)">
+                            <div class="account-header">
+                                <div class="account-info">
+                                    <img [src]="account.flag" [alt]="account.country" class="flag-img">
+                                    <div class="account-details">
+                                        <span class="country-name">{{ account.country }}</span>
+                                        <span class="account-number">{{ account.currency }} | {{ account.accountNumber }}</span>
+                                    </div>
+                                </div>
+                                <span class="chevron">›</span>
+                            </div>
+                            <div class="verified-badge">
+                                <span class="check-icon">✓</span>
+                                <span>Verified By EasyFinora Payments</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Payment Details -->
+            <div *ngIf="currentStep === 2 && selectedAccount" class="step-content">
+                <div class="bank-details-modal">
+                    <div class="modal-header-section">
+                        <img [src]="selectedAccount.flag" [alt]="selectedAccount.country" class="flag-large">
+                        <div>
+                            <h5>{{ selectedAccount.country }}</h5>
+                            <p>{{ selectedAccount.currency }} | {{ selectedAccount.accountNumber }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="alert-info">
+                        Please send exactly <strong>{{ localAmount }} {{ localCurrency }}</strong> 
+                        to the account below.
+                    </div>
+                    <div class="bank-details-grid">
+                        <div class="detail-item"><h6>Holder</h6><p>{{ selectedAccount.accountHolder }}</p></div>
+                        <div class="detail-item"><h6>Bank</h6><p>{{ selectedAccount.bankName }}</p></div>
+                        <div class="detail-item"><h6>IBAN</h6><p>{{ selectedAccount.iban }}</p></div>
+                    </div>
+
+                    <div class="payment-form">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="paymentConfirmed" [(ngModel)]="paymentConfirmed">
+                            <label for="paymentConfirmed">I confirm I have sent the payment</label>
+                        </div>
+                        <div class="button-group mt-4">
+                            <button class="btn-studio-secondary" (click)="currentStep = 1">Back</button>
+                            <button class="btn-studio-primary" (click)="proceedToProof()">Continue</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Upload Proof -->
+            <div *ngIf="currentStep === 3" class="step-content">
+                <div class="upload-section">
+                    <h4>Upload Proof</h4>
+                    <div class="file-upload-area-studio">
+                        <input type="file" id="proofInput" (change)="onFileSelected($event)">
+                        <label for="proofInput">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>{{ proofFile ? proofFile.name : 'Click to Upload Proof' }}</span>
+                        </label>
+                    </div>
+                    <div class="form-group-studio mt-3">
+                        <label>Transaction ID</label>
+                        <input type="text" [(ngModel)]="paymentId" placeholder="Enter Reference ID">
+                    </div>
+                    <div class="button-group mt-4">
+                        <button class="btn-studio-secondary" (click)="currentStep = 2">Back</button>
+                        <button class="btn-studio-primary" (click)="submitDeposit()" [disabled]="isLoading">
+                            {{ isLoading ? 'Submitting...' : 'Submit for Review' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crypto Flow -->
+        <div *ngIf="depositMethod === 'crypto' && currentStep > 0">
+             <!-- Stepper -->
+             <div class="stepper-card">
+                <div class="stepper">
+                    <div class="step-item completed">
+                        <div class="step-circle" (click)="goToStep(0)">
+                            <span>✓</span>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step-label">Amount</div>
+                    </div>
+                    <div class="step-item" [class.completed]="currentStep > 2" [class.active]="currentStep === 2">
+                        <div class="step-circle" (click)="goToStep(2)">
+                            <span *ngIf="currentStep > 2">✓</span>
+                            <span *ngIf="currentStep <= 2">2</span>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step-label">Pay</div>
+                    </div>
+                    <div class="step-item" [class.active]="currentStep === 3">
+                        <div class="step-circle">
+                            <span>3</span>
+                        </div>
+                        <div class="step-label">Proof</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Binance Pay (Studio Style) -->
+            <div *ngIf="currentStep === 2" class="step-content">
+                <div class="info-card success-card" style="text-align: center;">
+                    <h4>Secured Crypto Portal</h4>
+                    <p>Transactions are processed via Binance Smart Chain (BEP20)</p>
+                </div>
+
+                <div class="bank-details-modal">
+                    <div class="modal-header-section" style="justify-content: center; text-align: center; margin-bottom: 24px;">
+                        <div class="binance-branding">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="#FCD535">
+                                <path d="M12 0L15.657 3.657L12 7.314L8.343 3.657L12 0ZM12 4.686L10.971 3.657L12 2.628L13.029 3.657L12 4.686ZM16.657 4.657L24 12L16.657 19.343L13 15.686L16.657 12L13 8.314L16.657 4.657ZM15.628 12L17.657 14.029L19.686 12L17.657 9.971L15.628 12ZM7.343 4.657L11 8.314L7.343 12L11 15.686L7.343 19.343L0 12L7.343 4.657ZM8.372 12L6.343 9.971L4.314 12L6.343 14.029L8.372 12ZM12 24L8.343 20.343L12 16.686L15.657 20.343L12 24ZM12 19.314L13.029 20.343L12 21.372L10.971 20.343L12 19.314ZM12 9.086L14.914 12L12 14.914L9.086 12L12 9.086ZM12 11.23L11.23 12L12 12.771L12.771 12L12 11.23Z" />
+                            </svg>
+                            <h5 style="color: #FCD535; font-size: 28px; font-weight: 800; margin-top: 10px;">BINANCE PAY</h5>
+                        </div>
+                    </div>
+
+                    <div class="payment-details-grid-studio">
+                        <div class="studio-detail-row">
+                            <span class="label">Binance ID</span>
+                            <div class="value-group">
+                                <span class="value">1193360157</span>
+                                <button class="copy-mini" (click)="copyToClipboard('1193360157')">Copy</button>
+                            </div>
+                        </div>
+                        <div class="studio-detail-row">
+                            <span class="label">Account Title</span>
+                            <span class="value">GlobalMart Commerce</span>
+                        </div>
+                        <div class="studio-detail-row">
+                            <span class="label">Deposit Amount</span>
+                            <span class="value highlight">${{ enteredUsdAmount }} USD</span>
+                        </div>
+                        <div class="studio-detail-row">
+                            <span class="label">Network Type</span>
+                            <span class="value">BEP20 / BSC</span>
+                        </div>
+                        <div class="studio-summary-row">
+                            <span class="label">Total to Receive</span>
+                            <span class="value total">{{ enteredUsdAmount }} USD</span>
+                        </div>
+                    </div>
+
+                    <div class="payment-form" style="margin-top: 32px;">
+                        <div class="checkbox-group-studio">
+                            <input type="checkbox" id="cryptoPaymentConfirmed" [(ngModel)]="cryptoPaymentConfirmed">
+                            <label for="cryptoPaymentConfirmed">
+                                I have successfully transferred the funds via Binance Pay.
+                            </label>
+                        </div>
+
+                        <div class="button-group-studio">
+                            <button class="btn-studio-secondary" (click)="currentStep = 0">Cancel</button>
+                            <button class="btn-studio-primary" (click)="proceedToCryptoProof()">Continue to Verification</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Upload Proof (Crypto) -->
+            <div *ngIf="currentStep === 3" class="step-content">
+                <div class="upload-section">
+                    <h4>Upload Verification Proof</h4>
+                    <div class="file-upload-area-studio">
+                        <input type="file" id="cryptoProofInput" (change)="onFileSelected($event)">
+                        <label for="cryptoProofInput">
+                            <i class="fas fa-camera"></i>
+                            <span>{{ proofFile ? proofFile.name : 'Upload Screenshot of Transfer' }}</span>
+                        </label>
+                    </div>
+                    <div class="form-group-studio mt-3">
+                        <label>Order ID / Hash</label>
+                        <input type="text" [(ngModel)]="paymentId" placeholder="Enter Transaction Hash">
+                    </div>
+                    <div class="button-group mt-4">
+                        <button class="btn-studio-secondary" (click)="currentStep = 2">Back</button>
+                        <button class="btn-studio-primary" (click)="submitCryptoDepositAlternative()" [disabled]="isLoading">
+                            {{ isLoading ? 'Processing...' : 'Confirm Deposit' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction History Table -->
+    <div class="history-view" *ngIf="!showDepositForm">
+        <div class="filter-header" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+            <div class="filter-buttons">
+                <button class="filter-btn" [class.active]="filterType === 'all'" (click)="setFilter('all')">All</button>
+                <button class="filter-btn" [class.active]="filterType === 'approved'" (click)="setFilter('approved')">Approved</button>
+                <button class="filter-btn" [class.active]="filterType === 'pending'" (click)="setFilter('pending')">Pending</button>
+                <button class="filter-btn" [class.active]="filterType === 'rejected'" (click)="setFilter('rejected')">Rejected</button>
+            </div>
+            <div class="inline-loader" *ngIf="isLoading">
+                <span class="dot"></span>
+                <span>Updating...</span>
+            </div>
+        </div>
+
+        <div class="transactions-table-3d">
+            <div class="table-header">
+                <div class="col">Transaction ID</div>
+                <div class="col">Type</div>
+                <div class="col">Description</div>
+                <div class="col">Amount</div>
+                <div class="col">Status</div>
+                <div class="col">Date</div>
+            </div>
+
+            <ng-container *ngIf="isLoading && !allTransactions.length">
+                <div class="table-row ghost-row" *ngFor="let _ of skeletonRows">
+                    <div class="col"><span class="ghost-line id"></span></div>
+                    <div class="col"><span class="ghost-pill"></span></div>
+                    <div class="col"><span class="ghost-line desc"></span></div>
+                    <div class="col"><span class="ghost-line amt"></span></div>
+                    <div class="col"><span class="ghost-pill muted"></span></div>
+                    <div class="col"><span class="ghost-line date"></span></div>
+                </div>
+            </ng-container>
+
+            <ng-container *ngIf="!isLoading || allTransactions.length">
+                <div class="table-row" *ngFor="let txn of filteredTransactions">
+                    <div class="col id-col">
+                        <span class="transaction-id-chip" [attr.title]="getTransactionIdTooltip(txn)">
+                            {{ getDisplayTransactionId(txn) }}
+                        </span>
+                    </div>
+                    <div class="col">
+                        <span class="type-badge" [ngClass]="(txn.type || 'unknown').toLowerCase()">{{ txn.type }}</span>
+                    </div>
+                    <div class="col">{{ txn.description }}</div>
+                    <div class="col amount-col" [class.negative]="txn.amount < 0" [class.positive]="txn.amount > 0">
+                        <span class="amount-pill">
+                            {{ txn.amount | currency: 'USD' }}
+                        </span>
+                    </div>
+                    <div class="col">
+                        <span class="status-badge" [ngClass]="(txn.status || 'completed').toLowerCase()">{{ txn.status }}</span>
+                    </div>
+                    <div class="col">{{ txn.date | date: 'MMM d, h:mm a' }}</div>
+                </div>
+
+                <div class="empty-state" *ngIf="!filteredTransactions.length">
+                    <p>No deposits found.</p>
+                </div>
+            </ng-container>
+
+            <!-- Pagination -->
+            <div class="pagination-container" *ngIf="totalCount > 0">
+                <div class="pagination-info">
+                    Showing {{ getStartIndex() }} - {{ getEndIndex() }} of {{ totalCount }}
+                </div>
+                <div class="pagination-controls">
+                    <button class="btn-pagination" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">‹</button>
+                    <div class="page-numbers">
+                        <button *ngFor="let page of getPageNumbers()" class="page-btn" [class.active]="page === currentPage" (click)="changePage(page)">
+                            {{ page }}
+                        </button>
+                    </div>
+                    <button class="btn-pagination" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">›</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Card/Crypto Forms (Kept outside for accessibility) -->
+    <div *ngIf="showCardModal" class="modal-overlay" (click)="closeModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <!-- ... modal content same as original ... -->
+        </div>
+    </div>
+</div>
