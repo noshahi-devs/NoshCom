@@ -23,6 +23,8 @@ export class StoreApprovalsComponent implements OnInit, OnDestroy {
     verifiedSellers = 0;
     selectedStore: StoreDto | null = null;
     imageLoading: { [key: string]: boolean } = {};
+    imageErrors: { [key: string]: boolean } = {};
+    imageLoaded: { [key: string]: boolean } = {};
     isApproving = false;
 
     ngOnInit() {
@@ -54,6 +56,7 @@ export class StoreApprovalsComponent implements OnInit, OnDestroy {
                 this.calculateStats();
                 this.isLoading = false;
                 this.cdr.detectChanges();
+                this.preloadAllKycImages();
             },
             error: (err) => {
                 console.error('API Error:', err);
@@ -189,6 +192,7 @@ export class StoreApprovalsComponent implements OnInit, OnDestroy {
         this.selectedStore = { ...store };
         this.isDetailsLoading = true;
         this.imageLoading = {};
+        this.imageErrors = {};
         document.documentElement.classList.add('modal-open');
         document.body.classList.add('modal-open');
         this.cdr.detectChanges();
@@ -211,6 +215,45 @@ export class StoreApprovalsComponent implements OnInit, OnDestroy {
                 this.cdr.detectChanges();
             }
         });
+    }
+
+    onImageError(field: string) {
+        this.imageErrors[field] = true;
+        this.cdr.detectChanges();
+    }
+
+    preloadAllKycImages() {
+        this.applications.forEach(app => {
+            const kyc = app.kyc;
+            if (kyc) {
+                if (kyc.frontImage) {
+                    const imgFront = new Image();
+                    imgFront.src = this.getImageUrl(kyc.frontImage);
+                    imgFront.onload = () => {
+                        this.imageLoaded['front_' + app.id] = true;
+                        this.cdr.detectChanges();
+                    };
+                }
+                if (kyc.backImage) {
+                    const imgBack = new Image();
+                    imgBack.src = this.getImageUrl(kyc.backImage);
+                    imgBack.onload = () => {
+                        this.imageLoaded['back_' + app.id] = true;
+                        this.cdr.detectChanges();
+                    };
+                }
+            }
+        });
+    }
+
+    onImageLoad(key: string) {
+        this.imageLoaded[key] = true;
+        this.cdr.detectChanges();
+    }
+
+    onImageLoadError(key: string) {
+        this.imageLoaded[key] = true;
+        this.cdr.detectChanges();
     }
 
     getImageUrl(path: string | undefined): string {

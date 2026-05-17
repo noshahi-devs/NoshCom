@@ -595,12 +595,17 @@
 }
 
 .btn-confirm-solid.alt {
-    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-    color: #ffffff;
-    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.18);
+    background: linear-gradient(135deg, #111111 0%, #1e1e1e 100%);
+    color: #F2BB13;
+    border: 1.5px solid rgba(242, 187, 19, 0.4);
+    box-shadow: 0 10px 25px rgba(242, 187, 19, 0.15);
 
     &:hover {
-        box-shadow: 0 14px 28px rgba(99, 102, 241, 0.28);
+        background: linear-gradient(135deg, #F2BB13 0%, #d9a40e 100%) !important;
+        color: #111111 !important;
+        border-color: #F2BB13;
+        box-shadow: 0 14px 32px rgba(242, 187, 19, 0.35);
+        transform: translateY(-3px) scale(1.02);
     }
 }
 

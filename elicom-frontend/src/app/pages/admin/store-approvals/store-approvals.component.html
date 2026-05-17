@@ -211,12 +211,37 @@
                     <div class="info-item"><strong>Identification #</strong> <span>{{selectedStore.kyc?.cnic || 'N/A'}}</span></div>
                     <div class="doc-photo-row">
                         <div class="mini-doc">
-                            <img *ngIf="selectedStore.kyc?.frontImage" [src]="getImageUrl(selectedStore.kyc?.frontImage)">
-                            <div *ngIf="!selectedStore.kyc?.frontImage" class="no-doc">ID FRONT</div>
+                            <!-- Beautiful Shimmer Loader -->
+                            <div *ngIf="selectedStore.kyc?.frontImage && !imageLoaded['front_' + selectedStore.id]" class="shimmer-loader-wrap">
+                                <div class="shimmer-pulse"></div>
+                                <span class="loader-text"><i class="fas fa-spinner fa-spin me-2"></i>Fetching Front ID...</span>
+                            </div>
+
+                            <img *ngIf="selectedStore.kyc?.frontImage" 
+                                 [src]="getImageUrl(selectedStore.kyc?.frontImage)" 
+                                 [style.opacity]="imageLoaded['front_' + selectedStore.id] ? 1 : 0"
+                                 (load)="onImageLoad('front_' + selectedStore.id)"
+                                 (error)="onImageLoadError('front_' + selectedStore.id)"
+                                 class="kyc-doc-img">
+
+                            <div *ngIf="!selectedStore.kyc?.frontImage" class="no-doc">NO FRONT ID PROVIDED</div>
                         </div>
+
                         <div class="mini-doc">
-                            <img *ngIf="selectedStore.kyc?.backImage" [src]="getImageUrl(selectedStore.kyc?.backImage)">
-                            <div *ngIf="!selectedStore.kyc?.backImage" class="no-doc">ID BACK</div>
+                            <!-- Beautiful Shimmer Loader -->
+                            <div *ngIf="selectedStore.kyc?.backImage && !imageLoaded['back_' + selectedStore.id]" class="shimmer-loader-wrap">
+                                <div class="shimmer-pulse"></div>
+                                <span class="loader-text"><i class="fas fa-spinner fa-spin me-2"></i>Fetching Back ID...</span>
+                            </div>
+
+                            <img *ngIf="selectedStore.kyc?.backImage" 
+                                 [src]="getImageUrl(selectedStore.kyc?.backImage)" 
+                                 [style.opacity]="imageLoaded['back_' + selectedStore.id] ? 1 : 0"
+                                 (load)="onImageLoad('back_' + selectedStore.id)"
+                                 (error)="onImageLoadError('back_' + selectedStore.id)"
+                                 class="kyc-doc-img">
+
+                            <div *ngIf="!selectedStore.kyc?.backImage" class="no-doc">NO BACK ID PROVIDED</div>
                         </div>
                     </div>
                 </div>
@@ -248,7 +273,7 @@
             <button type="button" *ngIf="selectedStore.kyc && !selectedStore.kyc.status" [disabled]="isApproving" (click)="verifyKYC(selectedStore)" class="btn btn-dark px-5 me-3 fw-bold" style="background: #111; color: #F2BB13; border: 1px solid #333; border-radius: 12px; height: 50px;">
                 Validate KYC
             </button>
-            <button class="btn btn-secondary px-5 fw-bold" (click)="closeModal()" style="border-radius: 12px; height: 50px;">Exit Dossier</button>
+            <button class="btn btn-cancel-custom px-5 fw-bold" (click)="closeModal()">Cancel</button>
         </div>
     </div>
 </div>
