@@ -1,15 +1,24 @@
 <div class="approval-container">
-    <div class="approval-header">
-        <div class="header-content">
-            <h1>Deposit Approvals</h1>
-            <p>Review and approve seller deposit requests from Primeship & EasyFinora.</p>
+    <div class="header studio-header">
+      <div class="header-main">
+        <div class="header-text">
+          <span class="studio-tag">ADMIN FINANCE</span>
+          <h1 class="header-title">Deposit Approvals</h1>
+          <p class="header-description">Review and approve seller deposit requests from Primeship & EasyFinora.</p>
         </div>
-        <div class="filter-group">
-            <button (click)="setStatusFilter('all')" [class.active]="statusFilter === 'all'">All</button>
-            <button (click)="setStatusFilter('pending')" [class.active]="statusFilter === 'pending'">Pending</button>
-            <button (click)="setStatusFilter('approved')" [class.active]="statusFilter === 'approved'">Approved</button>
-            <button (click)="setStatusFilter('rejected')" [class.active]="statusFilter === 'rejected'">Rejected</button>
+        <div class="header-actions">
+          <button type="button" class="btn-secondary-glass" (click)="fetchHistory()">
+            <i class="fas fa-sync-alt"></i> Refresh View
+          </button>
         </div>
+      </div>
+    </div>
+
+    <div class="filter-pills-container">
+        <button (click)="setStatusFilter('all')" [class.active]="statusFilter === 'all'">All</button>
+        <button (click)="setStatusFilter('pending')" [class.active]="statusFilter === 'pending'">Pending</button>
+        <button (click)="setStatusFilter('approved')" [class.active]="statusFilter === 'approved'">Approved</button>
+        <button (click)="setStatusFilter('rejected')" [class.active]="statusFilter === 'rejected'">Rejected</button>
     </div>
 
     <div class="table-card">

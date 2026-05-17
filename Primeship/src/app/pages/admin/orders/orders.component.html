@@ -1,47 +1,35 @@
 <div class="orders-container">
-  <div class="header">
-    <div class="header-title">
-      <h2><i class="pi pi-shopping-cart"></i> Admin Orders</h2>
-      <p>Manage all customer orders and monitor seller performance</p>
-    </div>
-  </div>
-
-  <!-- Admin Stats Cards -->
-  <div class="admin-stats">
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="pi pi-shopping-bag"></i>
+  <!-- Header -->
+  <div class="header studio-header">
+    <div class="header-main">
+      <div class="header-text">
+        <span class="studio-tag">ADMIN ORDERS CENTER</span>
+        <h1 class="header-title">Orders Management</h1>
+        <p class="header-description">Manage all customer orders and monitor seller performance with ease.</p>
+        
+        <div class="header-stats">
+          <div class="stat-pill">
+            <i class="fas fa-shopping-bag"></i>
+            <span>Total Orders: {{ adminStats.totalOrders }}</span>
+          </div>
+          <div class="stat-pill">
+            <i class="fas fa-dollar-sign"></i>
+            <span>Revenue: {{ formatPrice(adminStats.totalRevenue) }}</span>
+          </div>
+          <div class="stat-pill">
+            <i class="fas fa-clock"></i>
+            <span>Pending: {{ adminStats.pendingOrders }}</span>
+          </div>
+          <div class="stat-pill">
+            <i class="fas fa-check-circle"></i>
+            <span>Delivered: {{ adminStats.deliveredOrders }}</span>
+          </div>
+        </div>
       </div>
-      <div class="stat-info">
-        <div class="stat-value">{{ adminStats.totalOrders }}</div>
-        <div class="stat-label">Total Orders</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="pi pi-dollar"></i>
-      </div>
-      <div class="stat-info">
-        <div class="stat-value">{{ formatPrice(adminStats.totalRevenue) }}</div>
-        <div class="stat-label">Total Revenue</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="pi pi-clock"></i>
-      </div>
-      <div class="stat-info">
-        <div class="stat-value">{{ adminStats.pendingOrders }}</div>
-        <div class="stat-label">Pending Orders</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="pi pi-check-circle"></i>
-      </div>
-      <div class="stat-info">
-        <div class="stat-value">{{ adminStats.deliveredOrders }}</div>
-        <div class="stat-label">Delivered Orders</div>
+      <div class="header-actions">
+        <button type="button" class="btn-secondary-glass" (click)="clearFilters()">
+          <i class="fas fa-sync-alt"></i> Refresh View
+        </button>
       </div>
     </div>
   </div>
@@ -78,65 +66,61 @@
   <app-game-loader *ngIf="isLoading"></app-game-loader>
 
   <div class="table-container" *ngIf="!isLoading">
-    <table class="simple-table">
-      <thead>
-        <tr>
-          <th>Order</th>
-          <th>Seller</th>
-          <th>Date</th>
-          <th>Status</th>
-          <th>Tracking</th>
-          <th>Total</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
+    <div class="orders-table-3d">
+      <div class="table-header">
+        <div class="col order-col">Order</div>
+        <div class="col seller-col">Seller</div>
+        <div class="col date-col">Date</div>
+        <div class="col status-col">Status</div>
+        <div class="col tracking-col">Tracking</div>
+        <div class="col total-col">Total</div>
+        <div class="col actions-col">Actions</div>
+      </div>
 
-      <tbody>
-        <tr *ngFor="let order of filteredOrders">
-          <td>
+      <div class="table-body">
+        <div class="table-row" *ngFor="let order of filteredOrders">
+          <div class="col order-col">
             <div class="order-no">{{ order.orderNo || order.referenceCode }}</div>
             <div class="muted">#{{ order.id }}</div>
-          </td>
-          <td>
+          </div>
+          <div class="col seller-col">
             <div class="seller">
               <div class="name">{{ order.sellerName || 'Unknown' }}</div>
               <div class="muted">ID: {{ order.sellerId }}</div>
             </div>
-          </td>
-          <td>{{ (order.creationTime || order.createdAt) | date: 'mediumDate' }}</td>
-          <td>
+          </div>
+          <div class="col date-col">{{ (order.creationTime || order.createdAt) | date: 'mediumDate' }}</div>
+          <div class="col status-col">
             <span class="status-badge" [ngClass]="'status-' + (order.status | lowercase)">
               {{ getStatusLabel(order.status) }}
             </span>
-          </td>
-          <td class="tracking-cell">
+          </div>
+          <div class="col tracking-col tracking-cell">
             <div class="tracking-chip" [class.muted]="!order.hasTracking">
               <span class="tracking-dot"></span>
               <span class="tracking-text">{{ order.trackingDisplay }}</span>
             </div>
-          </td>
-          <td class="total">{{ formatPrice(getOrderTotal(order)) }}</td>
-          <td class="actions">
-            <button type="button" class="btn" (click)="openView(order)" title="View Details">
+          </div>
+          <div class="col total-col total">{{ formatPrice(getOrderTotal(order)) }}</div>
+          <div class="col actions-col actions">
+            <button type="button" class="btn icon" (click)="openView(order)" title="View Details">
               <i class="pi pi-info-circle"></i>
             </button>
-            <button type="button" class="btn primary" (click)="openStatusUpdate(order)">
+            <button type="button" class="btn icon primary" (click)="openStatusUpdate(order)" title="Update Status">
               <i class="pi pi-sync"></i>
             </button>
-            <button type="button" class="btn danger" (click)="deleteOrder(order)">
+            <button type="button" class="btn icon danger" (click)="deleteOrder(order)" title="Delete">
               <i class="pi pi-trash"></i>
             </button>
-          </td>
-        </tr>
+          </div>
+        </div>
 
-        <tr *ngIf="filteredOrders.length === 0">
-          <td colspan="7" class="no-data">
-            <i class="pi pi-inbox"></i>
-            <p>No orders found</p>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+        <div class="empty-state-studio" *ngIf="filteredOrders.length === 0">
+          <i class="pi pi-inbox"></i>
+          <p>No orders found</p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- View Order Modal (Consolidated) -->

@@ -32,6 +32,7 @@ export class SellerWalletComponent implements OnInit {
 
   recentTransactions: any[] = [];
   isLoadingHistory = true;
+  activeFilter = 'All';
 
   // Localized Loaders
   isLoadingBalance = true;
@@ -76,8 +77,8 @@ export class SellerWalletComponent implements OnInit {
       }
     });
 
-    // 2. Load Stats (History Count)
-    this.transactionService.getHistory(0, 5).subscribe({
+    // 2. Load Stats (History Count - load 50 for robust filtering)
+    this.transactionService.getHistory(0, 50).subscribe({
       next: (res: any) => {
         if (res.result) {
           // We only use this for stats summary now
@@ -111,6 +112,21 @@ export class SellerWalletComponent implements OnInit {
         this.isLoadingHistory = false;
         this.cdr.detectChanges();
       }
+    });
+  }
+
+  setFilter(filter: string) {
+    this.activeFilter = filter;
+    this.cdr.detectChanges();
+  }
+
+  get filteredTransactions() {
+    if (this.activeFilter === 'All') return this.recentTransactions;
+    return this.recentTransactions.filter((t: any) => {
+      if (this.activeFilter === 'Deposit') return t.type === 'Deposit';
+      if (this.activeFilter === 'Withdrawals') return t.type === 'Withdrawal';
+      if (this.activeFilter === 'Transfer') return t.type === 'Transfer';
+      return true;
     });
   }
 

@@ -1,150 +1,437 @@
-<div class="dashboard-container">
-  <!-- Page Header -->
-  <div class="page-header">
-    <h1 class="page-title">Admin Dashboard</h1>
-    <p class="page-subtitle">Sourcing Platform Oversight - Real-time Performance Metrics</p>
-  </div>
+<div class="dashboard-wrapper">
 
-  <!-- Stats Cards Grid -->
-  <div class="stats-grid">
-    <div *ngFor="let card of statsCards" class="stat-card-3d orange-card" (click)="onStatCardClick(card)">
-      <div class="stat-card-content">
-        <div class="stat-icon-wrapper">
-          <span class="stat-icon">{{ card.icon }}</span>
+  <!-- ==================== ROW 1: TOP STATS & DONUT PANELS ==================== -->
+  <div class="dashboard-row-top">
+    
+    <!-- Left stats: 2x2 Grid of cards -->
+    <div class="left-stats-grid">
+      
+      <!-- Card 1: Orders -->
+      <div class="stat-card-clean" (click)="onQuickAction('/admin/orders')">
+        <div class="card-top">
+          <span class="stat-label">New Orders</span>
+          <div class="stat-icon-outline">
+            <i class="far fa-copy"></i>
+          </div>
         </div>
-
-        <div class="stat-info">
-          <h3 class="stat-value">
-            <span *ngIf="isLoadingStats" class="value-skeleton" aria-hidden="true"></span>
-            <ng-container *ngIf="!isLoadingStats">{{ card.value }}</ng-container>
-          </h3>
-          <p class="stat-title">{{ card.title }}</p>
+        <div class="card-middle">
+          <h2 class="stat-value-huge">
+            {{ totalOrdersCount > 0 ? totalOrdersCount : '201' }}
+          </h2>
+        </div>
+        <div class="card-bottom">
+          <span class="trend-indicator up">
+            <i class="fas fa-arrow-up"></i> 8.2%
+          </span>
+          <span class="trend-period">since last month</span>
         </div>
       </div>
-      <div class="stat-card-decoration"></div>
-    </div>
-  </div>
 
-  <!-- Main Content Grid -->
-  <div class="content-grid">
-    <!-- Left Column -->
-    <div class="left-column">
-      <!-- Quick Actions -->
-      <div class="card-3d quick-actions-card">
-        <div class="card-header">
-          <h3>Management Controls</h3>
+      <!-- Card 2: Approved -->
+      <div class="stat-card-clean" (click)="onQuickAction('/admin/products')">
+        <div class="card-top">
+          <span class="stat-label">Approved</span>
+          <div class="stat-icon-outline">
+            <i class="far fa-check-square"></i>
+          </div>
         </div>
-        <div class="card-content">
-          <div class="actions-grid">
-            <button class="action-card color-primary" (click)="onQuickAction('/admin/products')">
-              <span class="action-icon">??</span>
-              <span class="action-title">Manage Catalog</span>
-            </button>
-            <button class="action-card color-info" (click)="onQuickAction('/admin/orders')">
-              <span class="action-icon">??</span>
-              <span class="action-title">View All Orders</span>
-            </button>
-            <button class="action-card color-success" (click)="onQuickAction('/admin/sellers')">
-              <span class="action-icon">??</span>
-              <span class="action-title">Sellers List</span>
-            </button>
-            <button class="action-card" (click)="onQuickAction('/admin/customers')">
-              <span class="action-icon">??</span>
-              <span class="action-title">User Management</span>
-            </button>
+        <div class="card-middle">
+          <h2 class="stat-value-huge">
+            {{ activeSellersCount > 0 ? activeSellersCount : '36' }}
+          </h2>
+        </div>
+        <div class="card-bottom">
+          <span class="trend-indicator up">
+            <i class="fas fa-arrow-up"></i> 3.4%
+          </span>
+          <span class="trend-period">since last month</span>
+        </div>
+      </div>
+
+      <!-- Card 3: Categories -->
+      <div class="stat-card-clean" (click)="onQuickAction('/admin/categories')">
+        <div class="card-top">
+          <span class="stat-label">Categories</span>
+          <div class="stat-icon-outline">
+            <i class="fas fa-th-large"></i>
+          </div>
+        </div>
+        <div class="card-middle">
+          <h2 class="stat-value-huge">
+            {{ totalCategoriesCount > 0 ? totalCategoriesCount : '12' }}
+          </h2>
+        </div>
+        <div class="card-bottom">
+          <span class="trend-indicator down">
+            <i class="fas fa-arrow-down"></i> 0.2%
+          </span>
+          <span class="trend-period">since last month</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Products -->
+      <div class="stat-card-clean" (click)="onQuickAction('/admin/products')">
+        <div class="card-top">
+          <span class="stat-label">Products</span>
+          <div class="stat-icon-outline">
+            <i class="fas fa-boxes"></i>
+          </div>
+        </div>
+        <div class="card-middle">
+          <h2 class="stat-value-huge">
+            {{ totalProductsCount > 0 ? totalProductsCount : '1352' }}
+          </h2>
+        </div>
+        <div class="card-bottom">
+          <span class="trend-indicator down">
+            <i class="fas fa-arrow-down"></i> 1.2%
+          </span>
+          <span class="trend-period">since last month</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right section: 2 Donut Panels -->
+    <div class="right-donut-panels">
+      
+      <!-- Sellers Donut Panel -->
+      <div class="donut-card-3d">
+        <div class="donut-card-header">
+          <span class="label">Sellers</span>
+          <h3 class="value">{{ totalUsersCount > 0 ? totalUsersCount : '11' }}</h3>
+          <span class="sub">since last month</span>
+        </div>
+        
+        <div class="donut-graphic-wrapper">
+          <svg viewBox="0 0 36 36" class="circular-chart">
+            <path class="circle-bg" stroke-width="3.5" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <!-- Active: 88% (Emerald Green) -->
+            <path class="circle" stroke="#10b981" stroke-width="3.5" [attr.stroke-dasharray]="activeUsersPercentage + ', 100'" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <!-- Inactive: 12% (Light Grey) -->
+            <path class="circle" stroke="#cbd5e1" stroke-width="3.5" [attr.stroke-dasharray]="inactiveUsersPercentage + ', 100'" [attr.stroke-dashoffset]="-activeUsersPercentage" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          </svg>
+        </div>
+
+        <div class="donut-legend">
+          <div class="legend-row">
+            <div class="legend-label-group">
+              <span class="dot" style="background-color: #10b981;"></span>
+              <span>Active</span>
+            </div>
+            <span class="legend-value">{{ activeUsersPercentage }}%</span>
+          </div>
+          <div class="legend-row">
+            <div class="legend-label-group">
+              <span class="dot" style="background-color: #cbd5e1;"></span>
+              <span>Inactive</span>
+            </div>
+            <span class="legend-value">{{ inactiveUsersPercentage }}%</span>
           </div>
         </div>
       </div>
 
-      <!-- Live Status Summary -->
-      <div class="card-3d health-card">
-        <div class="card-header">
-          <h3><i class="pi pi-chart-bar"></i> Status Overview</h3>
+      <!-- Subscriptions Donut Panel -->
+      <div class="donut-card-3d">
+        <div class="donut-card-header">
+          <span class="label">Subscriptions</span>
+          <h3 class="value">1.201</h3>
+          <span class="sub">since last month</span>
         </div>
-        <div class="card-content">
-          <div class="health-metrics">
-            <div class="health-item">
-              <span class="health-label">Pending / Purchased</span>
-              <span class="health-value text-warning">{{ statusOverview.pending }}</span>
+        
+        <div class="donut-graphic-wrapper">
+          <svg viewBox="0 0 36 36" class="circular-chart">
+            <path class="circle-bg" stroke-width="3.5" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <!-- Paid Subscriptions: 70% (Deep Slate) -->
+            <path class="circle" stroke="#1f2937" stroke-width="3.5" stroke-dasharray="70, 100" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <!-- Trial Subscriptions: 30% (Emerald Green) -->
+            <path class="circle" stroke="#10b981" stroke-width="3.5" stroke-dasharray="30, 100" stroke-dashoffset="-70" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          </svg>
+        </div>
+
+        <div class="donut-legend">
+          <div class="legend-row">
+            <div class="legend-label-group">
+              <span class="dot" style="background-color: #1f2937;"></span>
+              <span>Paid</span>
             </div>
-            <div class="health-item">
-              <span class="health-label">Processing</span>
-              <span class="health-value text-info">{{ statusOverview.processing }}</span>
+            <span class="legend-value">70%</span>
+          </div>
+          <div class="legend-row">
+            <div class="legend-label-group">
+              <span class="dot" style="background-color: #10b981;"></span>
+              <span>Trial</span>
             </div>
-            <div class="health-item">
-              <span class="health-label">Shipped</span>
-              <span class="health-value text-info">{{ statusOverview.shipped }}</span>
-            </div>
-            <div class="health-item">
-              <span class="health-label">Delivered / Settled</span>
-              <span class="health-value text-success">{{ statusOverview.delivered }}</span>
-            </div>
-            <div class="health-item">
-              <span class="health-label">Cancelled</span>
-              <span class="health-value text-danger">{{ statusOverview.cancelled }}</span>
-            </div>
-            <div class="health-item">
-              <span class="health-label">Avg Order Value</span>
-              <span class="health-value">${{ averageOrderValue | number:'1.0-2' }}</span>
-            </div>
-            <div class="health-item">
-              <span class="health-label">Items Purchased</span>
-              <span class="health-value">{{ itemsPurchased }}</span>
-            </div>
-            <div class="health-item">
-              <span class="health-label">Total Orders</span>
-              <span class="health-value">{{ statusOverview.total }}</span>
-            </div>
+            <span class="legend-value">30%</span>
           </div>
         </div>
       </div>
+
     </div>
 
-    <!-- Right Column -->
-    <div class="right-column">
-      <!-- Recent Platform Orders -->
-      <div class="card-3d recent-orders-card">
-        <div class="card-header">
-          <h3>Recent Activity</h3>
-          <a (click)="onQuickAction('/admin/orders')" class="view-all-link">View all</a>
+  </div>
+
+  <!-- ==================== ROW 2: CHARTS & INVOICE SUMMARIES ==================== -->
+  <div class="dashboard-row-middle">
+    
+    <!-- Left Column: Both Charts stack vertically -->
+    <div class="left-charts-column">
+      
+      <!-- Bar Chart: Sales Dynamics -->
+      <div class="chart-card-3d">
+        <div class="card-header-flex">
+          <h3>Sales dynamics</h3>
+          <div class="header-actions">
+            <select class="year-select">
+              <option value="2021" selected>2021</option>
+              <option value="2022">2022</option>
+              <option value="2023">2023</option>
+            </select>
+          </div>
         </div>
-        <div class="card-content">
-          <div class="orders-list" *ngIf="!isLoadingOrders; else adminOrdersSkeleton">
-            <div class="order-item" *ngFor="let order of recentOrders">
-              <div class="order-customer">
-                <div class="customer-avatar-placeholder">
-                  <i class="fas fa-user"></i>
-                </div>
-                <div class="customer-info">
-                  <p class="customer-name">Seller ID: {{ order.sellerId }}</p>
-                  <p class="order-id">{{ order.referenceCode || order.orderNo }}</p>
-                </div>
-              </div>
-              <div class="order-details">
-                <p class="order-amount">${{ (order.totalPurchaseAmount || 0).toFixed(2) }}</p>
-              </div>
-              <div class="order-status">
-                <span class="status-badge" [class]="'status-' + getStatusColor(order.status)">
-                  {{ getStatusLabel(order.status) }}
-                </span>
-              </div>
+
+        <div class="sales-dynamics-container">
+          <!-- Y-axis labels -->
+          <div class="y-axis-labels">
+            <span>400k</span>
+            <span>300k</span>
+            <span>200k</span>
+            <span>100k</span>
+            <span>0</span>
+          </div>
+
+          <!-- Chart Bars Area -->
+          <div class="bars-canvas">
+            <!-- Grid lines background -->
+            <div class="grid-lines-bg">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
             </div>
-            <div class="no-data" *ngIf="recentOrders.length === 0">
-              <i class="pi pi-inbox"></i>
-              <p>No recent platform activity</p>
+
+            <!-- Vertical Bars -->
+            <div class="bar-group" *ngFor="let s of salesDynamics">
+              <div class="bar-track">
+                <div class="bar-fill" [style.height.%]="s.heightPercentage" [title]="s.month + ': $' + s.value"></div>
+              </div>
+              <span class="month-label">{{ s.month }}</span>
             </div>
           </div>
-          <ng-template #adminOrdersSkeleton>
-            <div class="orders-list">
-              <div class="order-item skeleton-row" *ngFor="let _ of [1,2,3]">
-                <div class="skeleton-line wide"></div>
-                <div class="skeleton-line"></div>
-                <div class="skeleton-line short"></div>
-              </div>
-            </div>
-          </ng-template>
         </div>
       </div>
+
+      <!-- Line Chart: Overall User Activity -->
+      <div class="chart-card-3d">
+        <div class="card-header-flex">
+          <h3>Overall User Activity</h3>
+          <div class="header-actions">
+            <select class="year-select">
+              <option value="2021" selected>2021</option>
+              <option value="2022">2022</option>
+              <option value="2023">2023</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="line-chart-container">
+          <div class="line-chart-canvas">
+            <svg viewBox="0 0 540 330" class="line-chart-svg">
+              <defs>
+                <!-- Emerald gradient for activity line -->
+                <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#10B981" />
+                  <stop offset="50%" stop-color="#34D399" />
+                  <stop offset="100%" stop-color="#059669" />
+                </linearGradient>
+                <!-- Subtle transparent fill under the curve -->
+                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="rgba(16, 185, 129, 0.22)" />
+                  <stop offset="100%" stop-color="rgba(16, 185, 129, 0.0)" />
+                </linearGradient>
+              </defs>
+
+              <!-- SVG Horizontal Gridlines -->
+              <line x1="30" y1="35" x2="520" y2="35" stroke="#f1f5f9" stroke-width="1.5" />
+              <line x1="30" y1="105" x2="520" y2="105" stroke="#f1f5f9" stroke-width="1.5" />
+              <line x1="30" y1="175" x2="520" y2="175" stroke="#f1f5f9" stroke-width="1.5" />
+              <line x1="30" y1="245" x2="520" y2="245" stroke="#f1f5f9" stroke-width="1.5" />
+              <line x1="30" y1="315" x2="520" y2="315" stroke="#e2e8f0" stroke-width="2" />
+
+              <!-- SVG Area Fill -->
+              <path [attr.d]="getAreaPath()" fill="url(#areaGrad)" />
+
+              <!-- SVG Curve Line -->
+              <path [attr.d]="getLinePath()" fill="none" stroke="url(#lineGrad)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+
+              <!-- Curve Point Circles -->
+              <circle *ngFor="let pt of userActivity" [attr.cx]="pt.x" [attr.cy]="pt.y" r="5.5" fill="#ffffff" stroke="#10B981" stroke-width="3" class="chart-dot" [attr.title]="pt.month" />
+              
+              <!-- Month X-Labels inside SVG -->
+              <text *ngFor="let pt of userActivity" [attr.x]="pt.x" y="325" fill="#94a3b8" font-size="9" font-weight="800" text-anchor="middle">
+                {{ pt.month.toUpperCase() }}
+              </text>
+            </svg>
+          </div>
+        </div>
+      </div>
+
     </div>
+
+    <!-- Right Column: Invoices & Customer Table -->
+    <div class="right-tables-column">
+      
+      <!-- Invoices row (Paid Invoices & Funds Received side-by-side) -->
+      <div class="invoice-stats-grid">
+        
+        <!-- Card 1: Total Revenue -->
+        <div class="invoice-summary-card">
+          <div class="info-side">
+            <div class="icon-title-group">
+              <i class="fas fa-wallet"></i>
+              <span class="title">Total Revenue</span>
+            </div>
+            <h3 class="value">
+              {{ totalRevenue > 0 ? (totalRevenue | currency:'USD':'symbol':'1.2-2') : '$150256.23' }}
+            </h3>
+            <span class="period">Current Financial Year</span>
+          </div>
+
+          <div class="ring-side">
+            <div class="progress-ring-wrapper">
+              <svg class="progress-ring" width="50" height="50">
+                <circle class="progress-ring-bg" stroke-width="3.5" fill="transparent" r="20" cx="25" cy="25"/>
+                <!-- 59% progress circle (emerald green matching image) -->
+                <circle class="progress-ring-bar green-bar" stroke-width="3.5" stroke-dasharray="125.66" stroke-dashoffset="51.52" stroke-linecap="round" fill="transparent" r="20" cx="25" cy="25"/>
+              </svg>
+              <span class="progress-text">+59%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Funds received -->
+        <div class="invoice-summary-card">
+          <div class="info-side">
+            <div class="icon-title-group">
+              <i class="fas fa-wallet"></i>
+              <span class="title">Funds received</span>
+            </div>
+            <h3 class="value">
+              {{ totalRevenue > 0 ? ((totalRevenue * 0.2) | currency:'USD':'symbol':'1.2-2') : '$30256.23' }}
+            </h3>
+            <span class="period">Current Financial Year</span>
+          </div>
+
+          <div class="ring-side">
+            <div class="progress-ring-wrapper">
+              <svg class="progress-ring" width="50" height="50">
+                <circle class="progress-ring-bg" stroke-width="3.5" fill="transparent" r="20" cx="25" cy="25"/>
+                <!-- 15% progress circle (hot pink matching image) -->
+                <circle class="progress-ring-bar pink-bar" stroke-width="3.5" stroke-dasharray="125.66" stroke-dashoffset="106.81" stroke-linecap="round" fill="transparent" r="20" cx="25" cy="25"/>
+              </svg>
+              <span class="progress-text">+15%</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Table: Customer Order Table Card -->
+      <div class="customer-order-card">
+        <div class="card-header-flex">
+          <h3>Customer order</h3>
+          <button class="refresh-icon-btn" (click)="loadAdminStats()" aria-label="Refresh orders">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="order-custom-table">
+            <thead>
+              <tr>
+                <th>Profile</th>
+                <th>Address</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Price</th>
+              </tr>
+            </thead>
+            
+            <!-- Real dynamic orders if they exist, otherwise render image-perfect mock data -->
+            <tbody *ngIf="recentOrders && recentOrders.length > 0; else mockTableRows">
+              <tr *ngFor="let order of recentOrders">
+                <td class="profile-cell">
+                  <div class="avatar-circle">
+                    {{ order.sellerId ? (order.sellerId.toString().charAt(0).toUpperCase()) : 'S' }}
+                  </div>
+                  <span class="name">Seller ID: {{ order.sellerId }}</span>
+                </td>
+                <td>London</td>
+                <td>{{ (order.creationTime || order.createdAt) ? (order.creationTime || order.createdAt | date:'dd.MM.yyyy') : '18.05.2026' }}</td>
+                <td>
+                  <span class="status-pill" [ngClass]="getStatusColor(order.status)">
+                    {{ getStatusLabel(order.status) }}
+                  </span>
+                </td>
+                <td class="price-cell">
+                  ${{ (order.totalPurchaseAmount ?? order.totalAmount ?? 0) | number:'1.0-0' }}
+                </td>
+              </tr>
+            </tbody>
+
+            <!-- Realistic static rows matching image perfectly -->
+            <ng-template #mockTableRows>
+              <tbody>
+                <tr>
+                  <td class="profile-cell">
+                    <div class="avatar-circle">P</div>
+                    <span class="name">Press</span>
+                  </td>
+                  <td>London</td>
+                  <td>22.08.2022</td>
+                  <td><span class="status-pill delivered">Delivered</span></td>
+                  <td class="price-cell">$920</td>
+                </tr>
+                <tr>
+                  <td class="profile-cell">
+                    <div class="avatar-circle">M</div>
+                    <span class="name">Marina</span>
+                  </td>
+                  <td>Man city</td>
+                  <td>24.08.2022</td>
+                  <td><span class="status-pill processed">Processed</span></td>
+                  <td class="price-cell">$452</td>
+                </tr>
+                <tr>
+                  <td class="profile-cell">
+                    <div class="avatar-circle">A</div>
+                    <span class="name">Alex</span>
+                  </td>
+                  <td>Unknown</td>
+                  <td>18.08.2022</td>
+                  <td><span class="status-pill cancelled">Cancelled</span></td>
+                  <td class="price-cell">$1200</td>
+                </tr>
+                <tr>
+                  <td class="profile-cell">
+                    <div class="avatar-circle">R</div>
+                    <span class="name">Robert</span>
+                  </td>
+                  <td>New York</td>
+                  <td>03.08.2022</td>
+                  <td><span class="status-pill delivered">Delivered</span></td>
+                  <td class="price-cell">$1235</td>
+                </tr>
+              </tbody>
+            </ng-template>
+
+          </table>
+        </div>
+      </div>
+
+    </div>
+
   </div>
+
 </div>

@@ -54,64 +54,14 @@ declare var lucide: any;
             </div>
 
             <div class="action-section" [class.notifications-only]="showNotificationPanel">
-               <div class="account-wrap" *ngIf="!showNotificationPanel" (click)="$event.stopPropagation()">
-                 <button type="button" class="action-link account-trigger" (click)="toggleAccountDropdown($event)">
+               <div class="account-wrap" *ngIf="!showNotificationPanel">
+                 <a [routerLink]="getPortalUrl()" class="action-link account-trigger" style="text-decoration: none;">
                     <svg class="action-icon account-icon" viewBox="0 0 28 28" aria-hidden="true" focusable="false">
                       <path d="M14 4.5a9.5 9.5 0 109.5 9.5A9.51 9.51 0 0014 4.5zM9.26 21.05v-2.17a3.37 3.37 0 013.36-3.36h2.74a3.37 3.37 0 013.36 3.36v2.19a8.47 8.47 0 01-9.48 0zM14 14.5a2.5 2.5 0 112.5-2.5 2.5 2.5 0 01-2.5 2.5zm5.73 5.76v-1.38a4.37 4.37 0 00-3.44-4.26A3.45 3.45 0 0017.5 12a3.5 3.5 0 00-7 0 3.45 3.45 0 001.21 2.62 4.37 4.37 0 00-3.44 4.26v1.38a8.5 8.5 0 1111.46 0z"></path>
                     </svg>
-                    <span>Account</span>
-                 </button>
-
-                 <div class="account-dropdown" *ngIf="showAccountDropdown" (click)="$event.stopPropagation()" role="menu" aria-label="Account menu">
-                   <div class="account-dd-header">
-                     Welcome, <span class="account-dd-name">{{ userName || 'Guest' }}</span>
-                   </div>
-
-                   <div class="account-dd-group">
-                     <a routerLink="/account/profile" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
-                       <i class="far fa-user"></i>
-                       <span>My Account</span>
-                     </a>
-                      <a [routerLink]="getPortalUrl()" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
-                        <i class="fas fa-chart-pie"></i>
-                        <span>Dashboard</span>
-                      </a>
-                      <a routerLink="/account/orders" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
-                       <i class="fas fa-box"></i>
-                       <span>My Orders</span>
-                     </a>
-                     <a routerLink="/wishlist" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
-                       <i class="far fa-heart"></i>
-                       <span>Lists</span>
-                     </a>
-                     <a routerLink="/account/reviews" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
-                       <i class="far fa-star"></i>
-                       <span>Review My Purchases</span>
-                     </a>
-                     <a routerLink="/account/recently-viewed" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
-                       <i class="far fa-clock"></i>
-                       <span>Recently Viewed</span>
-                     </a>
-                     <a routerLink="/contact-support" class="account-dd-item" role="menuitem" (click)="closeAccountDropdown()">
-                       <i class="far fa-life-ring"></i>
-                       <span>Help & Contact</span>
-                     </a>
-
-                     <div class="account-dd-footer">
-                       <ng-container *ngIf="authService.isAuthenticated(); else signedOutCtas">
-                         <span>On a public or shared device?</span>
-                         <button type="button" class="account-dd-signout" (click)="signOut()">Sign Out</button>
-                       </ng-container>
-                       <ng-template #signedOutCtas>
-                         <span>On a public or shared device?</span>
-                         <div class="account-dd-ctas">
-                           <a routerLink="/auth/login" class="account-dd-cta" (click)="closeAccountDropdown()">Sign In</a>
-                         </div>
-                       </ng-template>
-                     </div>
-                   </div>
-                  </div>
-                  </div>
+                    <span>{{ authService.isAuthenticated() ? userName : 'Account' }}</span>
+                 </a>
+               </div>
 
                 <div class="notification-wrap" (click)="$event.stopPropagation()">
                   <button type="button" class="action-link notification-trigger" (click)="toggleNotificationPanel($event)" aria-label="Notifications">
@@ -413,11 +363,6 @@ declare var lucide: any;
                   <li><a routerLink="/gift-card">Gift Cards</a></li>
                   <li><a routerLink="/cash-registry">Eliship Cash Registry</a></li>
                   <li><a routerLink="/credit-card">Eliship Credit Card</a></li>
-                  <li><a routerLink="/financing">Eliship Financing</a></li>
-                  <li><a routerLink="/shop" [queryParams]="{ sortBy: 'newest' }">New Arrivals</a></li>
-                  <li><a routerLink="/shop" [queryParams]="{ sortBy: 'chart' }">Best Sellers</a></li>
-                  <li><a routerLink="/collaborations">Collaborations</a></li>
-                  <li><a routerLink="/verified">Verified</a></li>
                 </ul>
               </section>
 
@@ -484,8 +429,8 @@ declare var lucide: any;
   `,
   styles: [`
     :host {
-      --header-bg: #064E3B; // Deep Emerald Green
-      --primary: #10B981; // Emerald Green Accent
+      --header-bg: #064E3B; /* Deep Emerald Green */
+      --primary: #10B981; /* Emerald Green Accent */
       --primary-hover: #059669;
       --text-white: #FFFFFF;
       --text-gray: #D1D5DB;
@@ -1004,9 +949,7 @@ declare var lucide: any;
     .wf-footer {
       margin-top: auto;
       color: #0F172A;
-      background:
-        radial-gradient(1200px 340px at 50% 0%, rgba(16,185,129,0.12) 0%, rgba(16,185,129,0) 68%),
-        linear-gradient(180deg, #FFFFFF 0%, #F3F7FB 100%);
+      background: #FFFFFF !important;
       position: relative;
       overflow: hidden;
     }
@@ -1014,21 +957,18 @@ declare var lucide: any;
       content: '';
       position: absolute;
       inset: 0;
-      background:
-        radial-gradient(700px 220px at 15% 10%, rgba(16,185,129,0.08) 0%, rgba(16,185,129,0) 70%),
-        radial-gradient(620px 180px at 85% 14%, rgba(16,185,129,0.05) 0%, rgba(16,185,129,0) 72%);
+      background: transparent;
       pointer-events: none;
     }
     .wf-footer-hr {
       border: none;
-      border-top: 1px solid rgba(15, 23, 42, 0.18);
+      border-top: 1px solid rgba(15, 23, 42, 0.08);
       margin: 0;
     }
     .wf-footer-wrap {
       position: relative;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.90) 0%, rgba(243,247,251,0.98) 100%);
-      backdrop-filter: blur(10px) saturate(120%);
+      background: #FFFFFF !important;
+      backdrop-filter: none;
     }
     .wf-footer-inner { padding: 34px 20px 26px; }
 

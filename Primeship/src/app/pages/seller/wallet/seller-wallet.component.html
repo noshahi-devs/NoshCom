@@ -196,7 +196,7 @@
             <div class="donut-content">
                 <div class="donut-wrapper">
                     <div class="donut" style="background: conic-gradient(#10B981 0% 30%, #059669 30% 55%, #34d399 55% 70%, #6ee7b7 70% 85%, #a7f3d0 85% 100%); border-radius:50%; position:relative;">
-                        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:72px;height:72px;background:#f0fdf4;border-radius:50%;"></div>
+                        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:72px;height:72px;background:#ffffff;border-radius:50%;"></div>
                     </div>
                 </div>
                 <div class="legend">
@@ -213,12 +213,29 @@
     <!-- Recent Activity -->
     <div class="activity-card">
         <div class="activity-header">
-            <h3>Recent Activity</h3>
+            <div class="header-main">
+                <h3>Recent Activity</h3>
+                <p class="header-sub">View and filter your wallet transactions</p>
+            </div>
+            <div class="filter-pills">
+                <button [class.active]="activeFilter === 'All'" (click)="setFilter('All')" class="filter-pill-btn">
+                    <i class="fas fa-list-ul"></i> All
+                </button>
+                <button [class.active]="activeFilter === 'Deposit'" (click)="setFilter('Deposit')" class="filter-pill-btn">
+                    <i class="fas fa-arrow-down"></i> Deposit
+                </button>
+                <button [class.active]="activeFilter === 'Withdrawals'" (click)="setFilter('Withdrawals')" class="filter-pill-btn">
+                    <i class="fas fa-arrow-up"></i> Withdrawals
+                </button>
+                <button [class.active]="activeFilter === 'Transfer'" (click)="setFilter('Transfer')" class="filter-pill-btn">
+                    <i class="fas fa-exchange-alt"></i> Transfer
+                </button>
+            </div>
             <button class="btn-view-all" [routerLink]="['/seller/transfer']">View All →</button>
         </div>
         <div class="activity-list">
             <ng-container *ngIf="!isLoadingHistory">
-                <div class="activity-item" *ngFor="let txn of recentTransactions">
+                <div class="activity-item" *ngFor="let txn of filteredTransactions" [ngClass]="txn.type.toLowerCase()">
                     <div class="item-icon" [ngClass]="txn.type.toLowerCase()">
                         <i class="fas" [ngClass]="{
                             'fa-arrow-down': txn.type === 'Deposit',
@@ -228,16 +245,19 @@
                         }"></i>
                     </div>
                     <div class="item-details">
-                        <span class="item-title">{{ txn.description }}</span>
-                        <span class="item-date">{{ txn.date | date:'MMM d, h:mm a' }}</span>
+                        <div class="item-meta">
+                            <span class="item-title">{{ txn.description }}</span>
+                            <span class="type-tag" [ngClass]="txn.type.toLowerCase()">{{ txn.type }}</span>
+                        </div>
+                        <span class="item-date">{{ txn.date | date:'MMM d, yyyy • h:mm a' }}</span>
                     </div>
                     <div class="item-amount" [class.negative]="txn.amount < 0" [class.positive]="txn.amount > 0">
                         {{ txn.amount | currency:'USD' }}
                     </div>
                 </div>
-                <div class="empty-state" *ngIf="recentTransactions.length === 0">
-                    <i class="fas fa-inbox"></i>
-                    <p>No recent activity found.</p>
+                <div class="empty-state" *ngIf="filteredTransactions.length === 0">
+                    <i class="fas fa-receipt"></i>
+                    <p>No recent {{ activeFilter === 'All' ? '' : activeFilter.toLowerCase() }} activity found.</p>
                 </div>
             </ng-container>
             <ng-container *ngIf="isLoadingHistory">

@@ -77,7 +77,7 @@
     }
 
     &.white-card {
-        background: #f0fdf4;
+        background: #ffffff !important;
         color: #111827;
         box-shadow: 0 4px 20px rgba(16,185,129,0.08);
         border: 1px solid rgba(16,185,129,0.15);
@@ -85,7 +85,7 @@
     }
 
     &.dark-card {
-        background: #f0fdf4;
+        background: #ffffff !important;
         color: #111827;
         border: 1px solid rgba(16,185,129,0.15);
         box-shadow: 0 4px 20px rgba(16,185,129,0.06);
@@ -100,19 +100,23 @@
 .badge {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 99px;
+    font-size: 13px;
     font-weight: 700;
+    width: fit-content;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 4px rgba(16,185,129,0.04);
 
     &.green-badge {
-        background: rgba(16, 185, 129, 0.15);
-        color: #34d399;
+        background: rgba(16, 185, 129, 0.12);
+        color: #047857;
+        border: 1px solid rgba(16, 185, 129, 0.18);
     }
     &.red-badge {
-        background: rgba(239, 68, 68, 0.15);
-        color: #fca5a5;
+        background: rgba(239, 68, 68, 0.1);
+        color: #b91c1c;
+        border: 1px solid rgba(239, 68, 68, 0.15);
     }
 }
 
@@ -142,7 +146,7 @@
 .revenue-chart {
     grid-column: 3 / span 2;
     grid-row: 1 / span 2;
-    background: #f0fdf4;
+    background: #ffffff !important;
     color: #111827;
     border: 1px solid rgba(16, 185, 129, 0.15);
     box-shadow: 0 4px 20px rgba(16,185,129,0.06);
@@ -346,9 +350,9 @@
 
             &:hover { transform: translateY(-2px); }
 
-            &.deposit-pill  { background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
-            &.withdraw-pill { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
-            &.transfer-pill { background: rgba(16,185,129,0.1); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.15); }
+            &.deposit-pill  { background: rgba(16,185,129,0.12); color: #047857; border: 1px solid rgba(16,185,129,0.2); }
+            &.withdraw-pill { background: rgba(239,68,68,0.08); color: #b91c1c; border: 1px solid rgba(239,68,68,0.15); }
+            &.transfer-pill { background: rgba(59,130,246,0.08); color: #1d4ed8; border: 1px solid rgba(59,130,246,0.15); }
         }
     }
 }
@@ -356,7 +360,7 @@
 // ---- Donut Chart Card ----
 .donut-chart-card {
     grid-column: 3 / span 2;
-    background: #f0fdf4;
+    background: #ffffff !important;
     color: #111827;
     border: 1px solid rgba(16,185,129,0.15);
     box-shadow: 0 4px 20px rgba(16,185,129,0.06);
@@ -463,103 +467,215 @@
 // ---- Recent Activity ----
 .activity-card {
     background: white;
-    border-radius: 24px;
-    padding: 28px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    border-radius: 28px;
+    padding: 32px;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
 
     .activity-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 28px;
+        padding-bottom: 20px;
+        border-bottom: 1px dashed #e2e8f0;
 
-        h3 {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1e293b;
-            margin: 0;
+        .header-main {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+
+            h3 {
+                font-size: 20px;
+                font-weight: 800;
+                color: #0f172a;
+                margin: 0;
+                letter-spacing: -0.02em;
+            }
+
+            .header-sub {
+                font-size: 13px;
+                color: #64748b;
+                margin: 0;
+                font-weight: 500;
+            }
+        }
+
+        .filter-pills {
+            display: flex;
+            gap: 8px;
+            background: #f8fafc;
+            padding: 5px;
+            border-radius: 14px;
+            border: 1px solid #f1f5f9;
+
+            @media (max-width: 768px) {
+                width: 100%;
+                overflow-x: auto;
+            }
+
+            .filter-pill-btn {
+                background: transparent;
+                border: 0;
+                color: #64748b;
+                font-size: 13px;
+                font-weight: 700;
+                padding: 8px 16px;
+                border-radius: 10px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+                white-space: nowrap;
+
+                i {
+                    font-size: 11px;
+                    opacity: 0.8;
+                }
+
+                &:hover {
+                    color: #0f172a;
+                    background: rgba(15, 23, 42, 0.04);
+                }
+
+                &.active {
+                    background: #10B981;
+                    color: #ffffff;
+                    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+                }
+            }
         }
 
         .btn-view-all {
             background: none;
-            border: none;
+            border: 1px solid #e2e8f0;
             color: #10B981;
-            font-weight: 700;
-            font-size: 14px;
+            font-weight: 800;
+            font-size: 13px;
             cursor: pointer;
-            padding: 6px 12px;
-            border-radius: 8px;
-            transition: background 0.2s;
+            padding: 8px 18px;
+            border-radius: 12px;
+            transition: all 0.2s;
 
-            &:hover { background: #f0fdf4; }
+            &:hover {
+                background: #f0fdf4;
+                border-color: rgba(16, 185, 129, 0.25);
+                transform: translateY(-1px);
+            }
         }
     }
 
     .activity-list {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 8px;
     }
 
     .activity-item {
         display: flex;
         align-items: center;
-        gap: 16px;
-        padding: 14px 12px;
-        border-radius: 14px;
-        transition: background 0.15s;
+        gap: 20px;
+        padding: 16px 20px;
+        border-radius: 18px;
+        border: 1px solid transparent;
+        background: #ffffff;
+        transition: all 0.2s ease;
 
-        &:hover { background: #f8fafc; }
+        &:hover {
+            background: #f8fafc;
+            border-color: #f1f5f9;
+            transform: translateX(4px);
+        }
 
         .item-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.02);
 
             i { font-size: 16px; }
 
-            &.deposit    { background: #d1fae5; i { color: #059669; } }
-            &.withdrawal { background: #fee2e2; i { color: #dc2626; } }
-            &.transfer   { background: #d1fae5; i { color: #10B981; } }
-            &.transaction{ background: #ecfdf5; i { color: #10B981; } }
+            &.deposit    { background: rgba(16, 185, 129, 0.1); i { color: #047857; } }
+            &.withdrawal { background: rgba(239, 68, 68, 0.08); i { color: #b91c1c; } }
+            &.transfer   { background: rgba(59, 130, 246, 0.08); i { color: #1d4ed8; } }
+            &.transaction{ background: rgba(148, 163, 184, 0.1); i { color: #475569; } }
         }
 
         .item-details {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 5px;
 
-            .item-title {
-                font-size: 14px;
-                font-weight: 600;
-                color: #1e293b;
+            .item-meta {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-wrap: wrap;
+
+                .item-title {
+                    font-size: 15px;
+                    font-weight: 700;
+                    color: #0f172a;
+                }
+
+                .type-tag {
+                    font-size: 10px;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                    padding: 3px 8px;
+                    border-radius: 6px;
+                    letter-spacing: 0.04em;
+
+                    &.deposit {
+                        background: rgba(16, 185, 129, 0.1);
+                        color: #047857;
+                    }
+                    &.withdrawal {
+                        background: rgba(239, 68, 68, 0.08);
+                        color: #b91c1c;
+                    }
+                    &.transfer {
+                        background: rgba(59, 130, 246, 0.08);
+                        color: #1d4ed8;
+                    }
+                    &.transaction {
+                        background: rgba(148, 163, 184, 0.1);
+                        color: #475569;
+                    }
+                }
             }
+
             .item-date {
                 font-size: 12px;
-                color: #94a3b8;
+                color: #64748b;
+                font-weight: 500;
             }
         }
 
         .item-amount {
-            font-size: 15px;
-            font-weight: 700;
+            font-size: 16px;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
 
-            &.positive { color: #10B981; }
-            &.negative { color: #ef4444; }
+            &.positive { color: #047857; }
+            &.negative { color: #b91c1c; }
         }
 
         // Skeleton
         &.skeleton {
             .item-icon-skeleton {
-                width: 44px;
-                height: 44px;
-                border-radius: 50%;
-                background: #e5e7eb;
+                width: 48px;
+                height: 48px;
+                border-radius: 16px;
+                background: #f1f5f9;
                 animation: shimmer 1.2s infinite;
             }
             .item-details-skeleton {
@@ -570,17 +686,17 @@
                 .line {
                     height: 12px;
                     border-radius: 6px;
-                    background: #e5e7eb;
+                    background: #f1f5f9;
                     animation: shimmer 1.2s infinite;
-                    &.title { width: 60%; }
-                    &.subtitle { width: 35%; }
+                    &.title { width: 45%; }
+                    &.subtitle { width: 20%; }
                 }
             }
             .item-amount-skeleton {
                 width: 60px;
                 height: 16px;
                 border-radius: 6px;
-                background: #e5e7eb;
+                background: #f1f5f9;
                 animation: shimmer 1.2s infinite;
             }
         }
@@ -588,10 +704,23 @@
 
     .empty-state {
         text-align: center;
-        padding: 48px 0;
-        color: #94a3b8;
+        padding: 60px 24px;
+        color: #64748b;
+        background: #f8fafc;
+        border-radius: 20px;
+        border: 1px dashed #e2e8f0;
+        margin: 10px 0;
 
-        i { font-size: 40px; margin-bottom: 12px; display: block; }
-        p { font-size: 15px; margin: 0; }
+        i {
+            font-size: 42px;
+            margin-bottom: 14px;
+            display: block;
+            color: #94a3b8;
+        }
+        p {
+            font-size: 14px;
+            margin: 0;
+            font-weight: 600;
+        }
     }
 }

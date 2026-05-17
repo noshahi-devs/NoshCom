@@ -11,15 +11,33 @@
   </div>
 
   <!-- Header -->
-  <div class="header">
-    <div class="header-title">
-      <h2><i class="pi pi-store"></i> Sellers</h2>
-      <p>Manage seller profiles, status, and total platform spendings</p>
+  <div class="header studio-header">
+    <div class="header-main">
+      <div class="header-text">
+        <span class="studio-tag">ADMIN SELLERS CENTER</span>
+        <h1 class="header-title">Sellers Management</h1>
+        <p class="header-description">Manage seller profiles, status, and total platform spendings.</p>
+        
+        <div class="header-stats">
+          <div class="stat-pill">
+            <i class="fas fa-users"></i>
+            <span>Total Sellers: {{ filteredCustomers.length }}</span>
+          </div>
+          <div class="stat-pill">
+            <i class="fas fa-eye"></i>
+            <span>Showing: {{ paginatedCustomers.length }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn-3d btn-primary-glass" (click)="openAddCustomerModal()">
+          <i class="fas fa-plus-circle"></i> Add Customer
+        </button>
+        <button type="button" class="btn-secondary-glass" (click)="filterTable()">
+          <i class="fas fa-sync-alt"></i> Refresh View
+        </button>
+      </div>
     </div>
-    <button type="button" class="btn primary" (click)="openAddCustomerModal()">
-      <i class="pi pi-plus"></i>
-      Add Customer
-    </button>
   </div>
 
   <!-- Filters -->
@@ -45,24 +63,27 @@
 
   <!-- Customers Table -->
   <div class="table-container" *ngIf="!isLoading">
-    <table class="simple-table">
-      <thead>
-        <tr>
-          <th>Seller ID</th>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Volume</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let customer of paginatedCustomers">
-          <td><span class="id-badge">{{ customer.id }}</span></td>
-          <td><strong class="text-nowrap">{{ customer.name }}</strong></td>
-          <td>{{ customer.email }}</td>
-          <td class="spending-cell">{{ formatCurrency(customer.totalSpent) }}</td>
-          <td>
+    <div class="customers-table-3d">
+      <div class="table-header">
+        <div class="col id-col">Seller ID</div>
+        <div class="col name-col">Name</div>
+        <div class="col email-col">Email</div>
+        <div class="col volume-col">Volume</div>
+        <div class="col status-col">Status</div>
+        <div class="col actions-col">Actions</div>
+      </div>
+
+      <div class="table-body">
+        <div class="table-row" *ngFor="let customer of paginatedCustomers">
+          <div class="col id-col">
+            <span class="id-badge">{{ customer.id }}</span>
+          </div>
+          <div class="col name-col">
+            <strong class="text-nowrap">{{ customer.name }}</strong>
+          </div>
+          <div class="col email-col">{{ customer.email }}</div>
+          <div class="col volume-col spending-cell">{{ formatCurrency(customer.totalSpent) }}</div>
+          <div class="col status-col">
             <div class="status-control">
               <span class="status-badge" [ngClass]="customer.status">
                 {{ getStatusLabel(customer.status) }}
@@ -72,27 +93,24 @@
                 <i [class]="customer.status === 'active' ? 'pi pi-toggle-on' : 'pi pi-toggle-off'"></i>
               </button>
             </div>
-          </td>
-          <td class="actions">
+          </div>
+          <div class="col actions-col actions">
             <button type="button" class="btn icon edit" (click)="openEditCustomerModal(customer)" title="Edit">
               <i class="pi pi-pencil"></i>
             </button>
             <button type="button" class="btn icon danger" (click)="openDeleteConfirmation(customer)" title="Delete">
               <i class="pi pi-trash"></i>
             </button>
-          </td>
-        </tr>
+          </div>
+        </div>
 
-        <tr *ngIf="filteredCustomers.length === 0">
-          <td colspan="9" class="no-data">
-            <i class="pi pi-inbox"></i>
-            <p>No customers found</p>
-            <button type="button" class="btn secondary" (click)="openAddCustomerModal()">Add Your First
-              Customer</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+        <div class="empty-state-studio" *ngIf="filteredCustomers.length === 0">
+          <i class="pi pi-inbox"></i>
+          <p>No customers found</p>
+          <button type="button" class="primary-action-btn" (click)="openAddCustomerModal()">Add Your First Customer</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Pagination -->

@@ -61,6 +61,12 @@
               <span class="nav-text">Approve Withdrawals</span>
             </a>
           </li>
+          <li class="nav-item" routerLinkActive="active">
+            <a routerLink="/admin/approve-support" class="nav-link" [attr.title]="sidebarCollapsed ? 'Support Management' : null">
+              <i class="fas fa-headset nav-icon"></i>
+              <span class="nav-text">Support Management</span>
+            </a>
+          </li>
         </ul>
       </div>
 
@@ -113,7 +119,7 @@
             </a>
           </li>
           <li class="nav-item" routerLinkActive="active">
-            <a routerLink="/contact-support" class="nav-link" [attr.title]="(sidebarCollapsed || sellerIconOnly) ? 'Support' : null">
+            <a routerLink="/seller/tickets" class="nav-link" [attr.title]="(sidebarCollapsed || sellerIconOnly) ? 'Support' : null">
               <i class="fas fa-headset nav-icon icon-3d"></i>
               <span class="nav-text">Support</span>
             </a>
@@ -235,28 +241,22 @@
                 <i class="fas fa-chevron-down small"></i>
               </button>
 
-              <div class="user-dropdown-menu" [class.show]="isUserDropdownOpen">
+              <div class="user-dropdown-3d" [class.show]="isUserDropdownOpen">
                 <div class="dropdown-header">
-                  <div class="dropdown-avatar">
-                     <i class="fas fa-id-badge"></i>
+                  <div class="user-avatar-large">
+                    <i class="fas fa-user-shield"></i>
                   </div>
-                  <div class="dropdown-user-info">
-                    <h4>{{ profileDisplayName }}</h4>
-                    <p>{{ userEmail }}</p>
+                  <div class="user-info-large">
+                    <strong>{{ profileDisplayName }}</strong>
+                    <span>{{ userEmail }}</span>
                   </div>
                 </div>
-                
-                <div class="dropdown-list">
-                  <button type="button" class="dropdown-item" (click)="openProfile()">
-                    <i class="fas fa-user-circle"></i>
-                    <span>Profile Settings</span>
-                  </button>
-                  <div class="dropdown-divider"></div>
-                  <button type="button" class="dropdown-item logout" (click)="logout()">
-                    <i class="fas fa-power-off"></i>
-                    <span>Sign Out</span>
-                  </button>
-                </div>
+                <ul class="dropdown-menu-list">
+                  <li><a (click)="openProfile()"><i class="fas fa-user-circle"></i> Profile Settings</a></li>
+                  <li><a (click)="showNotifications()"><i class="fas fa-bell"></i> Notifications</a></li>
+                  <li class="divider"></li>
+                  <li><a (click)="logout()" class="logout-link"><i class="fas fa-sign-out-alt"></i> Sign Out</a></li>
+                </ul>
               </div>
             </div>
           </div>
@@ -272,11 +272,8 @@
     <!-- Minimal 3D Footer -->
     <footer class="footer-3d" *ngIf="!isSellerView">
       <div class="container footer-content">
-        <p>&copy; 2026 Noshahibaba Global. Sourcing Excellence.</p>
-        <div class="footer-links-3d">
-          <a routerLink="/help">Support</a>
-          <a routerLink="/terms">Legal</a>
-        </div>
+        <p>&copy; 2026 Global Mart UK. Sourcing Excellence.</p>
+       
       </div>
     </footer>
   </div>

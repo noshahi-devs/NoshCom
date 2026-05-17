@@ -4,27 +4,18 @@
 }
 
     .studio-header {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(240, 255, 244, 0.9) 100%);
+        background: #ffffff !important;
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.4);
+        border: 1px solid #e2e8f0;
         border-radius: 24px;
         padding: 32px 40px;
         margin-bottom: 32px;
-        box-shadow: 
-            0 10px 30px rgba(0, 0, 0, 0.03),
-            0 4px 8px rgba(29, 224, 22, 0.02);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
         position: relative;
         overflow: hidden;
 
         &::after {
-            content: '';
-            position: absolute;
-            top: -50px;
-            right: -50px;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(29, 224, 22, 0.05) 0%, transparent 70%);
-            pointer-events: none;
+            display: none;
         }
 
         .header-main {
@@ -46,12 +37,12 @@
                 display: inline-block;
                 font-size: 11px;
                 font-weight: 800;
-                color: var(--primary);
+                color: #475569;
                 letter-spacing: 2px;
                 text-transform: uppercase;
                 margin-bottom: 12px;
                 padding: 4px 12px;
-                background: rgba(29, 224, 22, 0.08);
+                background: #f1f5f9;
                 border-radius: 6px;
             }
 

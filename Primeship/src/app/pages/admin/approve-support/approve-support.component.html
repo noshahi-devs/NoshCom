@@ -1,0 +1,106 @@
+<div class="approval-container">
+    <div class="header studio-header">
+      <div class="header-main">
+        <div class="header-text">
+          <span class="studio-tag">ADMIN SUPPORT</span>
+          <h1 class="header-title">Support Management</h1>
+          <p class="header-description">Review and reply to support tickets raised by Primeship & EasyFinora sellers.</p>
+        </div>
+        <div class="header-actions">
+          <button type="button" class="btn-secondary-glass" (click)="fetchTickets()">
+            <i class="fas fa-sync-alt"></i> Refresh View
+          </button>
+        </div>
+      </div>
+    </div>
+
+  <div class="table-card">
+    <div class="loading-overlay" *ngIf="isLoading">
+      <div class="spinner"></div>
+    </div>
+
+    <table class="approval-table">
+      <thead>
+        <tr>
+          <th>User Info</th>
+          <th>Subject / Issue</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Created Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ticket of tickets" class="ticket-row">
+          <td>
+            <div class="user-info">
+              <strong>{{ ticket.userName || ticket.contactName || 'Seller' }}</strong>
+              <span>{{ ticket.contactEmail }}</span>
+            </div>
+          </td>
+          <td class="issue-cell">
+            <strong>{{ ticket.title }}</strong>
+            <p class="issue-message" [title]="ticket.message">
+              {{ ticket.message | slice:0:80 }}{{ ticket.message.length > 80 ? '...' : '' }}
+            </p>
+          </td>
+          <td>
+            <span class="priority-pill" [ngClass]="(ticket.priority || 'medium').toLowerCase()">
+              {{ ticket.priority }}
+            </span>
+          </td>
+          <td>
+            <span class="status-pill" [ngClass]="(ticket.status || 'open').toLowerCase()">
+              {{ ticket.status }}
+            </span>
+          </td>
+          <td>
+            {{ ticket.creationTime | date:'MMM d, yyyy HH:mm' }}
+          </td>
+          <td>
+            <div class="action-buttons-wrap">
+              <div class="action-buttons" *ngIf="ticket.status !== 'Closed'">
+                <button class="btn-approve" (click)="reply(ticket)" title="Reply to Seller">
+                  <i class="fas fa-reply"></i>
+                </button>
+                <button class="btn-reject" (click)="closeTicket(ticket)" title="Resolve & Close">
+                  <i class="fas fa-check-circle"></i>
+                </button>
+              </div>
+              <span *ngIf="ticket.status === 'Closed'" class="resolved-badge">
+                <i class="fas fa-check"></i> Resolved
+              </span>
+              <div class="admin-reply-box" *ngIf="ticket.adminRemarks">
+                <strong>Your Reply:</strong>
+                <p>{{ ticket.adminRemarks }}</p>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="tickets.length === 0 && !isLoading">
+          <td colspan="6" class="empty-state">No support tickets found.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination-footer" *ngIf="totalCount > 0 && !isLoading">
+      <div class="pagination-info">
+        Showing {{ getStartIndex() }} to {{ getEndIndex() }} of {{ totalCount }} support tickets
+      </div>
+      <div class="pagination-controls">
+        <button class="btn-page-nav" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+          <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        <div class="page-numbers">
+          <button *ngFor="let page of getPageNumbers()" class="btn-page-number" [class.active]="page === currentPage" (click)="changePage(page)">
+            {{ page }}
+          </button>
+        </div>
+        <button class="btn-page-nav" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+          Next <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

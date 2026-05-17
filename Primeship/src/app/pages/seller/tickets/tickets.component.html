@@ -1,0 +1,109 @@
+<div class="tickets-container">
+  <div class="tickets-header">
+    <div class="header-content">
+      <h1>Support Tickets</h1>
+      <p>Need help? Submit a support ticket, and our operations team will resolve it quickly.</p>
+    </div>
+    <button class="btn-create-ticket" (click)="toggleCreate()">
+      <i class="fas" [class.fa-times]="isCreating" [class.fa-plus]="!isCreating"></i>
+      {{ isCreating ? 'Close Form' : 'New Support Ticket' }}
+    </button>
+  </div>
+
+  <!-- Create form if isCreating is true -->
+  <div class="form-card" *ngIf="isCreating">
+    <div class="card-header">
+      <h3>Describe Your Issue</h3>
+      <span class="badge-accent">Fast Response</span>
+    </div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="ticket-title">Subject / Title</label>
+          <input type="text" id="ticket-title" [(ngModel)]="newTicket.title" placeholder="e.g. Wallet Withdrawal Delay, Product Listing Sync Issue" />
+        </div>
+        <div class="form-group">
+          <label for="ticket-priority">Priority Level</label>
+          <select id="ticket-priority" [(ngModel)]="newTicket.priority">
+            <option value="Low">Low (General Inquiry)</option>
+            <option value="Medium">Medium (Regular Support)</option>
+            <option value="High">High (Urgent Resolution)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group full-width">
+        <label for="ticket-message">Detailed Explanation</label>
+        <textarea id="ticket-message" [(ngModel)]="newTicket.message" rows="5" placeholder="Provide as much detail as possible to help us resolve the issue swiftly..."></textarea>
+      </div>
+    </div>
+    <div class="card-footer">
+      <button class="btn-submit" (click)="submitTicket()" [disabled]="isLoading">
+        <i class="fas fa-paper-plane"></i> Submit Ticket
+      </button>
+      <button class="btn-cancel" (click)="toggleCreate()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Tickets Table -->
+  <div class="table-card">
+    <div class="loading-overlay" *ngIf="isLoading">
+      <div class="spinner"></div>
+    </div>
+
+    <table class="tickets-table">
+      <thead>
+        <tr>
+          <th>Ticket ID</th>
+          <th>Subject</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th>Replies</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ticket of tickets">
+          <td>
+            <span class="ticket-id-badge">#{{ ticket.id.substring(0,8) }}</span>
+          </td>
+          <td class="subject-cell">
+            <strong>{{ ticket.title }}</strong>
+            <p class="message-preview">{{ ticket.message }}</p>
+          </td>
+          <td>
+            <span class="priority-pill" [ngClass]="ticket.priority.toLowerCase()">
+              {{ ticket.priority }}
+            </span>
+          </td>
+          <td>
+            <span class="status-pill" [ngClass]="ticket.status.toLowerCase()">
+              {{ ticket.status }}
+            </span>
+          </td>
+          <td class="date-cell">{{ ticket.creationTime | date:'MMM d, yyyy HH:mm' }}</td>
+          <td>
+            <div class="reply-status">
+              <span *ngIf="ticket.adminRemarks" class="replied-status">
+                <i class="fas fa-comment-dots"></i> Replied
+              </span>
+              <span *ngIf="!ticket.adminRemarks" class="pending-status">
+                <i class="far fa-clock"></i> Pending
+              </span>
+              <div class="admin-remarks-box" *ngIf="ticket.adminRemarks">
+                <strong>Admin Response:</strong>
+                <p>{{ ticket.adminRemarks }}</p>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="tickets.length === 0 && !isLoading">
+          <td colspan="6" class="empty-state">
+            <div class="empty-icon"><i class="fas fa-ticket-alt"></i></div>
+            <p>No support tickets created yet.</p>
+            <button class="btn-create-ticket-inline" (click)="toggleCreate()">Create your first ticket</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -451,7 +451,7 @@
 /* --- HEADER 3D --- */
 .header-3d {
   min-height: 88px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 250, 0.98));
+  background: #ffffff !important;
   border-bottom: 1px solid var(--border-color);
   padding: 0 40px;
   display: flex;
@@ -459,7 +459,7 @@
   position: sticky;
   top: 0;
   z-index: 900;
-  box-shadow: var(--shadow-3d-sm);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 
   .header-content {
     display: flex;
@@ -546,17 +546,15 @@
   width: 46px;
   height: 46px;
   padding: 0;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  border: 1px solid #e2e8f0;
   border-radius: 16px;
-  background: linear-gradient(145deg, #f2fcf7 0%, #ffffff 100%);
+  background: #ffffff !important;
   color: #0d7a59;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow:
-    0 12px 24px rgba(16, 185, 129, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow: none;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 
   i {
@@ -566,11 +564,9 @@
 
   &:hover {
     transform: translateY(-1px);
-    background: linear-gradient(145deg, #ffffff 0%, #f7fdf9 100%);
-    border-color: rgba(16, 185, 129, 0.34);
-    box-shadow:
-      0 16px 28px rgba(16, 185, 129, 0.16),
-      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    background: #f8fafc !important;
+    border-color: #cbd5e1;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
   }
 }
 
@@ -633,13 +629,13 @@
   gap: 8px;
   padding: 9px 14px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #ffffff 0%, #f5fcf8 100%);
-  border: 1px solid rgba(16, 185, 129, 0.18);
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0;
   color: #0b8a63;
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
-  box-shadow: 0 10px 18px rgba(16, 185, 129, 0.08);
+  box-shadow: none;
 }
 
 .seller-header-actions-group {
@@ -659,27 +655,23 @@
   width: 46px;
   height: 46px;
   padding: 0;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  border: 1px solid #e2e8f0;
   border-radius: 16px;
-  background: linear-gradient(145deg, #f2fcf7 0%, #ffffff 100%);
+  background: #ffffff !important;
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: var(--text-main);
-  box-shadow:
-    0 12px 24px rgba(16, 185, 129, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow: none;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 
   &:hover {
     transform: translateY(-1px);
-    background: linear-gradient(145deg, #ffffff 0%, #f7fdf9 100%);
-    border-color: rgba(16, 185, 129, 0.34);
-    box-shadow:
-      0 16px 28px rgba(16, 185, 129, 0.14),
-      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    background: #f8fafc !important;
+    border-color: #cbd5e1;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
   }
 }
 
@@ -728,8 +720,8 @@
   justify-content: space-between;
   gap: 12px;
   min-width: 230px;
-  background: linear-gradient(135deg, #f5fbf8 0%, #ffffff 100%);
-  border: 1px solid rgba(205, 232, 221, 0.95);
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0;
   padding: 7px 14px 7px 7px;
   border-radius: 20px;
   cursor: pointer;
@@ -737,19 +729,19 @@
   appearance: none;
   -webkit-appearance: none;
   font-family: inherit;
-  box-shadow: 0 16px 28px rgba(16, 185, 129, 0.08);
+  box-shadow: none;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 
   .user-avatar-small {
     width: 40px;
     height: 40px;
-    background: linear-gradient(135deg, #effbf6 0%, #dff5ea 100%);
+    background: #f8fafc !important;
     border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--primary);
-    box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.08);
+    border: 1px solid #e2e8f0;
 
     i {
       font-size: 16px;
@@ -791,9 +783,9 @@
 
   &:hover {
     transform: translateY(-1px);
-    border-color: rgba(16, 185, 129, 0.28);
-    background: #FFF;
-    box-shadow: 0 20px 32px rgba(16, 185, 129, 0.12);
+    border-color: #cbd5e1;
+    background: #f8fafc !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
   }
 
   &:focus-visible {
@@ -859,6 +851,7 @@
 }
 
 /* --- DROPDOWNS --- */
+
 /* --- PREMIUM 3D DROPDOWN --- */
 .user-dropdown-3d {
   position: absolute;

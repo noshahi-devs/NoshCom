@@ -216,6 +216,10 @@ export const routes: Routes = [
         component: WithdrawApprovalComponent
       },
       {
+        path: 'approve-support',
+        loadComponent: () => import('./pages/admin/approve-support/approve-support.component').then(m => m.AdminApproveSupportComponent)
+      },
+      {
         path: 'reports',
         component: DashboardComponent // Placeholder
       },
@@ -274,6 +278,10 @@ export const routes: Routes = [
       {
         path: 'withdraw',
         loadComponent: () => import('./pages/seller/withdraw/seller-withdraw.component').then(m => m.SellerWithdrawComponent)
+      },
+      {
+        path: 'tickets',
+        loadComponent: () => import('./pages/seller/tickets/tickets.component').then(m => m.SellerTicketsComponent)
       }
     ]
   },

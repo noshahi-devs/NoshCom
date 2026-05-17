@@ -11,15 +11,33 @@
   </div>
 
   <!-- Header -->
-  <div class="header">
-    <div class="header-title">
-      <h2><i class="pi pi-shopping-bag"></i> Products Management</h2>
-      <p>Manage your product catalog, inventory, and pricing</p>
+  <div class="header studio-header">
+    <div class="header-main">
+      <div class="header-text">
+        <span class="studio-tag">ADMIN PRODUCTS CENTER</span>
+        <h1 class="header-title">Products Management</h1>
+        <p class="header-description">Manage your product catalog, inventory, pricing, and live listings with ease.</p>
+        
+        <div class="header-stats">
+          <div class="stat-pill">
+            <i class="fas fa-box"></i>
+            <span>Total Products: {{ filteredProducts.length }}</span>
+          </div>
+          <div class="stat-pill">
+            <i class="fas fa-check-circle"></i>
+            <span>Showing: {{ paginatedProducts.length }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn-3d btn-primary-glass" (click)="openAddProductModal()">
+          <i class="fas fa-plus-circle"></i> Add Product
+        </button>
+        <button type="button" class="btn-secondary-glass" (click)="clearFilters()">
+          <i class="fas fa-sync-alt"></i> Refresh View
+        </button>
+      </div>
     </div>
-    <button type="button" class="btn primary" (click)="openAddProductModal()">
-      <i class="pi pi-plus"></i>
-      Add Product
-    </button>
   </div>
 
   <!-- Filters -->
@@ -51,41 +69,39 @@
 
   <!-- Products Table -->
   <div class="table-container" *ngIf="!isLoading">
-    <table class="simple-table">
-      <thead>
-        <tr>
-          <th>SKU</th>
-          <th class="product-col">Product</th>
-          <th>Category</th>
-          <th>Price</th>
-          <th>Stock</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
+    <div class="products-table-3d">
+      <div class="table-header">
+        <div class="col sku-col">SKU</div>
+        <div class="col product-col">Product</div>
+        <div class="col category-col">Category</div>
+        <div class="col price-col">Price</div>
+        <div class="col stock-col">Stock</div>
+        <div class="col status-col">Status</div>
+        <div class="col actions-col">Actions</div>
+      </div>
 
-      <tbody>
-        <tr *ngFor="let product of paginatedProducts">
-          <td><span class="sku-badge">{{ product.sku }}</span></td>
-          <td class="product-info">
+      <div class="table-body">
+        <div class="table-row" *ngFor="let product of paginatedProducts">
+          <div class="col sku-col">
+            <span class="sku-badge">{{ product.sku }}</span>
+          </div>
+          <div class="col product-col product-info">
             <img [src]="getFirstImage(product)" [alt]="product.name" class="product-thumb" />
             <div class="product-details">
               <strong class="text-truncate" [title]="product.name">{{ product.name }}</strong>
             </div>
-          </td>
-          <td>{{ product.category }}</td>
-          <td class="price-info">
+          </div>
+          <div class="col category-col">{{ product.category }}</div>
+          <div class="col price-col price-info">
             <div class="price-row">
-              <span class="current-price">{{ safeFormatPrice(getProductDiscountPrice(product) ||
-                getProductPrice(product)) }}</span>
-              <span *ngIf="getProductDiscountPrice(product)" class="discount-badge">{{
-                safeGetDiscountPercentage(getProductPrice(product), getProductDiscountPrice(product)) }}</span>
+              <span class="current-price">{{ safeFormatPrice(getProductDiscountPrice(product) || getProductPrice(product)) }}</span>
+              <span *ngIf="getProductDiscountPrice(product)" class="discount-badge">{{ safeGetDiscountPercentage(getProductPrice(product), getProductDiscountPrice(product)) }}</span>
             </div>
             <div *ngIf="getProductDiscountPrice(product)" class="original-price">
               {{ safeFormatPrice(getProductPrice(product)) }}
             </div>
-          </td>
-          <td>
+          </div>
+          <div class="col stock-col">
             <span class="stock-badge" [ngClass]="{
               'low': getProductStock(product) <= 10,
               'medium': getProductStock(product) > 10 && getProductStock(product) <= 50,
@@ -93,14 +109,13 @@
             }">
               {{ getProductStock(product) }}
             </span>
-          </td>
-          <td>
+          </div>
+          <div class="col status-col">
             <span class="status-badge" [ngClass]="getStatusClass(product.status)">
               {{ getStatusLabel(product.status) }}
             </span>
-          </td>
-
-          <td class="actions">
+          </div>
+          <div class="col actions-col actions">
             <button type="button" class="btn icon view" (click)="openViewProductModal(product)" title="View">
               <i class="pi pi-eye"></i>
             </button>
@@ -110,20 +125,18 @@
             <button type="button" class="btn icon danger" (click)="openDeleteConfirmation(product)" title="Delete">
               <i class="pi pi-trash"></i>
             </button>
-          </td>
-        </tr>
+          </div>
+        </div>
 
-        <tr *ngIf="filteredProducts.length === 0">
-          <td colspan="8" class="no-data">
-            <i class="pi pi-inbox"></i>
-            <p>No products found</p>
-            <button type="button" class="btn secondary" (click)="openAddProductModal()">
-              Add Your First Product
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+        <div class="empty-state-studio" *ngIf="filteredProducts.length === 0">
+          <i class="pi pi-inbox"></i>
+          <p>No products found</p>
+          <button type="button" class="btn primary-action-btn" (click)="openAddProductModal()">
+            Add Your First Product
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Pagination -->
