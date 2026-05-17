@@ -1,4 +1,13 @@
 <div class="elite-admin-dashboard">
+    <!-- ─────────────── Live System Toast ─────────────── -->
+    <div class="elite-toast" [class.show]="toastMessage" [ngClass]="toastType" *ngIf="toastMessage">
+        <i class="fa-solid" [class.fa-circle-check]="toastType === 'success'" [class.fa-triangle-exclamation]="toastType === 'warning'" [class.fa-circle-info]="toastType === 'info'"></i>
+        <div class="toast-content">
+            <span class="toast-title">{{ toastType | uppercase }}</span>
+            <p class="toast-msg">{{ toastMessage }}</p>
+        </div>
+    </div>
+
     <!-- ─────────────── Command Center Header ─────────────── -->
     <header class="command-header">
         <div class="header-left">
@@ -14,9 +23,37 @@
                     <span class="date">{{ currentDate }}</span>
                 </div>
             </div>
-            <button class="btn-command-primary">
-                <i class="fa-solid fa-bolt me-2"></i> Quick Action Hub
-            </button>
+            
+            <!-- Quick Actions Hub with dropdown menu -->
+            <div class="quick-actions-wrapper">
+                <button class="btn-command-primary" (click)="toggleQuickActions()">
+                    <i class="fa-solid fa-bolt me-2"></i> Quick Action Hub
+                </button>
+                <div class="quick-dropdown" *ngIf="isQuickActionsOpen">
+                    <div class="dropdown-header">Fast System Protocols</div>
+                    <button class="dropdown-item" (click)="openAnnouncementModal()">
+                        <i class="fa-solid fa-bullhorn text-warning"></i>
+                        <div class="item-copy">
+                            <strong>Broadcast Notice</strong>
+                            <span>Post global store alert</span>
+                        </div>
+                    </button>
+                    <button class="dropdown-item" (click)="toggleMaintenanceMode()">
+                        <i class="fa-solid fa-power-off text-danger"></i>
+                        <div class="item-copy">
+                            <strong>Maintenance Protocol</strong>
+                            <span>{{ maintenanceModeActive ? 'Deactivate Live Block' : 'Activate Live Block' }}</span>
+                        </div>
+                    </button>
+                    <button class="dropdown-item" (click)="clearSystemCache()">
+                        <i class="fa-solid fa-broom text-info"></i>
+                        <div class="item-copy">
+                            <strong>Purge Cache</strong>
+                            <span>Wipe edge server buffers</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -24,7 +61,7 @@
         <!-- ─────────────── Primary KPI Matrix ─────────────── -->
         <section class="kpi-matrix">
             <!-- Main Hero Stat -->
-            <div class="kpi-card hero-card">
+            <div class="kpi-card hero-card" routerLink="/admin/payouts" style="cursor: pointer;">
                 <div class="card-bg-icon"><i class="fa-solid fa-chart-line"></i></div>
                 <div class="card-content">
                     <span class="kpi-label">Aggregated Marketplace Revenue</span>
@@ -46,7 +83,7 @@
 
             <!-- Secondary Stats Grid -->
             <div class="secondary-kpis">
-                <div class="kpi-card mini" *ngFor="let stat of stats">
+                <div class="kpi-card mini" *ngFor="let stat of stats" [routerLink]="stat.label.includes('Seller') ? '/admin/manage-sellers' : stat.label.includes('Product') ? '/admin/orders' : '/admin/stores'" style="cursor: pointer;">
                     <div class="mini-head">
                         <div class="icon-box" [ngClass]="stat.iconType">
                             <i class="fas" [ngClass]="stat.icon"></i>
@@ -70,11 +107,11 @@
                     <h3><i class="fa-solid fa-wave-square me-2"></i> Live Operational Stream</h3>
                     <div class="header-actions">
                         <span class="live-indicator">LIVE</span>
-                        <button class="btn-panel-icon"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                        <button class="btn-panel-icon" (click)="exportLiveStream()" title="Export Logs"><i class="fa-solid fa-download"></i></button>
                     </div>
                 </div>
                 <div class="feed-container">
-                    <div class="feed-item" *ngFor="let activity of recentActivities">
+                    <div class="feed-item" *ngFor="let activity of recentActivities" [class.processed]="activity.processed">
                         <div class="feed-marker" [ngClass]="activity.type">
                             <i class="fas" [ngClass]="activity.icon"></i>
                         </div>
@@ -84,9 +121,10 @@
                                 <span class="feed-time">{{ activity.time }}</span>
                             </div>
                             <p class="feed-msg">{{ activity.message }}</p>
-                            <div class="feed-cta" *ngIf="activity.action">
-                                <button class="btn-feed-action">{{ activity.action }}</button>
-                                <button class="btn-feed-ghost">Details</button>
+                            <div class="feed-cta">
+                                <button class="btn-feed-action" *ngIf="!activity.processed" (click)="handleActivityAction(activity)">{{ activity.action }}</button>
+                                <button class="btn-feed-action completed-btn" *ngIf="activity.processed" disabled><i class="fa-solid fa-check"></i> Handled</button>
+                                <button class="btn-feed-ghost" (click)="handleActivityDetails(activity)">Details</button>
                             </div>
                         </div>
                     </div>
@@ -122,21 +160,21 @@
                         <h3><i class="fa-solid fa-bolt me-2"></i> Executive Shortcuts</h3>
                     </div>
                     <div class="shortcut-grid">
-                        <button class="shortcut-btn">
+                        <button class="shortcut-btn" routerLink="/admin/stores">
                             <div class="btn-icon"><i class="fa-solid fa-user-plus"></i></div>
                             <div class="btn-copy">
                                 <strong>Seller Approval</strong>
                                 <span>4 New Submissions</span>
                             </div>
                         </button>
-                        <button class="shortcut-btn">
+                        <button class="shortcut-btn" routerLink="/admin/payouts">
                             <div class="btn-icon warning"><i class="fa-solid fa-money-bill-transfer"></i></div>
                             <div class="btn-copy">
                                 <strong>Payout Hub</strong>
                                 <span>$12.4k ready for review</span>
                             </div>
                         </button>
-                        <button class="shortcut-btn">
+                        <button class="shortcut-btn" (click)="startSecurityAudit()">
                             <div class="btn-icon success"><i class="fa-solid fa-shield-halved"></i></div>
                             <div class="btn-copy">
                                 <strong>Security Audit</strong>
@@ -146,6 +184,60 @@
                     </div>
                 </section>
             </aside>
+        </div>
+    </div>
+
+    <!-- ─────────────── Security Scan Backdrop and Modal ─────────────── -->
+    <div class="modal-overlay" *ngIf="showSecurityModal">
+        <div class="modal-card security-modal">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-shield-halved text-success"></i> Smart Shop Security Audit</h3>
+                <button class="close-btn" (click)="closeSecurityModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="scanner-container">
+                    <div class="radar" *ngIf="!securityScanComplete">
+                        <div class="sweep"></div>
+                    </div>
+                    <div class="shield-success-check" *ngIf="securityScanComplete">
+                        <i class="fa-solid fa-circle-check text-success animate-bounce"></i>
+                    </div>
+                </div>
+                <div class="scan-status-text">
+                    <h4>{{ securityScanStage }}</h4>
+                    <p>Current Progress: {{ securityScanProgress }}%</p>
+                </div>
+                <div class="scan-progress-bar">
+                    <div class="fill" [style.width.%]="securityScanProgress" [class.finished]="securityScanComplete"></div>
+                </div>
+                <div class="scan-results-box" *ngIf="securityScanComplete">
+                    <div class="result-line"><i class="fa-solid fa-check text-success"></i> SSL/TLS Certificate Valid (Exp: 2027)</div>
+                    <div class="result-line"><i class="fa-solid fa-check text-success"></i> Port 443 Active & Port 80 Redirected</div>
+                    <div class="result-line"><i class="fa-solid fa-check text-success"></i> SQL Injection Protection Engaged</div>
+                    <div class="result-line"><i class="fa-solid fa-check text-success"></i> DDoS Guard Thresholds Normal</div>
+                </div>
+            </div>
+            <div class="modal-footer" *ngIf="securityScanComplete">
+                <button class="btn-elite-primary" (click)="closeSecurityModal()">Acknowledge & Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─────────────── Global Announcement Modal ─────────────── -->
+    <div class="modal-overlay" *ngIf="isAnnounceModalOpen">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-bullhorn text-warning"></i> Broadcast Store Announcement</h3>
+                <button class="close-btn" (click)="closeAnnouncementModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Type your operational notice below. This will be instantly broadcasted to all seller dashboards on the <strong>thesmartshop.uk</strong> network.</p>
+                <textarea [(ngModel)]="announcementText" placeholder="Enter important notice details here..." class="announcement-textarea"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-elite-ghost" (click)="closeAnnouncementModal()">Cancel</button>
+                <button class="btn-elite-primary" (click)="submitAnnouncement()" [disabled]="!announcementText.trim()">Broadcast Instantly</button>
+            </div>
         </div>
     </div>
 </div>
