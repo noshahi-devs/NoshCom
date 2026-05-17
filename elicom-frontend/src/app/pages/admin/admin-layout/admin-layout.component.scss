@@ -73,7 +73,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0 20px 0 25px;
+        padding: 4px 24px 0;
         border-bottom: 1px solid var(--elite-border);
         position: relative;
 
@@ -85,15 +85,15 @@
         }
 
         .brand-emblem {
-            width: 36px;
-            height: 36px;
+            width: 44px;
+            height: 44px;
             background: rgba(242, 187, 19, 0.1);
             border: 1px solid rgba(242, 187, 19, 0.35);
-            border-radius: 10px;
+            border-radius: 12px;
             display: grid;
             place-items: center;
             color: var(--elite-primary);
-            font-size: 1.1rem;
+            font-size: 1.25rem;
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             box-shadow: 0 4px 15px rgba(242, 187, 19, 0.15);
 
@@ -145,14 +145,14 @@
 
         .brand-logo-collapsed {
             display: none;
-            width: 42px;
-            height: 42px;
+            width: 50px;
+            height: 50px;
             background: rgba(242, 187, 19, 0.1);
             border: 1px solid rgba(242, 187, 19, 0.3);
             border-radius: 12px;
             place-items: center;
             color: var(--elite-primary);
-            font-size: 1.25rem;
+            font-size: 1.35rem;
             box-shadow: 0 4px 15px rgba(242, 187, 19, 0.15);
             transition: all 0.4s ease;
 
@@ -168,7 +168,7 @@
     .nav-menu {
         flex-grow: 1;
         overflow-y: auto;
-        padding: 30px 20px;
+        padding: 12px 24px 30px;
         display: flex;
         flex-direction: column;
         gap: 8px;
@@ -182,15 +182,19 @@
         text-transform: uppercase;
         letter-spacing: 2px;
         color: var(--elite-text-muted);
-        margin: 20px 0 10px 10px;
+        margin: 18px 0 6px 10px;
         font-weight: 700;
+
+        &:first-of-type {
+            margin-top: 8px;
+        }
     }
 
     .nav-item {
         display: flex;
         align-items: center;
         gap: 16px;
-        padding: 14px 22px;
+        padding: 14px 10px;
         margin: 2px 0;
         border-radius: 14px;
         color: rgba(255, 255, 255, 0.8); /* High visibility white */
@@ -229,28 +233,35 @@
         &:hover {
             color: #fff;
             background: rgba(255, 255, 255, 0.05);
-            padding-left: 26px;
+            padding-left: 14px;
             i { color: #fff; transform: scale(1.1); }
             &::after { opacity: 0.5; height: 30%; top: 35%; }
         }
 
         &.active {
-            color: #111;
-            background: var(--elite-primary);
-            box-shadow: 0 10px 25px var(--elite-primary-glow), inset 0 0 10px rgba(255,255,255,0.2);
-            border-color: rgba(255,255,255,0.1);
+            color: #111111;
+            background: linear-gradient(135deg, #F2BB13 0%, #d89f02 100%);
+            padding: 16px 14px; /* Expanded vertical height */
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-bottom: 4px solid #a67700; /* Raised 3D shadow base */
+            box-shadow: 0 12px 28px rgba(242, 187, 19, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px); /* Lifted tactile state */
             
-            i { color: #111; }
-            &::after { opacity: 1; height: 60%; top: 20%; background: #111; }
+            i { color: #111111; }
+            &::after { display: none; } /* Disable flat bar for 3D body */
 
             &:hover {
-                background: #fbc730;
-                padding-left: 22px;
+                background: linear-gradient(135deg, #fbc730 0%, #e0a503 100%);
+                padding-left: 16px;
+                transform: translateY(-3px);
+                box-shadow: 0 15px 32px rgba(242, 187, 19, 0.38), inset 0 2px 4px rgba(255, 255, 255, 0.45);
             }
         }
 
         &.nav-logout {
-            margin-top: 40px;
+            margin-top: auto !important;
+            margin-bottom: 4px;
             color: #ff8e8e;
             background: rgba(255, 71, 71, 0.05);
             border: 1px solid rgba(255, 71, 71, 0.1);
@@ -423,27 +434,42 @@
         
         .nav-menu {
             overflow: visible !important;
+            padding: 15px 0 30px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 15px !important;
         }
 
         .brand-area {
             justify-content: center;
+            align-items: center;
             padding: 0;
             .brand-link { display: none; }
-            .brand-logo-collapsed { display: grid; }
+            .brand-logo-collapsed { 
+                display: grid;
+                margin: 0 auto;
+            }
         }
 
         .nav-section-title { display: none; }
 
         .nav-item {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
             justify-content: center;
-            padding: 16px 0;
+            border-radius: 12px;
+            margin: 0 auto;
+            padding: 0;
             position: relative;
             overflow: visible; /* Allow tooltips to overflow the collapsed sidebar */
             
             span {
                 display: block;
                 position: absolute;
-                left: 85px;
+                left: 65px; /* Symmetrical offset for 50px centered button */
                 top: 50%;
                 transform: translateY(-50%) translateX(10px);
                 background: #111111;
@@ -490,6 +516,12 @@
             }
 
             &.active {
+                padding: 0 !important; /* Keep exact 50x50px bounds */
+                border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                border-bottom: 4px solid #a67700 !important;
+                box-shadow: 0 10px 22px rgba(242, 187, 19, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.4) !important;
+                transform: translateY(-2px);
+
                 span {
                     border-color: rgba(242, 187, 19, 0.4);
                     &::before {
@@ -497,10 +529,13 @@
                         border-bottom-color: rgba(242, 187, 19, 0.4);
                     }
                 }
-                &:hover span {
-                    color: #111; /* Contrast against active background color */
-                    background: var(--elite-primary);
-                    &::before { background: var(--elite-primary); }
+                &:hover {
+                    transform: translateY(-3px);
+                    span {
+                        color: #111; /* Contrast against active background color */
+                        background: var(--elite-primary);
+                        &::before { background: var(--elite-primary); }
+                    }
                 }
             }
         }

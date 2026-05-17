@@ -305,8 +305,29 @@
 
 /* Modal Styling */
 .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1050; opacity: 0; pointer-events: none; transition: opacity 0.3s; &.show { opacity: 1; pointer-events: auto; } }
-.modal { position: fixed; inset: 0; z-index: 1060; display: none; &.show { display: flex; align-items: center; justify-content: center; } }
-.modal-dialog { width: min(90vw, 550px); background: #fff; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
+.modal { 
+    position: fixed; 
+    inset: 0; 
+    z-index: 1060; 
+    display: none; 
+    overflow-y: auto; /* Enable scrolling if content is taller than screen */
+    padding: 40px 20px; /* Gorgeous symmetrical 40px safe margin top and bottom */
+    
+    &.show { 
+        display: flex; 
+        align-items: flex-start; 
+        justify-content: center; 
+    } 
+}
+.modal-dialog { 
+    width: min(90vw, 550px); 
+    background: #fff; 
+    border-radius: 24px; 
+    overflow: hidden; 
+    box-shadow: 0 25px 50px rgba(0,0,0,0.2); 
+    margin: 0 auto; /* Horizontal centering in scroll container */
+    position: relative;
+}
 .modal-header { padding: 30px 40px; background: #111; color: #F2BB13; display: flex; justify-content: space-between; align-items: center; border: none; }
 .review-summary { background: #f8fafc; border: 1px solid #e2e8f0; .summary-value { font-weight: 800; color: #111; } .amount-value { color: #10B981 !important; } }
 .btn-action { border-radius: 12px; font-weight: 800; padding: 12px; transition: all 0.3s; &.btn-cancel { background: #f1f5f9; color: #64748b; border: none; &:hover { background: #e2e8f0; } } &.btn-confirm { background: #111; color: #F2BB13; border: none; &:hover { background: #222; } } }
