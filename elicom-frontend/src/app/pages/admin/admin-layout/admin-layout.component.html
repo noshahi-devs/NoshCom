@@ -63,7 +63,7 @@
         </div>
 
         <div class="topbar-right">
-            <div class="topbar-profile">
+            <div class="topbar-profile" (click)="toggleProfileDropdown($event)">
                 <div class="avatar-wrap">
                     <div class="avatar">
                         <i class="fa-solid fa-crown"></i>
@@ -74,7 +74,20 @@
                     <span class="role">Marketplace Director</span>
                     <span class="name">Smart Shop Admin</span>
                 </div>
-                <i class="fa-solid fa-chevron-down ms-3 dropdown-arrow"></i>
+                <i class="fa-solid fa-chevron-down ms-3 dropdown-arrow" [style.transform]="isProfileDropdownOpen ? 'rotate(180deg)' : 'none'" style="transition: transform 0.3s ease;"></i>
+
+                <!-- Sleek Profile Dropdown Menu -->
+                <div class="profile-dropdown-menu" *ngIf="isProfileDropdownOpen" (click)="$event.stopPropagation()">
+                    <div class="dropdown-header">
+                        <p class="role-title">System Role</p>
+                        <p class="role-val">Marketplace Director</p>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item logout-btn" (click)="logout()">
+                        <i class="fa-solid fa-power-off me-2"></i>
+                        <span>Logout System</span>
+                    </button>
+                </div>
             </div>
         </div>
     </header>

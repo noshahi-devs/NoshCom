@@ -56,6 +56,8 @@ export class FinancialPayoutsComponent implements OnInit, OnDestroy {
         if (this.relativeTimeTimer) {
             clearInterval(this.relativeTimeTimer);
         }
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
     }
 
     loadRequests() {
@@ -196,11 +198,15 @@ export class FinancialPayoutsComponent implements OnInit, OnDestroy {
         this.selectedRequest = req;
         this.reviewComment = '';
         this.showReviewModal = true;
+        document.documentElement.classList.add('modal-open');
+        document.body.classList.add('modal-open');
     }
 
     closeReviewModal() {
         this.showReviewModal = false;
         this.selectedRequest = null;
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
     }
 
     approvePayout() {

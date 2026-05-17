@@ -18,7 +18,7 @@
                 <span class="entries-chip">{{ partners.length + warehouses.length }} Nodes Managed</span>
             </div>
             
-            <div class="filter-pills d-none d-lg-flex" style="margin: 0 40px; gap: 10px;">
+            <div class="filter-pills d-none d-lg-flex" style="gap: 10px;">
                 <button class="btn-primary-glow" (click)="openPartnerModal()">
                     <i class="fas fa-plus me-2"></i> Onboard 3PL Partner
                 </button>
@@ -27,13 +27,6 @@
                 </button>
             </div>
 
-            <div class="search-wrap">
-                <label for="networkSearch">Search Infrastructure</label>
-                <div class="search-input-container">
-                    <span class="search-icon-badge"><i class="fa-solid fa-magnifying-glass"></i></span>
-                    <input id="networkSearch" type="text" placeholder="Search by partner, manager, or country..." stroke-linecap="round">
-                </div>
-            </div>
         </div>
     </section>
 
@@ -46,10 +39,10 @@
     <div class="orders-workspace-stack mb-5">
         <div class="orders-cards-container">
             <div *ngFor="let p of partners" class="order-item-card">
-                <div class="status-accent-strip" [style.background]="p.isActive ? '#F2BB13 !important' : '#cbd5e1 !important'"></div>
+                <div class="status-accent-strip" style="background: #F2BB13 !important;"></div>
                 <div class="card-row card-main-row">
                     <div class="col col-id">
-                        <div class="icon-wrap" [class.icon-verified]="p.isActive">
+                        <div class="icon-wrap">
                             <i class="fa-solid fa-truck-ramp-box"></i>
                         </div>
                         <div class="id-group">
@@ -64,16 +57,16 @@
                     </div>
                     <div class="col col-status">
                         <p class="mini-label">Contract Status</p>
-                        <span class="status-pill-modern" [style.color]="p.isActive ? '#111' : '#888'">
+                        <span class="status-pill-modern" style="color: #111;">
                             {{ p.isActive ? 'Active Partnership' : 'Temporary Inactive' }}
                         </span>
                     </div>
                     <div class="col col-action">
                         <div class="d-flex gap-2">
-                            <button (click)="togglePartner(p)" class="btn-primary-glow" [class.btn-verify]="p.isActive" style="min-width: 120px;">
+                            <button (click)="togglePartner(p)" class="btn-primary-glow btn-verify" style="min-width: 120px;">
                                 {{ p.isActive ? 'Suspend Access' : 'Restore Access' }}
                             </button>
-                            <button class="btn-primary-glow" style="background: #f0f0f0; color: #111; box-shadow: none;">
+                            <button (click)="openSlaModal(p)" class="btn-primary-glow" style="background: #f0f0f0; color: #111; box-shadow: none;">
                                 <i class="fas fa-file-contract me-2"></i> Audit SLA
                             </button>
                         </div>
@@ -91,7 +84,7 @@
 
     <div class="row g-4 mb-5">
         <div *ngFor="let w of warehouses" class="col-md-6">
-            <div class="elite-warehouse-card" [class.suspended]="!w.isActive">
+            <div class="elite-warehouse-card">
                 <div class="wh-top">
                     <div class="wh-info">
                         <div class="wh-icon-wrap"><i class="fas fa-cubes-stacked"></i></div>
@@ -145,11 +138,11 @@
 
 <!-- Partner Modal -->
 <div class="modal" *ngIf="showPartnerModal" [class.show]="showPartnerModal">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title fw-bold">Executive 3PL Onboarding</h5>
-                <button type="button" class="btn-close btn-close-white" (click)="closePartnerModal()" style="border: none; background: none; color: #F2BB13; font-size: 1.5rem;">&times;</button>
+                <button type="button" (click)="closePartnerModal()" style="border: none; background: none; color: #F2BB13; font-size: 1.2rem; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; transition: all 0.3s ease; outline: none; margin: 0;"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
                 <div class="mb-4">
@@ -168,7 +161,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-light px-4 fw-bold" style="border-radius: 12px;" (click)="closePartnerModal()">Abort</button>
+                <button type="button" class="btn btn-light px-4 fw-bold" style="border-radius: 12px;" (click)="closePartnerModal()">Cancel</button>
                 <button type="button" class="btn-primary-glow px-4" (click)="addPartner()">Finalize Partnership</button>
             </div>
         </div>
@@ -177,11 +170,11 @@
 
 <!-- Warehouse Modal -->
 <div class="modal" *ngIf="showWarehouseModal" [class.show]="showWarehouseModal">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title fw-bold">Global Infrastructure Registration</h5>
-                <button type="button" class="btn-close btn-close-white" (click)="closeWarehouseModal()" style="border: none; background: none; color: #F2BB13; font-size: 1.5rem;">&times;</button>
+                <button type="button" (click)="closeWarehouseModal()" style="border: none; background: none; color: #F2BB13; font-size: 1.2rem; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; transition: all 0.3s ease; outline: none; margin: 0;"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
                 <div class="mb-4">
@@ -200,11 +193,86 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-light px-4 fw-bold" style="border-radius: 12px;" (click)="closeWarehouseModal()">Abort</button>
+                <button type="button" class="btn btn-light px-4 fw-bold" style="border-radius: 12px;" (click)="closeWarehouseModal()">Cancel</button>
                 <button type="button" class="btn-primary-glow px-4" (click)="addWarehouse()">Activate Facility</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal-backdrop" *ngIf="showPartnerModal || showWarehouseModal"></div>
+<!-- SLA Audit Modal -->
+<div class="modal" *ngIf="showSlaModal" [class.show]="showSlaModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background: #111; color: #F2BB13; padding: 15px 30px;">
+                <h5 class="modal-title fw-bold m-0" style="font-size: 1.1rem;"><i class="fas fa-file-shield me-2 text-warning"></i> SLA Compliance Audit</h5>
+                <button type="button" (click)="closeSlaModal()" style="border: none; background: none; color: #F2BB13; font-size: 1.2rem; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; transition: all 0.3s ease; outline: none; margin: 0;"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="modal-hero detail-hero text-center" style="background: #fafafa; border-bottom: 1px solid #f0f0f0; position: relative; padding: 15px 30px;">
+                <div class="d-flex align-items-center justify-content-center gap-3">
+                    <div class="modal-hero-avatar animate__animated animate__zoomIn" style="width: 50px; height: 50px; background: #111; color: #F2BB13; border-radius: 50%; display: grid; place-items: center; font-size: 1.4rem; font-weight: 900; shrink: 0;">
+                        <i class="fa-solid fa-truck-fast"></i>
+                    </div>
+                    <div class="text-start">
+                        <h4 class="modal-hero-title fw-extrabold mb-1" style="font-size: 1.25rem; color: #111; font-weight: 900; margin: 0;">{{ selectedPartner?.name }}</h4>
+                        <div class="status-tag active-tag inline-flex align-items-center gap-2" style="font-size: 0.72rem; font-weight: 800; background: #dcfce7; color: #166534; padding: 2px 10px; border-radius: 99px; display: inline-flex;" *ngIf="selectedPartner?.isActive">
+                            <i class="fas fa-check-circle"></i> {{ selectedPartnerSla?.status }}
+                        </div>
+                        <div class="status-tag active-tag inline-flex align-items-center gap-2" style="font-size: 0.72rem; font-weight: 800; background: #fee2e2; color: #991b1b; padding: 2px 10px; border-radius: 99px; display: inline-flex;" *ngIf="!selectedPartner?.isActive">
+                            <i class="fas fa-times-circle"></i> {{ selectedPartnerSla?.status }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-body" style="padding: 20px 30px;">
+                <p class="mini-label mb-2" style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">SLA METRIC SUMMARY</p>
+                
+                <div class="compact-doc-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                    
+                    <div class="compact-card status-card" style="background: #111; color: #F2BB13; border-radius: 16px; padding: 14px 18px; position: relative; border: none; transition: all 0.3s;">
+                        <div class="card-header d-flex justify-content-between align-items-center mb-1" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <h6 style="color: #F2BB13; font-weight: 900; margin: 0; font-size: 0.78rem;">Delivery Integrity</h6>
+                            <i class="fas fa-clock text-warning" style="font-size: 0.8rem;"></i>
+                        </div>
+                        <div class="status-content">
+                            <h3 class="fw-black mb-0" style="font-weight: 900; font-size: 1.35rem; color: #FFF; line-height: 1.2;">{{ selectedPartnerSla?.onTimeDelivery }}</h3>
+                            <p class="mb-0" style="font-size: 0.7rem; font-weight: 600; color: #aaa;">On-Time Delivery Rate</p>
+                        </div>
+                    </div>
+
+                    <div class="compact-card status-card" style="background: #111; color: #F2BB13; border-radius: 16px; padding: 14px 18px; position: relative; border: none; transition: all 0.3s;">
+                        <div class="card-header d-flex justify-content-between align-items-center mb-1" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <h6 style="color: #F2BB13; font-weight: 900; margin: 0; font-size: 0.78rem;">Sync Latency</h6>
+                            <i class="fas fa-server text-warning" style="font-size: 0.8rem;"></i>
+                        </div>
+                        <div class="status-content">
+                            <h3 class="fw-black mb-0" style="font-weight: 900; font-size: 1.35rem; color: #FFF; line-height: 1.2;">{{ selectedPartnerSla?.apiLatency }}</h3>
+                            <p class="mb-0" style="font-size: 0.7rem; font-weight: 600; color: #aaa;">API Realtime Ping</p>
+                        </div>
+                    </div>
+
+                    <div class="compact-card" style="background: #fafafa; border-radius: 16px; padding: 14px 18px; border-left: 4px solid #8b5cf6;">
+                        <p class="mini-label mb-1" style="font-size: 0.62rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Loss & Damage Rate</p>
+                        <h4 class="fw-bold mb-0" style="color: #111; font-weight: 800; font-size: 1.15rem; line-height: 1.2;">{{ selectedPartnerSla?.lossRate }}</h4>
+                        <span class="d-block mt-1" style="font-size: 0.68rem; font-weight: 700; color: #10b981;"><i class="fas fa-shield"></i> Exceeds Threshold</span>
+                    </div>
+
+                    <div class="compact-card" style="background: #fafafa; border-radius: 16px; padding: 14px 18px; border-left: 4px solid #f59e0b;">
+                        <p class="mini-label mb-1" style="font-size: 0.62rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Agreement Term</p>
+                        <h4 class="fw-bold mb-0" style="color: #111; font-weight: 800; font-size: 1.15rem; line-height: 1.2;">{{ selectedPartnerSla?.contractRenewal }}</h4>
+                        <span class="d-block mt-1" style="font-size: 0.68rem; font-weight: 700; color: #f59e0b;"><i class="fas fa-file-contract"></i> Active Service</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer" style="padding: 10px 30px 20px; border: none; display: flex; justify-content: flex-end;">
+                <button type="button" class="btn btn-dark px-4 fw-bold" style="border-radius: 10px; background: #111; color: #F2BB13; border: none; height: 40px; font-size: 0.9rem;" (click)="closeSlaModal()">Close SLA Audit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="showPartnerModal || showWarehouseModal || showSlaModal"></div>

@@ -37,7 +37,7 @@
             margin-bottom: 4px;
         }
         h4 {
-            font-size: 1.5rem;
+            font-size: 1.75rem;
             font-weight: 900;
             color: #111111;
             margin: 0;
@@ -216,9 +216,8 @@
                     align-items: center;
                     justify-content: center;
                     font-size: 1.2rem;
-                    background: #f1f5f9;
-                    color: #64748b;
-                    &.icon-verified { background: #111; color: #F2BB13; }
+                    background: #111;
+                    color: #F2BB13;
                 }
 
                 .id-group .id-val { font-size: 1.1rem; font-weight: 900; color: #1e293b; margin: 0; }
@@ -367,7 +366,6 @@
 .modal-content {
     display: flex;
     flex-direction: column;
-    height: 100%;
 }
 .modal-hero { 
     padding: 30px 40px 40px; 
@@ -406,3 +404,11 @@
     border-top: 1px solid #f0f0f0;
 }
 .modal-done-btn { background: #111; color: #F2BB13; border: none; padding: 12px 30px; border-radius: 12px; font-weight: 800; cursor: pointer; }
+
+::ng-deep {
+    html.modal-open,
+    body.modal-open {
+        overflow: hidden !important;
+        height: 100vh !important;
+    }
+}

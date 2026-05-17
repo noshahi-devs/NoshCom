@@ -37,7 +37,7 @@
             margin-bottom: 4px;
         }
         h4 {
-            font-size: 1.5rem;
+            font-size: 1.75rem;
             font-weight: 900;
             color: #111111;
             margin: 0;
@@ -331,3 +331,11 @@
 .modal-header { padding: 30px 40px; background: #111; color: #F2BB13; display: flex; justify-content: space-between; align-items: center; border: none; }
 .review-summary { background: #f8fafc; border: 1px solid #e2e8f0; .summary-value { font-weight: 800; color: #111; } .amount-value { color: #10B981 !important; } }
 .btn-action { border-radius: 12px; font-weight: 800; padding: 12px; transition: all 0.3s; &.btn-cancel { background: #f1f5f9; color: #64748b; border: none; &:hover { background: #e2e8f0; } } &.btn-confirm { background: #111; color: #F2BB13; border: none; &:hover { background: #222; } } }
+
+::ng-deep {
+    html.modal-open,
+    body.modal-open {
+        overflow: hidden !important;
+        height: 100vh !important;
+    }
+}

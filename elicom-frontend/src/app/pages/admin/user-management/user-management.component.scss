@@ -36,7 +36,7 @@
             color: #F2BB13;
             margin-bottom: 4px;
         }
-        h4 { font-size: 1.5rem; font-weight: 900; color: #111; margin: 0; }
+        h4 { font-size: 1.75rem; font-weight: 900; color: #111; margin: 0; }
     }
 
     .orders-live-chip {
@@ -265,5 +265,30 @@
     position: relative;
     
     .modal-header { background: #111; color: #F2BB13; padding: 30px 40px; } 
-    .form-control { height: 50px; border-radius: 12px; font-weight: 700; padding: 0 15px; border: 1px solid #e2e8f0; &:focus { border-color: #F2BB13; box-shadow: 0 0 0 4px rgba(242,187,19,0.1); } } 
+    .form-control { 
+        height: 50px; 
+        border-radius: 12px; 
+        font-weight: 700; 
+        padding: 0 15px; 
+        border: 1px solid #e2e8f0; 
+        
+        &:focus { 
+            border-color: #F2BB13; 
+            box-shadow: 0 0 0 4px rgba(242,187,19,0.1); 
+        } 
+        
+        &::placeholder {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+    } 
+}
+
+::ng-deep {
+    html.modal-open,
+    body.modal-open {
+        overflow: hidden !important;
+        height: 100vh !important;
+    }
 }

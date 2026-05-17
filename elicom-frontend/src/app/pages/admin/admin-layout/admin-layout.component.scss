@@ -239,7 +239,7 @@
         }
 
         &.active {
-            color: #111111;
+            color: #111111 !important;
             background: linear-gradient(135deg, #F2BB13 0%, #d89f02 100%);
             padding: 16px 14px; /* Expanded vertical height */
             border-radius: 16px;
@@ -248,14 +248,16 @@
             box-shadow: 0 12px 28px rgba(242, 187, 19, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.4);
             transform: translateY(-2px); /* Lifted tactile state */
             
-            i { color: #111111; }
+            i { color: #111111 !important; }
             &::after { display: none; } /* Disable flat bar for 3D body */
 
             &:hover {
-                background: linear-gradient(135deg, #fbc730 0%, #e0a503 100%);
+                background: linear-gradient(135deg, #fbc730 0%, #e0a503 100%) !important;
                 padding-left: 16px;
                 transform: translateY(-3px);
                 box-shadow: 0 15px 32px rgba(242, 187, 19, 0.38), inset 0 2px 4px rgba(255, 255, 255, 0.45);
+                color: #111111 !important;
+                i { color: #111111 !important; }
             }
         }
 
@@ -521,6 +523,9 @@
                 border-bottom: 4px solid #a67700 !important;
                 box-shadow: 0 10px 22px rgba(242, 187, 19, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.4) !important;
                 transform: translateY(-2px);
+                background: linear-gradient(135deg, #F2BB13 0%, #d89f02 100%) !important;
+                color: #111111 !important;
+                i { color: #111111 !important; }
 
                 span {
                     border-color: rgba(242, 187, 19, 0.4);
@@ -531,6 +536,9 @@
                 }
                 &:hover {
                     transform: translateY(-3px);
+                    background: linear-gradient(135deg, #fbc730 0%, #e0a503 100%) !important;
+                    color: #111111 !important;
+                    i { color: #111111 !important; }
                     span {
                         color: #111; /* Contrast against active background color */
                         background: var(--elite-primary);
@@ -596,5 +604,103 @@
         .elite-topbar { left: 0; }
         .elite-content-area { margin-left: 0; width: 100%; }
         .sidebar-backdrop { display: block; }
+    }
+}
+
+/* ============================================================ */
+/* PREMIUM PROFILE DROPDOWN MENU STYLES */
+/* ============================================================ */
+.topbar-profile {
+    position: relative;
+}
+
+.profile-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 15px);
+    right: 0;
+    width: 220px;
+    background: #111111;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45), 0 0 20px rgba(242, 187, 19, 0.08);
+    padding: 15px;
+    z-index: 1050;
+    text-align: left;
+    cursor: default;
+    animation: dropdownFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transform-origin: top right;
+    
+    .dropdown-header {
+        padding: 4px 8px;
+        .role-title {
+            font-size: 0.65rem;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-weight: 800;
+            margin: 0 0 3px 0;
+            line-height: 1;
+        }
+        .role-val {
+            font-size: 0.85rem;
+            color: #F2BB13;
+            font-weight: 900;
+            margin: 0;
+            line-height: 1.2;
+        }
+    }
+    
+    .dropdown-divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.08);
+        margin: 12px 0;
+    }
+    
+    .dropdown-item {
+        background: transparent;
+        border: none;
+        width: 100%;
+        text-align: left;
+        padding: 12px 14px;
+        border-radius: 10px;
+        color: #ff8e8e;
+        font-weight: 800;
+        font-size: 0.82rem;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        line-height: 1;
+        
+        i {
+            font-size: 0.95rem;
+            color: #ff8e8e;
+            transition: all 0.3s ease;
+        }
+        
+        &:hover {
+            background: #ff4747 !important;
+            color: #ffffff !important;
+            box-shadow: 0 8px 20px rgba(255, 71, 71, 0.38);
+            transform: translateY(-1px);
+            
+            i {
+                color: #ffffff !important;
+                transform: scale(1.1);
+            }
+        }
+    }
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
     }
 }

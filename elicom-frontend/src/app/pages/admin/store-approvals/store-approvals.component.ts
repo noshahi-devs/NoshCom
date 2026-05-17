@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StoreService, StoreDto } from '../../../services/store.service';
 import { environment } from '../../../../environments/environment';
@@ -11,7 +11,7 @@ import Swal from 'sweetalert2';
     templateUrl: './store-approvals.component.html',
     styleUrls: ['./store-approvals.component.scss']
 })
-export class StoreApprovalsComponent implements OnInit {
+export class StoreApprovalsComponent implements OnInit, OnDestroy {
     private storeService = inject(StoreService);
     private cdr = inject(ChangeDetectorRef);
     applications: StoreDto[] = [];
@@ -27,6 +27,11 @@ export class StoreApprovalsComponent implements OnInit {
 
     ngOnInit() {
         this.loadApplications();
+    }
+
+    ngOnDestroy() {
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
     }
 
     loadApplications() {
@@ -184,6 +189,8 @@ export class StoreApprovalsComponent implements OnInit {
         this.selectedStore = { ...store };
         this.isDetailsLoading = true;
         this.imageLoading = {};
+        document.documentElement.classList.add('modal-open');
+        document.body.classList.add('modal-open');
         this.cdr.detectChanges();
 
         this.storeService.getStore(store.id).subscribe({
@@ -219,6 +226,8 @@ export class StoreApprovalsComponent implements OnInit {
     closeModal() {
         this.selectedStore = null;
         this.isDetailsLoading = false;
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
         this.cdr.detectChanges();
     }
 }

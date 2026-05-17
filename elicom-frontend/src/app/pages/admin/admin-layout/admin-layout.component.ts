@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
@@ -15,6 +15,7 @@ export class AdminLayoutComponent implements OnInit {
     private authService = inject(AuthService);
 
     isSidebarCollapsed = true;
+    isProfileDropdownOpen = false;
     currentUser: any = null;
 
     ngOnInit() {
@@ -24,6 +25,16 @@ export class AdminLayoutComponent implements OnInit {
 
     toggleSidebar() {
         this.isSidebarCollapsed = !this.isSidebarCollapsed;
+    }
+
+    toggleProfileDropdown(event: Event) {
+        event.stopPropagation();
+        this.isProfileDropdownOpen = !this.isProfileDropdownOpen;
+    }
+
+    @HostListener('document:click')
+    closeDropdowns() {
+        this.isProfileDropdownOpen = false;
     }
 
     logout() {

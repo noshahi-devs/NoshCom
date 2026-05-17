@@ -48,13 +48,13 @@
                 <!-- Seller Cards -->
                 <div *ngFor="let seller of pagedSellers; let i = index" class="order-item-card">
                     <!-- Status Accent Strip (Unified Elite Gold) -->
-                    <div class="status-accent-strip" [style.background]="seller.isAdminActive ? '#F2BB13 !important' : '#cbd5e1 !important'"></div>
+                    <div class="status-accent-strip" style="background: #F2BB13 !important;"></div>
 
                     <!-- Main Content Row -->
                     <div class="card-row card-main-row">
                         <div class="col col-id">
-                            <div class="icon-wrap" [class.icon-verified]="seller.isAdminActive">
-                                <i class="fa-solid" [class.fa-shop]="seller.isAdminActive" [class.fa-shop-slash]="!seller.isAdminActive"></i>
+                            <div class="icon-wrap">
+                                <i class="fa-solid fa-shop"></i>
                             </div>
                             <div class="id-group">
                                 <p class="mini-label">Store Identity</p>
@@ -158,7 +158,7 @@
 <!-- ============================================================ -->
 <!-- PROFESSIONAL DETAIL MODAL (Redesigned for Elite) -->
 <!-- ============================================================ -->
-<div class="modal-backdrop" [class.show]="showDetailModal"></div>
+<div class="modal-backdrop" [class.show]="showDetailModal || showWithdrawModal"></div>
 <div class="modal" [class.show]="showDetailModal" (click)="closeDetailModal()">
     <div class="modal-dialog" (click)="$event.stopPropagation()">
         <div class="modal-content">
@@ -231,7 +231,7 @@
                         </div>
                         <div class="info-item col-full">
                             <div class="info-label">Registered Office</div>
-                            <div class="info-value">{{ selectedSeller.kyc?.address || 'N/A' }}</div>
+                            <div class="info-value">{{ selectedSeller?.kyc?.address || 'N/A' }}</div>
                         </div>
                     </div>
                 </div>
@@ -240,6 +240,63 @@
             <div class="modal-footer-row">
                 <button class="modal-done-btn" (click)="closeDetailModal()">
                     Close Profile
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- WITHDRAWAL RULES MODAL (Compact Single View & Zero Scroll) -->
+<!-- ============================================================ -->
+<div class="modal" [class.show]="showWithdrawModal" (click)="closeWithdrawModal()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header" style="background: #111; color: #F2BB13; padding: 15px 30px;">
+                <h5 class="modal-title fw-bold m-0" style="font-size: 1.1rem;"><i class="fas fa-money-bill-transfer me-2 text-warning"></i> Withdrawal Rules & Permissions</h5>
+                <button type="button" (click)="closeWithdrawModal()" style="border: none; background: none; color: #F2BB13; font-size: 1.2rem; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; transition: all 0.3s ease; outline: none; margin: 0;"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="modal-hero detail-hero text-center" style="background: #fafafa; border-bottom: 1px solid #f0f0f0; padding: 15px 30px;">
+                <div class="d-flex align-items-center justify-content-center gap-3">
+                    <div class="modal-hero-avatar" style="width: 50px; height: 50px; background: #111; color: #F2BB13; border-radius: 50%; display: grid; place-items: center; font-size: 1.4rem; font-weight: 900; shrink: 0; margin: 0;">
+                        {{ (selectedSeller?.name || 'S').charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="text-start">
+                        <h4 class="modal-hero-title fw-extrabold mb-1" style="font-size: 1.25rem; color: #111; font-weight: 900; margin: 0;">{{ selectedSeller?.name }}</h4>
+                        <div class="status-tag active-tag inline-flex align-items-center gap-2" style="font-size: 0.72rem; font-weight: 800; background: #dcfce7; color: #166534; padding: 2px 10px; border-radius: 99px; display: inline-flex;">
+                            <i class="fas fa-wallet" style="color: #166534;"></i> Available Balance: ${{ (selectedSeller?.walletBalance || 0) | number:'1.2-2' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-body" style="padding: 20px 30px;">
+                <div class="mb-3">
+                    <label class="mini-label d-block mb-1" style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Withdrawal Reserve Limit ($)</label>
+                    <input type="number" class="form-control" [(ngModel)]="withdrawInput.withdrawLimit" placeholder="e.g. 1000" style="height: 42px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; width: 100%; padding: 0 15px; border: 1px solid #e2e8f0;">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="mini-label d-block mb-1" style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Expiration Date (Optional)</label>
+                    <input type="date" class="form-control" [(ngModel)]="withdrawInput.withdrawAllowedUntil" style="height: 42px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; width: 100%; padding: 0 15px; border: 1px solid #e2e8f0;">
+                </div>
+
+                <div class="mb-3">
+                    <label class="mini-label d-block mb-1" style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Administrator Compliance Notes</label>
+                    <textarea class="form-control" [(ngModel)]="withdrawInput.adminWithdrawRemarks" placeholder="Enter reserve reason or audit notes..." style="height: 70px; border-radius: 10px; font-size: 0.85rem; padding: 10px 15px; resize: none; font-weight: 600; border: 1px solid #e2e8f0; width: 100%;"></textarea>
+                </div>
+
+                <div class="alert alert-danger border-0 rounded-3 p-2.5 d-flex align-items-center mb-0" style="background: rgba(239, 68, 68, 0.1); color: #b91c1c; font-size: 0.78rem; font-weight: 700; width: 100%;" *ngIf="withdrawError">
+                    <i class="fas fa-circle-exclamation me-2 fs-5"></i>
+                    <span>{{ withdrawError }}</span>
+                </div>
+            </div>
+
+            <div class="modal-footer d-flex gap-3" style="padding: 10px 30px 25px; border: none; display: flex; justify-content: flex-end;">
+                <button type="button" class="btn btn-light px-4 flex-grow-1 fw-bold" style="border-radius: 10px; height: 42px; font-size: 0.9rem;" (click)="closeWithdrawModal()">Discard</button>
+                <button type="button" class="btn-primary-glow px-4 flex-grow-1" style="border-radius: 10px; height: 42px; font-size: 0.9rem; padding: 0;" (click)="saveWithdrawPermission()" [disabled]="isSaving">
+                    {{ isSaving ? 'Saving...' : 'Authorize & Save' }}
                 </button>
             </div>
         </div>

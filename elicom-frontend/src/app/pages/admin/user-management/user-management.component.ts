@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -31,12 +31,21 @@ export class UserManagementComponent implements OnInit {
 
     ngOnInit(): void { }
 
+    ngOnDestroy(): void {
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
+    }
+
     openAddModal() {
         this.showAddModal = true;
+        document.documentElement.classList.add('modal-open');
+        document.body.classList.add('modal-open');
     }
 
     closeAddModal() {
         this.showAddModal = false;
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
     }
 
     addUser() {

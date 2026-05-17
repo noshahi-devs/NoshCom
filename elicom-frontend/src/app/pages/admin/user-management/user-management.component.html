@@ -39,13 +39,13 @@
             <div class="orders-cards-container">
                 <!-- User Cards -->
                 <div *ngFor="let user of users" class="order-item-card">
-                    <!-- Status Accent Strip (Active/Inactive) -->
-                    <div class="status-accent-strip" [style.background]="user.status === 'Active' ? '#F2BB13 !important' : '#cbd5e1 !important'"></div>
+                    <!-- Status Accent Strip (Always Premium Brand Gold) -->
+                    <div class="status-accent-strip" style="background: #F2BB13 !important;"></div>
 
                     <!-- Main Content Row -->
                     <div class="card-row card-main-row">
                         <div class="col col-id">
-                            <div class="icon-wrap" [class.icon-verified]="user.status === 'Active'">
+                            <div class="icon-wrap icon-verified">
                                 <i class="fa-solid" [class.fa-user-tie]="user.status === 'Active'" [class.fa-user-lock]="user.status !== 'Active'"></i>
                             </div>
                             <div class="id-group">
@@ -69,13 +69,13 @@
 
                         <div class="col col-action">
                             <div class="d-flex gap-2">
-                                <button (click)="toggleStatus(user)" class="btn-primary-glow" [class.btn-verify]="user.status === 'Active'" [title]="user.status === 'Active' ? 'Suspend Access' : 'Activate Access'">
+                                <button (click)="toggleStatus(user)" class="btn-primary-glow" [title]="user.status === 'Active' ? 'Suspend Access' : 'Activate Access'">
                                     <i class="fas" [ngClass]="user.status === 'Active' ? 'fa-user-slash' : 'fa-user-check'"></i>
                                 </button>
-                                <button class="btn-primary-glow" style="background: #111; color: #F2BB13;">
+                                <button class="btn-primary-glow" title="Reset Credentials">
                                     <i class="fas fa-key"></i>
                                 </button>
-                                <button class="btn-primary-glow" style="background: #f0f0f0; color: #111; box-shadow: none;">
+                                <button class="btn-primary-glow" title="Edit Node Details">
                                     <i class="fas fa-edit"></i>
                                 </button>
                             </div>
@@ -133,24 +133,24 @@
 <!-- PROVISIONING MODAL (Elite) -->
 <!-- ============================================================ -->
 <div class="modal" *ngIf="showAddModal" [class.show]="showAddModal" [style.display]="showAddModal ? 'flex' : 'none'">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">Provision New Administrative Node</h5>
-                <button type="button" class="btn-close btn-close-white" (click)="closeAddModal()" style="border: none; background: none; color: #F2BB13; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            <div class="modal-header" style="background: #111; color: #F2BB13; padding: 15px 30px;">
+                <h5 class="modal-title fw-bold m-0" style="font-size: 1.1rem;">Provision New Administrative Node</h5>
+                <button type="button" (click)="closeAddModal()" style="border: none; background: none; color: #F2BB13; font-size: 1.2rem; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; transition: all 0.3s ease; outline: none; margin: 0;"><i class="fas fa-times"></i></button>
             </div>
-            <div class="modal-body p-4">
-                <div class="mb-4">
-                    <label class="mini-label d-block mb-2">Legal Identity Name</label>
-                    <input type="text" class="form-control" [(ngModel)]="newUser.name" placeholder="Full legal name of administrator">
+            <div class="modal-body" style="padding: 20px 30px;">
+                <div class="mb-3">
+                    <label class="mini-label d-block mb-1" style="font-size: 0.7rem; font-weight: 800;">Legal Identity Name</label>
+                    <input type="text" class="form-control" [(ngModel)]="newUser.name" placeholder="Full legal name of administrator" style="height: 42px; border-radius: 10px; font-size: 0.85rem;">
                 </div>
-                <div class="mb-4">
-                    <label class="mini-label d-block mb-2">Corporate Email Address</label>
-                    <input type="email" class="form-control" [(ngModel)]="newUser.email" placeholder="official@elicom.com">
+                <div class="mb-3">
+                    <label class="mini-label d-block mb-1" style="font-size: 0.7rem; font-weight: 800;">Corporate Email Address</label>
+                    <input type="email" class="form-control" [(ngModel)]="newUser.email" placeholder="official@elicom.com" style="height: 42px; border-radius: 10px; font-size: 0.85rem;">
                 </div>
-                <div class="mb-4">
-                    <label class="mini-label d-block mb-2">Security Authorization Role</label>
-                    <select class="form-select" [(ngModel)]="newUser.role" style="height: 50px; border-radius: 12px; font-weight: 700; padding: 0 15px; width: 100%; border: 1px solid #e2e8f0;">
+                <div class="mb-3">
+                    <label class="mini-label d-block mb-1" style="font-size: 0.7rem; font-weight: 800;">Security Authorization Role</label>
+                    <select class="form-select" [(ngModel)]="newUser.role" style="height: 42px; border-radius: 10px; font-weight: 700; padding: 0 15px; width: 100%; border: 1px solid #e2e8f0; font-size: 0.85rem;">
                         <option>Super Admin</option>
                         <option>Support Staff</option>
                         <option>Financial Auditor</option>
@@ -158,14 +158,14 @@
                     </select>
                 </div>
                 
-                <div class="alert alert-warning border-0 rounded-4 p-3 d-flex align-items-center" style="background: rgba(242, 187, 19, 0.1); color: #b48d0e; font-size: 0.85rem; font-weight: 700;">
-                    <i class="fas fa-shield-halved me-3 fs-4"></i>
-                    Newly provisioned nodes will require initial credential reset upon first authentication.
+                <div class="alert alert-warning border-0 rounded-3 p-2.5 d-flex align-items-center mb-0" style="background: rgba(242, 187, 19, 0.1); color: #b48d0e; font-size: 0.78rem; font-weight: 700;">
+                    <i class="fas fa-shield-halved me-2 fs-5" style="color: #F2BB13;"></i>
+                    <span>Newly provisioned nodes will require initial credential reset upon first authentication.</span>
                 </div>
             </div>
-            <div class="modal-footer p-4 pt-0 d-flex gap-3">
-                <button type="button" class="btn btn-light px-4 flex-grow-1 fw-bold" style="border-radius: 12px; height: 50px;" (click)="closeAddModal()">Discard</button>
-                <button type="button" class="btn-primary-glow px-4 flex-grow-1" (click)="addUser()">Authorize & Provision</button>
+            <div class="modal-footer d-flex gap-3" style="padding: 10px 30px 25px; border: none;">
+                <button type="button" class="btn btn-light px-4 flex-grow-1 fw-bold" style="border-radius: 10px; height: 42px; font-size: 0.9rem;" (click)="closeAddModal()">Discard</button>
+                <button type="button" class="btn-primary-glow px-4 flex-grow-1" style="border-radius: 10px; height: 42px; font-size: 0.9rem; padding: 0;" (click)="addUser()">Authorize & Provision</button>
             </div>
         </div>
     </div>

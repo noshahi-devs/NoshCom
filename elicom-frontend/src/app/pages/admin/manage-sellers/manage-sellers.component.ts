@@ -51,6 +51,8 @@ export class ManageSellersComponent implements OnInit, OnDestroy {
         if (this.relativeTimeTimer) {
             clearInterval(this.relativeTimeTimer);
         }
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
     }
 
     loadSellers() {
@@ -192,11 +194,15 @@ export class ManageSellersComponent implements OnInit, OnDestroy {
     viewDetails(seller: any) {
         this.selectedSeller = seller;
         this.showDetailModal = true;
+        document.documentElement.classList.add('modal-open');
+        document.body.classList.add('modal-open');
     }
 
     closeDetailModal() {
         this.showDetailModal = false;
         this.selectedSeller = null;
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
     }
 
     openWithdrawModal(seller: any) {
@@ -209,6 +215,8 @@ export class ManageSellersComponent implements OnInit, OnDestroy {
             adminWithdrawRemarks: seller.adminWithdrawRemarks || ''
         };
         this.showWithdrawModal = true;
+        document.documentElement.classList.add('modal-open');
+        document.body.classList.add('modal-open');
     }
 
     closeWithdrawModal() {
@@ -219,6 +227,8 @@ export class ManageSellersComponent implements OnInit, OnDestroy {
             withdrawAllowedUntil: '',
             adminWithdrawRemarks: ''
         };
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
     }
 
     saveWithdrawPermission() {
