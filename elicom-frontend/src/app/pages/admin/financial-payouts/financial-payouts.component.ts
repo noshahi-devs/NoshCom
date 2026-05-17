@@ -13,6 +13,7 @@ interface WithdrawalRequest {
     accountDetails: string;
     status: 'pending' | 'approved' | 'rejected';
     requestDate: Date;
+    adminRemarks?: string;
 }
 
 @Component({
@@ -68,7 +69,8 @@ export class FinancialPayoutsComponent implements OnInit, OnDestroy {
                     method: r.method || 'N/A',
                     accountDetails: r.paymentDetails || 'N/A',
                     status: (r.status || 'pending').toLowerCase() as 'pending' | 'approved' | 'rejected',
-                    requestDate: new Date(r.creationTime)
+                    requestDate: new Date(r.creationTime),
+                    adminRemarks: r.adminRemarks
                 }));
                 this.calculateStats();
                 this.applyFilters();

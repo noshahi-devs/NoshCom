@@ -74,10 +74,9 @@ export class ManageSellersComponent implements OnInit, OnDestroy {
     applyFilters() {
         const term = (this.searchTerm || '').trim().toLowerCase();
         this.filteredSellers = this.sellers.filter(s => {
-            // 1. Filter by Product Count
-            const productCount = s.totalProducts || 0;
-            if (this.filterMode === 'active' && productCount === 0) return false;
-            if (this.filterMode === 'inactive' && productCount > 0) return false;
+            // 1. Filter by Administrative Status
+            if (this.filterMode === 'active' && !s.isAdminActive) return false;
+            if (this.filterMode === 'inactive' && s.isAdminActive) return false;
 
             // 2. Filter by Search Term
             if (!term) return true;

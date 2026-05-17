@@ -1,67 +1,91 @@
-<div class="admin-layout" [class.sidebar-collapsed]="isSidebarCollapsed">
+<div class="elite-admin-wrapper" [class.sidebar-collapsed]="isSidebarCollapsed">
     <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar" [class.show-mobile]="!isSidebarCollapsed">
-        <a routerLink="/admin/dashboard" class="sidebar-brand" style="text-decoration: none;">
-            <img src="/assets/images/header-worldcart-logo.png" alt="World Cart" class="sidebar-brand-logo">
-            <img src="/assets/images/world-favicon.svg" alt="World Cart" class="sidebar-brand-icon">
-        </a>
+    <aside class="elite-sidebar">
+        <div class="brand-area">
+            <a routerLink="/admin/dashboard" class="brand-link">
+                <div class="brand-emblem">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                </div>
+                <div class="brand-meta">
+                    <span class="brand-text">SMART SHOP</span>
+                    <span class="brand-subtext">UNITED KINGDOM</span>
+                </div>
+            </a>
+            <div class="brand-logo-collapsed">
+                <i class="fa-solid fa-bag-shopping"></i>
+            </div>
+        </div>
+        
+        <button class="sidebar-collapse-trigger" (click)="toggleSidebar()" [title]="isSidebarCollapsed ? 'Expand' : 'Collapse'">
+            <i class="fa-solid" [class.fa-angle-left]="!isSidebarCollapsed" [class.fa-angle-right]="isSidebarCollapsed"></i>
+        </button>
 
-        <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-link nav-dashboard">
-            <i class="fa-solid fa-chart-line"></i> <span>Dashboard</span>
-        </a>
+        <nav class="nav-menu">
+            <div class="nav-section-title">Operational Hub</div>
+            <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
+                <i class="fa-solid fa-chart-line"></i> <span>Dashboard</span>
+            </a>
+            <a routerLink="/admin/orders" routerLinkActive="active" class="nav-item">
+                <i class="fa-solid fa-shopping-cart"></i> <span>Manage Orders</span>
+            </a>
 
-        <div class="nav-header">Marketplace</div>
-        <a routerLink="/admin/stores" routerLinkActive="active" class="nav-link nav-reviews">
-            <i class="fa-solid fa-file-shield"></i> <span>Review Applications</span>
-        </a>
-        <a routerLink="/admin/manage-sellers" routerLinkActive="active" class="nav-link nav-sellers">
-            <i class="fa-solid fa-users-gear"></i> <span>Manage Sellers</span>
-        </a>
+            <div class="nav-section-title">Marketplace</div>
+            <a routerLink="/admin/manage-sellers" routerLinkActive="active" class="nav-item">
+                <i class="fa-solid fa-users"></i> <span>Sellers Directory</span>
+            </a>
+            <a routerLink="/admin/stores" routerLinkActive="active" class="nav-item">
+                <i class="fa-solid fa-check-to-slot"></i> <span>Store Approvals</span>
+            </a>
 
-        <div class="nav-header">Operations</div>
-        <a routerLink="/admin/settings" routerLinkActive="active" class="nav-link nav-logistics">
-            <i class="fa-solid fa-truck-fast"></i> <span>Global Logistics</span>
-        </a>
-        <a routerLink="/admin/payouts" routerLinkActive="active" class="nav-link nav-financial">
-            <i class="fa-solid fa-money-bill-transfer"></i> <span>Financial Oversight</span>
-        </a>
-        <a routerLink="/admin/orders" routerLinkActive="active" class="nav-link">
-            <i class="fa-solid fa-cart-shopping"></i> <span>Manage Orders</span>
-        </a>
+            <div class="nav-section-title">Finances & Supply</div>
+            <a routerLink="/admin/payouts" routerLinkActive="active" class="nav-item">
+                <i class="fa-solid fa-money-bill-transfer"></i> <span>Payout Requests</span>
+            </a>
+            <a routerLink="/admin/settings" routerLinkActive="active" class="nav-item">
+                <i class="fa-solid fa-truck-fast"></i> <span>Logistics & 3PL</span>
+            </a>
 
-        <div class="nav-header">System</div>
-        <a routerLink="/admin/users" routerLinkActive="active" class="nav-link nav-users">
-            <i class="fa-solid fa-users"></i> <span>User Management</span>
-        </a>
-        <a href="javascript:void(0)" (click)="logout()" class="nav-link logout-link">
-            <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
-        </a>
+            <div class="nav-section-title">System Guard</div>
+            <a routerLink="/admin/users" routerLinkActive="active" class="nav-item">
+                <i class="fa-solid fa-user-shield"></i> <span>Staff Management</span>
+            </a>
+            
+            <a href="javascript:void(0)" (click)="logout()" class="nav-item nav-logout">
+                <i class="fa-solid fa-power-off"></i> <span>Logout System</span>
+            </a>
+        </nav>
     </aside>
 
     <!-- Topbar -->
-    <div class="topbar" id="topbar">
-        <div class="d-flex align-items-center">
-            <i (click)="toggleSidebar()" class="fa fa-bars me-3 text-muted fs-5 cursor-pointer"></i>
+    <header class="elite-topbar">
+        <div class="topbar-left d-flex align-items-center">
+            <h4 class="page-context d-none d-md-block">Smart Shop Console</h4>
         </div>
 
-        <div class="d-flex align-items-center">
-            <div class="d-flex align-items-center">
-                <div class="text-end me-2 d-none d-sm-block">
-                    <p class="mb-0 x-small text-primary fw-bold" style="font-size: 10px; letter-spacing: 1px;">
-                        ADMINISTRATOR</p>
+        <div class="topbar-right">
+            <div class="topbar-profile">
+                <div class="avatar-wrap">
+                    <div class="avatar">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                    <span class="status-indicator online"></span>
                 </div>
-                <div class="admin-avatar">
-                    <i class="fa fa-user-tie"></i>
+                <div class="profile-info d-none d-sm-flex">
+                    <span class="role">Marketplace Director</span>
+                    <span class="name">Smart Shop Admin</span>
                 </div>
+                <i class="fa-solid fa-chevron-down ms-3 dropdown-arrow"></i>
             </div>
         </div>
-    </div>
+    </header>
 
     <!-- Main Content -->
-    <div class="main-wrapper" id="main-wrapper">
-        <router-outlet></router-outlet>
-    </div>
+    <main class="elite-content-area">
+        <div class="content-inner">
+            <router-outlet></router-outlet>
+        </div>
+    </main>
 
     <!-- Mobile Backdrop -->
-    <div *ngIf="!isSidebarCollapsed" (click)="toggleSidebar()" class="sidebar-backdrop d-lg-none"></div>
+    <div class="sidebar-backdrop" (click)="toggleSidebar()"></div>
 </div>

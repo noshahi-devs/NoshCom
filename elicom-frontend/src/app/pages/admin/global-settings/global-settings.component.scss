@@ -1,98 +1,224 @@
-.admin-content {
-    .section-card {
-        background: white;
-        padding: 30px;
-        border-radius: 20px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    }
+/* Elite Admin Global Settings & Logistics */
 
-    .table {
-        th {
-            border-top: none;
-            color: #64748b;
-            font-size: 0.8rem;
+.elite-admin-container {
+    animation: workspaceFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes workspaceFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Elite Section Labels */
+.elite-section-label {
+    margin-bottom: 25px;
+    h5 {
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: #111;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .label-line { height: 3px; width: 60px; background: #F2BB13; border-radius: 99px; }
+}
+
+/* Shared Elite Card Header */
+.orders-table-card {
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+    border: 1px solid #f0f0f0;
+    overflow: hidden;
+}
+
+.orders-card-top {
+    padding: 30px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+
+    .orders-card-copy {
+        .orders-card-kicker {
+            font-size: 0.75rem;
+            font-weight: 800;
             text-transform: uppercase;
-            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: #F2BB13;
+            margin-bottom: 4px;
         }
-
-        td {
-            padding-top: 15px;
-            padding-bottom: 15px;
-        }
+        h4 { font-size: 1.5rem; font-weight: 900; color: #111; margin: 0; }
     }
 
-    .warehouse-card {
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 20px;
-        transition: all 0.2s;
-
-        &:hover {
-            border-color: #3b82f6;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
-        }
-
-        &.inactive {
-            opacity: 0.6;
-            background: #f8fafc;
-        }
-
-        .wh-icon {
-            width: 44px;
-            height: 44px;
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-    }
-
-    .form-switch-custom {
-        .form-check-input {
-            width: 40px;
-            height: 20px;
-            cursor: pointer;
-
-            &:checked {
-                background-color: #10b981;
-                border-color: #10b981;
-            }
-        }
-    }
-
-    .bg-indigo {
-        background-color: #6366f1 !important;
-    }
-
-    .btn-indigo {
-        background-color: #6366f1 !important;
-
-        &:hover {
-            background-color: #4f46e5 !important;
-        }
-    }
-
-    .modal {
-        background: rgba(15, 23, 42, 0.4);
-        backdrop-filter: blur(4px);
-
-        &.show {
-            display: block;
-        }
-
-        .modal-content {
-            border: none;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            border-radius: 20px;
-            overflow: hidden;
-        }
-    }
-
-    .modal-backdrop.show {
-        opacity: 0.4;
+    .orders-live-chip {
+        background: #111;
+        color: #F2BB13;
+        padding: 8px 16px;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        font-weight: 800;
     }
 }
+
+.table-tools {
+    padding: 20px 40px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 25px;
+    background: #fff;
+    
+    .entries-info { 
+        display: flex; 
+        align-items: center; 
+        gap: 12px; 
+        min-width: fit-content;
+        .entries-label { font-size: 0.85rem; font-weight: 700; color: #888; } 
+        .entries-chip { background: #111; color: #F2BB13; padding: 6px 16px; border-radius: 8px; font-weight: 800; font-size: 0.9rem; } 
+    }
+    
+    .filter-pills {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .search-wrap { 
+        display: flex; 
+        align-items: center; 
+        position: relative; 
+        width: 100%; 
+        max-width: 450px; 
+        margin-left: auto;
+        gap: 15px;
+
+        label { 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            color: #888; 
+            white-space: nowrap;
+            margin: 0;
+        }
+
+        .search-input-container {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-icon-badge { 
+            position: absolute; 
+            left: 15px; 
+            color: #bbb; 
+            pointer-events: none;
+            z-index: 2;
+        } 
+
+        input { 
+            width: 100%; 
+            background: #f8fafc; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 12px; 
+            padding: 12px 12px 12px 45px; 
+            font-size: 0.9rem; 
+            font-weight: 600; 
+            height: 48px;
+            transition: all 0.3s ease;
+            &:focus {
+                background: #fff;
+                border-color: #F2BB13;
+                box-shadow: 0 0 0 4px rgba(242,187,19,0.1);
+            }
+        } 
+    }
+}
+
+/* Card Stack */
+.orders-cards-container { display: flex; flex-direction: column; gap: 15px; }
+.order-item-card {
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid #f0f0f0;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+    &:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    .status-accent-strip { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; }
+    .card-row {
+        display: flex;
+        align-items: center;
+        padding: 15px 30px;
+        gap: 20px;
+        .col { flex: 1; display: flex; flex-direction: column; gap: 4px; .mini-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; } }
+        &.card-main-row {
+            .col-id { flex: 1.5; flex-direction: row; align-items: center; gap: 15px; .icon-wrap { width: 44px; height: 44px; border-radius: 12px; background: #f1f5f9; display: grid; place-items: center; color: #64748b; &.icon-verified { background: #111; color: #F2BB13; } } .id-val { font-size: 1.1rem; font-weight: 900; color: #1e293b; } }
+            .col-customer .customer-name { font-weight: 800; color: #1e293b; font-size: 0.9rem; }
+            .col-status .status-pill-modern { font-size: 0.8rem; font-weight: 800; color: #111; }
+            .col-action { flex: 1.2; align-items: flex-end; }
+        }
+    }
+}
+
+.btn-primary-glow {
+    background: #F2BB13;
+    color: #111;
+    border: none;
+    padding: 0 24px;
+    height: 48px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    box-shadow: 0 4px 15px rgba(242, 187, 19, 0.2);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    white-space: nowrap;
+
+    i {
+        font-size: 1rem;
+        transition: transform 0.3s;
+    }
+
+    &:hover { 
+        transform: translateY(-2px); 
+        box-shadow: 0 8px 25px rgba(242, 187, 19, 0.3); 
+        i { transform: scale(1.1); }
+    }
+
+    &.btn-verify { 
+        background: #111 !important; 
+        color: #F2BB13 !important; 
+        &:hover { background: #222 !important; }
+    }
+}
+
+/* Warehouse Cards */
+.elite-warehouse-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 30px;
+    border: 1px solid #f0f0f0;
+    transition: all 0.4s;
+    &:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.06); border-color: #F2BB13; }
+    &.suspended { opacity: 0.6; filter: grayscale(0.5); }
+    .wh-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; .wh-info { display: flex; align-items: center; gap: 15px; .wh-icon-wrap { width: 50px; height: 50px; background: #111; color: #F2BB13; border-radius: 14px; display: grid; place-items: center; font-size: 1.2rem; } .wh-name { font-weight: 900; color: #111; margin: 0; font-size: 1.1rem; } } }
+    .wh-metrics { display: flex; gap: 30px; margin-bottom: 25px; .metric-item { display: flex; flex-direction: column; .m-label { font-size: 0.7rem; font-weight: 800; color: #888; text-transform: uppercase; } .m-val { font-weight: 800; color: #111; font-size: 0.9rem; } } }
+    .capacity-gauge { margin-bottom: 25px; .gauge-label { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700; color: #666; margin-bottom: 8px; } .gauge-track { height: 8px; background: #f0f0f0; border-radius: 10px; overflow: hidden; .gauge-fill { height: 100%; background: #F2BB13; border-radius: 10px; } } }
+}
+
+/* Modals */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1050; }
+.modal { position: fixed; inset: 0; z-index: 1060; display: flex; align-items: center; justify-content: center; }
+.modal-content { border-radius: 24px; border: none; overflow: hidden; .modal-header { background: #111; color: #F2BB13; padding: 25px 40px; } .modal-body { padding: 40px; } .modal-footer { border: none; padding: 0 40px 40px; } }
+.form-control { border-radius: 12px; padding: 12px; border: 1px solid #e2e8f0; font-weight: 600; &:focus { border-color: #F2BB13; box-shadow: 0 0 0 4px rgba(242,187,19,0.1); } }

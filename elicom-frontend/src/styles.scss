@@ -10,8 +10,8 @@
     --sui-bg-light: #f6f6f6;
     --sui-danger: #fe3b30;
     --sui-success: #3cbd45;
-    --sui-font-family: Arial, Helvetica, sans-serif;
-    --sui-header-font: 'Arial Black', Arial, Helvetica, sans-serif;
+    --sui-font-family: 'Plus Jakarta Sans', sans-serif;
+    --sui-header-font: 'Outfit', sans-serif;
     --customer-bg: #f4f5f9;
     --customer-panel: #ffffff;
     --customer-dark: #15131d;
@@ -554,7 +554,7 @@ h6,
     font-weight: 800;
     color: #000000;
     margin: 0;
-    font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+    font-family: 'Outfit', sans-serif;
 }
 
 .cust-page-cta {
@@ -571,7 +571,7 @@ h6,
     cursor: pointer;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+    font-family: 'Outfit', sans-serif;
 
     &:hover {
         background: #222222;

@@ -1,86 +1,151 @@
-<div class="admin-dashboard animate__animated animate__fadeIn">
-    <!-- Welcome Section -->
-    <div class="welcome-section mb-5 d-flex align-items-center">
-        <div class="dashboard-title-icon me-3">
-            <img src="/assets/images/world-favicon.svg" alt="WC Logo" class="db-logo-img">
+<div class="elite-admin-dashboard">
+    <!-- ─────────────── Command Center Header ─────────────── -->
+    <header class="command-header">
+        <div class="header-left">
+            <div class="header-badge">Smart Shop Elite Admin</div>
+            <h1 class="greeting">System Intelligence Console</h1>
+            <p class="subtitle">Operational synchronization active. Smart Shop systems healthy.</p>
         </div>
-        <div>
-            <h2 class="fw-bold text-dark mb-1">System Overview</h2>
-            <p class="text-muted mb-0">Welcome back, Super Admin. Here's what's happening on the platform today.</p>
-        </div>
-        <div class="date-badge">
-            <i class="far fa-calendar-alt me-2"></i> Jan 30, 2026
-        </div>
-    </div>
-
-    <!-- Stats Grid -->
-    <div class="row g-4 mb-5">
-        <div class="col-md-3" *ngFor="let stat of stats">
-            <div class="stat-card">
-                <div class="stat-icon" [style.background-color]="stat.color + '15'" [style.color]="stat.color">
-                    <i class="fas" [ngClass]="stat.icon"></i>
-                </div>
-                <div class="stat-content">
-                    <p class="stat-label">{{ stat.label }}</p>
-                    <h3 class="stat-value">{{ stat.value }}</h3>
-                    <span class="stat-trend" [style.color]="stat.color">{{ stat.trend }}</span>
+        <div class="header-right">
+            <div class="time-widget">
+                <i class="fa-solid fa-clock"></i>
+                <div class="time-meta">
+                    <span class="time">{{ currentTime }}</span>
+                    <span class="date">{{ currentDate }}</span>
                 </div>
             </div>
+            <button class="btn-command-primary">
+                <i class="fa-solid fa-bolt me-2"></i> Quick Action Hub
+            </button>
         </div>
-    </div>
+    </header>
 
-    <div class="row g-4">
-        <!-- Recent Activity -->
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                    <h5 class="fw-bold mb-0">Platform Activity</h5>
-                    <button class="btn btn-light btn-sm rounded-pill">View All</button>
+    <div class="dashboard-workspace">
+        <!-- ─────────────── Primary KPI Matrix ─────────────── -->
+        <section class="kpi-matrix">
+            <!-- Main Hero Stat -->
+            <div class="kpi-card hero-card">
+                <div class="card-bg-icon"><i class="fa-solid fa-chart-line"></i></div>
+                <div class="card-content">
+                    <span class="kpi-label">Aggregated Marketplace Revenue</span>
+                    <h2 class="kpi-value">$1,284,520.00</h2>
+                    <div class="kpi-trend positive">
+                        <i class="fa-solid fa-arrow-trend-up"></i>
+                        <span>+18.4% performance gain this month</span>
+                    </div>
                 </div>
-                <div class="card-body p-4">
-                    <div class="activity-timeline">
-                        <div class="activity-item" *ngFor="let activity of recentActivities">
-                            <div class="activity-icon" [style.background-color]="activity.color">
-                                <i class="fas" [ngClass]="activity.icon"></i>
+                <div class="mini-chart-mock">
+                    <div class="bar" style="height: 40%"></div>
+                    <div class="bar" style="height: 60%"></div>
+                    <div class="bar" style="height: 45%"></div>
+                    <div class="bar" style="height: 80%"></div>
+                    <div class="bar" style="height: 65%"></div>
+                    <div class="bar" style="height: 90%"></div>
+                </div>
+            </div>
+
+            <!-- Secondary Stats Grid -->
+            <div class="secondary-kpis">
+                <div class="kpi-card mini" *ngFor="let stat of stats">
+                    <div class="mini-head">
+                        <div class="icon-box" [ngClass]="stat.iconType">
+                            <i class="fas" [ngClass]="stat.icon"></i>
+                        </div>
+                        <div class="trend-badge" *ngIf="stat.trend">
+                            <i class="fa-solid fa-angle-up"></i> {{ stat.trend }}
+                        </div>
+                    </div>
+                    <div class="mini-body">
+                        <h4 class="mini-value">{{ stat.value }}</h4>
+                        <span class="mini-label">{{ stat.label }}</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="secondary-grid">
+            <!-- Operational Feed (Timeline) -->
+            <section class="workspace-panel feed-panel">
+                <div class="panel-header">
+                    <h3><i class="fa-solid fa-wave-square me-2"></i> Live Operational Stream</h3>
+                    <div class="header-actions">
+                        <span class="live-indicator">LIVE</span>
+                        <button class="btn-panel-icon"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                    </div>
+                </div>
+                <div class="feed-container">
+                    <div class="feed-item" *ngFor="let activity of recentActivities">
+                        <div class="feed-marker" [ngClass]="activity.type">
+                            <i class="fas" [ngClass]="activity.icon"></i>
+                        </div>
+                        <div class="feed-content">
+                            <div class="feed-meta">
+                                <span class="feed-type">{{ activity.type | uppercase }}</span>
+                                <span class="feed-time">{{ activity.time }}</span>
                             </div>
-                            <div class="activity-content">
-                                <p class="mb-1 text-dark fw-semibold">{{ activity.message }}</p>
-                                <span class="text-muted x-small"><i class="far fa-clock me-1"></i> {{ activity.time
-                                    }}</span>
+                            <p class="feed-msg">{{ activity.message }}</p>
+                            <div class="feed-cta" *ngIf="activity.action">
+                                <button class="btn-feed-action">{{ activity.action }}</button>
+                                <button class="btn-feed-ghost">Details</button>
                             </div>
-                            <button class="btn btn-action"><i class="fas fa-chevron-right"></i></button>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </section>
 
-        <!-- Quick Links / Secondary Stats -->
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4 bg-primary text-white p-4 mb-4">
-                <h5 class="fw-bold mb-3">Quick Actions</h5>
-                <div class="d-grid gap-2">
-                    <button class="btn btn-white text-primary fw-bold" routerLink="/admin/stores">
-                        <i class="fas fa-check-circle me-2"></i> Review Applications
-                    </button>
-                    <button class="btn btn-outline-white fw-bold" routerLink="/admin/payouts">
-                        <i class="fas fa-wallet me-2"></i> Process Payouts
-                    </button>
-                </div>
-            </div>
+            <!-- System Diagnostics & Fast Controls -->
+            <aside class="controls-column">
+                <section class="workspace-panel health-panel">
+                    <div class="panel-header">
+                        <h3><i class="fa-solid fa-microchip me-2"></i> System Diagnostics</h3>
+                    </div>
+                    <div class="diagnostic-grid">
+                        <div class="diag-item">
+                            <div class="diag-meta">
+                                <span>Processor Load</span>
+                                <span class="text-success fw-bold">24%</span>
+                            </div>
+                            <div class="diag-track"><div class="diag-fill success" style="width: 24%"></div></div>
+                        </div>
+                        <div class="diag-item">
+                            <div class="diag-meta">
+                                <span>Storage Utilization</span>
+                                <span class="text-warning fw-bold">78%</span>
+                            </div>
+                            <div class="diag-track"><div class="diag-fill warning" style="width: 78%"></div></div>
+                        </div>
+                    </div>
+                </section>
 
-            <div class="card border-0 shadow-sm rounded-4 h-auto">
-                <div class="card-body p-4">
-                    <h6 class="fw-bold mb-4">Storage Usage</h6>
-                    <div class="progress mb-2" style="height: 8px;">
-                        <div class="progress-bar bg-success" style="width: 45%;"></div>
+                <section class="workspace-panel action-panel">
+                    <div class="panel-header">
+                        <h3><i class="fa-solid fa-bolt me-2"></i> Executive Shortcuts</h3>
                     </div>
-                    <div class="d-flex justify-content-between x-small text-muted">
-                        <span>450GB Used</span>
-                        <span>1TB Total</span>
+                    <div class="shortcut-grid">
+                        <button class="shortcut-btn">
+                            <div class="btn-icon"><i class="fa-solid fa-user-plus"></i></div>
+                            <div class="btn-copy">
+                                <strong>Seller Approval</strong>
+                                <span>4 New Submissions</span>
+                            </div>
+                        </button>
+                        <button class="shortcut-btn">
+                            <div class="btn-icon warning"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                            <div class="btn-copy">
+                                <strong>Payout Hub</strong>
+                                <span>$12.4k ready for review</span>
+                            </div>
+                        </button>
+                        <button class="shortcut-btn">
+                            <div class="btn-icon success"><i class="fa-solid fa-shield-halved"></i></div>
+                            <div class="btn-copy">
+                                <strong>Security Audit</strong>
+                                <span>System Secure</span>
+                            </div>
+                        </button>
                     </div>
-                </div>
-            </div>
+                </section>
+            </aside>
         </div>
     </div>
 </div>
