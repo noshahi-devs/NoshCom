@@ -1,6 +1,5 @@
 <div class="elite-admin-container">
     <section class="orders-table-card">
-        <!-- ─────────────── Elite Card Header ─────────────── -->
         <div class="orders-card-top">
             <div class="orders-card-copy">
                 <div class="orders-card-kicker">Administration & Identity</div>
@@ -12,41 +11,41 @@
             </div>
         </div>
 
-        <!-- ─────────────── Advanced Table Tools ─────────────── -->
         <div class="table-tools">
             <div class="entries-info">
                 <span class="entries-label">Active Directory</span>
                 <span class="entries-chip">{{ users.length }} System Users</span>
             </div>
-            
             <div class="filter-pills d-none d-lg-flex" style="margin: 0 40px; gap: 10px;">
                 <button class="btn-primary-glow" (click)="openAddModal()">
                     <i class="fas fa-plus me-2"></i> Provision New Admin
                 </button>
             </div>
-
             <div class="search-wrap">
                 <label for="userSearch">Directory Search</label>
                 <div class="search-input-container">
                     <span class="search-icon-badge"><i class="fa-solid fa-magnifying-glass"></i></span>
-                    <input id="userSearch" type="text" placeholder="Search by name, email, or role..." stroke-linecap="round">
+                    <input id="userSearch" type="text" placeholder="Search by name, email, or role...">
                 </div>
             </div>
         </div>
 
-        <!-- ─────────────── Elite Workspace Stack (Cards) ─────────────── -->
         <div class="orders-workspace-stack">
             <div class="orders-cards-container">
-                <!-- User Cards -->
                 <div *ngFor="let user of users" class="order-item-card">
-                    <!-- Status Accent Strip (Always Premium Brand Gold) -->
-                    <div class="status-accent-strip" style="background: #F2BB13 !important;"></div>
+                    <!-- Status Accent Strip — red if blocked -->
+                    <div class="status-accent-strip"
+                         [style.background]="user.blocked ? '#dc3545' : '#F2BB13'"></div>
 
-                    <!-- Main Content Row -->
                     <div class="card-row card-main-row">
                         <div class="col col-id">
-                            <div class="icon-wrap icon-verified">
-                                <i class="fa-solid" [class.fa-user-tie]="user.status === 'Active'" [class.fa-user-lock]="user.status !== 'Active'"></i>
+                            <div class="icon-wrap" [class.icon-verified]="!user.blocked"
+                                 [style.background]="user.blocked ? 'rgba(220,53,69,0.1)' : ''">
+                                <i class="fa-solid"
+                                   [class.fa-user-tie]="!user.blocked && user.status === 'Active'"
+                                   [class.fa-user-lock]="user.blocked"
+                                   [class.fa-user-slash]="!user.blocked && user.status !== 'Active'"
+                                   [style.color]="user.blocked ? '#dc3545' : ''"></i>
                             </div>
                             <div class="id-group">
                                 <p class="mini-label">Administrative Principal</p>
@@ -62,20 +61,39 @@
 
                         <div class="col col-status">
                             <p class="mini-label">Account Status</p>
-                            <span class="status-pill-modern" [style.color]="user.status === 'Active' ? '#111' : '#888'">
-                                {{ user.status | uppercase }}
+                            <span class="status-pill-modern"
+                                  [style.color]="user.blocked ? '#dc3545' : user.status === 'Active' ? '#111' : '#888'"
+                                  [style.fontWeight]="user.blocked ? '800' : ''">
+                                {{ user.blocked ? 'BLOCKED' : (user.status | uppercase) }}
                             </span>
                         </div>
 
                         <div class="col col-action">
                             <div class="d-flex gap-2">
-                                <button (click)="toggleStatus(user)" class="btn-primary-glow" [title]="user.status === 'Active' ? 'Suspend Access' : 'Activate Access'">
+                                <!-- Suspend / Activate -->
+                                <button (click)="toggleStatus(user)" class="btn-primary-glow"
+                                        [title]="user.status === 'Active' ? 'Suspend Access' : 'Activate Access'"
+                                        [disabled]="user.blocked"
+                                        [style.opacity]="user.blocked ? '0.4' : '1'">
                                     <i class="fas" [ngClass]="user.status === 'Active' ? 'fa-user-slash' : 'fa-user-check'"></i>
                                 </button>
-                                <button class="btn-primary-glow" title="Reset Credentials">
-                                    <i class="fas fa-key"></i>
+
+                                <!-- Block / Unblock -->
+                                <button class="btn-primary-glow"
+                                        [title]="user.blocked ? 'Unblock Account' : 'Block Account'"
+                                        (click)="user.blocked ? unblockUser(user) : openBlockModal(user)"
+                                        [style.background]="user.blocked ? '#28a745' : '#dc3545'"
+                                        [style.boxShadow]="user.blocked ? '0 4px 15px rgba(40,167,69,0.4)' : '0 4px 15px rgba(220,53,69,0.4)'">
+                                    <i class="fas" [ngClass]="user.blocked ? 'fa-lock-open' : 'fa-ban'"></i>
                                 </button>
-                                <button class="btn-primary-glow" title="Edit Node Details">
+
+                                <!-- Warning -->
+                                <button class="btn-primary-glow" title="Send Warning Message" (click)="openWarningModal(user)">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </button>
+
+                                <!-- Edit -->
+                                <button class="btn-primary-glow" title="Edit Node Details" (click)="openEditModal(user)">
                                     <i class="fas fa-edit"></i>
                                 </button>
                             </div>
@@ -84,7 +102,20 @@
 
                     <div class="row-divider"></div>
 
-                    <!-- Meta Information Row (Audit Data) -->
+                    <!-- Blocked reason banner (visible only when blocked) -->
+                    <div *ngIf="user.blocked" class="d-flex align-items-center gap-2 px-3 py-2"
+                         style="background: rgba(220,53,69,0.06); border-top: 1px solid rgba(220,53,69,0.15);">
+                        <i class="fas fa-ban" style="color:#dc3545; font-size:0.8rem;"></i>
+                        <span style="font-size:0.75rem; font-weight:700; color:#c0392b;">
+                            Account Blocked{{ user.blockReason ? ' — Reason: ' + user.blockReason : '' }}
+                        </span>
+                        <button class="ms-auto" (click)="previewBlockedPopup(user)"
+                                style="border:none; background:rgba(220,53,69,0.12); color:#dc3545; border-radius:8px; padding:3px 10px; font-size:0.7rem; font-weight:800; cursor:pointer;">
+                            <i class="fas fa-eye me-1"></i>Preview Seller View
+                        </button>
+                    </div>
+
+                    <!-- Meta Row -->
                     <div class="card-row card-meta-row">
                         <div class="col col-timeline">
                             <i class="fa-solid fa-clock-rotate-left meta-icon"></i>
@@ -93,7 +124,6 @@
                                 <p class="timeline-val">Authenticated recently from Secure Portal Node</p>
                             </div>
                         </div>
-
                         <div class="col col-carrier">
                             <p class="mini-label">Access Level</p>
                             <div class="carrier-group">
@@ -105,12 +135,10 @@
                                 <span class="method-chip ms-auto">{{ user.role === 'Super Admin' ? 'ROOT' : 'RESTRICTED' }}</span>
                             </div>
                         </div>
-
                         <div class="col col-window">
                             <p class="mini-label">Authentication Mode</p>
                             <p class="window-val fw-bold" style="color: #111;">Standard Web Login</p>
                         </div>
-
                         <div class="col col-elapsed">
                             <p class="mini-label">Principal ID</p>
                             <p class="elapsed-val">USR-{{ user.name.split(' ')[0] | uppercase }}-2026</p>
@@ -130,45 +158,290 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- PROVISIONING MODAL (Elite) -->
+<!-- ADD MODAL -->
 <!-- ============================================================ -->
 <div class="modal" *ngIf="showAddModal" [class.show]="showAddModal" [style.display]="showAddModal ? 'flex' : 'none'">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header" style="background: #111; color: #F2BB13; padding: 15px 30px;">
-                <h5 class="modal-title fw-bold m-0" style="font-size: 1.1rem;">Provision New Administrative Node</h5>
-                <button type="button" (click)="closeAddModal()" style="border: none; background: none; color: #F2BB13; font-size: 1.2rem; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; transition: all 0.3s ease; outline: none; margin: 0;"><i class="fas fa-times"></i></button>
+            <div class="modal-header" style="background:#111; color:#F2BB13; padding:15px 30px;">
+                <h5 class="modal-title fw-bold m-0" style="font-size:1.1rem;">Provision New Administrative Node</h5>
+                <button type="button" (click)="closeAddModal()" style="border:none; background:none; color:#F2BB13; font-size:1.2rem; cursor:pointer; padding:0; width:32px; height:32px; outline:none; margin:0;"><i class="fas fa-times"></i></button>
             </div>
-            <div class="modal-body" style="padding: 20px 30px;">
+            <div class="modal-body" style="padding:20px 30px;">
                 <div class="mb-3">
-                    <label class="mini-label d-block mb-1" style="font-size: 0.7rem; font-weight: 800;">Legal Identity Name</label>
-                    <input type="text" class="form-control" [(ngModel)]="newUser.name" placeholder="Full legal name of administrator" style="height: 42px; border-radius: 10px; font-size: 0.85rem;">
+                    <label class="mini-label d-block mb-1" style="font-size:0.7rem; font-weight:800;">Legal Identity Name</label>
+                    <input type="text" class="form-control" [(ngModel)]="newUser.name" placeholder="Full legal name" style="height:42px; border-radius:10px; font-size:0.85rem;">
                 </div>
                 <div class="mb-3">
-                    <label class="mini-label d-block mb-1" style="font-size: 0.7rem; font-weight: 800;">Corporate Email Address</label>
-                    <input type="email" class="form-control" [(ngModel)]="newUser.email" placeholder="official@elicom.com" style="height: 42px; border-radius: 10px; font-size: 0.85rem;">
+                    <label class="mini-label d-block mb-1" style="font-size:0.7rem; font-weight:800;">Corporate Email Address</label>
+                    <input type="email" class="form-control" [(ngModel)]="newUser.email" placeholder="official@elicom.com" style="height:42px; border-radius:10px; font-size:0.85rem;">
                 </div>
                 <div class="mb-3">
-                    <label class="mini-label d-block mb-1" style="font-size: 0.7rem; font-weight: 800;">Security Authorization Role</label>
-                    <select class="form-select" [(ngModel)]="newUser.role" style="height: 42px; border-radius: 10px; font-weight: 700; padding: 0 15px; width: 100%; border: 1px solid #e2e8f0; font-size: 0.85rem;">
-                        <option>Super Admin</option>
-                        <option>Support Staff</option>
-                        <option>Financial Auditor</option>
-                        <option>KYC Reviewer</option>
+                    <label class="mini-label d-block mb-1" style="font-size:0.7rem; font-weight:800;">Security Authorization Role</label>
+                    <select class="form-select" [(ngModel)]="newUser.role" style="height:42px; border-radius:10px; font-weight:700; padding:0 15px; width:100%; border:1px solid #e2e8f0; font-size:0.85rem;">
+                        <option>Super Admin</option><option>Support Staff</option><option>Financial Auditor</option><option>KYC Reviewer</option>
                     </select>
                 </div>
-                
-                <div class="alert alert-warning border-0 rounded-3 p-2.5 d-flex align-items-center mb-0" style="background: rgba(242, 187, 19, 0.1); color: #b48d0e; font-size: 0.78rem; font-weight: 700;">
-                    <i class="fas fa-shield-halved me-2 fs-5" style="color: #F2BB13;"></i>
-                    <span>Newly provisioned nodes will require initial credential reset upon first authentication.</span>
+                <div class="d-flex align-items-center gap-2 p-3" style="background:rgba(242,187,19,0.1); border-radius:10px;">
+                    <i class="fas fa-shield-halved" style="color:#F2BB13;"></i>
+                    <span style="font-size:0.78rem; font-weight:700; color:#b48d0e;">Newly provisioned nodes will require initial credential reset upon first authentication.</span>
                 </div>
             </div>
-            <div class="modal-footer d-flex gap-3" style="padding: 10px 30px 25px; border: none;">
-                <button type="button" class="btn btn-light px-4 flex-grow-1 fw-bold" style="border-radius: 10px; height: 42px; font-size: 0.9rem;" (click)="closeAddModal()">Discard</button>
-                <button type="button" class="btn-primary-glow px-4 flex-grow-1" style="border-radius: 10px; height: 42px; font-size: 0.9rem; padding: 0;" (click)="addUser()">Authorize & Provision</button>
+            <div class="modal-footer d-flex gap-3" style="padding:10px 30px 25px; border:none;">
+                <button type="button" class="btn btn-light px-4 flex-grow-1 fw-bold" style="border-radius:10px; height:42px;" (click)="closeAddModal()">Discard</button>
+                <button type="button" class="btn-primary-glow px-4 flex-grow-1" style="border-radius:10px; height:42px; padding:0;" (click)="addUser()">Authorize & Provision</button>
             </div>
         </div>
     </div>
 </div>
-
 <div class="modal-backdrop" *ngIf="showAddModal" [class.show]="showAddModal"></div>
+
+<!-- ============================================================ -->
+<!-- EDIT MODAL -->
+<!-- ============================================================ -->
+<div class="modal" *ngIf="showEditModal" [class.show]="showEditModal" [style.display]="showEditModal ? 'flex' : 'none'">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#111; color:#F2BB13; padding:15px 30px;">
+                <h5 class="modal-title fw-bold m-0" style="font-size:1.1rem;">Edit Administrative Node</h5>
+                <button type="button" (click)="closeEditModal()" style="border:none; background:none; color:#F2BB13; font-size:1.2rem; cursor:pointer; padding:0; width:32px; height:32px; outline:none; margin:0;"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" style="padding:20px 30px;">
+                <div class="mb-3">
+                    <label class="mini-label d-block mb-1" style="font-size:0.7rem; font-weight:800;">Legal Identity Name</label>
+                    <input type="text" class="form-control" [(ngModel)]="editUser.name" placeholder="Full legal name" style="height:42px; border-radius:10px; font-size:0.85rem;">
+                </div>
+                <div class="mb-3">
+                    <label class="mini-label d-block mb-1" style="font-size:0.7rem; font-weight:800;">Corporate Email Address</label>
+                    <input type="email" class="form-control" [(ngModel)]="editUser.email" placeholder="official@elicom.com" style="height:42px; border-radius:10px; font-size:0.85rem;">
+                </div>
+                <div class="mb-3">
+                    <label class="mini-label d-block mb-1" style="font-size:0.7rem; font-weight:800;">Security Authorization Role</label>
+                    <select class="form-select" [(ngModel)]="editUser.role" style="height:42px; border-radius:10px; font-weight:700; padding:0 15px; width:100%; border:1px solid #e2e8f0; font-size:0.85rem;">
+                        <option>Super Admin</option><option>Support Staff</option><option>Support Lead</option><option>Financial Auditor</option><option>KYC Reviewer</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="mini-label d-block mb-1" style="font-size:0.7rem; font-weight:800;">Account Status</label>
+                    <select class="form-select" [(ngModel)]="editUser.status" style="height:42px; border-radius:10px; font-weight:700; padding:0 15px; width:100%; border:1px solid #e2e8f0; font-size:0.85rem;">
+                        <option>Active</option><option>Inactive</option>
+                    </select>
+                </div>
+                <div class="d-flex align-items-center gap-2 p-3" style="background:rgba(242,187,19,0.1); border-radius:10px;">
+                    <i class="fas fa-shield-halved" style="color:#F2BB13;"></i>
+                    <span style="font-size:0.78rem; font-weight:700; color:#b48d0e;">Changes will take effect immediately upon saving.</span>
+                </div>
+            </div>
+            <div class="modal-footer d-flex gap-3" style="padding:10px 30px 25px; border:none;">
+                <button type="button" class="btn btn-light px-4 flex-grow-1 fw-bold" style="border-radius:10px; height:42px;" (click)="closeEditModal()">Discard</button>
+                <button type="button" class="btn-primary-glow px-4 flex-grow-1" style="border-radius:10px; height:42px; padding:0;" (click)="saveEditUser()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop" *ngIf="showEditModal" [class.show]="showEditModal"></div>
+
+<!-- ============================================================ -->
+<!-- BLOCK ACCOUNT MODAL -->
+<!-- ============================================================ -->
+<div class="modal" *ngIf="showBlockModal" [class.show]="showBlockModal" [style.display]="showBlockModal ? 'flex' : 'none'">
+    <div class="modal-dialog" style="max-width:480px;">
+        <div class="modal-content" style="border-radius:18px; overflow:hidden; border:none;">
+
+            <!-- Header -->
+            <div style="background:#dc3545; padding:20px 28px; display:flex; align-items:center; justify-content:space-between;">
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:38px; height:38px; background:rgba(255,255,255,0.15); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                        <i class="fas fa-ban" style="color:#fff; font-size:1rem;"></i>
+                    </div>
+                    <div>
+                        <p class="m-0" style="color:rgba(255,255,255,0.7); font-size:0.65rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Account Action</p>
+                        <h5 class="m-0 fw-bold" style="color:#fff; font-size:1rem;">Block Account Access</h5>
+                    </div>
+                </div>
+                <button (click)="closeBlockModal()" style="border:none; background:rgba(255,255,255,0.15); color:#fff; width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Target User Card -->
+            <div style="padding:20px 28px 0;">
+                <div class="d-flex align-items-center gap-3 p-3" style="background:#fff5f5; border-radius:12px; border:1px solid rgba(220,53,69,0.2);">
+                    <div style="width:42px; height:42px; background:#dc3545; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        <i class="fas fa-user-lock" style="color:#fff; font-size:1rem;"></i>
+                    </div>
+                    <div>
+                        <p class="m-0 fw-bold" style="font-size:0.9rem; color:#111;">{{ blockTarget?.name }}</p>
+                        <p class="m-0" style="font-size:0.75rem; color:#666;">{{ blockTarget?.email }}</p>
+                    </div>
+                    <span class="ms-auto" style="background:#dc3545; color:#fff; font-size:0.65rem; font-weight:800; padding:4px 10px; border-radius:20px;">{{ blockTarget?.role }}</span>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div style="padding:16px 28px 20px;">
+                <label class="mini-label d-block mb-1" style="font-size:0.7rem; font-weight:800;">Block Reason <span style="color:#999; font-weight:500;">(Optional)</span></label>
+                <textarea class="form-control" [(ngModel)]="blockReasonInput" rows="3"
+                    placeholder="e.g. Fraudulent activity, Terms of service violation, Suspicious behaviour..."
+                    style="border-radius:10px; font-size:0.85rem; resize:none; border-color:rgba(220,53,69,0.3);"></textarea>
+                <p class="mt-2 mb-0" style="font-size:0.72rem; color:#999;">This reason will be shown to the user when they attempt to sign in.</p>
+
+                <div class="d-flex align-items-start gap-2 mt-3 p-3" style="background:#fff5f5; border-radius:10px; border-left:3px solid #dc3545;">
+                    <i class="fas fa-triangle-exclamation mt-1" style="color:#dc3545; font-size:0.85rem; flex-shrink:0;"></i>
+                    <span style="font-size:0.75rem; font-weight:700; color:#c0392b;">The user will be immediately signed out and will not be able to sign in until an admin unblocks the account.</span>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="d-flex gap-3" style="padding:0 28px 24px;">
+                <button type="button" class="btn btn-light flex-grow-1 fw-bold" style="border-radius:10px; height:44px;" (click)="closeBlockModal()">Cancel</button>
+                <button type="button" class="flex-grow-1 fw-bold" (click)="confirmBlock()"
+                    style="border:none; background:#dc3545; color:#fff; border-radius:10px; height:44px; font-size:0.9rem; cursor:pointer; box-shadow:0 4px 15px rgba(220,53,69,0.4); transition:all 0.2s;">
+                    <i class="fas fa-ban me-2"></i>Confirm Block
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop" *ngIf="showBlockModal" [class.show]="showBlockModal"></div>
+
+<!-- ============================================================ -->
+<!-- SELLER BLOCKED POPUP (what seller sees on login attempt) -->
+<!-- ============================================================ -->
+<div class="modal" *ngIf="showBlockedPopup" [class.show]="showBlockedPopup" [style.display]="showBlockedPopup ? 'flex' : 'none'">
+    <div class="modal-dialog" style="max-width:460px;">
+        <div class="modal-content" style="border-radius:20px; overflow:hidden; border:none; box-shadow:0 25px 60px rgba(0,0,0,0.25);">
+
+            <!-- Red Top Banner -->
+            <div style="background:linear-gradient(135deg,#c0392b,#e74c3c); padding:32px 28px 24px; text-align:center; position:relative;">
+                <div style="width:72px; height:72px; background:rgba(255,255,255,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 14px;">
+                    <i class="fas fa-ban" style="color:#fff; font-size:2rem;"></i>
+                </div>
+                <h4 class="fw-bold m-0" style="color:#fff; font-size:1.3rem; letter-spacing:0.3px;">Account Suspended</h4>
+                <p class="m-0 mt-1" style="color:rgba(255,255,255,0.75); font-size:0.82rem;">Your access to this platform has been restricted</p>
+            </div>
+
+            <!-- Body -->
+            <div style="padding:24px 28px;">
+
+                <!-- User Info -->
+                <div class="d-flex align-items-center gap-3 mb-4 p-3" style="background:#f8f9fa; border-radius:12px;">
+                    <div style="width:44px; height:44px; background:#dc3545; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        <i class="fas fa-user-lock" style="color:#fff;"></i>
+                    </div>
+                    <div>
+                        <p class="m-0 fw-bold" style="font-size:0.9rem; color:#111;">{{ blockedPopupUser?.name }}</p>
+                        <p class="m-0" style="font-size:0.75rem; color:#666;">{{ blockedPopupUser?.email }}</p>
+                    </div>
+                    <span class="ms-auto" style="background:#fff0f0; color:#dc3545; font-size:0.65rem; font-weight:800; padding:4px 10px; border-radius:20px; border:1px solid rgba(220,53,69,0.2);">BLOCKED</span>
+                </div>
+
+                <!-- Reason Box -->
+                <div *ngIf="blockedPopupUser?.blockReason" class="mb-4 p-3" style="background:#fff5f5; border-radius:12px; border-left:4px solid #dc3545;">
+                    <p class="m-0 mb-1" style="font-size:0.65rem; font-weight:800; color:#dc3545; text-transform:uppercase; letter-spacing:0.8px;">Reason for Suspension</p>
+                    <p class="m-0" style="font-size:0.85rem; color:#333; font-weight:600; line-height:1.5;">{{ blockedPopupUser?.blockReason }}</p>
+                </div>
+
+                <!-- Info Points -->
+                <div class="d-flex flex-column gap-2 mb-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-circle-xmark" style="color:#dc3545; font-size:0.85rem; width:16px;"></i>
+                        <span style="font-size:0.8rem; color:#555;">You cannot sign in while your account is blocked.</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-circle-xmark" style="color:#dc3545; font-size:0.85rem; width:16px;"></i>
+                        <span style="font-size:0.8rem; color:#555;">All active sessions have been terminated.</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-circle-check" style="color:#28a745; font-size:0.85rem; width:16px;"></i>
+                        <span style="font-size:0.8rem; color:#555;">Contact platform support to appeal this decision.</span>
+                    </div>
+                </div>
+
+                <!-- Support Contact -->
+                <div class="d-flex align-items-center gap-2 p-3" style="background:rgba(242,187,19,0.08); border-radius:10px; border:1px solid rgba(242,187,19,0.3);">
+                    <i class="fas fa-headset" style="color:#F2BB13; font-size:1rem; flex-shrink:0;"></i>
+                    <div>
+                        <p class="m-0" style="font-size:0.72rem; font-weight:800; color:#111;">Need Help?</p>
+                        <p class="m-0" style="font-size:0.72rem; color:#666;">Contact support at <strong>support@elicom.com</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="padding:0 28px 24px;">
+                <button type="button" (click)="closeBlockedPopup()"
+                    style="width:100%; border:none; background:#111; color:#F2BB13; border-radius:12px; height:46px; font-size:0.9rem; font-weight:800; cursor:pointer; letter-spacing:0.3px;">
+                    Close Preview
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop" *ngIf="showBlockedPopup" [class.show]="showBlockedPopup"></div>
+
+<!-- ============================================================ -->
+<!-- WARNING MESSAGE MODAL -->
+<!-- ============================================================ -->
+<div class="modal" *ngIf="showWarningModal" [class.show]="showWarningModal" [style.display]="showWarningModal ? 'flex' : 'none'">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#111; color:#F2BB13; padding:15px 30px;">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-exclamation-triangle" style="color:#F2BB13; font-size:1.1rem;"></i>
+                    <h5 class="modal-title fw-bold m-0" style="font-size:1.1rem;">Issue Official Warning</h5>
+                </div>
+                <button type="button" (click)="closeWarningModal()" style="border:none; background:none; color:#F2BB13; font-size:1.2rem; cursor:pointer; padding:0; width:32px; height:32px; outline:none; margin:0;"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" style="padding:20px 30px;">
+                <div class="d-flex align-items-center gap-3 mb-4 p-3" style="background:rgba(242,187,19,0.08); border-radius:12px; border-left:4px solid #F2BB13;">
+                    <div style="width:42px; height:42px; background:#111; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        <i class="fas fa-user-tie" style="color:#F2BB13; font-size:1rem;"></i>
+                    </div>
+                    <div>
+                        <p class="m-0 fw-bold" style="font-size:0.9rem; color:#111;">{{ warningTarget?.name }}</p>
+                        <p class="m-0" style="font-size:0.75rem; color:#666;">{{ warningTarget?.email }}</p>
+                    </div>
+                    <span class="ms-auto" style="background:#111; color:#F2BB13; font-size:0.65rem; font-weight:800; padding:4px 10px; border-radius:20px;">{{ warningTarget?.role }}</span>
+                </div>
+                <div class="mb-3">
+                    <label class="mini-label d-block mb-1" style="font-size:0.7rem; font-weight:800;">Warning Severity Level</label>
+                    <div class="d-flex gap-2">
+                        <button *ngFor="let level of warningSeverityLevels"
+                            (click)="selectedSeverity = level.value"
+                            [style.background]="selectedSeverity === level.value ? level.color : '#f5f5f5'"
+                            [style.color]="selectedSeverity === level.value ? '#fff' : '#555'"
+                            style="flex:1; border:none; border-radius:10px; padding:8px 4px; font-size:0.72rem; font-weight:800; cursor:pointer; transition:all 0.2s;">
+                            <i [class]="level.icon + ' me-1'"></i>{{ level.label }}
+                        </button>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="mini-label d-block mb-1" style="font-size:0.7rem; font-weight:800;">Warning Subject</label>
+                    <input type="text" class="form-control" [(ngModel)]="warningSubject" placeholder="e.g. Policy Violation, Suspicious Activity..." style="height:42px; border-radius:10px; font-size:0.85rem;">
+                </div>
+                <div class="mb-3">
+                    <label class="mini-label d-block mb-1" style="font-size:0.7rem; font-weight:800;">Official Warning Message</label>
+                    <textarea class="form-control" [(ngModel)]="warningMessage" rows="5"
+                        placeholder="Write your official warning message here..."
+                        style="border-radius:10px; font-size:0.85rem; resize:none; line-height:1.6;"></textarea>
+                    <div class="d-flex justify-content-end mt-1">
+                        <span style="font-size:0.7rem; color:#999;">{{ warningMessage.length }} / 500 characters</span>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 p-3" style="background:rgba(220,53,69,0.07); border-radius:10px; border-left:3px solid #dc3545;">
+                    <i class="fas fa-shield-halved" style="color:#dc3545; font-size:1rem; flex-shrink:0;"></i>
+                    <span style="font-size:0.75rem; font-weight:700; color:#c0392b;">This warning will be logged in the system audit trail and delivered to the user's registered email.</span>
+                </div>
+            </div>
+            <div class="modal-footer d-flex gap-3" style="padding:10px 30px 25px; border:none;">
+                <button type="button" class="btn btn-light px-4 flex-grow-1 fw-bold" style="border-radius:10px; height:42px;" (click)="closeWarningModal()">Cancel</button>
+                <button type="button" class="btn-primary-glow px-4 flex-grow-1" (click)="sendWarning()"
+                    style="border-radius:10px; height:42px; padding:0; background:#dc3545 !important; box-shadow:0 4px 15px rgba(220,53,69,0.35) !important;">
+                    <i class="fas fa-paper-plane me-2"></i>Dispatch Warning
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop" *ngIf="showWarningModal" [class.show]="showWarningModal"></div>
