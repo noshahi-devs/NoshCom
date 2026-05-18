@@ -36,7 +36,7 @@ export class AuthModalComponent implements OnInit, OnDestroy {
     // Loading Experience
     loadingMessage: string = 'Starting registration...';
     private loadingMessages = [
-        'Creating your NoshCom profile...',
+        'Creating your Smart Shop UK profile...',
         'Securing your account...',
         'Preparing your dashboard...',
         'Almost ready...',
@@ -187,7 +187,7 @@ export class AuthModalComponent implements OnInit, OnDestroy {
         this.signInForm.disable({ emitEvent: false });
         this.errorMessage = '';
         this.showErrorModal = false;
-        this.loadingMessage = 'Signing you in to NoshCom...';
+        this.loadingMessage = 'Signing you in to Smart Shop UK...';
 
         const credentials: LoginDto = {
             userNameOrEmailAddress: this.signInForm.value.email,

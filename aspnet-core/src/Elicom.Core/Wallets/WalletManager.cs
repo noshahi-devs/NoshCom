@@ -2,6 +2,7 @@ using Abp.Domain.Repositories;
 using Abp.Domain.Services;
 using Abp.UI;
 using Elicom.Entities;
+using Elicom.Cards;
 using System;
 using System.Threading.Tasks;
 
@@ -11,13 +12,16 @@ namespace Elicom.Wallets
     {
         private readonly IRepository<Wallet, Guid> _walletRepository;
         private readonly IRepository<WalletTransaction, Guid> _transactionRepository;
+        private readonly IRepository<VirtualCard, long> _virtualCardRepository;
 
         public WalletManager(
             IRepository<Wallet, Guid> walletRepository,
-            IRepository<WalletTransaction, Guid> transactionRepository)
+            IRepository<WalletTransaction, Guid> transactionRepository,
+            IRepository<VirtualCard, long> virtualCardRepository)
         {
             _walletRepository = walletRepository;
             _transactionRepository = transactionRepository;
+            _virtualCardRepository = virtualCardRepository;
         }
 
         public async Task<decimal> GetBalanceAsync(long userId)
@@ -32,6 +36,7 @@ namespace Elicom.Wallets
 
             var wallet = await GetOrCreateWalletAsync(userId);
             wallet.Balance += amount;
+            await _walletRepository.UpdateAsync(wallet);
             
             await _transactionRepository.InsertAsync(new WalletTransaction
             {
@@ -41,6 +46,14 @@ namespace Elicom.Wallets
                 ReferenceId = referenceId,
                 Description = description
             });
+
+            // Sync with Active Virtual Card
+            var activeCard = await _virtualCardRepository.FirstOrDefaultAsync(c => c.UserId == userId && c.Status == "Active");
+            if (activeCard != null)
+            {
+                activeCard.Balance += amount;
+                await _virtualCardRepository.UpdateAsync(activeCard);
+            }
         }
 
         public async Task<bool> TryDebitAsync(long userId, decimal amount, string referenceId, string description)
@@ -51,6 +64,7 @@ namespace Elicom.Wallets
             if (wallet.Balance < amount) return false;
 
             wallet.Balance -= amount;
+            await _walletRepository.UpdateAsync(wallet);
 
             await _transactionRepository.InsertAsync(new WalletTransaction
             {
@@ -60,6 +74,14 @@ namespace Elicom.Wallets
                 ReferenceId = referenceId,
                 Description = description
             });
+
+            // Sync with Active Virtual Card
+            var activeCard = await _virtualCardRepository.FirstOrDefaultAsync(c => c.UserId == userId && c.Status == "Active");
+            if (activeCard != null)
+            {
+                activeCard.Balance -= amount;
+                await _virtualCardRepository.UpdateAsync(activeCard);
+            }
 
             return true;
         }
@@ -81,6 +103,7 @@ namespace Elicom.Wallets
 
             // 1. Debit sender
             senderWallet.Balance -= amount;
+            await _walletRepository.UpdateAsync(senderWallet);
             await _transactionRepository.InsertAsync(new WalletTransaction
             {
                 WalletId = senderWallet.Id,
@@ -90,8 +113,17 @@ namespace Elicom.Wallets
                 Description = description
             });
 
+            // Sync Sender's Active Virtual Card balance
+            var senderActiveCard = await _virtualCardRepository.FirstOrDefaultAsync(c => c.UserId == senderUserId && c.Status == "Active");
+            if (senderActiveCard != null)
+            {
+                senderActiveCard.Balance -= amount;
+                await _virtualCardRepository.UpdateAsync(senderActiveCard);
+            }
+
             // 2. Credit receiver
             receiverWallet.Balance += amount;
+            await _walletRepository.UpdateAsync(receiverWallet);
             await _transactionRepository.InsertAsync(new WalletTransaction
             {
                 WalletId = receiverWallet.Id,
@@ -100,6 +132,14 @@ namespace Elicom.Wallets
                 ReferenceId = refId,
                 Description = $"From User {senderUserId}: {description}"
             });
+
+            // Sync receiver's Active Virtual Card balance
+            var receiverActiveCard = await _virtualCardRepository.FirstOrDefaultAsync(c => c.UserId == receiverUserId && c.Status == "Active");
+            if (receiverActiveCard != null)
+            {
+                receiverActiveCard.Balance += amount;
+                await _virtualCardRepository.UpdateAsync(receiverActiveCard);
+            }
         }
 
         private async Task<Wallet> GetOrCreateWalletAsync(long userId)

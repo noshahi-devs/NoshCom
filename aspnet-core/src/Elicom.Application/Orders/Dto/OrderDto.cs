@@ -1,4 +1,4 @@
-﻿using Abp.Application.Services.Dto;
+using Abp.Application.Services.Dto;
 using System;
 using System.Collections.Generic;
 using Elicom.OrderItems.Dto;
@@ -18,6 +18,8 @@ namespace Elicom.Orders.Dto
 
         public decimal SubTotal { get; set; }
         public decimal ShippingCost { get; set; }
+        public decimal WarehouseCharge { get; set; }
+        public decimal ServiceCharge { get; set; }
         public decimal Discount { get; set; }
         public decimal TotalAmount { get; set; }
 
@@ -34,6 +36,7 @@ namespace Elicom.Orders.Dto
         public string DeliveryTrackingNumber { get; set; }
 
         public DateTime? ShipmentDate { get; set; }
+        public DateTime? DeliveredAt { get; set; }
         public string CarrierId { get; set; }
         public string TrackingCode { get; set; }
 

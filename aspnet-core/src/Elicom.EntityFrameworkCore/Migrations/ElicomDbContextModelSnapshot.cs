@@ -2073,6 +2073,9 @@ namespace Elicom.Migrations
                     b.Property<DateTime?>("DeletionTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("DeliveryTrackingNumber")
                         .HasColumnType("nvarchar(max)");
 
@@ -2109,6 +2112,9 @@ namespace Elicom.Migrations
                     b.Property<string>("RecipientPhone")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("ServiceCharge")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime?>("ShipmentDate")
                         .HasColumnType("datetime2");
 
@@ -2141,6 +2147,9 @@ namespace Elicom.Migrations
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
+
+                    b.Property<decimal>("WarehouseCharge")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -2400,6 +2409,31 @@ namespace Elicom.Migrations
                     b.HasIndex("OwnerId");
 
                     b.ToTable("Stores");
+                });
+
+            modelBuilder.Entity("Elicom.Entities.StoreFavorite", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("AdminUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StoreId");
+
+                    b.HasIndex("AdminUserId", "StoreId")
+                        .IsUnique();
+
+                    b.ToTable("StoreFavorites");
                 });
 
             modelBuilder.Entity("Elicom.Entities.StoreKyc", b =>
@@ -3280,6 +3314,17 @@ namespace Elicom.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("Elicom.Entities.StoreFavorite", b =>
+                {
+                    b.HasOne("Elicom.Entities.Store", "Store")
+                        .WithMany()
+                        .HasForeignKey("StoreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Store");
                 });
 
             modelBuilder.Entity("Elicom.Entities.StoreKyc", b =>

@@ -1,4 +1,4 @@
-﻿DECLARE @Email NVARCHAR(256) = 'engr.adeelnoshahi@gmail.com';
+﻿DECLARE @Email NVARCHAR(256) = 'sharjeelnoshahi14147869@gmail.com';
 DECLARE @UserId BIGINT;
 
 -- Get UserId

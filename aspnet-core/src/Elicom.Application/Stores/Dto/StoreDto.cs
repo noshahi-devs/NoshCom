@@ -28,6 +28,7 @@ namespace Elicom.Stores.Dto
         public int TotalOrders { get; set; }
         public int ShippedOrders { get; set; }
         public int TotalProducts { get; set; }
+        public bool IsFavorite { get; set; }
         public StoreKycDto Kyc { get; set; }
     }
 
@@ -53,5 +54,10 @@ namespace Elicom.Stores.Dto
         public decimal? WithdrawLimit { get; set; }
         public DateTime? WithdrawAllowedUntil { get; set; }
         public string AdminWithdrawRemarks { get; set; }
+    }
+
+    public class SetStoreFavoriteInput : EntityDto<Guid>
+    {
+        public bool IsFavorite { get; set; }
     }
 }

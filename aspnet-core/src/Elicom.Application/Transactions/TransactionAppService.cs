@@ -152,7 +152,6 @@ namespace Elicom.Transactions
                 Category = category,
                 ReferenceId = t.ReferenceId,
                 Description = t.Description,
-                Status = "Approved",
                 CreationTime = t.CreationTime
             };
         }
@@ -169,7 +168,6 @@ namespace Elicom.Transactions
                 Category = category,
                 ReferenceId = t.ReferenceId,
                 Description = t.Description,
-                Status = t.Status ?? "Approved",
                 CreationTime = t.CreationTime
             };
         }

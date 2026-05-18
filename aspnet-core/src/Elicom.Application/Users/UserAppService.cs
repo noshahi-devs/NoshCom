@@ -1,4 +1,4 @@
-﻿using Abp.Application.Services;
+using Abp.Application.Services;
 using Abp.Application.Services.Dto;
 using Abp.Authorization;
 using Abp.Domain.Entities;
@@ -8,13 +8,15 @@ using Abp.IdentityFramework;
 using Abp.Linq.Extensions;
 using Abp.Localization;
 using Abp.Runtime.Session;
-using Abp.UI;
 using Elicom.Authorization;
 using Elicom.Authorization.Roles;
 using Elicom.Authorization.Users;
 using Elicom.Roles.Dto;
 using Elicom.Users.Dto;
+using Elicom.Wallets;
+using Elicom.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -30,26 +32,29 @@ public class UserAppService : AsyncCrudAppService<User, UserDto, long, PagedUser
     private readonly UserManager _userManager;
     private readonly RoleManager _roleManager;
     private readonly IRepository<Role> _roleRepository;
-    private readonly IPasswordHasher<User> _passwordHasher;
-    private readonly IAbpSession _abpSession;
-    private readonly LogInManager _logInManager;
+    private readonly IWalletManager _walletManager;
+    private readonly IRepository<DepositRequest, Guid> _depositRepository;
+    private readonly IRepository<WithdrawRequest, long> _withdrawRepository;
+    private readonly IRepository<AppTransaction, long> _transactionRepository;
 
     public UserAppService(
         IRepository<User, long> repository,
         UserManager userManager,
         RoleManager roleManager,
         IRepository<Role> roleRepository,
-        IPasswordHasher<User> passwordHasher,
-        IAbpSession abpSession,
-        LogInManager logInManager)
+        IWalletManager walletManager,
+        IRepository<DepositRequest, Guid> depositRepository,
+        IRepository<WithdrawRequest, long> withdrawRepository,
+        IRepository<AppTransaction, long> transactionRepository)
         : base(repository)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _roleRepository = roleRepository;
-        _passwordHasher = passwordHasher;
-        _abpSession = abpSession;
-        _logInManager = logInManager;
+        _walletManager = walletManager;
+        _depositRepository = depositRepository;
+        _withdrawRepository = withdrawRepository;
+        _transactionRepository = transactionRepository;
     }
 
     [Abp.Domain.Uow.UnitOfWork(System.Transactions.TransactionScopeOption.Suppress)]
@@ -133,6 +138,32 @@ public class UserAppService : AsyncCrudAppService<User, UserDto, long, PagedUser
         );
     }
 
+    [HttpGet]
+    public async Task<UserStatsDto> GetUserStatsAsync([FromQuery] long userId)
+    {
+        var stats = new UserStatsDto();
+
+        stats.WalletBalance = await _walletManager.GetBalanceAsync(userId);
+
+        stats.TotalDeposit = await _depositRepository.GetAll()
+            .Where(x => x.UserId == userId && x.Status == "Approved")
+            .SumAsync(x => x.Amount);
+
+        stats.TotalWithdrawals = await _withdrawRepository.GetAll()
+            .Where(x => x.UserId == userId && x.Status == "Approved")
+            .SumAsync(x => x.Amount);
+
+        stats.PendingPayout = await _withdrawRepository.GetAll()
+            .Where(x => x.UserId == userId && x.Status == "Pending")
+            .SumAsync(x => x.Amount);
+
+        stats.TotalCardSpending = Math.Abs(await _transactionRepository.GetAll()
+            .Where(x => x.UserId == userId && x.MovementType == "Debit" && (x.Category == "Purchase" || x.Category == "Card Transaction" || x.Category == "Plan Upgrade") && x.CardId != null && x.Status == "Approved")
+            .SumAsync(x => x.Amount));
+
+        return stats;
+    }
+
     protected override User MapToEntity(CreateUserDto createInput)
     {
         var user = ObjectMapper.Map<User>(createInput);
@@ -187,64 +218,5 @@ public class UserAppService : AsyncCrudAppService<User, UserDto, long, PagedUser
         identityResult.CheckErrors(LocalizationManager);
     }
 
-    public async Task<bool> ChangePassword(ChangePasswordDto input)
-    {
-        await _userManager.InitializeOptionsAsync(AbpSession.TenantId);
-
-        var user = await _userManager.FindByIdAsync(AbpSession.GetUserId().ToString());
-        if (user == null)
-        {
-            throw new Exception("There is no current user!");
-        }
-
-        if (await _userManager.CheckPasswordAsync(user, input.CurrentPassword))
-        {
-            CheckErrors(await _userManager.ChangePasswordAsync(user, input.NewPassword));
-        }
-        else
-        {
-            CheckErrors(IdentityResult.Failed(new IdentityError
-            {
-                Description = "Incorrect password."
-            }));
-        }
-
-        return true;
-    }
-
-    public async Task<bool> ResetPassword(ResetPasswordDto input)
-    {
-        if (_abpSession.UserId == null)
-        {
-            throw new UserFriendlyException("Please log in before attempting to reset password.");
-        }
-
-        var currentUser = await _userManager.GetUserByIdAsync(_abpSession.GetUserId());
-        var loginAsync = await _logInManager.LoginAsync(currentUser.UserName, input.AdminPassword, shouldLockout: false);
-        if (loginAsync.Result != AbpLoginResultType.Success)
-        {
-            throw new UserFriendlyException("Your 'Admin Password' did not match the one on record.  Please try again.");
-        }
-
-        if (currentUser.IsDeleted || !currentUser.IsActive)
-        {
-            return false;
-        }
-
-        var roles = await _userManager.GetRolesAsync(currentUser);
-        if (!roles.Contains(StaticRoleNames.Tenants.Admin))
-        {
-            throw new UserFriendlyException("Only administrators may reset passwords.");
-        }
-
-        var user = await _userManager.GetUserByIdAsync(input.UserId);
-        if (user != null)
-        {
-            user.Password = _passwordHasher.HashPassword(user, input.NewPassword);
-            await CurrentUnitOfWork.SaveChangesAsync();
-        }
-
-        return true;
-    }
 }
 

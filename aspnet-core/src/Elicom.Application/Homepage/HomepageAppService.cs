@@ -1,4 +1,4 @@
-﻿using Abp.Application.Services;
+using Abp.Application.Services;
 using Abp.Application.Services.Dto;
 using Abp.Domain.Repositories;
 using Abp.UI;
@@ -22,44 +22,80 @@ namespace Elicom.Homepage
         private readonly IRepository<Product, Guid> _productRepository;
         private readonly IRepository<StoreProduct, Guid> _storeProductRepository;
         private readonly IRepository<Category, Guid> _categoryRepository;
+        private readonly IRepository<Store, Guid> _storeRepository;
 
 
         public HomepageAppService(
             IRepository<Product, Guid> productRepository,
             IRepository<StoreProduct, Guid> storeProductRepository,
-            IRepository<Category, Guid> categoryRepository)
+            IRepository<Category, Guid> categoryRepository,
+            IRepository<Store, Guid> storeRepository)
 
         {
             _productRepository = productRepository;
             _storeProductRepository = storeProductRepository;
-                _categoryRepository = categoryRepository;
+            _categoryRepository = categoryRepository;
+            _storeRepository = storeRepository;
 
         }
 
 
         [UnitOfWork(TransactionScopeOption.Suppress)]
         public virtual async Task<PagedResultDto<ProductCardDto>> GetAllProductsForCards(
-            PagedAndSortedResultRequestDto input)
+            GetProductsInput input)
         {
             using (UnitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant))
             {
-                // 1️⃣ Base query: Get all active StoreProduct listings for active AND approved products/stores
+                // 1️⃣ Base query: Get only active public listings
                 var baseQuery = _storeProductRepository
                     .GetAllIncluding(sp => sp.Product, sp => sp.Store)
-                    .Where(sp => sp.Status && sp.Product.Status);
+                    .Where(sp =>
+                        sp.Status &&
+                        sp.Product != null && sp.Product.Status &&
+                        sp.Store != null && sp.Store.Status)
+                    .AsQueryable();
 
-                // 2️⃣ Correct total count (ALL INDIVIDUAL LISTINGS)
-                var totalCount = await baseQuery.CountAsync();
+                // 2️⃣ Filter by Search Term (Keyword matching across product and store details)
+                if (!string.IsNullOrWhiteSpace(input.SearchTerm))
+                {
+                    var keywords = input.SearchTerm.Split(new[] { ' ', ',', '-', '_' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(k => k.Trim().ToLowerInvariant())
+                        .Where(k => k.Length > 0)
+                        .ToList();
 
-                // 3️⃣ Fetch paged listings
-                var listings = await baseQuery
-                    .Include(sp => sp.Product).ThenInclude(p => p.Category)
+                    if (keywords.Any())
+                    {
+                        baseQuery = baseQuery.Where(sp =>
+                            keywords.All(k =>
+                                (sp.Product != null && sp.Product.Name != null && sp.Product.Name.ToLower().Contains(k)) ||
+                                (sp.Product != null && sp.Product.Description != null && sp.Product.Description.ToLower().Contains(k)) ||
+                                (sp.Product != null && sp.Product.SKU != null && sp.Product.SKU.ToLower().Contains(k)) ||
+                                (sp.Product != null && sp.Product.BrandName != null && sp.Product.BrandName.ToLower().Contains(k)) ||
+                                (sp.Store != null && sp.Store.Name != null && sp.Store.Name.ToLower().Contains(k))
+                            )
+                        );
+                    }
+                }
+
+                // 3️⃣ Get the IDs of the best StoreProduct for each unique ProductId (the one with the lowest price)
+                var bestStoreProductIdsQuery = baseQuery
+                    .GroupBy(sp => sp.ProductId)
+                    .Select(g => g.OrderBy(sp => sp.ResellerPrice).Select(sp => sp.Id).FirstOrDefault());
+
+                // 4️⃣ Correct total count of unique products
+                var totalCount = await bestStoreProductIdsQuery.CountAsync();
+
+                // 5️⃣ Fetch paged listings using the best IDs
+                var listings = await _storeProductRepository.GetAll()
+                    .Where(sp => bestStoreProductIdsQuery.Contains(sp.Id))
                     .OrderByDescending(sp => sp.Product.CreatedAt)
                     .Skip(input.SkipCount)
                     .Take(input.MaxResultCount)
+                    .Include(sp => sp.Product).ThenInclude(p => p.Category)
+                    .Include(sp => sp.Store)
                     .ToListAsync();
 
-                // 4️⃣ Map to ProductCardDto
+                // 6️⃣ Map to ProductCardDto
                 var items = listings.Select(sp =>
                 {
                     var p = sp.Product;
@@ -89,7 +125,7 @@ namespace Elicom.Homepage
                     };
                 }).ToList();
 
-                // 5️⃣ Return paged result
+                // 7️⃣ Return paged result
                 return new PagedResultDto<ProductCardDto>(totalCount, items);
             }
         }
@@ -175,20 +211,45 @@ namespace Elicom.Homepage
         {
             using (UnitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant))
             {
-                var categories = await _categoryRepository.GetAll()
-                    .Where(c => c.Products.Any(p => p.Status && p.StoreProducts.Any(sp => sp.Status && sp.Store.Status)))
-                    .Select(c => new HomepageCategoryDto
+                // 1. Fetch all categories that have at least one listed product
+                var query = _categoryRepository.GetAll()
+                    .Where(c => c.Products.Any(p => p.Status && p.StoreProducts.Any(sp => sp.Status && sp.Store.Status)));
+
+                var categories = await query.ToListAsync();
+
+                var items = new List<HomepageCategoryDto>();
+
+                foreach (var c in categories)
+                {
+                    // 2. Fetch first 4 product images for each category
+                    var productImages = await _productRepository.GetAll()
+                        .Where(p => p.CategoryId == c.Id && p.Status && p.StoreProducts.Any(sp => sp.Status && sp.Store.Status))
+                        .OrderByDescending(p => p.CreatedAt)
+                        .Select(p => p.Images)
+                        .Take(4) // Fetch up to 4 products
+                        .ToListAsync();
+
+                    var previewImages = productImages
+                        .SelectMany(img => (img ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries))
+                        .Take(4) // We want 4 unique boxes
+                        .ToList();
+
+                    // 3. Count total products (can be optimized but okay for homepage)
+                    var totalCount = await _productRepository.GetAll()
+                        .CountAsync(p => p.CategoryId == c.Id && p.Status && p.StoreProducts.Any(sp => sp.Status && sp.Store.Status));
+
+                    items.Add(new HomepageCategoryDto
                     {
                         CategoryId = c.Id,
                         Name = c.Name,
                         Slug = c.Slug,
                         ImageUrl = c.ImageUrl,
-                        TotalProducts = c.Products
-                            .Count(p => p.Status && p.StoreProducts.Any(sp => sp.Status && sp.Store.Status))
-                    })
-                    .ToListAsync();
+                        TotalProducts = totalCount,
+                        PreviewImages = previewImages
+                    });
+                }
 
-                return categories;
+                return items;
             }
         }
 
@@ -254,7 +315,7 @@ namespace Elicom.Homepage
                     .Include(sp => sp.Product)
                         .ThenInclude(p => p.Category)
                     .Include(sp => sp.Store)
-                    .Where(sp => sp.StoreId == storeId && sp.Status && sp.Product.Status && sp.Store.Status)
+                    .Where(sp => sp.StoreId == storeId) // Removed strict status filters
                     .ToListAsync();
 
                 // Map to ProductCardDto
@@ -289,6 +350,25 @@ namespace Elicom.Homepage
             }
         }
 
+        private static string NormalizeSearchTerm(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return string.Empty;
+            }
+
+            return new string(value.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant();
+        }
+
+        private static bool MatchesSearch(string value, string normalizedTerm)
+        {
+            if (string.IsNullOrWhiteSpace(value) || string.IsNullOrWhiteSpace(normalizedTerm))
+            {
+                return false;
+            }
+
+            return NormalizeSearchTerm(value).Contains(normalizedTerm);
+        }
 
     }
 }

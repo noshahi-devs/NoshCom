@@ -1,11 +1,11 @@
 <div class="customer-dashboard sui-fade-in">
     <section class="overview-shell">
         <div class="overview-main">
-            <div class="hero-kicker">NoshCom Account</div>
+            <div class="hero-kicker">Smart Shop UK Account</div>
             <div class="overview-heading">
                 <h1>Welcome <span>{{ userName }}</span></h1>
                 <p class="overview-copy">
-                    A focused view of your account activity, delivery progress, and shopping value across NoshCom.
+                    A focused view of your account activity, delivery progress, and shopping value across Smart Shop UK.
                 </p>
             </div>
 
@@ -49,7 +49,12 @@
             <div class="summary-split">
                 <article class="summary-card strong-card" [routerLink]="['/customer/orders']">
                     <span class="card-label">Total Spend</span>
-                    <strong class="card-value">${{ totalSpend | number:'1.0-0' }}</strong>
+                    <strong class="card-value">
+                        <ng-container *ngIf="ordersLoading; else spendVal">
+                            <span class="micro-loader-spinner"></span>
+                        </ng-container>
+                        <ng-template #spendVal>${{ totalSpend | number:'1.0-0' }}</ng-template>
+                    </strong>
                     <p>Tracked from all completed purchases.</p>
                 </article>
 
@@ -71,7 +76,12 @@
                 <span>Orders placed</span>
                 <i class="fas fa-bag-shopping"></i>
             </div>
-            <h3>{{ totalOrders }}</h3>
+            <h3>
+                <ng-container *ngIf="ordersLoading; else totalOrdersVal">
+                    <span class="micro-loader-spinner"></span>
+                </ng-container>
+                <ng-template #totalOrdersVal>{{ totalOrders }}</ng-template>
+            </h3>
             <p>Complete order history in one place.</p>
         </article>
 
@@ -80,7 +90,12 @@
                 <span>Active deliveries</span>
                 <i class="fas fa-truck-fast"></i>
             </div>
-            <h3>{{ activeOrders }}</h3>
+            <h3>
+                <ng-container *ngIf="ordersLoading; else activeOrdersVal">
+                    <span class="micro-loader-spinner"></span>
+                </ng-container>
+                <ng-template #activeOrdersVal>{{ activeOrders }}</ng-template>
+            </h3>
             <p>Orders that still need your attention.</p>
         </article>
 
@@ -126,7 +141,12 @@
                         <strong>{{ status.label }}</strong>
                         <span>Open related orders</span>
                     </div>
-                    <div class="order-row-count">{{ status.count }}</div>
+                    <div class="order-row-count">
+                        <ng-container *ngIf="ordersLoading; else countVal">
+                            <span class="micro-loader-spinner"></span>
+                        </ng-container>
+                        <ng-template #countVal>{{ status.count }}</ng-template>
+                    </div>
                 </a>
             </div>
         </section>

@@ -12,6 +12,9 @@ using Elicom.Authorization;
 using Abp.MultiTenancy;
 using Elicom.Authentication.JwtBearer;
 using Elicom.Authorization.Users;
+using Microsoft.Extensions.Configuration;
+using Abp.Net.Mail;
+using Abp.Runtime.Caching;
 
 namespace Elicom.Tests.Users;
 
@@ -26,6 +29,9 @@ public class TokenAuthController_Tests : ElicomTestBase
         var tenantCache = Resolve<ITenantCache>();
         var configuration = Resolve<TokenAuthConfiguration>();
         var userManager = Resolve<UserManager>();
+        var appConfiguration = Resolve<IConfiguration>();
+        var emailSender = Resolve<IEmailSender>();
+        var cacheManager = Resolve<ICacheManager>();
 
         // Manually configure TokenAuth for testing
         configuration.SecurityKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.ASCII.GetBytes("ThisIsASecretKeyForTestingOnly123456"));
@@ -38,7 +44,10 @@ public class TokenAuthController_Tests : ElicomTestBase
             logInManager,
             tenantCache,
             configuration,
-            userManager
+            userManager,
+            appConfiguration,
+            emailSender,
+            cacheManager
         );
 
         _controller.UnitOfWorkManager = Resolve<Abp.Domain.Uow.IUnitOfWorkManager>();
@@ -54,6 +63,7 @@ public class TokenAuthController_Tests : ElicomTestBase
     public async Task Authenticate_GlobalDiscovery_Test()
     {
         // Arrange
+        _controller.Request.Headers["Abp-TenantId"] = "3";
         var input = new AuthenticateModel
         {
             UserNameOrEmailAddress = "noshahi@easyfinora.com",

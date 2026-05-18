@@ -1,43 +1,52 @@
 using Abp.Application.Services;
+using Abp.Authorization;
 using Abp.Domain.Repositories;
 using Abp.Domain.Uow;
-using AutoMapper;
-using Elicom.Entities;
+using Elicom.Authorization.Users;
 using Elicom.Carts.Dto;
+using Elicom.Entities;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using System.Transactions;
 
 namespace Elicom.Carts
 {
+    [AbpAuthorize]
     public class CartAppService : ApplicationService, ICartAppService
     {
         private readonly IRepository<CartItem, Guid> _cartRepository;
         private readonly IRepository<StoreProduct, Guid> _storeProductRepository;
+        private readonly IRepository<User, long> _userRepository;
 
         public CartAppService(
             IRepository<CartItem, Guid> cartRepository,
-            IRepository<StoreProduct, Guid> storeProductRepository)
+            IRepository<StoreProduct, Guid> storeProductRepository,
+            IRepository<User, long> userRepository)
         {
             _cartRepository = cartRepository;
             _storeProductRepository = storeProductRepository;
+            _userRepository = userRepository;
         }
 
         public virtual async Task<CartItemDto> AddToCart(CreateCartItemDto input)
         {
-            // Keep soft-delete filter ON so deleted cart rows are not reused.
+            if (input == null)
+            {
+                throw new Abp.UI.UserFriendlyException("Invalid cart request.");
+            }
+
+            var effectiveUserId = await ResolveEffectiveUserIdAsync(input.UserId);
+
             using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
             {
-                // 1. Check if item already exists in cart for this user
                 var existingItem = await _cartRepository.GetAll()
                     .Include(c => c.StoreProduct).ThenInclude(sp => sp.Product)
                     .Include(c => c.StoreProduct).ThenInclude(sp => sp.Store)
-                    .FirstOrDefaultAsync(c => c.UserId == input.UserId && 
-                                              c.StoreProductId == input.StoreProductId && 
+                    .FirstOrDefaultAsync(c => c.UserId == effectiveUserId &&
+                                              c.StoreProductId == input.StoreProductId &&
                                               c.Status == "Active");
 
                 if (existingItem != null)
@@ -47,43 +56,26 @@ namespace Elicom.Carts
 
                     if (existingItem.Quantity <= 0)
                     {
-                        Logger.Info($"[CartAppService] Quantity <= 0. Removing cart item: {existingItem.Id}");
                         await _cartRepository.DeleteAsync(existingItem);
-                        return new CartItemDto
-                        {
-                            Id = existingItem.Id,
-                            UserId = existingItem.UserId,
-                            StoreProductId = existingItem.StoreProductId,
-                            Quantity = 0
-                        };
-                    }
-
-                    // Refresh snapshot prices in case they were changed or were 0
-                    if (existingItem.StoreProduct != null)
-                    {
-                        var sp = existingItem.StoreProduct;
-                        existingItem.OriginalPrice = sp.ResellerPrice;
-                        existingItem.ResellerDiscountPercentage = sp.ResellerDiscountPercentage;
-                        existingItem.Price = sp.ResellerPrice * (1 - sp.ResellerDiscountPercentage / 100m);
+                        return ObjectMapper.Map<CartItemDto>(existingItem);
                     }
 
                     await _cartRepository.UpdateAsync(existingItem);
                     return ObjectMapper.Map<CartItemDto>(existingItem);
                 }
 
-                Logger.Info($"[CartAppService] Adding new item to cart: UserId={input.UserId}, StoreProductId={input.StoreProductId}");
-
                 if (input.Quantity <= 0)
                 {
-                    throw new Abp.UI.UserFriendlyException("Quantity must be greater than zero.");
+                    return new CartItemDto(); // Cannot add negative quantity for new items
                 }
 
-                // 2. Fetch StoreProduct
+                Logger.Info($"[CartAppService] Adding new item to cart: UserId={effectiveUserId}, StoreProductId={input.StoreProductId}");
+
                 var storeProduct = await _storeProductRepository
                     .GetAllIncluding(sp => sp.Product, sp => sp.Store)
                     .FirstOrDefaultAsync(sp => sp.Id == input.StoreProductId);
 
-                if (storeProduct == null) 
+                if (storeProduct == null)
                 {
                     Logger.Error($"[CartAppService] StoreProduct {input.StoreProductId} NOT FOUND even with filters disabled.");
                     throw new Abp.UI.UserFriendlyException("Store product not found.");
@@ -91,18 +83,17 @@ namespace Elicom.Carts
 
                 Logger.Info($"[CartAppService] StoreProduct found: {storeProduct.Product.Name} from store {storeProduct.Store.Name}");
 
-                // 3. Create new CartItem
                 var cartItem = ObjectMapper.Map<CartItem>(input);
+                cartItem.UserId = effectiveUserId;
+                cartItem.TenantId = AbpSession.TenantId;
                 cartItem.Status = "Active";
 
-                // Snapshot prices
                 cartItem.OriginalPrice = storeProduct.ResellerPrice;
                 cartItem.ResellerDiscountPercentage = storeProduct.ResellerDiscountPercentage;
                 cartItem.Price = storeProduct.ResellerPrice * (1 - storeProduct.ResellerDiscountPercentage / 100m);
 
                 var id = await _cartRepository.InsertAndGetIdAsync(cartItem);
-                
-                // Re-fetch with includes to ensure DTO is fully populated
+
                 var finalItem = await _cartRepository.GetAll()
                     .Include(c => c.StoreProduct).ThenInclude(sp => sp.Product)
                     .Include(c => c.StoreProduct).ThenInclude(sp => sp.Store)
@@ -114,6 +105,8 @@ namespace Elicom.Carts
 
         public virtual async Task<List<CartItemDto>> GetCartItems(long userId)
         {
+            var effectiveUserId = await ResolveEffectiveUserIdAsync(userId);
+
             using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
             {
                 var items = await _cartRepository.GetAll()
@@ -121,7 +114,7 @@ namespace Elicom.Carts
                         .ThenInclude(sp => sp.Product)
                     .Include(c => c.StoreProduct)
                         .ThenInclude(sp => sp.Store)
-                    .Where(c => c.UserId == userId && c.Status == "Active")
+                    .Where(c => c.UserId == effectiveUserId && c.Status == "Active")
                     .ToListAsync();
 
                 return ObjectMapper.Map<List<CartItemDto>>(items);
@@ -130,16 +123,35 @@ namespace Elicom.Carts
 
         public virtual async Task RemoveFromCart(Guid cartItemId)
         {
-            await _cartRepository.DeleteAsync(cartItemId);
+            var currentUserId = AbpSession.UserId ?? 0;
+            if (currentUserId <= 0)
+            {
+                throw new AbpAuthorizationException("Current user did not login to the application!");
+            }
+
+            var item = await _cartRepository.FirstOrDefaultAsync(cartItemId);
+            if (item == null)
+            {
+                return;
+            }
+
+            if (item.UserId != currentUserId)
+            {
+                throw new AbpAuthorizationException("You are not allowed to remove this cart item.");
+            }
+
+            await _cartRepository.DeleteAsync(item);
         }
 
         [HttpDelete]
         public virtual async Task RemoveFromCartByProduct(long userId, Guid storeProductId)
         {
-            using (UnitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
+            var effectiveUserId = await ResolveEffectiveUserIdAsync(userId);
+
+            using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
             {
                 var item = await _cartRepository.GetAll()
-                    .FirstOrDefaultAsync(c => c.UserId == userId && c.StoreProductId == storeProductId && c.Status == "Active");
+                    .FirstOrDefaultAsync(c => c.UserId == effectiveUserId && c.StoreProductId == storeProductId && c.Status == "Active");
 
                 if (item != null)
                 {
@@ -151,15 +163,40 @@ namespace Elicom.Carts
         [HttpDelete]
         public virtual async Task ClearCart(long userId)
         {
-            using (UnitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
+            var effectiveUserId = await ResolveEffectiveUserIdAsync(userId);
+
+            using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
             {
-                var items = await _cartRepository.GetAllListAsync(c => c.UserId == userId);
+                var items = await _cartRepository.GetAllListAsync(c => c.UserId == effectiveUserId && c.Status == "Active");
 
                 foreach (var item in items)
                 {
                     await _cartRepository.DeleteAsync(item);
                 }
             }
+        }
+
+        private async Task<long> ResolveEffectiveUserIdAsync(long? requestedUserId)
+        {
+            var currentUserId = AbpSession.UserId ?? 0;
+
+            if (requestedUserId.HasValue && requestedUserId.Value > 0 && requestedUserId.Value != currentUserId)
+            {
+                Logger.Warn($"[CartAppService] Ignoring mismatched requested userId={requestedUserId.Value}. Using session userId={currentUserId}.");
+            }
+
+            if (currentUserId <= 0)
+            {
+                throw new AbpAuthorizationException("Current user did not login to the application!");
+            }
+
+            var userExists = await _userRepository.GetAll().AnyAsync(u => u.Id == currentUserId);
+            if (!userExists)
+            {
+                throw new AbpAuthorizationException("User session is invalid. Please login again.");
+            }
+
+            return currentUserId;
         }
     }
 }

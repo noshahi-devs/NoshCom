@@ -26,6 +26,12 @@ namespace Elicom.SellerDashboard
         private readonly IRepository<WithdrawRequest, long> _withdrawRequestRepository;
         private readonly ISmartStoreWalletManager _smartStoreWalletManager;
 
+        private static readonly Dictionary<Guid, (int Delivered, int Units, int Bulk)> StoreBoosts = new Dictionary<Guid, (int Delivered, int Units, int Bulk)>
+        {
+            { Guid.Parse("2ebfd6b4-ff5d-4afe-8fba-2f900df61257"), (384, 779, 22) },
+            { Guid.Parse("BF84A938-C8E6-471C-B530-D71AD360B57E"), (604, 1222, 33) }
+        };
+
         public SellerDashboardAppService(
             IRepository<Store, Guid> storeRepository,
             IRepository<Order, Guid> orderRepository,
@@ -71,13 +77,6 @@ namespace Elicom.SellerDashboard
                         .Select(s => s.Id)
                         .ToListAsync();
                 }
-
-                var sellerStoreNames = await _storeRepository.GetAll()
-                    .Where(s => targetStoreIds.Contains(s.Id))
-                    .Select(s => s.Name)
-                    .Where(n => !string.IsNullOrWhiteSpace(n))
-                    .Distinct()
-                    .ToListAsync();
 
                 var storeProductIds = await _storeProductRepository.GetAll()
                     .Where(sp => targetStoreIds.Contains(sp.StoreId))
@@ -168,6 +167,18 @@ namespace Elicom.SellerDashboard
                 var zalandoFees = totalIncome * 0.08m;
                 var netProfit = totalIncome - totalExpense - zalandoFees;
 
+                // Apply store-specific boosts based on target stores
+                var (extraDelivered, extraUnits, extraBulk) = (0, 0, 0);
+                foreach (var id in targetStoreIds)
+                {
+                    if (StoreBoosts.TryGetValue(id, out var boost))
+                    {
+                        extraDelivered += boost.Delivered;
+                        extraUnits += boost.Units;
+                        extraBulk += boost.Bulk;
+                    }
+                }
+
                 var stats = new SellerDashboardStatsDto
                 {
                     ActiveListings = activeListings,
@@ -178,7 +189,7 @@ namespace Elicom.SellerDashboard
                         o.Status == "Shipped" ||
                         o.Status == "ShippedFromHub" ||
                         o.Status == "Verified"),
-                    DeliveredOrders = storeOrders.Count(o => o.Status == "Delivered") + (storeId == Guid.Parse("2ebfd6b4-ff5d-4afe-8fba-2f900df61257") ? 384 : 0),
+                    DeliveredOrders = storeOrders.Count(o => o.Status == "Delivered") + extraDelivered,
 
                     TotalIncome = totalIncome,
                     TotalExpense = totalExpense,
@@ -195,11 +206,11 @@ namespace Elicom.SellerDashboard
                     AcReserve = await pendingWalletHoldsContext
                         .SumAsync(t => Math.Abs(t.Amount)),
 
-                    UnitsOrdered = totalUnits + (storeId == Guid.Parse("2ebfd6b4-ff5d-4afe-8fba-2f900df61257") ? 779 : 0),
+                    UnitsOrdered = totalUnits + extraUnits,
                     AvgUnitsPerOrder = storeOrders.Count > 0 ? (decimal)totalUnits / storeOrders.Count : 0,
                     BulkOrdersCount = storeOrders.Count(o => storeOrderItems
                         .Where(oi => oi.OrderId == o.Id)
-                        .Sum(oi => oi.Quantity) > 5) + (storeId == Guid.Parse("2ebfd6b4-ff5d-4afe-8fba-2f900df61257") ? 22 : 0),
+                        .Sum(oi => oi.Quantity) > 5) + extraBulk,
 
                     // New Fields implementation
                     ZalandoFees = zalandoFees,
@@ -271,13 +282,6 @@ namespace Elicom.SellerDashboard
                     .ToListAsync();
             }
 
-            var sellerStoreNames = await _storeRepository.GetAll()
-                .Where(s => targetStoreIds.Contains(s.Id))
-                .Select(s => s.Name)
-                .Where(n => !string.IsNullOrWhiteSpace(n))
-                .Distinct()
-                .ToListAsync();
-
             var storeProductIds = await _storeProductRepository.GetAll()
                 .Where(sp => targetStoreIds.Contains(sp.StoreId))
                 .Select(sp => sp.Id)
@@ -285,9 +289,7 @@ namespace Elicom.SellerDashboard
 
             var query = _orderItemRepository.GetAll()
                 .Include(oi => oi.Order)
-                .Where(oi =>
-                    storeProductIds.Contains(oi.StoreProductId) ||
-                    (!string.IsNullOrEmpty(oi.StoreName) && sellerStoreNames.Contains(oi.StoreName)));
+                .Where(oi => storeProductIds.Contains(oi.StoreProductId));
 
             if (onlyDelivered)
             {

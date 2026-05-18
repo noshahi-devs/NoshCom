@@ -16,7 +16,7 @@ using Elicom.Storage;
 
 namespace Elicom.Products
 {
-    //[AbpAuthorize(PermissionNames.Pages_Products)]
+    [AbpAuthorize]
     public class ProductAppService : ElicomAppServiceBase, IProductAppService
     {
         private readonly IRepository<Product, Guid> _productRepo;
@@ -30,62 +30,30 @@ namespace Elicom.Products
             _blobStorageService = blobStorageService;
         }
 
-        private IQueryable<ProductDto> GetProductDtoQuery(IQueryable<Product> query)
-        {
-            return query.Select(p => new ProductDto
-            {
-                Id = p.Id,
-                TenantId = p.TenantId,
-                Name = p.Name,
-                SupplierId = p.SupplierId,
-                CategoryId = p.CategoryId,
-                CategoryName = p.Category != null ? p.Category.Name : null,
-                Description = null, // OMITTING HUGE DESCRIPTION FOR PERFORMANCE
-                Images = null, // OMITTING IMAGES FOR PERFORMANCE
-                SizeOptions = p.SizeOptions,
-                ColorOptions = p.ColorOptions,
-                DiscountPercentage = p.DiscountPercentage,
-                SupplierPrice = p.SupplierPrice,
-                ResellerMaxPrice = p.ResellerMaxPrice,
-                StockQuantity = p.StockQuantity,
-                SKU = p.SKU,
-                BrandName = p.BrandName,
-                Slug = p.Slug,
-                Status = p.Status
-            });
-        }
-
-        public async Task<ProductDto> Get(Guid id)
-        {
-            var product = await _productRepo
-                .GetAllIncluding(p => p.Category)
-                .FirstOrDefaultAsync(p => p.Id == id);
-
-            if (product == null)
-            {
-                throw new Abp.UI.UserFriendlyException("Product not found");
-            }
-
-            return ObjectMapper.Map<ProductDto>(product);
-        }
-
         public async Task<ListResultDto<ProductDto>> GetAll()
         {
             using (UnitOfWorkManager.Current.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant))
             {
-                var products = await GetProductDtoQuery(_productRepo.GetAllIncluding(p => p.Category))
+                var products = await _productRepo
+                    .GetAllIncluding(p => p.Category)
                     .ToListAsync();
 
-                return new ListResultDto<ProductDto>(products);
+                return new ListResultDto<ProductDto>(
+                    ObjectMapper.Map<List<ProductDto>>(products)
+                );
             }
         }
 
         public async Task<ListResultDto<ProductDto>> GetByCategory(Guid categoryId)
         {
-            var products = await GetProductDtoQuery(_productRepo.GetAllIncluding(p => p.Category).Where(p => p.CategoryId == categoryId))
+            var products = await _productRepo
+                .GetAllIncluding(p => p.Category)
+                .Where(p => p.CategoryId == categoryId)
                 .ToListAsync();
 
-            return new ListResultDto<ProductDto>(products);
+            return new ListResultDto<ProductDto>(
+                ObjectMapper.Map<List<ProductDto>>(products)
+            );
         }
 
         [HttpGet]
@@ -99,18 +67,20 @@ namespace Elicom.Products
             var lowercaseQuery = query.ToLower();
 
             // Ignore filters to see global wholesale products
-            List<ProductDto> products;
+            List<Product> products;
             using (CurrentUnitOfWork.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant, Abp.Domain.Uow.AbpDataFilters.MustHaveTenant))
             {
-                products = await GetProductDtoQuery(_productRepo
+                products = await _productRepo
                     .GetAllIncluding(p => p.Category)
                     .Where(p => p.Name.ToLower().Contains(lowercaseQuery) ||
                                 (p.SKU != null && p.SKU.ToLower().Contains(lowercaseQuery)) ||
-                                (p.Description != null && p.Description.ToLower().Contains(lowercaseQuery))))
+                                (p.Description != null && p.Description.ToLower().Contains(lowercaseQuery)))
                     .ToListAsync();
             }
 
-            return new ListResultDto<ProductDto>(products);
+            return new ListResultDto<ProductDto>(
+                ObjectMapper.Map<List<ProductDto>>(products)
+            );
         }
 
         [AbpAuthorize(PermissionNames.Pages_Products_Create)]
@@ -120,6 +90,7 @@ namespace Elicom.Products
             input.Images = await ProcessImages(input.Images, input.Name);
             var product = ObjectMapper.Map<Product>(input);
             product.TenantId = input.TenantId ?? AbpSession.TenantId; // Use DTO tenantId if provided
+            product.Status = true; // Auto-approve by default as requested
             
             await _productRepo.InsertAsync(product);
             return ObjectMapper.Map<ProductDto>(product);

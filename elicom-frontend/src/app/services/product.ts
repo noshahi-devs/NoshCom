@@ -88,13 +88,15 @@ export class ProductService {
             );
     }
 
-    getProductsForCards(skipCount: number = 0, maxResultCount: number = 10): Observable<{ totalCount: number, items: ProductCardDto[] }> {
-        return this.http.get<any>(`${this.apiUrl}/GetAllProductsForCards`, {
-            params: {
-                skipCount: skipCount.toString(),
-                maxResultCount: maxResultCount.toString()
-            }
-        }).pipe(
+    getProductsForCards(skipCount: number = 0, maxResultCount: number = 10, searchTerm?: string): Observable<{ totalCount: number, items: ProductCardDto[] }> {
+        const params: any = {
+            skipCount: skipCount.toString(),
+            maxResultCount: maxResultCount.toString()
+        };
+        if (searchTerm) {
+            params.searchTerm = searchTerm;
+        }
+        return this.http.get<any>(`${this.apiUrl}/GetAllProductsForCards`, { params }).pipe(
             map(res => res.result)
         );
     }

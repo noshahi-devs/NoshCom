@@ -8,6 +8,7 @@ using Elicom.Authorization.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System;
 using System.Linq;
 
 namespace Elicom.EntityFrameworkCore.Seed.Host;
@@ -28,6 +29,8 @@ public class HostRoleAndUserCreator
 
     private void CreateHostRoleAndUsers()
     {
+        var seedPassword = ResolveSeedPassword();
+
         // Admin role for host
 
         var adminRoleForHost = _context.Roles.IgnoreQueryFilters().FirstOrDefault(r => r.TenantId == null && r.Name == StaticRoleNames.Host.Admin);
@@ -81,7 +84,7 @@ public class HostRoleAndUserCreator
                 IsActive = true
             };
 
-            user.Password = new PasswordHasher<User>(new OptionsWrapper<PasswordHasherOptions>(new PasswordHasherOptions())).HashPassword(user, "123qwe");
+            user.Password = new PasswordHasher<User>(new OptionsWrapper<PasswordHasherOptions>(new PasswordHasherOptions())).HashPassword(user, seedPassword);
             user.SetNormalizedNames();
 
             adminUserForHost = _context.Users.Add(user).Entity;
@@ -93,5 +96,16 @@ public class HostRoleAndUserCreator
 
             _context.SaveChanges();
         }
+    }
+
+    private static string ResolveSeedPassword()
+    {
+        var fromEnv = Environment.GetEnvironmentVariable("ELICOM_SEED_DEFAULT_PASSWORD");
+        if (!string.IsNullOrWhiteSpace(fromEnv))
+        {
+            return fromEnv;
+        }
+
+        return User.DefaultPassword;
     }
 }

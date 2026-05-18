@@ -145,22 +145,47 @@ namespace Elicom.BackgroundJobs
                 message.Subject = args.Subject;
                 message.Body = new TextPart("html") { Text = args.HtmlBody };
 
-                using var smtp = new SmtpClient();
-                var secureMode = enableSsl
-                    ? (port == 465 ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls)
-                    : SecureSocketOptions.None;
-
-                await smtp.ConnectAsync(resolvedHost, port, secureMode);
-
-                if (!string.IsNullOrWhiteSpace(resolvedUser))
+                using (var smtp = new SmtpClient())
                 {
-                    await smtp.AuthenticateAsync(resolvedUser, resolvedPass ?? string.Empty);
+                    smtp.ServerCertificateValidationCallback = (smtpSender, certificate, chain, errors) => true;
+
+                    var secureMode = enableSsl
+                        ? (port == 465 ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls)
+                        : SecureSocketOptions.None;
+
+                    var connected = false;
+                    try
+                    {
+                        await smtp.ConnectAsync(resolvedHost, port, secureMode);
+                        connected = true;
+                    }
+                    catch (Exception ex) when (port == 465)
+                    {
+                        Logger.Warn($"[PlatformEmailJob] Connect failed on port 465 with error: {ex.Message}. Retrying on port 587 with STARTTLS...");
+                        try
+                        {
+                            await smtp.ConnectAsync(resolvedHost, 587, SecureSocketOptions.StartTls);
+                            connected = true;
+                        }
+                        catch (Exception fallbackEx)
+                        {
+                            Logger.Error($"[PlatformEmailJob] Fallback connect to port 587 also failed: {fallbackEx.Message}");
+                            throw;
+                        }
+                    }
+
+                    if (connected)
+                    {
+                        if (!string.IsNullOrWhiteSpace(resolvedUser))
+                        {
+                            await smtp.AuthenticateAsync(resolvedUser, resolvedPass ?? string.Empty);
+                        }
+
+                        await smtp.SendAsync(message);
+                        await smtp.DisconnectAsync(true);
+                        Logger.Info($"[PlatformEmailJob] Email sent successfully to {args.To}. Subject={args.Subject}. CredentialsSource={credentialsSource}");
+                    }
                 }
-
-                await smtp.SendAsync(message);
-                await smtp.DisconnectAsync(true);
-
-                Logger.Info($"[PlatformEmailJob] Email sent successfully to {args.To}. Subject={args.Subject}. CredentialsSource={credentialsSource}");
             }
             catch (Exception ex)
             {

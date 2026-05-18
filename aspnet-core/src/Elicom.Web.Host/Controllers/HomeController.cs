@@ -28,6 +28,7 @@ namespace Elicom.Web.Host.Controllers
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
+        [NonAction]
         public async Task<ActionResult> TestNotification(string message = "")
         {
             if (message.IsNullOrEmpty())

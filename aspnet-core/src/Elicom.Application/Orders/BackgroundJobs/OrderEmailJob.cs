@@ -68,6 +68,11 @@ namespace Elicom.Orders.BackgroundJobs
                     var byStoreProductId = storeProducts.ToDictionary(sp => sp.Id, sp => sp);
 
                     var allRows = BuildInvoiceRows(order, byStoreProductId);
+                    var storeNames = string.Join(", ", allRows
+                        .Select(r => r.StoreName)
+                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .Distinct());
+                    if (string.IsNullOrWhiteSpace(storeNames)) storeNames = "Store";
 
                     // 1) Customer invoice mail
                     var customerBody = BuildOrderInvoiceHtml(
@@ -78,7 +83,7 @@ namespace Elicom.Orders.BackgroundJobs
                         customerName,
                         order,
                         allRows,
-                        "All Stores");
+                        storeNames);
                     await SendEmailAsync(branding.PlatformName, customerEmail, $"Order Invoice - {order.OrderNumber}", customerBody);
 
                     // 2) Admin new-order mail
@@ -87,10 +92,10 @@ namespace Elicom.Orders.BackgroundJobs
                         "Order Invoice",
                         "New order invoice for your review.",
                         "Admin Copy",
-                        "Admin Team",
+                        customerName,
                         order,
                         allRows,
-                        "All Stores");
+                        storeNames);
                     await SendEmailAsync(branding.PlatformName, adminEmail, $"[ALERT] New Order - {order.OrderNumber}", adminBody);
 
                     // 3) Seller invoice mail (per store owner)
@@ -114,7 +119,7 @@ namespace Elicom.Orders.BackgroundJobs
                                 "Order Invoice",
                                 "New order invoice for your review.",
                                 "Seller Copy",
-                                string.IsNullOrWhiteSpace(owner.Name) ? owner.UserName : owner.Name,
+                                customerName,
                                 order,
                                 sellerRows,
                                 store.Name);
@@ -205,7 +210,7 @@ namespace Elicom.Orders.BackgroundJobs
             string title,
             string subtitle,
             string copyType,
-            string recipientName,
+            string customerName,
             Order order,
             IReadOnlyList<InvoiceLineRow> rows,
             string storeName)
@@ -213,7 +218,7 @@ namespace Elicom.Orders.BackgroundJobs
             var nowUtc = DateTime.UtcNow;
             var currency = CultureInfo.GetCultureInfo("en-US");
             var receiveDate = order.CreationTime == default ? nowUtc : order.CreationTime;
-            var address = FormatAddress(order);
+            var cityState = string.Join(", ", new[] { order.City?.Trim(), order.State?.Trim() }.Where(s => !string.IsNullOrWhiteSpace(s)));
 
             var rowsHtml = new StringBuilder();
             foreach (var row in rows)
@@ -266,13 +271,11 @@ namespace Elicom.Orders.BackgroundJobs
             .wrap {{ padding:12px 6px; }}
             .hero h1 {{ font-size:30px; }}
             .section {{ padding:16px 14px 12px; }}
-            .line-table thead {{ display:none; }}
-            .line-table, .line-table tbody, .line-table tr, .line-table td {{ display:block; width:100% !important; }}
-            .line-table tr {{ border:1px solid #e5e7eb; border-radius:10px; margin:0 0 10px; overflow:hidden; }}
-            .line-table td {{ border:none; border-bottom:1px solid #f3f4f6; padding:10px 12px; text-align:left !important; }}
-            .line-table td:last-child {{ border-bottom:none; }}
-            .line-table td::before {{ content:attr(data-label) ': '; font-weight:700; color:#4b5563; }}
-            .line-table td.col-title {{ font-weight:600; }}
+            .table-scroll {{ overflow-x:auto; -webkit-overflow-scrolling:touch; }}
+            .line-table {{ min-width:420px; }}
+            .line-table thead {{ display:table-header-group; }}
+            .line-table th {{ font-size:13px; padding:8px; }}
+            .line-table td {{ font-size:13px; padding:8px; }}
             .totals-row.total {{ font-size:22px; }}
         }}
     </style>
@@ -299,14 +302,16 @@ namespace Elicom.Orders.BackgroundJobs
             <div class='section'>
                 <h2>Billing Information</h2>
                 <div class='meta'>
-                    <p><span class='label'>Buyer name:</span> {WebUtility.HtmlEncode(recipientName)}</p>
-                    <p><span class='label'>Address:</span> {WebUtility.HtmlEncode(address)}</p>
-                    <p><span class='label'>Address type:</span> Shipping</p>
-                    <p><span class='label'>Contact:</span> {WebUtility.HtmlEncode(order.RecipientPhone ?? "-")}</p>
+                    <p><span class='label'>Full Name:</span> {WebUtility.HtmlEncode(customerName)}</p>
+                    <p><span class='label'>Address:</span> {WebUtility.HtmlEncode(order.ShippingAddress)}</p>
+                    <p><span class='label'>City/State:</span> {WebUtility.HtmlEncode(cityState)}</p>
+                    <p><span class='label'>Postal Code:</span> {WebUtility.HtmlEncode(order.PostalCode)}</p>
+                    <p><span class='label'>Address type:</span> Residential</p>
                 </div>
             </div>
 
             <div class='section'>
+                <div class='table-scroll'>
                 <table class='line-table' role='presentation' cellpadding='0' cellspacing='0'>
                     <thead>
                         <tr>
@@ -319,6 +324,7 @@ namespace Elicom.Orders.BackgroundJobs
                         {rowsHtml}
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <div class='totals'>
@@ -342,17 +348,6 @@ namespace Elicom.Orders.BackgroundJobs
     </div>
 </body>
 </html>";
-        }
-
-        private static string FormatAddress(Order order)
-        {
-            var parts = new List<string>();
-            if (!string.IsNullOrWhiteSpace(order.ShippingAddress)) parts.Add(order.ShippingAddress.Trim());
-            if (!string.IsNullOrWhiteSpace(order.City)) parts.Add(order.City.Trim());
-            if (!string.IsNullOrWhiteSpace(order.State)) parts.Add(order.State.Trim());
-            if (!string.IsNullOrWhiteSpace(order.Country)) parts.Add(order.Country.Trim());
-            if (!string.IsNullOrWhiteSpace(order.PostalCode)) parts.Add(order.PostalCode.Trim());
-            return parts.Count == 0 ? "-" : string.Join(", ", parts);
         }
 
         private sealed class InvoiceLineRow

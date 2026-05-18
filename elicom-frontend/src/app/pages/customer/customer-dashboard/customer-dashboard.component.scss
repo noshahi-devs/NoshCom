@@ -611,3 +611,25 @@
         grid-column: 2;
     }
 }
+
+/* Micro Loader Spinner */
+.micro-loader-spinner {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(201, 152, 39, 0.15);
+    border-radius: 50%;
+    border-top-color: var(--accent, #b9891f);
+    animation: micro-spin 0.8s linear infinite;
+    vertical-align: middle;
+}
+
+/* For dark strong card */
+.strong-card .micro-loader-spinner {
+    border-color: rgba(255, 255, 255, 0.15);
+    border-top-color: #ffffff;
+}
+
+@keyframes micro-spin {
+    to { transform: rotate(360deg); }
+}

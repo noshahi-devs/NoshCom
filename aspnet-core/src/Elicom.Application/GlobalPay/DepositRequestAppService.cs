@@ -75,8 +75,8 @@ namespace Elicom.GlobalPay
             var totalCount = await query.CountAsync();
             var items = await query
                 .OrderByDescending(r => r.CreationTime)
-                //.Skip(input.SkipCount)
-                //.Take(input.MaxResultCount)
+                .Skip(input.SkipCount)
+                .Take(input.MaxResultCount)
                 .ToListAsync();
 
             return new PagedResultDto<DepositRequestDto>(
@@ -99,6 +99,8 @@ namespace Elicom.GlobalPay
                 // Use PROJECTION to exclude ProofImage from the DB query entirely (performance fix)
                 var dtos = await query
                     .OrderByDescending(r => r.CreationTime) // Newest first
+                    .Skip(input.SkipCount)
+                    .Take(input.MaxResultCount)
                     .Select(r => new DepositRequestDto
                     {
                         Id = r.Id,
@@ -166,31 +168,13 @@ namespace Elicom.GlobalPay
                 request.AdminRemarks = input.AdminRemarks;
 
                 // ACTUAL DEPOSIT INTO WALLET (Existing GlobalPay logic)
+                // WalletManager now handles syncing with Active Virtual Card automatically
                 await _walletManager.DepositAsync(
                     request.UserId,
                     request.Amount,
                     request.Id.ToString(),
                     $"Manual Deposit Approved - Reference: {request.Id}"
                 );
-
-                // UPDATE VIRTUAL CARD BALANCE (New EasyFinora logic)
-                if (request.CardId.HasValue)
-                {
-                    var card = await _cardRepository.GetAsync(request.CardId.Value);
-                    card.Balance += request.Amount;
-
-                    // RECORD TRANSACTION
-                    await _transactionRepository.InsertAsync(new AppTransaction
-                    {
-                        UserId = request.UserId,
-                        CardId = request.CardId,
-                        Amount = request.Amount,
-                        MovementType = "Credit",
-                        Category = "Deposit",
-                        ReferenceId = request.Id.ToString(),
-                        Description = $"Deposit Approved for Card {request.CardId}"
-                    });
-                }
             }
         }
 

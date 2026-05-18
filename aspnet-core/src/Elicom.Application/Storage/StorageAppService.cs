@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Elicom.Storage
 {
-    [AbpAllowAnonymous]
+    [AbpAuthorize]
     public class StorageAppService : ElicomAppServiceBase
     {
         private readonly IBlobStorageService _blobStorageService;

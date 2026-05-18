@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Elicom.Homepage.Dto
 {
@@ -11,5 +11,7 @@ namespace Elicom.Homepage.Dto
 
         // optional, for showing number of listed products in this category
         public int TotalProducts { get; set; }
+
+        public System.Collections.Generic.List<string> PreviewImages { get; set; }
     }
 }

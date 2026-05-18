@@ -574,7 +574,7 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
     }
 
     private resolveSalesChannel(sourcePlatform: string): string {
-        return 'NoshCom.com';
+        return 'thesmartshop.uk';
     }
 
     private normalizeStatus(status: string): string {

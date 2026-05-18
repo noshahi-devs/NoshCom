@@ -39,47 +39,28 @@ namespace Elicom.GlobalPay
 
         public async Task<GlobalPayAdminDashboardStatsDto> GetStats()
         {
-            // Keep stats consistent for admin monitoring across integrated flows.
-            using (CurrentUnitOfWork.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant))
-            using (CurrentUnitOfWork.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MustHaveTenant))
+            var totalUsers = await _userRepository.CountAsync();
+            var allDeposits = await _depositRequestRepository.GetAll()
+                .SumAsync(d => (decimal?)d.Amount);
+            var allWithdraws = await _withdrawRequestRepository.GetAll()
+                .SumAsync(w => (decimal?)w.Amount);
+            var pendingDeposits = await _depositRequestRepository.GetAll()
+                .CountAsync(d => d.Status == "Pending");
+            var pendingWithdrawals = await _withdrawRequestRepository.GetAll()
+                .CountAsync(w => w.Status == "Pending");
+            var openTickets = await _supportTicketRepository.GetAll()
+                .CountAsync(t => t.Status == "Open");
+
+            return new GlobalPayAdminDashboardStatsDto
             {
-                var totalUsersTask = _userRepository.CountAsync();
-                var pendingDepositsTask = _depositRequestRepository.GetAll()
-                    .CountAsync(d => d.Status == "Pending");
-                var pendingWithdrawalsTask = _withdrawRequestRepository.GetAll()
-                    .CountAsync(w => w.Status == "Pending");
-                var openTicketsTask = _supportTicketRepository.GetAll()
-                    .CountAsync(t => t.Status == "Open");
-
-                // Sum absolute values from both wallet and card transaction streams.
-                var walletVolumeTask = _walletTransactionRepository.GetAll()
-                    .Select(t => Math.Abs(t.Amount))
-                    .DefaultIfEmpty(0m)
-                    .SumAsync();
-
-                var cardVolumeTask = _appTransactionRepository.GetAll()
-                    .Select(t => Math.Abs(t.Amount))
-                    .DefaultIfEmpty(0m)
-                    .SumAsync();
-
-                await Task.WhenAll(
-                    totalUsersTask,
-                    pendingDepositsTask,
-                    pendingWithdrawalsTask,
-                    openTicketsTask,
-                    walletVolumeTask,
-                    cardVolumeTask
-                );
-
-                return new GlobalPayAdminDashboardStatsDto
-                {
-                    TotalUsers = totalUsersTask.Result,
-                    PendingDeposits = pendingDepositsTask.Result,
-                    PendingWithdrawals = pendingWithdrawalsTask.Result,
-                    OpenTickets = openTicketsTask.Result,
-                    TotalTransactionVolume = walletVolumeTask.Result + cardVolumeTask.Result
-                };
-            }
+                TotalUsers = totalUsers,
+                AllDeposits = allDeposits ?? 0m,
+                AllWithdraws = allWithdraws ?? 0m,
+                PendingDeposits = pendingDeposits,
+                PendingWithdrawals = pendingWithdrawals,
+                OpenTickets = openTickets,
+                TotalTransactionVolume = (allDeposits ?? 0m) + (allWithdraws ?? 0m)
+            };
         }
     }
 }

@@ -45,6 +45,18 @@
     <text name="RegisterFormUserNameInvalidMessage">Please don't enter an email address for username.</text>
     <text name="DatabaseConnectionString" value="Database connection string" />
     <text name="Users" value="Users" />
+    <text name="HostSubscriptions" value="Host Subscriptions" />
+    <text name="MySubscription" value="My Subscription" />
+    <text name="ActiveSubscription" value="Active Subscription" />
+    <text name="PendingSubscription" value="Pending Subscription" />
+    <text name="SubscriptionUsage" value="Subscription Usage" />
+    <text name="Card" value="Card" />
+    <text name="Plan" value="Plan" />
+    <text name="DailyTransactions" value="Daily Transactions" />
+    <text name="MonthlyTransactions" value="Monthly Transactions" />
+    <text name="DailyAmount" value="Daily Amount" />
+    <text name="MonthlyAmount" value="Monthly Amount" />
+    <text name="None" value="None" />
     <text name="IsActive" value="Is active" />
     <text name="FullName" value="Full name" />
     <text name="CreateNewUser" value="Create new user" />

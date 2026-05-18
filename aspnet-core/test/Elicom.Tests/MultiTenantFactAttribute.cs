@@ -6,7 +6,7 @@ public sealed class MultiTenantFactAttribute : FactAttribute
 {
     public MultiTenantFactAttribute()
     {
-        if (!ElicomConsts.MultiTenancyEnabled)
+        if (!ElicomConsts.IsMultiTenancyEnabled)
         {
             Skip = "MultiTenancy is disabled.";
         }

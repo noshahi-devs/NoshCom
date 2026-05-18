@@ -18,12 +18,13 @@ using Elicom.Storage;
 
 namespace Elicom.Stores
 {    
-
+    [AbpAuthorize]
     public class StoreAppService : ElicomAppServiceBase, IStoreAppService
     {
         private readonly IRepository<Store, Guid> _storeRepo;
         private readonly IRepository<User, long> _userRepo;
         private readonly IRepository<StoreKyc, Guid> _kycRepo;
+        private readonly IRepository<StoreFavorite, Guid> _favoriteRepo;
         private readonly IBlobStorageService _blobStorageService;
         private readonly IRepository<SmartStoreWallet, Guid> _walletRepo;
         private readonly IBackgroundJobManager _backgroundJobManager;
@@ -35,6 +36,7 @@ namespace Elicom.Stores
             IRepository<Store, Guid> storeRepo, 
             IRepository<User, long> userRepo,
             IRepository<StoreKyc, Guid> kycRepo,
+            IRepository<StoreFavorite, Guid> favoriteRepo,
             IBlobStorageService blobStorageService,
             IRepository<SmartStoreWallet, Guid> walletRepo,
             IBackgroundJobManager backgroundJobManager,
@@ -45,6 +47,7 @@ namespace Elicom.Stores
             _storeRepo = storeRepo;
             _userRepo = userRepo;
             _kycRepo = kycRepo;
+            _favoriteRepo = favoriteRepo;
             _blobStorageService = blobStorageService;
             _walletRepo = walletRepo;
             _backgroundJobManager = backgroundJobManager;
@@ -53,7 +56,7 @@ namespace Elicom.Stores
             _orderItemRepo = orderItemRepo;
         }
 
-        // REMOVED [AbpAuthorize(PermissionNames.Pages_Stores)]
+        [AbpAuthorize(PermissionNames.Pages_SmartStore_Admin, PermissionNames.Pages_PrimeShip_Admin, PermissionNames.Pages_Users, PermissionNames.Admin)]
         public virtual async Task<ListResultDto<StoreDto>> GetAll()
         {
             try
@@ -61,6 +64,14 @@ namespace Elicom.Stores
                 using (CurrentUnitOfWork.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant, Abp.Domain.Uow.AbpDataFilters.MustHaveTenant))
                 {
                     // Fetch stores with pre-calculated counts in one pass to avoid N+1 and unit-of-work filter issues.
+                    var currentUserId = AbpSession.UserId;
+                    var favoriteStoreIds = currentUserId.HasValue
+                        ? await _favoriteRepo.GetAll()
+                            .Where(f => f.AdminUserId == currentUserId.Value)
+                            .Select(f => f.StoreId)
+                            .ToListAsync()
+                        : new List<Guid>();
+
                     var stores = await (from s in _storeRepo.GetAll()
                                        join w in _walletRepo.GetAll() on s.OwnerId equals w.UserId into sw
                                        from w in sw.DefaultIfEmpty()
@@ -115,7 +126,8 @@ namespace Elicom.Stores
                                                FrontImage = null,
                                                BackImage = null,
                                                Status = s.Kyc.Status
-                                           }
+                                           },
+                                           IsFavorite = favoriteStoreIds.Contains(s.Id)
                                        }).ToListAsync();
 
                     Logger.Info($"[Store/GetAll] Final result count: {stores.Count}");
@@ -228,7 +240,7 @@ namespace Elicom.Stores
             }
         }
 
-        [AbpAuthorize]
+        [AbpAuthorize(PermissionNames.Pages_SmartStore_Admin, PermissionNames.Pages_PrimeShip_Admin, PermissionNames.Pages_Users, PermissionNames.Admin)]
         public virtual async Task ToggleAdminStatus(Guid storeId, bool isActive)
         {
             var store = await _storeRepo.GetAsync(storeId);
@@ -236,7 +248,84 @@ namespace Elicom.Stores
             await _storeRepo.UpdateAsync(store);
         }
 
-        [AbpAuthorize]
+        [AbpAuthorize(PermissionNames.Pages_SmartStore_Admin, PermissionNames.Pages_PrimeShip_Admin, PermissionNames.Pages_Users, PermissionNames.Admin)]
+        public virtual async Task SetFavorite(SetStoreFavoriteInput input)
+        {
+            if (!AbpSession.UserId.HasValue)
+            {
+                throw new Abp.UI.UserFriendlyException("User not found.");
+            }
+
+            if (input == null || input.Id == Guid.Empty)
+            {
+                throw new Abp.UI.UserFriendlyException("Store ID is required.");
+            }
+
+            using (CurrentUnitOfWork.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant, Abp.Domain.Uow.AbpDataFilters.MustHaveTenant))
+            {
+                var adminUserId = AbpSession.UserId.Value;
+                var favorite = await _favoriteRepo.FirstOrDefaultAsync(f =>
+                    f.AdminUserId == adminUserId && f.StoreId == input.Id);
+
+                if (input.IsFavorite)
+                {
+                    if (favorite == null)
+                    {
+                        await _favoriteRepo.InsertAsync(new StoreFavorite
+                        {
+                            Id = Guid.NewGuid(),
+                            AdminUserId = adminUserId,
+                            StoreId = input.Id,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+
+                    return;
+                }
+
+                if (favorite != null)
+                {
+                    await _favoriteRepo.DeleteAsync(favorite);
+                }
+            }
+        }
+
+        [AbpAuthorize(PermissionNames.Pages_SmartStore_Admin, PermissionNames.Pages_PrimeShip_Admin, PermissionNames.Pages_Users, PermissionNames.Admin)]
+        public virtual async Task ToggleFavorite(EntityDto<Guid> input)
+        {
+            if (!AbpSession.UserId.HasValue)
+            {
+                throw new Abp.UI.UserFriendlyException("User not found.");
+            }
+
+            if (input == null || input.Id == Guid.Empty)
+            {
+                throw new Abp.UI.UserFriendlyException("Store ID is required.");
+            }
+
+            using (CurrentUnitOfWork.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant, Abp.Domain.Uow.AbpDataFilters.MustHaveTenant))
+            {
+                var adminUserId = AbpSession.UserId.Value;
+                var favorite = await _favoriteRepo.FirstOrDefaultAsync(f =>
+                    f.AdminUserId == adminUserId && f.StoreId == input.Id);
+
+                if (favorite != null)
+                {
+                    await _favoriteRepo.DeleteAsync(favorite);
+                    return;
+                }
+
+                await _favoriteRepo.InsertAsync(new StoreFavorite
+                {
+                    Id = Guid.NewGuid(),
+                    AdminUserId = adminUserId,
+                    StoreId = input.Id,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
+        [AbpAuthorize(PermissionNames.Pages_SmartStore_Admin, PermissionNames.Pages_PrimeShip_Admin, PermissionNames.Pages_Users, PermissionNames.Admin)]
         public virtual async Task UpdateWithdrawPermission(UpdateWithdrawPermissionInput input)
         {
 
@@ -263,6 +352,18 @@ namespace Elicom.Stores
         [AbpAuthorize]
         public async Task<StoreDto> Create(CreateStoreDto input)
         {
+            if (string.IsNullOrWhiteSpace(input?.Name))
+            {
+                throw new Abp.UI.UserFriendlyException("Store name is required.");
+            }
+
+            input.Name = NormalizeStoreName(input.Name);
+            var isNameAvailable = await IsStoreNameAvailableInternalAsync(input.Name);
+            if (!isNameAvailable)
+            {
+                throw new Abp.UI.UserFriendlyException("Store name already exists. Please choose a different store name.");
+            }
+
             if (input.Kyc != null)
             {
                 var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
@@ -302,6 +403,7 @@ namespace Elicom.Stores
             
             // Force resolved owner for security and FK consistency
             store.OwnerId = owner.Id;
+            store.Status = true; // Auto-approve store so listings immediately go to buyer side!
 
             // Ensure relationship is linked correctly for EF
             if (store.Kyc != null)
@@ -315,16 +417,24 @@ namespace Elicom.Stores
 
             await _storeRepo.InsertAsync(store);
 
-            try
-            {
-                await QueueStoreApplicationReceivedEmailAsync(store, owner);
-            }
-            catch (Exception ex)
-            {
-                Logger.Warn($"[Store/Create] Could not enqueue store application email for store {store.Id}: {ex.Message}");
-            }
+            // DISABLED per request: S1 (Store application received)
+            // try
+            // {
+            //     await QueueStoreApplicationReceivedEmailAsync(store, owner);
+            // }
+            // catch (Exception ex)
+            // {
+            //     Logger.Warn($"[Store/Create] Could not enqueue store application email for store {store.Id}: {ex.Message}");
+            // }
 
             return ObjectMapper.Map<StoreDto>(store);
+        }
+
+        [AbpAuthorize]
+        [Microsoft.AspNetCore.Mvc.HttpGet]
+        public virtual async Task<bool> IsStoreNameAvailable(string name)
+        {
+            return await IsStoreNameAvailableInternalAsync(name);
         }
 
         [AbpAuthorize(PermissionNames.Pages_Stores_Edit)]
@@ -344,7 +454,7 @@ namespace Elicom.Stores
             await _storeRepo.DeleteAsync(id);
         }
 
-        [AbpAuthorize]
+        [AbpAuthorize(PermissionNames.Pages_SmartStore_Admin, PermissionNames.Pages_PrimeShip_Admin, PermissionNames.Pages_Users, PermissionNames.Admin)]
         public virtual async Task Approve(EntityDto<Guid> input)
         {
             var store = await _storeRepo.GetAsync(input.Id);
@@ -363,7 +473,7 @@ namespace Elicom.Stores
         }
 
 
-        [AbpAuthorize]
+        [AbpAuthorize(PermissionNames.Pages_SmartStore_Admin, PermissionNames.Pages_PrimeShip_Admin, PermissionNames.Pages_Users, PermissionNames.Admin)]
         public virtual async Task Reject(RejectStoreInput input)
         {
             if (input == null || input.Id == Guid.Empty)
@@ -385,7 +495,7 @@ namespace Elicom.Stores
             }
         }
 
-        [AbpAuthorize]
+        [AbpAuthorize(PermissionNames.Pages_SmartStore_Admin, PermissionNames.Pages_PrimeShip_Admin, PermissionNames.Pages_Users, PermissionNames.Admin)]
         public virtual async Task VerifyKyc(EntityDto<Guid> input)
         {
             var user = await GetCurrentUserAsync();
@@ -495,6 +605,41 @@ namespace Elicom.Stores
                 reason);
 
             await EnqueuePlatformEmailAsync(branding.PlatformName, owner.EmailAddress, subject, body);
+        }
+
+        private static string NormalizeStoreName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return string.Empty;
+            }
+
+            return string.Join(" ", name.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)).Trim();
+        }
+
+        private async Task<bool> IsStoreNameAvailableInternalAsync(string name, Guid? excludeStoreId = null)
+        {
+            var normalizedName = NormalizeStoreName(name);
+            if (string.IsNullOrWhiteSpace(normalizedName))
+            {
+                return false;
+            }
+
+            using (CurrentUnitOfWork.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant, Abp.Domain.Uow.AbpDataFilters.MustHaveTenant))
+            {
+                var existingNames = await _storeRepo.GetAll()
+                    .Where(s => s.Name != null && (!excludeStoreId.HasValue || s.Id != excludeStoreId.Value))
+                    .Select(s => s.Name)
+                    .ToListAsync();
+
+                var exists = existingNames.Any(existingName =>
+                    string.Equals(
+                        NormalizeStoreName(existingName),
+                        normalizedName,
+                        StringComparison.OrdinalIgnoreCase));
+
+                return !exists;
+            }
         }
 
         private async Task EnqueuePlatformEmailAsync(string platformName, string to, string subject, string htmlBody)

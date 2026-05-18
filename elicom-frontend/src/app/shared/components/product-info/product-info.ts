@@ -235,7 +235,7 @@ export class ProductInfo implements OnInit, OnDestroy {
 
     // 1. Validate Login
     if (!this.authService.isAuthenticated) {
-      this.promptLoginForAction('add_to_cart', 'Log in to your NoshCom account to add this product to your cart.');
+      this.promptLoginForAction('add_to_cart', 'Log in to your Smart Shop UK account to add this product to your cart.');
       return;
     }
 
@@ -249,7 +249,7 @@ export class ProductInfo implements OnInit, OnDestroy {
     }
 
     if (!this.authService.isAuthenticated) {
-      this.promptLoginForAction('buy_now', 'Log in to your NoshCom account to continue with Buy Now.');
+      this.promptLoginForAction('buy_now', 'Log in to your Smart Shop UK account to continue with Buy Now.');
       return;
     }
 

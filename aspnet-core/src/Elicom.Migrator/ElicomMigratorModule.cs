@@ -6,6 +6,7 @@ using Elicom.EntityFrameworkCore;
 using Elicom.Migrator.DependencyInjection;
 using Castle.MicroKernel.Registration;
 using Microsoft.Extensions.Configuration;
+using System;
 
 namespace Elicom.Migrator;
 
@@ -18,8 +19,13 @@ public class ElicomMigratorModule : AbpModule
     {
         abpProjectNameEntityFrameworkModule.SkipDbSeed = true;
 
+        var environmentName =
+            Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ??
+            Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+
         _appConfiguration = AppConfigurations.Get(
-            typeof(ElicomMigratorModule).GetAssembly().GetDirectoryPathOrNull()
+            typeof(ElicomMigratorModule).GetAssembly().GetDirectoryPathOrNull(),
+            environmentName
         );
     }
 

@@ -107,16 +107,17 @@ namespace Elicom.Withdrawals
         {
             var userId = AbpSession.GetUserId();
 
-            // 1. Verify card destination belongs to the current user and check balance
+            // 1. Verify card destination belongs to the current user and check wallet balance
             var card = await _cardRepository.GetAsync(input.CardId);
             if (card.UserId != userId)
             {
                 throw new UserFriendlyException("Selected card must belong to you.");
             }
 
-            if (card.Balance < input.Amount)
+            var walletBalance = await _walletManager.GetBalanceAsync(userId);
+            if (walletBalance < input.Amount)
             {
-                throw new UserFriendlyException($"Insufficient balance in your Virtual Card. Available: ${card.Balance:F2}, Requested: ${input.Amount:F2}");
+                throw new UserFriendlyException($"Insufficient wallet balance. Available: ${walletBalance:F2}, Requested: ${input.Amount:F2}");
             }
 
             // 2. Create withdrawal request
@@ -125,11 +126,13 @@ namespace Elicom.Withdrawals
 
             var request = new WithdrawRequest
             {
+                TenantId = AbpSession.GetTenantId(),
                 UserId = userId,
                 CardId = input.CardId,
                 Amount = input.Amount,
                 ServiceFee = serviceFee,
                 NetAmount = netAmount,
+                Currency = "USD",
                 Method = input.Method ?? "Bank Transfer",
                 PaymentDetails = input.PaymentDetails ?? $"Card Ending {card.CardNumber.Substring(card.CardNumber.Length - 4)}",
                 LocalAmount = input.LocalAmount,
@@ -138,6 +141,37 @@ namespace Elicom.Withdrawals
             };
 
             var id = await _withdrawRepository.InsertAndGetIdAsync(request);
+
+            // 3. Immediately reserve the amount from wallet and card while request is pending.
+            var debited = await _walletManager.TryDebitAsync(
+                userId,
+                input.Amount,
+                id.ToString(),
+                $"Withdrawal #{id} pending approval"
+            );
+
+            if (!debited)
+            {
+                throw new UserFriendlyException("Insufficient wallet balance for this withdrawal.");
+            }
+
+            card.Balance -= input.Amount;
+            await _cardRepository.UpdateAsync(card);
+
+            await _transactionRepository.InsertAsync(new AppTransaction
+            {
+                TenantId = request.TenantId,
+                UserId = userId,
+                CardId = input.CardId,
+                Amount = -input.Amount,
+                MovementType = "Debit",
+                Category = "Withdrawal",
+                ReferenceId = id.ToString(),
+                Status = "Pending",
+                Description = $"Withdrawal request of ${input.Amount} submitted and reserved from Card {input.CardId}"
+            });
+
+            await CurrentUnitOfWork.SaveChangesAsync();
             
             return new WithdrawRequestDto
             {
@@ -197,38 +231,26 @@ namespace Elicom.Withdrawals
                 throw new UserFriendlyException("Only pending requests can be approved.");
             }
 
-            // 1. Deduct from Virtual Card Balance (Gross Amount)
-            var card = await _cardRepository.GetAsync(request.CardId);
-            if (card.Balance < request.Amount)
-            {
-                throw new UserFriendlyException("Insufficient balance in user's Virtual Card.");
-            }
-            card.Balance -= request.Amount;
-
-            // 2. Sync with Easy Finora Wallet (USD)
-            bool debitSuccess = await _walletManager.TryDebitAsync(
-                request.UserId,
-                request.Amount,
-                request.Id.ToString(),
-                $"Withdrawal #{request.Id} (Card: {request.CardId})"
-            );
-
-            // 3. Record Payout Transaction
-            await _transactionRepository.InsertAsync(new AppTransaction
-            {
-                UserId = request.UserId,
-                CardId = request.CardId,
-                Amount = -request.Amount, // Deducted from Card
-                MovementType = "Debit",
-                Category = "Withdrawal",
-                ReferenceId = request.Id.ToString(),
-                Description = $"Withdrawal of ${request.Amount} (Recieved: ${request.NetAmount}) from Card {request.CardId}"
-            });
-
-            // 4. Update status
+            // Amount was already reserved/deducted when the request was submitted.
             request.Status = "Approved";
             request.AdminRemarks = input.AdminRemarks;
             request.PaymentProof = input.PaymentProof;
+            await _withdrawRepository.UpdateAsync(request);
+
+            var pendingTransactions = await _transactionRepository.GetAll()
+                .Where(t => t.ReferenceId == request.Id.ToString()
+                            && t.UserId == request.UserId
+                            && t.Category == "Withdrawal"
+                            && t.Status == "Pending")
+                .ToListAsync();
+
+            foreach (var transaction in pendingTransactions)
+            {
+                transaction.Status = "Approved";
+                transaction.Description = $"Withdrawal of ${request.Amount} (Received: ${request.NetAmount}) from Card {request.CardId}";
+            }
+
+            await CurrentUnitOfWork.SaveChangesAsync();
         }
 
         [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin)]
@@ -240,8 +262,48 @@ namespace Elicom.Withdrawals
                 throw new UserFriendlyException("Only pending requests can be rejected.");
             }
 
+            var card = await _cardRepository.GetAsync(request.CardId);
+            card.Balance += request.Amount;
+            await _cardRepository.UpdateAsync(card);
+
+            await _walletManager.DepositAsync(
+                request.UserId,
+                request.Amount,
+                request.Id.ToString(),
+                $"Withdrawal #{request.Id} rejected and refunded"
+            );
+
+            var pendingTransactions = await _transactionRepository.GetAll()
+                .Where(t => t.ReferenceId == request.Id.ToString()
+                            && t.UserId == request.UserId
+                            && t.Category == "Withdrawal"
+                            && t.Status == "Pending")
+                .ToListAsync();
+
+            foreach (var transaction in pendingTransactions)
+            {
+                transaction.Status = "Rejected";
+                transaction.Description = $"Withdrawal #{request.Id} was rejected and refunded";
+            }
+
+            await _transactionRepository.InsertAsync(new AppTransaction
+            {
+                TenantId = request.TenantId,
+                UserId = request.UserId,
+                CardId = request.CardId,
+                Amount = request.Amount,
+                MovementType = "Credit",
+                Category = "Withdrawal Refund",
+                ReferenceId = request.Id.ToString(),
+                Status = "Approved",
+                Description = $"Refund for rejected withdrawal #{request.Id}"
+            });
+
             request.Status = "Rejected";
             request.AdminRemarks = input.AdminRemarks;
+            await _withdrawRepository.UpdateAsync(request);
+
+            await CurrentUnitOfWork.SaveChangesAsync();
         }
 
         [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin)]

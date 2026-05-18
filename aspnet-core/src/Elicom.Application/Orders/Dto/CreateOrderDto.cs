@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Elicom.OrderItems.Dto;
 
@@ -20,6 +20,8 @@ namespace Elicom.Orders.Dto
         public string RecipientEmail { get; set; }
 
         public decimal ShippingCost { get; set; }
+        public decimal WarehouseCharge { get; set; }
+        public decimal ServiceCharge { get; set; }
         public decimal Discount { get; set; }
         public string SourcePlatform { get; set; }
 

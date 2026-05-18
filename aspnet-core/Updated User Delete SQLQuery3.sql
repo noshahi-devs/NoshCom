@@ -1,4 +1,4 @@
-﻿USE [NoshcomDb_Testing];
+﻿USE [ElicomDb_Testing];
 GO
 
 DECLARE @Email NVARCHAR(256) = LTRIM(RTRIM('engr.adeelnoshahi@gmail.com'));

@@ -1,5 +1,4 @@
 using Abp.Application.Services;
-using Abp.Authorization;
 using Abp.Domain.Repositories;
 using Elicom.Entities;
 using System;
@@ -9,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace Elicom.Utils
 {
+    [RemoteService(false)]
     public class DataSeedingAppService : ElicomAppServiceBase
     {
         private readonly IRepository<Category, Guid> _categoryRepository;
@@ -28,7 +28,7 @@ namespace Elicom.Utils
             _storeProductRepository = storeProductRepository;
         }
 
-        [AbpAuthorize]
+        // Kept callable for tests/ops, but not exposed as a remote API (see [RemoteService(false)]).
         public async Task SeedAllData()
         {
             // 1. Add 5 Categories

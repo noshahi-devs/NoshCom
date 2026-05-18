@@ -108,7 +108,7 @@ export class OrderDetailsComponent implements OnInit {
             grandTotal: itemsTotal + (itemsTotal * 0.04), // subtotal + tax
             shippingService: 'Standard',
             fulfillment: 'Seller',
-            salesChannel: 'NoshCom.com',
+            salesChannel: 'thesmartshop.uk',
             sellerInfo: {
                 sellerName: this.asDisplayValue(data.sellerName),
                 sellerId: this.asDisplayValue(data.sellerId),

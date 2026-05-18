@@ -8,6 +8,7 @@ using Elicom.Authorization.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System;
 using System.Linq;
 
 namespace Elicom.EntityFrameworkCore.Seed.Tenants;
@@ -31,6 +32,7 @@ public class TenantRoleAndUserBuilder
     private void CreateRolesAndUsers()
     {
         var passwordHasher = new PasswordHasher<User>(new OptionsWrapper<PasswordHasherOptions>(new PasswordHasherOptions()));
+        var seedPassword = ResolveSeedPassword();
 
         // 1. Ensure Roles exist for this tenant
         var adminRole = EnsureRole(StaticRoleNames.Tenants.Admin);
@@ -44,7 +46,7 @@ public class TenantRoleAndUserBuilder
         if (adminUser == null)
         {
             adminUser = User.CreateTenantAdminUser(_tenantId, "admin@defaulttenant.com");
-            adminUser.Password = passwordHasher.HashPassword(adminUser, "123qwe");
+            adminUser.Password = passwordHasher.HashPassword(adminUser, seedPassword);
             adminUser.IsEmailConfirmed = true;
             adminUser.IsActive = true;
 
@@ -57,7 +59,7 @@ public class TenantRoleAndUserBuilder
         }
 
         // 3. Create platform-specific test users
-        CreateVerifiedPlatformUsers(passwordHasher);
+        CreateVerifiedPlatformUsers(passwordHasher, seedPassword);
 
         // 4. Grant permissions to roles
         GrantPermissions();
@@ -199,34 +201,31 @@ public class TenantRoleAndUserBuilder
         }
     }
 
-    private void CreateVerifiedPlatformUsers(PasswordHasher<User> passwordHasher)
+    private void CreateVerifiedPlatformUsers(PasswordHasher<User> passwordHasher, string seedPassword)
     {
         if (_tenantId == 1) // Smart Store
         {
-            CreateUser("admin@worldcartus.com", "SS_admin@worldcartus.com", StaticRoleNames.Tenants.Admin, passwordHasher); // ✅ Added
-            CreateUser("noshahis@worldcartus.com", "SS_noshahis@worldcartus.com", StaticRoleNames.Tenants.Supplier, passwordHasher);
-            CreateUser("noshahir@worldcartus.com", "SS_noshahir@worldcartus.com", StaticRoleNames.Tenants.Reseller, passwordHasher);
-            CreateUser("noshahic@worldcartus.com", "SS_noshahic@worldcartus.com", StaticRoleNames.Tenants.Buyer, passwordHasher);
+            CreateUser("secureadmin@wc.com", "SS_secureadmin@wc.com", StaticRoleNames.Tenants.Admin, passwordHasher, seedPassword);
+            CreateUser("securesupplier@wc.com", "SS_securesupplier@wc.com", StaticRoleNames.Tenants.Supplier, passwordHasher, seedPassword);
+            CreateUser("securereseller@wc.com", "SS_securereseller@wc.com", StaticRoleNames.Tenants.Reseller, passwordHasher, seedPassword);
+            CreateUser("securebuyer@wc.com", "SS_securebuyer@wc.com", StaticRoleNames.Tenants.Buyer, passwordHasher, seedPassword);
         }
         else if (_tenantId == 2) // Prime Ship
         {
-            // Primary user noshahi@primeshipuk.com - Admin to manage categories
-            CreateUser("noshahi@primeshipuk.com", "PS_noshahi@primeshipuk.com", StaticRoleNames.Tenants.Admin, passwordHasher);
+            CreateUser("secureadmin@ps.com", "PS_secureadmin@ps.com", StaticRoleNames.Tenants.Admin, passwordHasher, seedPassword);
             
-            // Secondary Supplier/Reseller users
-            CreateUser("noshahis@primeshipuk.com", "PS_noshahis@primeshipuk.com", StaticRoleNames.Tenants.Supplier, passwordHasher);
-            CreateUser("admin@primeshipuk.com", "PS_admin@primeshipuk.com", StaticRoleNames.Tenants.Admin, passwordHasher);
+            CreateUser("securesupplier@ps.com", "PS_securesupplier@ps.com", StaticRoleNames.Tenants.Supplier, passwordHasher, seedPassword);
         }
         else if (_tenantId == 3) // Easy Finora
         {
-            CreateUser("noshahi@easyfinora.com", "GP_noshahi@easyfinora.com", StaticRoleNames.Tenants.Admin, passwordHasher);
-            CreateUser("noshahi@finora.com", "GP_noshahi@finora.com", StaticRoleNames.Tenants.Admin, passwordHasher);
+            CreateUser("secureadmin@ef.com", "GP_secureadmin@ef.com", StaticRoleNames.Tenants.Admin, passwordHasher, seedPassword);
         }
     }
 
-    private void CreateUser(string email, string userName, string roleName, PasswordHasher<User> passwordHasher)
+    private void CreateUser(string email, string userName, string roleName, PasswordHasher<User> passwordHasher, string seedPassword)
     {
-        var existingUser = _context.Users.IgnoreQueryFilters().FirstOrDefault(u => u.TenantId == _tenantId && u.UserName == userName);
+        var existingUser = _context.Users.IgnoreQueryFilters()
+            .FirstOrDefault(u => u.TenantId == _tenantId && (u.UserName == userName || u.EmailAddress == email));
         
         if (existingUser == null)
         {
@@ -234,8 +233,8 @@ public class TenantRoleAndUserBuilder
             {
                 TenantId = _tenantId,
                 UserName = userName,
-                Name = "Noshahi",
-                Surname = "Platform User",
+                Name = "Secure",
+                Surname = "Admin",
                 EmailAddress = email,
                 IsEmailConfirmed = true,
                 IsActive = true,
@@ -244,18 +243,20 @@ public class TenantRoleAndUserBuilder
             };
 
             user.SetNormalizedNames();
-            user.Password = passwordHasher.HashPassword(user, "Noshahi.000");
+            user.Password = passwordHasher.HashPassword(user, seedPassword);
             _context.Users.Add(user);
             _context.SaveChanges();
             existingUser = user;
         }
         else
         {
-            // Ensure active and password is correct for these specific users
-            existingUser.IsActive = true;
+            // Keep seeded secure users deterministic and avoid stale legacy credentials.
+            existingUser.EmailAddress = email;
+            existingUser.UserName = userName;
             existingUser.IsEmailConfirmed = true;
-            existingUser.Password = passwordHasher.HashPassword(existingUser, "Noshahi.000");
-            _context.Update(existingUser);
+            existingUser.IsActive = true;
+            existingUser.Password = passwordHasher.HashPassword(existingUser, seedPassword);
+            existingUser.SetNormalizedNames();
             _context.SaveChanges();
         }
 
@@ -269,6 +270,36 @@ public class TenantRoleAndUserBuilder
                 _context.UserRoles.Add(new UserRole(_tenantId, existingUser.Id, role.Id));
                 _context.SaveChanges();
             }
+
+            if (string.Equals(roleName, StaticRoleNames.Tenants.Admin, StringComparison.OrdinalIgnoreCase))
+            {
+                // Secure admin seed users must always have admin role.
+                var nonAdminRoleIds = _context.Roles.IgnoreQueryFilters()
+                    .Where(r => r.TenantId == _tenantId && r.Name != StaticRoleNames.Tenants.Admin)
+                    .Select(r => r.Id)
+                    .ToList();
+
+                var userNonAdminRoles = _context.UserRoles.IgnoreQueryFilters()
+                    .Where(ur => ur.UserId == existingUser.Id && nonAdminRoleIds.Contains(ur.RoleId))
+                    .ToList();
+
+                if (userNonAdminRoles.Count > 0)
+                {
+                    _context.UserRoles.RemoveRange(userNonAdminRoles);
+                    _context.SaveChanges();
+                }
+            }
         }
+    }
+
+    private static string ResolveSeedPassword()
+    {
+        var fromEnv = Environment.GetEnvironmentVariable("ELICOM_SEED_DEFAULT_PASSWORD");
+        if (!string.IsNullOrWhiteSpace(fromEnv))
+        {
+            return fromEnv;
+        }
+
+        return User.DefaultPassword;
     }
 }

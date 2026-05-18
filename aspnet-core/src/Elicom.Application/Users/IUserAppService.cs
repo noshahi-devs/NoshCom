@@ -2,6 +2,7 @@ using Abp.Application.Services;
 using Abp.Application.Services.Dto;
 using Elicom.Roles.Dto;
 using Elicom.Users.Dto;
+using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 namespace Elicom.Users;
@@ -12,6 +13,6 @@ public interface IUserAppService : IAsyncCrudAppService<UserDto, long, PagedUser
     Task Activate(EntityDto<long> user);
     Task<ListResultDto<RoleDto>> GetRoles();
     Task ChangeLanguage(ChangeUserLanguageDto input);
-
-    Task<bool> ChangePassword(ChangePasswordDto input);
+    [HttpGet]
+    Task<UserStatsDto> GetUserStatsAsync([FromQuery] long userId);
 }

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Abp.Application.Services;
+using Abp.Application.Services.Dto;
 using Elicom.Cards.Dto;
 
 namespace Elicom.Cards
@@ -27,6 +28,8 @@ namespace Elicom.Cards
 
         Task<List<CardApplicationDto>> GetPendingApplications(); // Admin only
 
+        Task<PagedResultDto<CardApplicationDto>> GetCardApplications(GetCardApplicationsInput input);
+
         Task<VirtualCardDto> ApproveCardApplication(ApproveApplicationInput input); // Admin only
 
         Task RejectCardApplication(RejectApplicationInput input); // Admin only
@@ -41,7 +44,7 @@ namespace Elicom.Cards
         public string CardNumber { get; set; }
         public string ExpiryDate { get; set; }
         public string Cvv { get; set; }
-        public decimal? Amount { get; set; }
+        public decimal Amount { get; set; }
         public string SourcePlatform { get; set; }
     }
 

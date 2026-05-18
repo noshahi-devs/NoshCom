@@ -12,7 +12,7 @@ using Elicom.Authorization;
 namespace Elicom.Migrator;
 
 /// <summary>
-/// Simple seeder to add admin@primeshipuk.com for Prime Ship (Tenant 2)
+/// Simple seeder to add secureadmin@ps.com for Prime Ship (Tenant 2)
 /// </summary>
 public class PrimeShipAdminSeeder
 {
@@ -26,9 +26,9 @@ public class PrimeShipAdminSeeder
         using var context = new ElicomDbContext(optionsBuilder.Options);
         
         const int tenantId = 2; // Prime Ship
-        const string adminEmail = "admin@primeshipuk.com";
-        const string adminUserName = "PS_admin@primeshipuk.com";
-        const string password = "Noshahi.000";
+        const string adminEmail = "secureadmin@ps.com";
+        const string adminUserName = "PS_secureadmin@ps.com";
+        var password = ResolveSeedPassword();
 
         Console.WriteLine("========================================");
         Console.WriteLine("PRIME SHIP ADMIN SEEDER");
@@ -59,21 +59,20 @@ public class PrimeShipAdminSeeder
 
         User adminUser;
         var passwordHasher = new PasswordHasher<User>(new OptionsWrapper<PasswordHasherOptions>(new PasswordHasherOptions()));
-
         if (existingUser != null)
         {
-            Console.WriteLine($"⚠️  User already exists (ID: {existingUser.Id})");
-            Console.WriteLine("Updating password and status...");
-            
-            existingUser.Password = passwordHasher.HashPassword(existingUser, password);
-            existingUser.IsEmailConfirmed = true;
-            existingUser.IsActive = true;
-            
-            context.Users.Update(existingUser);
-            context.SaveChanges();
-            
+            Console.WriteLine($"User already exists (ID: {existingUser.Id})");
+            Console.WriteLine("Skipping user creation/update.");
+
             adminUser = existingUser;
-            Console.WriteLine("✅ Updated existing user");
+            adminUser.Password = passwordHasher.HashPassword(adminUser, password);
+            adminUser.UserName = adminUserName;
+            adminUser.EmailAddress = adminEmail;
+            adminUser.IsActive = true;
+            adminUser.IsEmailConfirmed = true;
+            adminUser.SetNormalizedNames();
+            context.SaveChanges();
+            Console.WriteLine("Existing user updated with secure seed password and normalized identity fields");
         }
         else
         {
@@ -83,8 +82,8 @@ public class PrimeShipAdminSeeder
             {
                 TenantId = tenantId,
                 UserName = adminUserName,
-                Name = "Admin",
-                Surname = "User",
+                Name = "Secure",
+                Surname = "Admin",
                 EmailAddress = adminEmail,
                 IsEmailConfirmed = true,
                 IsActive = true,
@@ -169,4 +168,16 @@ public class PrimeShipAdminSeeder
         Console.WriteLine("3. Try creating a category");
         Console.WriteLine();
     }
+
+    private static string ResolveSeedPassword()
+    {
+        var fromEnv = Environment.GetEnvironmentVariable("ELICOM_SEED_DEFAULT_PASSWORD");
+        if (!string.IsNullOrWhiteSpace(fromEnv))
+        {
+            return fromEnv;
+        }
+
+        return User.DefaultPassword;
+    }
 }
+

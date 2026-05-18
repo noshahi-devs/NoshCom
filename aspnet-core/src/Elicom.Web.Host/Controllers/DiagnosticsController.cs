@@ -9,9 +9,13 @@ using Elicom.Sessions;
 using Elicom.Authorization.Users;
 using Elicom.MultiTenancy;
 using Abp.Runtime.Session;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
 
 namespace Elicom.Web.Host.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     [Route("api/diagnostics")]
     public class DiagnosticsController : AbpController
     {
@@ -32,7 +36,84 @@ namespace Elicom.Web.Host.Controllers
             _tenantManager = tenantManager;
         }
 
-        [HttpGet("email")]
+        [HttpGet]
+        [Route("TestSmtp")]
+        public async Task<IActionResult> TestSmtp(string to, string platform = "World Cart")
+        {
+            try
+            {
+                var platformKey = "WorldCart";
+                if (platform.Contains("Easy Finora", StringComparison.OrdinalIgnoreCase)) platformKey = "EasyFinora";
+                if (platform.Contains("Prime Ship", StringComparison.OrdinalIgnoreCase)) platformKey = "PrimeShip";
+
+                var smtpHost = _configuration[$"EmailSettings:{platformKey}:SmtpHost"] ?? "mail.thesmartshop.uk";
+                var portStr = _configuration[$"EmailSettings:{platformKey}:Port"] ?? "465";
+                var userStr = _configuration[$"EmailSettings:{platformKey}:Username"] ?? "support@thesmartshop.uk";
+                var passStr = _configuration[$"EmailSettings:{platformKey}:Password"] ?? "N0$h@hidot000";
+                var enableSsl = true;
+
+                int.TryParse(portStr, out var smtpPort);
+                if (smtpPort <= 0) smtpPort = 465;
+
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress(platform, userStr));
+                message.To.Add(MailboxAddress.Parse(to ?? "noshahidevelopersinc@gmail.com"));
+                message.Subject = $"Diagnostics SMTP Test - {platform}";
+                message.Body = new TextPart("html") { Text = $"<h3>This is a diagnostics SMTP test for {platform}!</h3>" };
+
+                using (var smtp = new SmtpClient())
+                {
+                    smtp.ServerCertificateValidationCallback = (smtpSender, certificate, chain, errors) => true;
+
+                    var secureMode = enableSsl
+                        ? (smtpPort == 465 ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls)
+                        : SecureSocketOptions.None;
+
+                    try
+                    {
+                        await smtp.ConnectAsync(smtpHost, smtpPort, secureMode);
+                    }
+                    catch (Exception ex) when (smtpPort == 465)
+                    {
+                        try
+                        {
+                            await smtp.ConnectAsync(smtpHost, 587, SecureSocketOptions.StartTls);
+                        }
+                        catch (Exception fallbackEx)
+                        {
+                            throw new AggregateException($"Port 465 failed: {ex.Message}. Port 587 fallback failed: {fallbackEx.Message}", fallbackEx);
+                        }
+                    }
+                    if (!string.IsNullOrWhiteSpace(userStr))
+                    {
+                        await smtp.AuthenticateAsync(userStr, passStr);
+                    }
+                    await smtp.SendAsync(message);
+                    await smtp.DisconnectAsync(true);
+                }
+
+                return Ok(new 
+                { 
+                    Success = true, 
+                    Host = smtpHost, 
+                    Port = smtpPort, 
+                    User = userStr,
+                    Message = "Email sent successfully via SMTP!"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new 
+                { 
+                    Success = false, 
+                    Error = ex.Message, 
+                    Stack = ex.StackTrace,
+                    Inner = ex.InnerException?.Message 
+                });
+            }
+        }
+
+        [NonAction]
         public async Task<IActionResult> TestEmail(string to)
         {
             try
@@ -75,7 +156,7 @@ namespace Elicom.Web.Host.Controllers
             }
         }
 
-        [HttpGet("session")]
+        [NonAction]
         public async Task<IActionResult> TestSession()
         {
             try
@@ -95,7 +176,7 @@ namespace Elicom.Web.Host.Controllers
             }
         }
         
-        [HttpGet("env")]
+        [NonAction]
         public IActionResult GetEnv()
         {
             return Ok(new

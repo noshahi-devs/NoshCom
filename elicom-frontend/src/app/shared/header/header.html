@@ -24,7 +24,7 @@
 <header id="mainHeader">
   <a routerLink="/" class="logo">
     <i class="fas fa-cart-shopping"></i>
-    <span class="logo-primary">Nosh</span><span class="logo-accent">Com</span>
+    <span class="logo-primary">Smart Shop</span><span class="logo-accent"> UK</span>
   </a>
 
   <div class="search-container">
@@ -80,83 +80,83 @@
       <i class="fas fa-sign-out-alt"></i>
     </button>
 
-    <!-- Cart Sidebar Overlay -->
-    <div class="cart-overlay" *ngIf="cartDropdown()" (click)="closeModal()"></div>
+  </div>
+</header>
 
-    <!-- Cart Sidebar -->
-    <div class="cart-sidebar" [class.open]="cartDropdown()">
-      <div class="sidebar-header">
-        <div class="header-title">
-          <i class="fas fa-shopping-bag"></i>
-          <span>My Shopping Cart</span>
-        </div>
-        <div class="close-sidebar" (click)="closeModal()">
-          <i class="fas fa-times"></i>
-        </div>
-      </div>
+<!-- Cart Sidebar Overlay -->
+<div class="cart-overlay" *ngIf="cartDropdown()" (click)="closeModal()"></div>
 
-      <div class="sidebar-content">
-        <div class="top-summary">
-          <span class="total-label">Total Items:</span>
-          <span class="total-count">{{ cartService.totalItems }}</span>
-        </div>
+<!-- Cart Sidebar -->
+<div class="cart-sidebar" [class.open]="cartDropdown()">
+  <div class="sidebar-header">
+    <div class="header-title">
+      <i class="fas fa-shopping-bag"></i>
+      <span>My Shopping Cart</span>
+    </div>
+    <div class="close-sidebar" (click)="closeModal()">
+      <i class="fas fa-times"></i>
+    </div>
+  </div>
 
-        <div class="product-list-container">
-          <div class="cart-item-card" *ngFor="let item of cartService.items()">
-            <div class="item-img-wrapper">
-              <img [src]="item.image" alt="Product" />
-            </div>
-            <div class="item-details">
-              <div class="item-name" [title]="item.name">{{ item.name }}</div>
-              <div class="item-meta">Sold By: {{ item.storeName }}</div>
-              <div class="item-variant" *ngIf="item.size || item.color">
-                <span *ngIf="item.size">Size: {{ item.size }}</span>
-                <span *ngIf="item.size && item.color"> | </span>
-                <span *ngIf="item.color">Color: {{ item.color }}</span>
-              </div>
-              
-              <div class="item-actions">
-                <div class="qty-control-3d">
-                  <button (click)="decrementQty(item); $event.stopPropagation()"><i class="fas fa-minus"></i></button>
-                  <span class="qty-num">{{ item.quantity }}</span>
-                  <button (click)="incrementQty(item); $event.stopPropagation()"><i class="fas fa-plus"></i></button>
-                </div>
-                <div class="item-pricing">
-                  <span class="price-val">${{ (item.price * item.quantity) | smartPrice }}</span>
-                  <button class="remove-btn" (click)="removeItem(item); $event.stopPropagation()">
-                    <i class="far fa-trash-alt"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
+  <div class="sidebar-content">
+    <div class="top-summary">
+      <span class="total-label">Total Items:</span>
+      <span class="total-count">{{ cartService.totalItems }}</span>
+    </div>
+
+    <div class="product-list-container">
+      <div class="cart-item-card" *ngFor="let item of cartService.items()">
+        <div class="item-img-wrapper">
+          <img [src]="item.image" alt="Product" />
+        </div>
+        <div class="item-details">
+          <div class="item-name" [title]="item.name">{{ item.name }}</div>
+          <div class="item-meta">Sold By: {{ item.storeName }}</div>
+          <div class="item-variant" *ngIf="item.size || item.color">
+            <span *ngIf="item.size">Size: {{ item.size }}</span>
+            <span *ngIf="item.size && item.color"> | </span>
+            <span *ngIf="item.color">Color: {{ item.color }}</span>
           </div>
-
-          <div *ngIf="cartService.items().length === 0" class="empty-cart-state">
-            <i class="fas fa-cart-arrow-down"></i>
-            <p>Your cart is empty.</p>
-            <button class="shop-now-btn" (click)="closeModal()">Start Shopping</button>
+          <div class="item-actions">
+            <div class="qty-control-3d">
+              <button (click)="decrementQty(item); $event.stopPropagation()"><i class="fas fa-minus"></i></button>
+              <span class="qty-num">{{ item.quantity }}</span>
+              <button (click)="incrementQty(item); $event.stopPropagation()"><i class="fas fa-plus"></i></button>
+            </div>
+            <div class="item-pricing">
+              <span class="price-val">${{ (item.price * item.quantity) | smartPrice }}</span>
+              <button class="remove-btn" (click)="removeItem(item); $event.stopPropagation()">
+                <i class="far fa-trash-alt"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="sidebar-footer" *ngIf="cartService.items().length > 0">
-        <div class="checkout-summary">
-          <div class="subtotal-row">
-            <span>Subtotal:</span>
-            <span class="subtotal-amount">${{ cartService.totalPrice | smartPrice }}</span>
-          </div>
-          <p class="summary-note">Shipping & taxes calculated at checkout</p>
-        </div>
-        <div class="footer-actions">
-          <a href="javascript:void(0)" class="checkout-btn-3d" (click)="proceedToCheckout()">
-            <span>Proceed to Checkout</span>
-            <i class="fas fa-arrow-right"></i>
-          </a>
-        </div>
+      <div *ngIf="cartService.items().length === 0" class="empty-cart-state">
+        <i class="fas fa-cart-arrow-down"></i>
+        <p>Your cart is empty.</p>
+        <button class="shop-now-btn" (click)="closeModal()">Start Shopping</button>
       </div>
     </div>
   </div>
-</header>
+
+  <div class="sidebar-footer" *ngIf="cartService.items().length > 0">
+    <div class="checkout-summary">
+      <div class="subtotal-row">
+        <span>Subtotal:</span>
+        <span class="subtotal-amount">${{ cartService.totalPrice | smartPrice }}</span>
+      </div>
+      <p class="summary-note">Shipping &amp; taxes calculated at checkout</p>
+    </div>
+    <div class="footer-actions">
+      <a href="javascript:void(0)" class="checkout-btn-3d" (click)="proceedToCheckout()">
+        <span>Proceed to Checkout</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+  </div>
+</div>
 
 <!-- Category Sub-Nav -->
 <nav class="category-nav" #navbar (mouseleave)="closeMegaMenu()">

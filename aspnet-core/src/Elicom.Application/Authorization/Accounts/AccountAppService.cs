@@ -1,4 +1,4 @@
-﻿using Abp.Authorization;
+using Abp.Authorization;
 using Abp.Authorization.Users;
 using Elicom.Authorization;
 using Abp.Net.Mail;
@@ -106,14 +106,15 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                 else if (platform.Contains("Easy Finora")) { primaryColor = "#28a745"; icon = "&#x1F4B0;"; }
 
                 // Non-blocking post-verification welcome email
-                try
-                {
-                    await QueueWelcomeAfterVerificationEmailAsync(user, platform);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Warn($"VerifyEmail: Could not enqueue welcome email for {user.EmailAddress}. {ex.Message}");
-                }
+                // DISABLED per request: A2 (Welcome after verification)
+                // try
+                // {
+                //     await QueueWelcomeAfterVerificationEmailAsync(user, platform);
+                // }
+                // catch (Exception ex)
+                // {
+                //     Logger.Warn($"VerifyEmail: Could not enqueue welcome email for {user.EmailAddress}. {ex.Message}");
+                // }
 
                 return new ContentResult
                 {
@@ -182,18 +183,19 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
     {
         try
         {
+            var tenantId = AbpSession.TenantId ?? 1;
+            var isPrimeShipSignup = tenantId == 2;
             var user = await _userRegistrationManager.RegisterAsync(
                 input.Name,
                 input.Surname,
                 input.EmailAddress,
                 input.UserName,
                 input.Password,
-                false, // Email address is NOT confirmed by default.
+                isPrimeShipSignup, // PrimeShip skips verification
                 input.PhoneNumber,
                 input.Country
             );
 
-            var tenantId = AbpSession.TenantId ?? 1;
             string platformName = "Elicom";
             string brandColor = "#007bff";
 
@@ -202,14 +204,24 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
             else if (tenantId == 3) { platformName = "Easy Finora"; brandColor = "#1de016"; }
             else if (tenantId == 4) { platformName = "Easy Finora"; brandColor = "#28a745"; }
 
-            // 5. Verification Email (Smart 5s Timeout)
-            try
+            if (isPrimeShipSignup)
             {
-                await SendVerificationEmail(user, platformName, brandColor);
+                user.IsActive = true;
+                user.IsEmailConfirmed = true;
+                await _userManager.UpdateAsync(user);
+                Logger.Info("[Register] PrimeShip signup: email verification skipped.");
             }
-            catch (Exception ex)
+            else
             {
-                Logger.Warn($"[Register] Email delay/error: {ex.Message}");
+                // 5. Verification Email (Smart 5s Timeout)
+                try
+                {
+                    await SendVerificationEmail(user, platformName, brandColor);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warn($"[Register] Email delay/error: {ex.Message}");
+                }
             }
 
             return new RegisterOutput
@@ -223,8 +235,29 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
         }
     }
 
+    private async Task TrySendVerificationEmailWithTimeoutAsync(User user, string platformName, string brandColor)
+    {
+        var sendTask = SendVerificationEmail(user, platformName, brandColor);
+        var completedTask = await Task.WhenAny(sendTask, Task.Delay(TimeSpan.FromSeconds(8)));
+
+        if (completedTask == sendTask)
+        {
+            await sendTask;
+            return;
+        }
+
+        Logger.Warn($"[Register] {platformName} verification email timed out after 8 seconds. Registration will continue without waiting for SMTP.");
+    }
+
     private async Task SendVerificationEmail(User user, string platformName, string brandColor)
     {
+        if (platformName.Contains("Prime Ship", StringComparison.OrdinalIgnoreCase) ||
+            platformName.Contains("Primeship", StringComparison.OrdinalIgnoreCase))
+        {
+            Logger.Info("[Register] PrimeShip verification email skipped by configuration.");
+            return;
+        }
+
         var serverRootAddress = (await SettingManager.GetSettingValueAsync("App.ServerRootAddress"))?.TrimEnd('/');
         if (string.IsNullOrEmpty(serverRootAddress)) serverRootAddress = "http://localhost:44311";
 
@@ -249,6 +282,13 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
         //     </div>";
 
         // Platform-specific email templates for complete brand separation
+        var userFullName = string.Join(" ",
+                new[] { user?.Name, user?.Surname }.Where(x => !string.IsNullOrWhiteSpace(x)))
+            .Trim();
+        if (string.IsNullOrWhiteSpace(userFullName))
+        {
+            userFullName = user?.UserName ?? "User";
+        }
         string emailBody;
 
         if (platformName.Contains("Prime Ship"))
@@ -381,7 +421,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
 
                             <h2 style='margin-top:0; font-weight:600;'>Confirm Your Email Address</h2>
 
-                            <p>Dear {user.Name},</p>
+                            <p>Dear {userFullName},</p>
 
                             <p>
                                 Thank you for registering with <strong>{platformName}</strong>. 
@@ -406,14 +446,6 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                                 </tr>
                             </table>
 
-                            <p style='font-size:13px; color:#666;'>
-                                If the button above does not work, please copy and paste the following link into your browser:
-                            </p>
-
-                            <p style='word-break:break-all; font-size:12px; color:#888;'>
-                                {verificationLink}
-                            </p>
-
                             <hr style='border:none; border-top:1px solid #eee; margin:30px 0;' />
 
                             <p style='font-size:13px; color:#777;'>
@@ -432,7 +464,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                     <!-- Footer -->
                     <tr>
                         <td style='background:#f9fafb; padding:20px 30px; text-align:center; font-size:12px; color:#999;'>
-                            &copy; {DateTime.UtcNow.Year} {platformName}. All rights reserved.
+                            &copy; 2022 {platformName}. All rights reserved.
                         </td>
                     </tr>
 
@@ -451,7 +483,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
             var roles = await _userManager.GetRolesAsync(user);
             bool isSeller = roles.Any(r => r.ToLower().Contains("seller") || r.ToLower().Contains("supplier"));
             string accountType = isSeller ? "Seller Account" : "Customer Account";
-            string userDisplayName = string.IsNullOrWhiteSpace(user.Name) ? user.UserName : user.Name;
+            string userDisplayName = userFullName;
             string roleSpecificEnding = isSeller
                 ? "Thank you for choosing WORLD CART. We look forward to helping you grow your business!"
                 : "Thank you for choosing WORLD CART. We look forward to serving you!";
@@ -517,7 +549,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                         <td style='border-top:1px solid #e5e7eb; padding:20px; text-align:center; background:#ffffff;'>
                             <p style='margin:0; font-size:13px; font-weight:700; color:#111827;'>WORLD CART US</p>
                             <p style='margin:8px 0 0; font-size:12px; color:#6b7280;'>
-                                &copy; {DateTime.UtcNow.Year} World Cart Inc. All rights reserved.
+                                &copy; 2025-2030 World Cart Inc. All rights reserved.
                             </p>
                         </td>
                     </tr>
@@ -551,17 +583,117 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
             emailSubject = $"Verify Your {platformName} Account";
         }
 
-        await SendEmailWithCustomSmtp(
-            null,
-            0,
-            null,
-            null,
-            platformName,
-            null, // senderAddress will be determined inside SendEmailWithCustomSmtp based on platformName
-            user.EmailAddress,
-            emailSubject,
-            emailBody
-        );
+        if (platformName.Contains("Prime Ship", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                await SendEmailWithCustomSmtp(
+                    null,
+                    0,
+                    null,
+                    null,
+                    "Prime Ship UK",
+                    null,
+                    user.EmailAddress,
+                    emailSubject,
+                    emailBody
+                );
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"[Register] PrimeShip SMTP failed. Falling back to default sender. {ex.Message}");
+                try
+                {
+                    var mail = new System.Net.Mail.MailMessage
+                    {
+                        Subject = emailSubject,
+                        Body = emailBody,
+                        IsBodyHtml = true
+                    };
+                    mail.To.Add(user.EmailAddress);
+                    await _emailSender.SendAsync(mail);
+                }
+                catch (Exception fallbackEx)
+                {
+                    Logger.Error($"[Register] PrimeShip fallback email failed for {user.EmailAddress}: {fallbackEx.Message}", fallbackEx);
+                    throw;
+                }
+            }
+        }
+        else if (platformName.Contains("Easy Finora", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                await SendEmailWithCustomSmtp(
+                    null,
+                    0,
+                    null,
+                    null,
+                    "Easy Finora",
+                    null,
+                    user.EmailAddress,
+                    emailSubject,
+                    emailBody
+                );
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"[Register] EasyFinora SMTP failed. Falling back to default sender. {ex.Message}");
+                try
+                {
+                    var mail = new System.Net.Mail.MailMessage
+                    {
+                        Subject = emailSubject,
+                        Body = emailBody,
+                        IsBodyHtml = true
+                    };
+                    mail.To.Add(user.EmailAddress);
+                    await _emailSender.SendAsync(mail);
+                }
+                catch (Exception fallbackEx)
+                {
+                    Logger.Error($"[Register] EasyFinora fallback email failed for {user.EmailAddress}: {fallbackEx.Message}", fallbackEx);
+                    throw;
+                }
+            }
+        }
+        else
+        {
+            try
+            {
+                await SendEmailWithCustomSmtp(
+                    null,
+                    0,
+                    null,
+                    null,
+                    "World Cart",
+                    null,
+                    user.EmailAddress,
+                    emailSubject,
+                    emailBody
+                );
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"[Register] WorldCart SMTP failed. Falling back to default sender. {ex.Message}");
+                try
+                {
+                    var mail = new System.Net.Mail.MailMessage
+                    {
+                        Subject = emailSubject,
+                        Body = emailBody,
+                        IsBodyHtml = true
+                    };
+                    mail.To.Add(user.EmailAddress);
+                    await _emailSender.SendAsync(mail);
+                }
+                catch (Exception fallbackEx)
+                {
+                    Logger.Error($"[Register] WorldCart fallback email failed for {user.EmailAddress}: {fallbackEx.Message}", fallbackEx);
+                    throw;
+                }
+            }
+        }
     }
 
     private async Task QueueWelcomeAfterVerificationEmailAsync(User user, string platform)
@@ -688,7 +820,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
         await RegisterPrimeShipSeller(new RegisterPrimeShipInput 
         { 
             EmailAddress = email, 
-            Password = "DefaultPassword123!", // Legacy support
+            Password = User.DefaultPassword,
             Country = "United Kingdom",
             PhoneNumber = "0000000000"
         });
@@ -747,10 +879,15 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
         Logger.Info($"SendSampleEmail: Completed send attempt to {toEmail}.");
     }
 
-    private async Task RegisterPlatformUser(string email, int tenantId, string roleName, string userType, string platformName, string prefix, string brandColor, string password = "Noshahi.000", string country = null, string phoneNumber = null, string fullName = null)
+    private async Task RegisterPlatformUser(string email, int tenantId, string roleName, string userType, string platformName, string prefix, string brandColor, string password = null, string country = null, string phoneNumber = null, string fullName = null)
     {
         try 
         {
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                password = User.DefaultPassword;
+            }
+
             var normalizedEmail = (email ?? string.Empty).Trim().ToLowerInvariant();
             if (string.IsNullOrWhiteSpace(normalizedEmail))
             {
@@ -807,6 +944,9 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                 }
 
                 Logger.Info($"[Register] User not found. Calling UserRegistrationManager.RegisterAsync...");
+                var isPrimeShipSignup = platformName.Contains("Prime Ship", StringComparison.OrdinalIgnoreCase) ||
+                                        platformName.Contains("Primeship", StringComparison.OrdinalIgnoreCase);
+
                 // Create new user (RegisterAsync also handles Wallet creation and sets IsActive=true)
                 var user = await _userRegistrationManager.RegisterAsync(
                     name,
@@ -814,11 +954,19 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                     normalizedEmail,
                     userName,
                     password,
-                    false, // Email not confirmed
+                    isPrimeShipSignup, // PrimeShip skips verification
                     phoneNumber,
                     country
                 );
                 Logger.Info($"[Register] User created successfully. ID: {user.Id}");
+
+                if (isPrimeShipSignup)
+                {
+                    user.IsActive = true;
+                    user.IsEmailConfirmed = true;
+                    await _userManager.UpdateAsync(user);
+                    Logger.Info("[Register] PrimeShip signup: email verification skipped.");
+                }
 
                 // 2. Role Management
                 Logger.Info($"[Register] Verifying role '{roleName}' for tenant {tenantId}...");
@@ -902,16 +1050,26 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                     Logger.Info($"[Register] Role assigned successfully.");
                 }
 
-                // 5. Verification Email (synchronous for reliability)
-                try
+                if (!isPrimeShipSignup)
                 {
-                    Logger.Info($"[Register] Sending verification email to {email}...");
-                    await SendVerificationEmail(user, platformName, brandColor);
-                    Logger.Info("[Register] Verification email sent.");
-                }
-                catch (Exception emailEx)
-                {
-                    Logger.Error($"[Register] Could not send email: {emailEx.Message}");
+                    // 5. Verification Email
+                    try
+                    {
+                        Logger.Info($"[Register] Sending verification email to {email}...");
+                        if (platformName.Contains("Easy Finora", StringComparison.OrdinalIgnoreCase))
+                        {
+                            await TrySendVerificationEmailWithTimeoutAsync(user, platformName, brandColor);
+                        }
+                        else
+                        {
+                            await SendVerificationEmail(user, platformName, brandColor);
+                        }
+                        Logger.Info("[Register] Verification email sent.");
+                    }
+                    catch (Exception emailEx)
+                    {
+                        Logger.Error($"[Register] Could not send email: {emailEx.Message}");
+                    }
                 }
             }
         }
@@ -1100,21 +1258,47 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
             message.Subject = subject;
             message.Body = new TextPart("html") { Text = body };
 
-            using var smtp = new SmtpClient();
-            var secureMode = enableSsl
-                ? (port == 465 ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls)
-                : SecureSocketOptions.None;
-            await smtp.ConnectAsync(resolvedHost, port, secureMode);
-
-            if (!string.IsNullOrWhiteSpace(resolvedUser))
+            using (var smtp = new SmtpClient())
             {
-                await smtp.AuthenticateAsync(resolvedUser, resolvedPass ?? string.Empty);
+                smtp.ServerCertificateValidationCallback = (smtpSender, certificate, chain, errors) => true;
+
+                var secureMode = enableSsl
+                     ? (port == 465 ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls)
+                     : SecureSocketOptions.None;
+
+                var connected = false;
+                try
+                {
+                    await smtp.ConnectAsync(resolvedHost, port, secureMode);
+                    connected = true;
+                }
+                catch (Exception ex) when (port == 465)
+                {
+                    Logger.Warn($"[SMTP] Connect failed on port 465 with error: {ex.Message}. Retrying on port 587 with STARTTLS...");
+                    try
+                    {
+                        await smtp.ConnectAsync(resolvedHost, 587, SecureSocketOptions.StartTls);
+                        connected = true;
+                    }
+                    catch (Exception fallbackEx)
+                    {
+                        Logger.Error($"[SMTP] Fallback connect to port 587 also failed: {fallbackEx.Message}");
+                        throw;
+                    }
+                }
+
+                if (connected)
+                {
+                    if (!string.IsNullOrWhiteSpace(resolvedUser))
+                    {
+                        await smtp.AuthenticateAsync(resolvedUser, resolvedPass ?? string.Empty);
+                    }
+
+                    await smtp.SendAsync(message);
+                    await smtp.DisconnectAsync(true);
+                    Logger.Info($"[SMTP] Email sent successfully to {to}.");
+                }
             }
-
-            await smtp.SendAsync(message);
-            await smtp.DisconnectAsync(true);
-
-            Logger.Info($"[SMTP] Email sent successfully to {to}.");
         }
         catch (Exception ex)
         {
@@ -1211,153 +1395,5 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
         return details.Length <= 1200 ? details : details[..1200];
     }
 
-    private int min(int a, int b) => a < b ? a : b;
-
-
-    [HttpPost]
-    public async Task ForgotPassword(string email)
-    {
-        int tenantId = AbpSession.TenantId ?? 1;
-        using (CurrentUnitOfWork.SetTenantId(tenantId))
-        {
-            var user = await _userManager.FindByEmailAsync(email);
-            if (user == null) 
-            {
-                Logger.Warn($"ForgotPassword: User not found for email {email} in tenant {tenantId}");
-                return;
-            }
-
-            Logger.Info($"ForgotPassword: Generating reset token for {email}");
-            var serverRootAddress = (await SettingManager.GetSettingValueAsync("App.ServerRootAddress"))?.TrimEnd('/');
-            if (string.IsNullOrEmpty(serverRootAddress)) serverRootAddress = "http://localhost:44311";
-
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var resetLink = $"{serverRootAddress}/api/services/app/Account/ShowResetPasswordPage?userId={user.Id}&token={Uri.EscapeDataString(token)}";
-
-            var emailBody = $@"
-                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #f4f7f6;'>
-                    <div style='text-align: center; padding-bottom: 20px;'>
-                        <h2 style='color: #d9534f; font-weight: bold;'>Prime Ship UK</h2>
-                        <h3 style='color: #333;'>Password Reset Request</h3>
-                    </div>
-                    <div style='background-color: #ffffff; padding: 40px; border-radius: 12px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-top: 4px solid #d9534f;'>
-                        <p style='font-size: 16px; color: #555; line-height: 1.6;'>
-                            We received a request to reset your password. If you didn't make this request, you can safely ignore this email.
-                        </p>
-                        <div style='margin: 35px 0;'>
-                            <a href='{resetLink}' 
-                               style='background-color: #d9534f; color: #ffffff; padding: 18px 35px; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 18px; display: inline-block;'>
-                               RESET MY PASSWORD
-                            </a>
-                        </div>
-                        <p style='font-size: 14px; color: #888;'>
-                            For security reasons, this link will expire in 24 hours.
-                        </p>
-                    </div>
-                    <div style='text-align: center; margin-top: 30px; color: #aaa; font-size: 12px;'>
-                        If you're having trouble clicking the button, copy and paste this URL into your web browser:<br>
-                        <a href='{resetLink}' style='color: #d9534f; word-break: break-all;'>{resetLink}</a>
-                    </div>
-                </div>";
-
-            if (tenantId == 3 || tenantId == 4) // Easy Finora
-            {
-                await SendEmailWithCustomSmtp(
-                    null,
-                    0,
-                    null,
-                    null,
-                    "Easy Finora",
-                    null,
-                    email,
-                    "Reset Your Easy Finora Password",
-                    emailBody
-                );
-            }
-            else if (tenantId == 2) // Prime Ship
-            {
-                 await SendEmailWithCustomSmtp(
-                    null,
-                    0,
-                    null,
-                    null,
-                    "Prime Ship UK",
-                    null,
-                    email,
-                    "Reset Your Prime Ship Password",
-                    emailBody
-                );
-            }
-            else // Default (World Cart or other)
-            {
-                await SendEmailWithCustomSmtp(
-                    null,
-                    0,
-                    null,
-                    null,
-                    "World Cart US",
-                    null,
-                    email,
-                    "Reset Your Password",
-                    emailBody
-                );
-            }
-            Logger.Info($"ForgotPassword: Email sent to {email}");
-        }
-    }
-
-    [HttpGet]
-    public ContentResult ShowResetPasswordPage(long userId, string token)
-    {
-        // This is a simple HTML page to collect the new password
-        return new ContentResult
-        {
-            ContentType = "text/html",
-            Content = $@"
-                <html>
-                    <body style='font-family: sans-serif; display: flex; justify-content: center; padding-top: 100px; background-color: #f4f7f6;'>
-                        <div style='background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px;'>
-                            <h2 style='text-align: center; color: #333;'>Reset Password</h2>
-                            <p style='font-size: 14px; color: #666; margin-bottom: 25px;'>Please enter your new password below.</p>
-                            <input type='password' id='newPass' placeholder='New Password' style='width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 6px;'>
-                            <button onclick='submitReset()' style='width: 100%; padding: 12px; background: #d9534f; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;'>Update Password</button>
-                            <div id='msg' style='margin-top: 15px; text-align: center; font-size: 14px;'></div>
-                        </div>
-                        <script>
-                            async function submitReset() {{
-                                const pass = document.getElementById('newPass').value;
-                                if (!pass) {{ alert('Please enter a password'); return; }}
-                                
-                                const response = await fetch('/api/services/app/Account/ResetPassword', {{
-                                    method: 'POST',
-                                    headers: {{ 'Content-Type': 'application/json' }},
-                                    body: JSON.stringify({{ userId: {userId}, token: '{token}', newPassword: pass }})
-                                }});
-                                
-                                if (response.ok) {{
-                                    document.getElementById('msg').innerHTML = '<span style=""color: green"">Password updated! Redirecting...</span>';
-                                    setTimeout(() => window.location.href = '/account/login', 2000);
-                                }} else {{
-                                    document.getElementById('msg').innerHTML = '<span style=""color: red"">Error resetting password. Link might be expired.</span>';
-                                }}
-                            }}
-                        </script>
-                    </body>
-                </html>"
-        };
-    }
-
-    [HttpPost]
-    public async Task ResetPassword(ResetPasswordInput input)
-    {
-        var user = await _userManager.FindByIdAsync(input.UserId.ToString());
-        if (user == null) throw new UserFriendlyException("User not found");
-
-        var result = await _userManager.ResetPasswordAsync(user, input.Token, input.NewPassword);
-        if (!result.Succeeded)
-        {
-            throw new UserFriendlyException("Failed to reset password: " + string.Join(", ", result.Errors.Select(e => e.Description)));
-        }
-    }
 }
 

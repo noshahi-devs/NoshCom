@@ -65,8 +65,17 @@ export class ProductGridComponent implements OnInit, OnChanges {
       if (!this.visibleCountOverride) {
         this.visibleCount = this.initialVisibleCount;
       }
-      this.applyFilters();
-      this.ensureEnoughFilteredProducts();
+      
+      const prev = changes['filterData'].previousValue;
+      const curr = changes['filterData'].currentValue;
+      const searchChanged = prev && (prev.search !== curr.search || prev.category !== curr.category);
+      
+      if (searchChanged) {
+        this.loadProducts();
+      } else {
+        this.applyFilters();
+        this.ensureEnoughFilteredProducts();
+      }
     }
   }
 
@@ -78,7 +87,9 @@ export class ProductGridComponent implements OnInit, OnChanges {
     this.totalCount = 0;
     this.allProducts = [];
 
-    this.productService.getProductsForCards(this.skipCount, this.pageSize).subscribe({
+    const searchTerm = this.filterData?.search || this.filterData?.category || '';
+
+    this.productService.getProductsForCards(this.skipCount, this.pageSize, searchTerm).subscribe({
       next: (res: any) => {
         const items = this.extractItems(res);
         this.totalCount = this.extractTotalCount(res, items.length);
@@ -105,8 +116,9 @@ export class ProductGridComponent implements OnInit, OnChanges {
     }
 
     this.isLoadingMore = true;
+    const searchTerm = this.filterData?.search || this.filterData?.category || '';
 
-    this.productService.getProductsForCards(this.skipCount, this.pageSize).subscribe({
+    this.productService.getProductsForCards(this.skipCount, this.pageSize, searchTerm).subscribe({
       next: (res: any) => {
         const items = this.extractItems(res);
         this.totalCount = this.extractTotalCount(res, this.totalCount || this.allProducts.length + items.length);

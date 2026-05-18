@@ -1,6 +1,6 @@
 /* Shein Inspired Design System */
 :root {
-    /* Color scheme aligned to NoshCom purple palette */
+    /* Color scheme aligned to Smart Shop UK purple palette */
     --sui-primary: #7c5cff; /* main accent */
     --sui-primary-dark: #6248e9;
     --sui-primary-light: #a892ff;
@@ -277,6 +277,7 @@ h6,
 
 /* ===== SweetAlert2 Pro Styling ===== */
 .swal2-container {
+    z-index: 9999 !important;
     backdrop-filter: blur(10px);
     background:
         radial-gradient(circle at 12% 14%, rgba(255, 193, 7, 0.16), transparent 26%),

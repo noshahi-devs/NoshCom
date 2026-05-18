@@ -16,6 +16,7 @@ namespace Elicom.EntityFrameworkCore
         public DbSet<Store> Stores { get; set; }
         public DbSet<StoreKyc> StoreKycs { get; set; }
         public DbSet<StoreProduct> StoreProducts { get; set; }
+        public DbSet<StoreFavorite> StoreFavorites { get; set; }
         public DbSet<CustomerProfile> CustomerProfiles { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Order> Orders { get; set; }
@@ -97,6 +98,16 @@ namespace Elicom.EntityFrameworkCore
 
                 // One product can be listed once per store
                 b.HasIndex(sp => new { sp.StoreId, sp.ProductId }).IsUnique();
+            });
+
+            builder.Entity<StoreFavorite>(b =>
+            {
+                b.HasOne(sf => sf.Store)
+                 .WithMany()
+                 .HasForeignKey(sf => sf.StoreId)
+                 .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasIndex(sf => new { sf.AdminUserId, sf.StoreId }).IsUnique();
             });
 
             builder.Entity<CustomerProfile>(b =>

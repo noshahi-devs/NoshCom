@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Elicom.Entities;
 using Elicom.OrderItems.Dto;
 using Elicom.Orders.Dto;
@@ -29,7 +29,7 @@ namespace Elicom.Orders
                 .ForMember(dest => dest.StoreSlug, opts => opts.MapFrom(src => src.StoreProduct != null && src.StoreProduct.Store != null ? src.StoreProduct.Store.Slug : ""))
                 .ForMember(dest => dest.OriginalPrice, opts => opts.MapFrom(src => src.OriginalPrice))
                 .ForMember(dest => dest.DiscountPercentage, opts => opts.MapFrom(src => src.DiscountPercentage))
-                .ForMember(dest => dest.CreationTime, opts => opts.MapFrom(src => src.Order != null ? src.Order.CreationTime : DateTime.Now));
+                .ForMember(dest => dest.CreationTime, opts => opts.MapFrom(src => src.Order != null ? src.Order.CreationTime : DateTime.UtcNow));
         }
     }
 }

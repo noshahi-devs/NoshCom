@@ -132,7 +132,12 @@ namespace Elicom.ProductImport
 
             if (!Uri.TryCreate(normalized, UriKind.Absolute, out uri))
             {
-                var escaped = Uri.EscapeUriString(normalized);
+                // Avoid obsolete Uri.EscapeUriString; most invalid inputs here are due to spaces/brackets.
+                var escaped = normalized
+                    .Replace(" ", "%20", StringComparison.Ordinal)
+                    .Replace("[", "%5B", StringComparison.Ordinal)
+                    .Replace("]", "%5D", StringComparison.Ordinal);
+
                 if (!Uri.TryCreate(escaped, UriKind.Absolute, out uri))
                 {
                     error = "Invalid URL format.";

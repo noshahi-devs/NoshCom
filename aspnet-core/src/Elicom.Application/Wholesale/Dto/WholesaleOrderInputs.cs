@@ -8,6 +8,9 @@ namespace Elicom.Wholesale.Dto
         public List<WholesaleOrderItemInput> Items { get; set; }
         public string ShippingAddress { get; set; }
         public string CustomerName { get; set; }
+        public decimal ShippingCost { get; set; }
+        public decimal WarehouseCharge { get; set; }
+        public decimal ServiceCharge { get; set; }
         
         // Payment Details
         public string PaymentMethod { get; set; }

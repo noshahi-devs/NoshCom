@@ -19,6 +19,7 @@ export class CustomerDashboardComponent implements OnInit {
     orderProgress = 0;
     currentStep = 0;
     orderStatus = 'No active orders';
+    ordersLoading = true;
     trackingSteps = ['Order placed', 'Processing', 'Shipped', 'Delivered'];
 
     orderStatuses = [
@@ -100,6 +101,7 @@ export class CustomerDashboardComponent implements OnInit {
     }
 
     loadOrders() {
+        this.ordersLoading = true;
         this.orderService.getCustomerOrdersPaged({
             skipCount: 0,
             maxResultCount: 200
@@ -108,6 +110,7 @@ export class CustomerDashboardComponent implements OnInit {
                 const orders = this.extractOrdersFromPagedResponse(res);
                 if (orders.length > 0) {
                     this.applyOrderStats(orders);
+                    this.ordersLoading = false;
                     return;
                 }
                 this.loadOrdersFallbackByUserId();
@@ -121,12 +124,19 @@ export class CustomerDashboardComponent implements OnInit {
             const numericUserId = Number(user?.id);
             if (Number.isNaN(numericUserId) || numericUserId <= 0) {
                 this.applyOrderStats([]);
+                this.ordersLoading = false;
                 return;
             }
 
             this.orderService.getCustomerOrders(numericUserId).subscribe({
-                next: (fallbackOrders) => this.applyOrderStats(Array.isArray(fallbackOrders) ? fallbackOrders : []),
-                error: () => this.applyOrderStats([])
+                next: (fallbackOrders) => {
+                    this.applyOrderStats(Array.isArray(fallbackOrders) ? fallbackOrders : []);
+                    this.ordersLoading = false;
+                },
+                error: () => {
+                    this.applyOrderStats([]);
+                    this.ordersLoading = false;
+                }
             });
         });
     }

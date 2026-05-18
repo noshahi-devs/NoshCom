@@ -1,7 +1,8 @@
-﻿using Abp.Application.Services;
+using Abp.Application.Services;
+using Abp.Authorization;
 using Abp.Domain.Repositories;
 using Abp.UI;
-using AutoMapper;
+using Elicom.Authorization;
 using Elicom.CustomerProfiles.Dto;
 using Elicom.Entities;
 using System;
@@ -11,6 +12,7 @@ using Abp.Runtime.Session;
 
 namespace Elicom.CustomerProfiles
 {
+    [AbpAuthorize]
     public class CustomerProfileAppService
         : ApplicationService, ICustomerProfileAppService
     {
@@ -25,6 +27,13 @@ namespace Elicom.CustomerProfiles
         // CREATE
         public async Task<CustomerProfileDto> CreateAsync(CreateCustomerProfileDto input)
         {
+            var currentUserId = AbpSession.GetUserId();
+            var isAdmin = await IsCurrentUserAdminAsync();
+            if (!isAdmin || input.UserId <= 0)
+            {
+                input.UserId = currentUserId;
+            }
+
             var existingProfile = await _customerProfileRepository
                 .FirstOrDefaultAsync(x => x.UserId == input.UserId);
 
@@ -43,6 +52,11 @@ namespace Elicom.CustomerProfiles
         public async Task<CustomerProfileDto> UpdateAsync(UpdateCustomerProfileDto input)
         {
             var profile = await _customerProfileRepository.GetAsync(input.Id);
+            var currentUserId = AbpSession.GetUserId();
+            if (!await IsCurrentUserAdminAsync() && profile.UserId != currentUserId)
+            {
+                throw new UserFriendlyException("Unauthorized access to this profile.");
+            }
 
             ObjectMapper.Map(input, profile);
             await _customerProfileRepository.UpdateAsync(profile);
@@ -53,6 +67,12 @@ namespace Elicom.CustomerProfiles
         // GET BY USER
         public async Task<CustomerProfileDto> GetByUserIdAsync(long userId)
         {
+            var currentUserId = AbpSession.GetUserId();
+            if (!await IsCurrentUserAdminAsync() && userId != currentUserId)
+            {
+                throw new UserFriendlyException("Unauthorized access to this profile.");
+            }
+
             var profile = await _customerProfileRepository
                 .GetAll()
                 .FirstOrDefaultAsync(x => x.UserId == userId);
@@ -75,8 +95,6 @@ namespace Elicom.CustomerProfiles
 
             if (profile == null)
             {
-                // Optionally create one if it doesn't exist?
-                // For now, return null or empty DTO to avoid error in frontend
                 return new CustomerProfileDto { UserId = userId };
             }
 
@@ -86,7 +104,22 @@ namespace Elicom.CustomerProfiles
         // DELETE
         public async Task DeleteAsync(Guid id)
         {
+            var profile = await _customerProfileRepository.GetAsync(id);
+            var currentUserId = AbpSession.GetUserId();
+            if (!await IsCurrentUserAdminAsync() && profile.UserId != currentUserId)
+            {
+                throw new UserFriendlyException("Unauthorized access to this profile.");
+            }
+
             await _customerProfileRepository.DeleteAsync(id);
+        }
+
+        private async Task<bool> IsCurrentUserAdminAsync()
+        {
+            return await PermissionChecker.IsGrantedAsync(PermissionNames.Pages_Users)
+                || await PermissionChecker.IsGrantedAsync(PermissionNames.Pages_SmartStore_Admin)
+                || await PermissionChecker.IsGrantedAsync(PermissionNames.Pages_PrimeShip_Admin)
+                || await PermissionChecker.IsGrantedAsync(PermissionNames.Admin);
         }
     }
 }

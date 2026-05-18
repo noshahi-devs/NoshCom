@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +22,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
+using System.Text;
+using System.Threading.RateLimiting;
 
 
 namespace Elicom.Web.Host.Startup
@@ -29,9 +31,9 @@ namespace Elicom.Web.Host.Startup
     public class Startup
     {
         private const string _defaultCorsPolicyName = "localhost";
+        private const string _swaggerAuthCookieName = "elicom_swagger_auth";
 
-        private const string _apiDocumentName = "v1";
-        private const string _apiInfoVersion = "1.0";
+        private const string _apiVersion = "v1";
 
         private readonly IConfigurationRoot _appConfiguration;
         private readonly IWebHostEnvironment _hostingEnvironment;
@@ -54,6 +56,7 @@ namespace Elicom.Web.Host.Startup
             AuthConfigurer.Configure(services, _appConfiguration);
 
             services.AddSignalR();
+            ConfigureRateLimiter(services);
 
             services.AddCors(
                 options => options.AddPolicy(
@@ -133,6 +136,28 @@ namespace Elicom.Web.Host.Startup
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
+            System.Net.ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+                context.Response.Headers["X-Frame-Options"] = "DENY";
+                context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+                context.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()";
+                context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
+                // Allow cross-origin embedding for uploaded media (e.g. admin UI hosted on a sibling domain).
+                var isUploadsRequest = context.Request.Path.StartsWithSegments("/uploads", StringComparison.OrdinalIgnoreCase);
+                context.Response.Headers["Cross-Origin-Resource-Policy"] = isUploadsRequest ? "cross-origin" : "same-origin";
+
+                if (!context.Request.Path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Response.Headers["Content-Security-Policy"] =
+                        "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'";
+                }
+
+                await next();
+            });
+
             // 0. ULTIMATE SAFETY NET: Ensure CORS headers & JSON Error on Crash
             app.UseMiddleware<SafetyNetMiddleware>();
 
@@ -148,23 +173,8 @@ namespace Elicom.Web.Host.Startup
             app.UseStaticFiles();
             ConfigureUploadsStaticFiles(app);
 
-            app.Use(async (context, next) =>
-            {
-                if (context.Request.Path.StartsWithSegments("/swagger"))
-                {
-                    context.Response.OnStarting(() =>
-                    {
-                        context.Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
-                        context.Response.Headers["Pragma"] = "no-cache";
-                        context.Response.Headers["Expires"] = "0";
-                        return Task.CompletedTask;
-                    });
-                }
-
-                await next();
-            });
-
             app.UseRouting();
+            app.UseRateLimiter();
 
             app.UseAuthentication();
             app.UseAuthorization();
@@ -178,25 +188,135 @@ namespace Elicom.Web.Host.Startup
                 endpoints.MapControllerRoute("defaultWithArea", "{area}/{controller=Home}/{action=Index}/{id?}");
             });
 
-            // Enable middleware to serve generated Swagger as a JSON endpoint
-            app.UseSwagger(c => { c.RouteTemplate = "swagger/{documentName}/swagger.json"; });
-
-            // Enable middleware to serve swagger-ui assets (HTML, JS, CSS etc.)
-            app.UseSwaggerUI(options =>
+            if (!env.IsProduction())
             {
-                var swaggerBuildTrigger = Uri.EscapeDataString(
-                    _appConfiguration["Swagger:BuildTrigger"] ?? DateTime.UtcNow.Ticks.ToString()
-                );
+                var swaggerBasicAuthEnabled = _appConfiguration.GetValue<bool?>("Swagger:BasicAuth:Enabled") ?? true;
+                if (swaggerBasicAuthEnabled)
+                {
+                    UseSwaggerBasicAuth(app);
+                }
 
-                // specifying the Swagger JSON endpoint.
-                options.SwaggerEndpoint(
-                    $"/swagger/{_apiDocumentName}/swagger.json?v={swaggerBuildTrigger}",
-                    $"Elicom API {_apiDocumentName}"
-                );
-                options.DisplayRequestDuration(); // Controls the display of the request duration (in milliseconds) for "Try it out" requests.
-            }); // URL: /swagger
+                // Enable middleware to serve generated Swagger as a JSON endpoint
+                app.UseSwagger(c => { c.RouteTemplate = "swagger/{documentName}/swagger.json"; });
+
+                // Enable middleware to serve swagger-ui assets (HTML, JS, CSS etc.)
+                app.UseSwaggerUI(options =>
+                {
+                    // specifying the Swagger JSON endpoint.
+                    options.SwaggerEndpoint($"/swagger/{_apiVersion}/swagger.json", $"Elicom API {_apiVersion}");
+                    options.IndexStream = () => Assembly.GetExecutingAssembly()
+                        .GetManifestResourceStream("Elicom.Web.Host.wwwroot.swagger.ui.index.html");
+                    options.DisplayRequestDuration(); // Controls the display of the request duration (in milliseconds) for "Try it out" requests.
+                }); // URL: /swagger
+            }
 
             // 🚀 IMPORTANT: EF Core Retry strategy has been removed from ElicomDbContextConfigurer to prevent transaction conflicts.
+        }
+
+        private void UseSwaggerBasicAuth(IApplicationBuilder app)
+        {
+            var swaggerUser = FirstNonEmpty(
+                Environment.GetEnvironmentVariable("ELICOM_SWAGGER_BASIC_AUTH_USERNAME"),
+                _appConfiguration["Swagger:BasicAuth:Username"]);
+            var swaggerPass = FirstNonEmpty(
+                Environment.GetEnvironmentVariable("ELICOM_SWAGGER_BASIC_AUTH_PASSWORD"),
+                _appConfiguration["Swagger:BasicAuth:Password"]);
+
+            app.Use(async (context, next) =>
+            {
+                if (!context.Request.Path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase))
+                {
+                    await next();
+                    return;
+                }
+
+                if (context.Request.Cookies.TryGetValue(_swaggerAuthCookieName, out var swaggerCookie) &&
+                    string.Equals(swaggerCookie, "1", StringComparison.Ordinal))
+                {
+                    await next();
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(swaggerUser) || string.IsNullOrWhiteSpace(swaggerPass))
+                {
+                    ChallengeSwaggerAuth(context);
+                    return;
+                }
+
+                if (!context.Request.Headers.TryGetValue("Authorization", out var authHeader))
+                {
+                    ChallengeSwaggerAuth(context);
+                    return;
+                }
+
+                var header = authHeader.ToString();
+                if (!header.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase))
+                {
+                    ChallengeSwaggerAuth(context);
+                    return;
+                }
+
+                string decoded;
+                try
+                {
+                    var encoded = header.Substring("Basic ".Length).Trim();
+                    decoded = Encoding.UTF8.GetString(Convert.FromBase64String(encoded));
+                }
+                catch
+                {
+                    ChallengeSwaggerAuth(context);
+                    return;
+                }
+
+                var parts = decoded.Split(':', 2);
+                if (parts.Length != 2)
+                {
+                    ChallengeSwaggerAuth(context);
+                    return;
+                }
+
+                var valid = string.Equals(parts[0], swaggerUser, StringComparison.Ordinal) &&
+                            string.Equals(parts[1], swaggerPass, StringComparison.Ordinal);
+
+                if (!valid)
+                {
+                    ChallengeSwaggerAuth(context);
+                    return;
+                }
+
+                context.Response.Cookies.Append(
+                    _swaggerAuthCookieName,
+                    "1",
+                    new CookieOptions
+                    {
+                        HttpOnly = true,
+                        IsEssential = true,
+                        Secure = context.Request.IsHttps,
+                        SameSite = SameSiteMode.Lax,
+                        Expires = DateTimeOffset.UtcNow.AddMinutes(30)
+                    });
+
+                await next();
+            });
+        }
+
+        private static void ChallengeSwaggerAuth(HttpContext context)
+        {
+            context.Response.Headers["WWW-Authenticate"] = "Basic realm=\"Swagger\"";
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        }
+
+        private static string FirstNonEmpty(params string[] values)
+        {
+            foreach (var value in values)
+            {
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    return value;
+                }
+            }
+
+            return null;
         }
 
         private void ConfigureUploadsStaticFiles(IApplicationBuilder app)
@@ -228,9 +348,9 @@ namespace Elicom.Web.Host.Startup
         {
             services.AddSwaggerGen(options =>
             {
-                options.SwaggerDoc(_apiDocumentName, new OpenApiInfo
+                options.SwaggerDoc(_apiVersion, new OpenApiInfo
                 {
-                    Version = _apiInfoVersion,
+                    Version = _apiVersion,
                     Title = "Elicom API",
                     Description = "Elicom",
                     // uncomment if needed TermsOfService = new Uri("https://example.com/terms"),
@@ -274,6 +394,66 @@ namespace Elicom.Web.Host.Startup
                     var webCoreXmlPath = Path.Combine(AppContext.BaseDirectory, webCoreXmlFile);
                     options.IncludeXmlComments(webCoreXmlPath);
                 }
+            });
+        }
+
+        private static void ConfigureRateLimiter(IServiceCollection services)
+        {
+            services.AddRateLimiter(options =>
+            {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+                options.OnRejected = async (context, token) =>
+                {
+                    context.HttpContext.Response.ContentType = "application/json";
+                    await context.HttpContext.Response.WriteAsync(
+                        "{\"error\":\"Too many requests. Please wait and try again.\"}",
+                        token);
+                };
+
+                options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+                {
+                    var path = httpContext.Request.Path.Value ?? string.Empty;
+                    var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+                    if (HttpMethods.IsOptions(httpContext.Request.Method))
+                    {
+                        return RateLimitPartition.GetFixedWindowLimiter(
+                            $"preflight:{ip}",
+                            _ => new FixedWindowRateLimiterOptions
+                            {
+                                PermitLimit = 240,
+                                Window = TimeSpan.FromMinutes(1),
+                                QueueLimit = 0,
+                                AutoReplenishment = true
+                            });
+                    }
+
+                    if (path.Contains("/TokenAuth/Authenticate", StringComparison.OrdinalIgnoreCase) ||
+                        path.Contains("/TokenAuth/VerifyLoginOtp", StringComparison.OrdinalIgnoreCase) ||
+                        path.Contains("/TokenAuth/ResendLoginOtp", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return RateLimitPartition.GetFixedWindowLimiter(
+                            $"auth:{ip}",
+                            _ => new FixedWindowRateLimiterOptions
+                            {
+                                PermitLimit = 10,
+                                Window = TimeSpan.FromMinutes(1),
+                                QueueLimit = 0,
+                                AutoReplenishment = true
+                            });
+                    }
+
+                    return RateLimitPartition.GetFixedWindowLimiter(
+                        $"api:{ip}",
+                        _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 120,
+                            Window = TimeSpan.FromMinutes(1),
+                            QueueLimit = 0,
+                            AutoReplenishment = true
+                        });
+                });
             });
         }
     }

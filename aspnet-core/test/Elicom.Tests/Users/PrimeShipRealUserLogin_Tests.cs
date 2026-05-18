@@ -11,6 +11,9 @@ using Microsoft.AspNetCore.Mvc;
 using Abp.MultiTenancy;
 using Elicom.Authorization;
 using Elicom.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
+using Abp.Net.Mail;
+using Abp.Runtime.Caching;
 
 namespace Elicom.Tests.Users;
 
@@ -31,6 +34,9 @@ public class PrimeShipRealUserLogin_Tests : ElicomTestBase
         var logInManager = Resolve<LogInManager>();
         var tenantCache = Resolve<ITenantCache>();
         var configuration = Resolve<TokenAuthConfiguration>();
+        var appConfiguration = Resolve<IConfiguration>();
+        var emailSender = Resolve<IEmailSender>();
+        var cacheManager = Resolve<ICacheManager>();
 
         // Configure JWT
         configuration.SecurityKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
@@ -46,7 +52,10 @@ public class PrimeShipRealUserLogin_Tests : ElicomTestBase
             logInManager,
             tenantCache,
             configuration,
-            _userManager
+            _userManager,
+            appConfiguration,
+            emailSender,
+            cacheManager
         );
 
         _tokenAuthController.UnitOfWorkManager = Resolve<IUnitOfWorkManager>();

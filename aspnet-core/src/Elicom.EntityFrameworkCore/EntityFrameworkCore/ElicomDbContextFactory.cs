@@ -3,6 +3,7 @@ using Elicom.Web;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using System;
 
 namespace Elicom.EntityFrameworkCore;
 
@@ -19,7 +20,14 @@ public class ElicomDbContextFactory : IDesignTimeDbContextFactory<ElicomDbContex
          Use Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") method or from string[] args to get environment if necessary.
          https://docs.microsoft.com/en-us/ef/core/cli/dbcontext-creation?tabs=dotnet-core-cli#args
          */
-        var configuration = AppConfigurations.Get(WebContentDirectoryFinder.CalculateContentRootFolder());
+        var environmentName =
+            Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ??
+            Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+
+        var configuration = AppConfigurations.Get(
+            WebContentDirectoryFinder.CalculateContentRootFolder(),
+            environmentName
+        );
 
         ElicomDbContextConfigurer.Configure(builder, configuration.GetConnectionString(ElicomConsts.ConnectionStringName));
 

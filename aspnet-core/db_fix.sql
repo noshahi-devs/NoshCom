@@ -1,4 +1,4 @@
-USE [NoshcomDb_Testing];
+USE [ElicomDb_Testing];
 GO
 
 -- 1. Stores table ke liye

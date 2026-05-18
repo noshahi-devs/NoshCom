@@ -59,13 +59,16 @@ namespace Elicom.SupplierOrders
         {
             var user = await GetCurrentUserAsync();
 
-            var orders = await _supplierOrderRepository.GetAll()
+            IQueryable<SupplierOrder> query = _supplierOrderRepository.GetAll()
                 .IgnoreQueryFilters()
                 .Include(x => x.Items).ThenInclude(i => i.Product)
                 .Include(x => x.Reseller)
                 .Where(x => x.SupplierId == user.Id || x.ResellerId == user.Id)
-                .OrderByDescending(x => x.CreationTime)
-                .ToListAsync();
+                .OrderByDescending(x => x.CreationTime);
+
+            query = ApplyCurrentPlatformFilter(query);
+
+            var orders = await query.ToListAsync();
 
             var changed = await EnsureTrackingCodesAsync(orders);
             if (changed)
@@ -140,6 +143,8 @@ namespace Elicom.SupplierOrders
             if (supplierOrder == null)
                 throw new UserFriendlyException("Supplier order not found");
 
+            EnsureCurrentPlatformAccess(supplierOrder);
+
             if (supplierOrder.SupplierId != user.Id && supplierOrder.ResellerId != user.Id)
             {
                  throw new UserFriendlyException("Access denied.");
@@ -169,6 +174,8 @@ namespace Elicom.SupplierOrders
             }
             
             if (order == null) throw new UserFriendlyException("Order not found or access denied.");
+
+            EnsureCurrentPlatformAccess(order);
             
             order.Status = "Shipped";
             order.ShipmentDate = input.ShipmentDate;
@@ -178,17 +185,18 @@ namespace Elicom.SupplierOrders
 
             await _supplierOrderRepository.UpdateAsync(order);
 
-            try
-            {
-                var mail = new System.Net.Mail.MailMessage("no-reply@primeshipuk.com", "noshahidevelopersinc@gmail.com")
-                {
-                    Subject = $"[SmartStore Hub] Shipment Alert: {order.ReferenceCode}",
-                    Body = $"Seller {user.Name} has shipped items for order {order.ReferenceCode} to the Hub.\n\nCarrier: {order.CarrierId}\nTracking: {order.TrackingCode}",
-                    IsBodyHtml = false
-                };
-                await _emailSender.SendAsync(mail);
-            }
-            catch (Exception ex) { Logger.Error("Email failed: " + ex.Message); }
+            // DISABLED per request: P1 (PrimeShip supplier order shipped)
+            // try
+            // {
+            //     var mail = new System.Net.Mail.MailMessage("no-reply@primeshipuk.com", "noshahidevelopersinc@gmail.com")
+            //     {
+            //         Subject = $"[SmartStore Hub] Shipment Alert: {order.ReferenceCode}",
+            //         Body = $"Seller {user.Name} has shipped items for order {order.ReferenceCode} to the Hub.\n\nCarrier: {order.CarrierId}\nTracking: {order.TrackingCode}",
+            //         IsBodyHtml = false
+            //     };
+            //     await _emailSender.SendAsync(mail);
+            // }
+            // catch (Exception ex) { Logger.Error("Email failed: " + ex.Message); }
         }
 
         public async Task MarkAsDelivered(Guid id)
@@ -197,6 +205,8 @@ namespace Elicom.SupplierOrders
             var order = await _supplierOrderRepository.FirstOrDefaultAsync(x => x.Id == id && x.SupplierId == user.Id);
             
             if (order == null) throw new UserFriendlyException("Order not found or access denied.");
+
+            EnsureCurrentPlatformAccess(order);
             
             order.Status = "Delivered";
             await _supplierOrderRepository.UpdateAsync(order);
@@ -217,10 +227,13 @@ namespace Elicom.SupplierOrders
         [AbpAuthorize(PermissionNames.Pages_PrimeShip_Admin, PermissionNames.Pages_SmartStore_Admin, PermissionNames.Admin)]
         public async Task<SupplierOrderDto> MarkAsVerified(Guid id)
         {
-            var order = await _supplierOrderRepository.GetAll()
+            IQueryable<SupplierOrder> query = _supplierOrderRepository.GetAll()
                 .Include(so => so.Items).ThenInclude(i => i.Product)
-                .Include(so => so.Order)
-                .FirstOrDefaultAsync(so => so.Id == id);
+                .Include(so => so.Order);
+
+            query = ApplyCurrentPlatformFilter(query);
+
+            var order = await query.FirstOrDefaultAsync(so => so.Id == id);
                 
             if (order == null) throw new UserFriendlyException("Supplier order not found");
 
@@ -260,12 +273,15 @@ namespace Elicom.SupplierOrders
         [AbpAuthorize(PermissionNames.Pages_PrimeShip_Admin, PermissionNames.Pages_SmartStore_Admin, PermissionNames.Admin)]
         public async Task<ListResultDto<SupplierOrderDto>> GetAll()
         {
-            var orders = await _supplierOrderRepository.GetAll()
+            IQueryable<SupplierOrder> query = _supplierOrderRepository.GetAll()
                 .IgnoreQueryFilters()
                 .Include(x => x.Items).ThenInclude(i => i.Product)
                 .Include(x => x.Reseller)
-                .OrderByDescending(x => x.CreationTime)
-                .ToListAsync();
+                .OrderByDescending(x => x.CreationTime);
+
+            query = ApplyCurrentPlatformFilter(query);
+
+            var orders = await query.ToListAsync();
 
             var changed = await EnsureTrackingCodesAsync(orders);
             if (changed)
@@ -281,9 +297,13 @@ namespace Elicom.SupplierOrders
         [HttpPut]
         public async Task<SupplierOrderDto> UpdateStatus(Elicom.Orders.Dto.UpdateOrderStatusDto input)
         {
-            var order = await _supplierOrderRepository.GetAll()
+            IQueryable<SupplierOrder> query = _supplierOrderRepository.GetAll()
                 .Include(x => x.Items)
-                .FirstOrDefaultAsync(x => x.Id == input.Id);
+                .AsQueryable();
+
+            query = ApplyCurrentPlatformFilter(query);
+
+            var order = await query.FirstOrDefaultAsync(x => x.Id == input.Id);
                 
             if (order == null) throw new UserFriendlyException("Wholesale order not found");
             
@@ -443,6 +463,7 @@ namespace Elicom.SupplierOrders
                 ShippingAddress = order.ShippingAddress,
                 CustomerName = order.CustomerName,
                 Status = order.Status,
+                SourcePlatform = order.SourcePlatform,
                 SellerId = order.ResellerId,
                 SellerName = order.Reseller != null
                     ? $"{order.Reseller.Name} {order.Reseller.Surname}".Trim()
@@ -463,6 +484,45 @@ namespace Elicom.SupplierOrders
                     })
                     .ToList()
             };
+        }
+
+        private IQueryable<SupplierOrder> ApplyCurrentPlatformFilter(IQueryable<SupplierOrder> query)
+        {
+            var tenantId = AbpSession.TenantId;
+            if (!tenantId.HasValue || tenantId.Value != 2)
+            {
+                return query;
+            }
+
+            return query.Where(x =>
+                x.SourcePlatform != null &&
+                (
+                    x.SourcePlatform.ToLower() == "primeship" ||
+                    x.SourcePlatform.ToLower() == "prime ship" ||
+                    x.SourcePlatform.ToLower() == "prime ship uk" ||
+                    x.SourcePlatform.ToLower() == "primeshipuk"
+                ));
+        }
+
+        private void EnsureCurrentPlatformAccess(SupplierOrder order)
+        {
+            var tenantId = AbpSession.TenantId;
+            if (!tenantId.HasValue || tenantId.Value != 2)
+            {
+                return;
+            }
+
+            var source = (order.SourcePlatform ?? string.Empty).Trim().ToLowerInvariant();
+            var isPrimeShipOrder =
+                source == "primeship" ||
+                source == "prime ship" ||
+                source == "prime ship uk" ||
+                source == "primeshipuk";
+
+            if (!isPrimeShipOrder)
+            {
+                throw new UserFriendlyException("Supplier order not found");
+            }
         }
 
         private async Task<string> ResolvePrimaryProductNameAsync(IEnumerable<CreateSupplierOrderItemDto> items)

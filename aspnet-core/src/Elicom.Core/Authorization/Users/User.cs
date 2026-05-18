@@ -7,7 +7,7 @@ namespace Elicom.Authorization.Users;
 
 public class User : AbpUser<User>
 {
-    public const string DefaultPassword = "123qwe";
+    public const string DefaultPassword = "Elicom#NdiSecure@2026!A9";
     
     public string WalletId { get; set; }
     public string Country { get; set; }

@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Abp.Application.Services.Dto;
 using Abp.Authorization;
 using Abp.Domain.Repositories;
+using Abp.EntityFrameworkCore.Repositories;
 using Abp.Domain.Uow;
 using Abp.Runtime.Session;
 using Abp.UI;
@@ -58,9 +60,9 @@ namespace Elicom.Cards
                 .Where(r => r.UserId == userId && r.Status == "Pending")
                 .SumAsync(r => r.Amount);
 
-            var pendingWithdrawal = await _withdrawRepository.GetAll()
-                .Where(r => r.UserId == userId && r.Status == "Pending")
-                .SumAsync(r => r.Amount);
+            // Withdrawal amount is already reserved from the balance at submit time,
+            // so exposing pending withdrawals here would double-count the deduction in UI.
+            var pendingWithdrawal = 0m;
 
             return new UserBalanceDto
             {
@@ -71,12 +73,10 @@ namespace Elicom.Cards
             };
         }
 
-        [AbpAllowAnonymous]
         public async Task<CardValidationResultDto> ValidateCard(ValidateCardInput input)
         {
             // Clean card number (remove spaces)
             var cleanCardNumber = NormalizeCardNumber(input.CardNumber);
-            var amount = input.Amount ?? 0m;
 
             // Cross-tenant lookup: Ignore filters to find the card in any tenant (usually Tenant 3)
             using (UnitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
@@ -102,14 +102,14 @@ namespace Elicom.Cards
                     return new CardValidationResultDto { IsValid = false, Message = $"Card is {card.Status}." };
                 }
 
-                var limitError = await ValidateCardTransactionLimitsAsync(card, amount);
+                var limitError = await ValidateCardTransactionLimitsAsync(card, input.Amount);
                 if (!string.IsNullOrWhiteSpace(limitError))
                 {
                     return new CardValidationResultDto { IsValid = false, Message = limitError };
                 }
 
                 var availableBalance = await GetWalletBalanceAsync(card);
-                if (availableBalance < amount)
+                if (availableBalance < input.Amount)
                 {
                     return new CardValidationResultDto 
                     { 
@@ -128,11 +128,9 @@ namespace Elicom.Cards
             }
         }
 
-        [AbpAllowAnonymous]
         public async Task ProcessPayment(ProcessCardPaymentInput input)
         {
             var cleanCardNumber = NormalizeCardNumber(input.CardNumber);
-            var amount = input.Amount ?? 0m;
             var referenceId = string.IsNullOrWhiteSpace(input.ReferenceId)
                 ? $"CARD-{DateTime.Now:yyyyMMddHHmmss}"
                 : input.ReferenceId.Trim();
@@ -153,19 +151,14 @@ namespace Elicom.Cards
                     throw new UserFriendlyException("Verification failed during payment processing.");
                 }
 
-                if (amount <= 0m)
-                {
-                    throw new UserFriendlyException("Payment amount must be greater than zero.");
-                }
-
-                var limitError = await ValidateCardTransactionLimitsAsync(card, amount);
+                var limitError = await ValidateCardTransactionLimitsAsync(card, input.Amount);
                 if (!string.IsNullOrWhiteSpace(limitError))
                 {
                     throw new UserFriendlyException(limitError);
                 }
 
                 // Debit from Wallet instead of Card Balance
-                var debited = await TryDebitWalletAsync(card, amount, referenceId, paymentDescription);
+                var debited = await TryDebitWalletAsync(card, input.Amount, referenceId, paymentDescription);
                 if (!debited)
                 {
                     throw new UserFriendlyException("Insufficient balance in the wallet.");
@@ -177,7 +170,7 @@ namespace Elicom.Cards
                     TenantId = card.TenantId,
                     UserId = card.UserId,
                     CardId = card.Id,
-                    Amount = -amount,
+                    Amount = -input.Amount,
                     MovementType = "Debit",
                     Category = "Card Transaction",
                     ReferenceId = referenceId,
@@ -801,39 +794,55 @@ namespace Elicom.Cards
         }
 
         [AbpAuthorize(Authorization.PermissionNames.Pages_Users, Authorization.PermissionNames.Admin)] 
-        public async Task<List<CardApplicationDto>> GetCardApplications()
+        public async Task<PagedResultDto<CardApplicationDto>> GetCardApplications(GetCardApplicationsInput input)
         {
             try
             {
                 using (UnitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
                 {
-                    var applications = await (from app in _applicationRepository.GetAll()
-                                              join card in _cardRepository.GetAll() on app.GeneratedCardId equals card.Id into cardJoin
-                                              from card in cardJoin.DefaultIfEmpty()
-                                              join user in UserManager.Users.IgnoreQueryFilters() on app.UserId equals user.Id
-                                              orderby app.CreationTime descending
-                                              select new CardApplicationDto
-                                              {
-                                                  Id = app.Id,
-                                                  FullName = app.FullName,
-                                                  ContactNumber = app.ContactNumber,
-                                                  Address = app.Address,
-                                                  CardType = app.CardType,
-                                                  DocumentBase64 = null, // Optimized: Excluded from SQL query
-                                                  DocumentType = app.DocumentType,
-                                                  Status = app.Status.ToString(),
-                                                  AppliedDate = app.AppliedDate,
-                                                  ReviewedDate = app.ReviewedDate,
-                                                  ReviewNotes = app.ReviewNotes,
-                                                  UserName = user.UserName ?? "Unknown",
-                                                  
-                                                  // Generated Card Info
-                                                  GeneratedCardId = app.GeneratedCardId,
-                                                  GeneratedCardNumber = card != null ? card.CardNumber : null,
-                                                  GeneratedCardType = card != null ? (CardType?)card.CardType : null
-                                              }).ToListAsync();
+                    var skip = Math.Max(0, input.SkipCount);
+                    var take = input.MaxResultCount <= 0 ? 50 : Math.Min(input.MaxResultCount, 100);
 
-                    return applications;
+                    IQueryable<CardApplication> appsQuery = _applicationRepository.GetAll();
+
+                    var statusToken = input.StatusFilter?.Trim();
+                    if (!string.IsNullOrEmpty(statusToken) &&
+                        !string.Equals(statusToken, "all", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (Enum.TryParse<CardApplicationStatus>(statusToken, true, out var st))
+                        {
+                            appsQuery = appsQuery.Where(a => a.Status == st);
+                        }
+                    }
+
+                    var query = from app in appsQuery
+                                join card in _cardRepository.GetAll() on app.GeneratedCardId equals card.Id into cardJoin
+                                from card in cardJoin.DefaultIfEmpty()
+                                join user in UserManager.Users.IgnoreQueryFilters() on app.UserId equals user.Id
+                                orderby app.CreationTime descending
+                                select new CardApplicationDto
+                                {
+                                    Id = app.Id,
+                                    FullName = app.FullName,
+                                    ContactNumber = app.ContactNumber,
+                                    Address = app.Address,
+                                    CardType = app.CardType,
+                                    DocumentBase64 = null,
+                                    DocumentType = app.DocumentType,
+                                    Status = app.Status.ToString(),
+                                    AppliedDate = app.AppliedDate,
+                                    ReviewedDate = app.ReviewedDate,
+                                    ReviewNotes = app.ReviewNotes,
+                                    UserName = user.UserName ?? "Unknown",
+                                    GeneratedCardId = app.GeneratedCardId,
+                                    GeneratedCardNumber = card != null ? card.CardNumber : null,
+                                    GeneratedCardType = card != null ? (CardType?)card.CardType : null
+                                };
+
+                    var totalCount = await query.CountAsync();
+                    var items = await query.Skip(skip).Take(take).ToListAsync();
+
+                    return new PagedResultDto<CardApplicationDto>(totalCount, items);
                 }
             }
             catch (Exception ex)
@@ -892,7 +901,9 @@ namespace Elicom.Cards
                     if (input.Id == Guid.Empty)
                         throw new UserFriendlyException("Application ID is required");
 
-                    var application = await _applicationRepository.GetAsync(input.Id);
+                    var application = await GetCardApplicationForMutationExcludingDocumentAsync(input.Id);
+                    if (application == null)
+                        throw new UserFriendlyException("Application not found");
 
                     if (application.Status != CardApplicationStatus.Pending)
                         throw new UserFriendlyException("Application is not pending");
@@ -944,6 +955,7 @@ namespace Elicom.Cards
                     var cardId = await _cardRepository.InsertAndGetIdAsync(card);
                     application.GeneratedCardId = cardId;
 
+                    _applicationRepository.GetDbContext().Entry(application).Property(x => x.DocumentBase64).IsModified = false;
                     await _applicationRepository.UpdateAsync(application);
                     var activeSubscriptionCode = await GetActiveSubscriptionCodeAsync();
                     var pendingSubscriptionCode = await GetPendingSubscriptionCodeAsync();
@@ -981,7 +993,9 @@ namespace Elicom.Cards
                 if (input.Id == Guid.Empty)
                     throw new UserFriendlyException("Application ID is required");
 
-                var application = await _applicationRepository.GetAsync(input.Id);
+                var application = await GetCardApplicationForMutationExcludingDocumentAsync(input.Id);
+                if (application == null)
+                    throw new UserFriendlyException("Application not found");
 
                 if (application.Status != CardApplicationStatus.Pending)
                     throw new UserFriendlyException("Application is not pending");
@@ -1014,6 +1028,7 @@ namespace Elicom.Cards
                     }
                 }
 
+                _applicationRepository.GetDbContext().Entry(application).Property(x => x.DocumentBase64).IsModified = false;
                 await _applicationRepository.UpdateAsync(application);
             }
             catch (Exception ex)
@@ -1022,6 +1037,53 @@ namespace Elicom.Cards
             }
         }
 
+        /// <summary>
+        /// Loads scalar fields for approve/reject without selecting DocumentBase64 (avoids huge reads).
+        /// DocumentBase64 is not marked modified so the stored file is left unchanged on update.
+        /// </summary>
+        private async Task<CardApplication> GetCardApplicationForMutationExcludingDocumentAsync(Guid id)
+        {
+            var application = await _applicationRepository.GetAll()
+                .AsNoTracking()
+                .Where(a => a.Id == id)
+                .Select(a => new CardApplication
+                {
+                    Id = a.Id,
+                    TenantId = a.TenantId,
+                    UserId = a.UserId,
+                    FullName = a.FullName,
+                    ContactNumber = a.ContactNumber,
+                    Address = a.Address,
+                    CardType = a.CardType,
+                    DocumentType = a.DocumentType,
+                    Status = a.Status,
+                    AppliedDate = a.AppliedDate,
+                    ReviewedDate = a.ReviewedDate,
+                    ReviewedBy = a.ReviewedBy,
+                    ReviewNotes = a.ReviewNotes,
+                    GeneratedCardId = a.GeneratedCardId,
+                    PreviousCardId = a.PreviousCardId,
+                    CreationTime = a.CreationTime,
+                    CreatorUserId = a.CreatorUserId,
+                    LastModificationTime = a.LastModificationTime,
+                    LastModifierUserId = a.LastModifierUserId,
+                    IsDeleted = a.IsDeleted,
+                    DeleterUserId = a.DeleterUserId,
+                    DeletionTime = a.DeletionTime
+                })
+                .FirstOrDefaultAsync();
+
+            if (application == null)
+            {
+                return null;
+            }
+
+            var dbContext = _applicationRepository.GetDbContext();
+            dbContext.Attach(application);
+            dbContext.Entry(application).Property(x => x.DocumentBase64).IsModified = false;
+
+            return application;
+        }
 
         private string GenerateCardNumber(CardType cardType)
         {
@@ -1319,7 +1381,6 @@ namespace Elicom.Cards
             }
         }
 
-        [AbpAllowAnonymous]
         public async Task RefundPayment(long userId, decimal amount, string referenceId, string description)
         {
             using (UnitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))

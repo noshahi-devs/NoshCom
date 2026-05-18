@@ -4,8 +4,6 @@ namespace Elicom.Withdrawals.Dto
     {
         public string MethodKey { get; set; }
         public string MethodLabel { get; set; }
-        public string Country { get; set; }
-        public string AccountType { get; set; }
 
         public string AccountTitle { get; set; }
         public string BankName { get; set; }
@@ -28,8 +26,6 @@ namespace Elicom.Withdrawals.Dto
     public class SaveSellerPayoutMethodInput
     {
         public string MethodKey { get; set; }
-        public string Country { get; set; }
-        public string AccountType { get; set; }
 
         public string AccountTitle { get; set; }
         public string BankName { get; set; }

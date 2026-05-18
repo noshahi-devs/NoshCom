@@ -91,6 +91,14 @@ namespace Elicom.Wholesale
                 });
             }
 
+            // Fallback: If PrimeShip and warehouse charge is missing, default to 1.00
+            if (input.WarehouseCharge == 0)
+            {
+                input.WarehouseCharge = 1.00m;
+            }
+
+            totalAmount += input.ShippingCost + input.WarehouseCharge + input.ServiceCharge;
+
             var paymentMethod = (input.PaymentMethod ?? string.Empty).Trim().ToLowerInvariant();
             if (paymentMethod == "card")
             {
@@ -150,24 +158,25 @@ namespace Elicom.Wholesale
             await _supplierOrderRepository.InsertAsync(supplierOrder);
 
             // Automate Email
-            try
-            {
-                var mail = new System.Net.Mail.MailMessage(
-                    "no-reply@primeshipuk.com",
-                    "noshahidevelopersinc@gmail.com"
-                )
-                {
-                    Subject = $"New Wholesale Order: {supplierOrder.ReferenceCode}",
-                    Body = $"A new wholesale order has been placed.\n\nTotal Amount: {totalAmount}\nCustomer: {input.CustomerName}\nRef: {supplierOrder.ReferenceCode}",
-                    IsBodyHtml = false
-                };
-
-                await _emailSender.SendAsync(mail);
-            }
-            catch (Exception ex)
-            {
-                Logger.Error("Failed to send email notification", ex);
-            }
+            // DISABLED per request: W1 (Wholesale order placed)
+            // try
+            // {
+            //     var mail = new System.Net.Mail.MailMessage(
+            //         "no-reply@primeshipuk.com",
+            //         "noshahidevelopersinc@gmail.com"
+            //     )
+            //     {
+            //         Subject = $"New Wholesale Order: {supplierOrder.ReferenceCode}",
+            //         Body = $"A new wholesale order has been placed.\n\nTotal Amount: {totalAmount}\nCustomer: {input.CustomerName}\nRef: {supplierOrder.ReferenceCode}",
+            //         IsBodyHtml = false
+            //     };
+            //
+            //     await _emailSender.SendAsync(mail);
+            // }
+            // catch (Exception ex)
+            // {
+            //     Logger.Error("Failed to send email notification", ex);
+            // }
 
             return ObjectMapper.Map<SupplierOrderDto>(supplierOrder);
         }

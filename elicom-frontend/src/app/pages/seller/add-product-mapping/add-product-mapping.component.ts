@@ -343,7 +343,7 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
             brandName: 'Preview Catalog',
             supplierPrice: 0,
             supplierPriceResolved: 0,
-            images: [`https://picsum.photos/seed/noshcom-preview-${index + 1}/500/500`],
+            images: [`https://picsum.photos/seed/smartshop-preview-${index + 1}/500/500`],
             isPreviewPlaceholder: true
         }));
         this.searchResults = [...this.rawSearchResults];

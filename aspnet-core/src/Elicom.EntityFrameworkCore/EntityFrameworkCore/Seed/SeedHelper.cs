@@ -1,4 +1,4 @@
-﻿using Abp.Dependency;
+using Abp.Dependency;
 using Abp.Domain.Uow;
 using Abp.EntityFrameworkCore.Uow;
 using Abp.MultiTenancy;
@@ -86,6 +86,25 @@ public static class SeedHelper
             new TenantRoleAndUserBuilder(context, 1).Create(); // Smart Store
             new TenantRoleAndUserBuilder(context, 2).Create(); // Prime Ship
             new TenantRoleAndUserBuilder(context, 3).Create(); // Easy Finora
+
+            // Auto-approve all existing stores so that they are visible on the buyer side
+            try
+            {
+                var storesToApprove = context.Set<Elicom.Entities.Store>().Where(s => !s.Status).ToList();
+                if (storesToApprove.Any())
+                {
+                    foreach (var s in storesToApprove)
+                    {
+                        s.Status = true;
+                    }
+                    context.SaveChanges();
+                    Console.WriteLine($"[SEED-DEBUG] Auto-approved {storesToApprove.Count} pending stores.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SEED-DEBUG] Failed to auto-approve stores: {ex.Message}");
+            }
         }
         catch (Exception ex)
         {

@@ -23,6 +23,7 @@ using Abp.BackgroundJobs;
 using Elicom.BackgroundJobs;
 using Elicom.Orders.BackgroundJobs;
 using Abp.Runtime.Session;
+using Abp.EntityFrameworkCore.Repositories;
 
 namespace Elicom.Orders
 {
@@ -96,31 +97,8 @@ namespace Elicom.Orders
                     .ToListAsync();
             }
 
-            if (input.Items != null && input.Items.Any())
-            {
-                var inputStoreProductIds = input.Items.Select(oi => oi.StoreProductId).Where(id => id != Guid.Empty).ToList();
-                
-                if (inputStoreProductIds.Any())
-                {
-                    cartItems = cartItems.Where(ci => inputStoreProductIds.Contains(ci.StoreProductId)).ToList();
-                    Logger.Info($"[OrderAppService] Filtered cart items for selective checkout: {cartItems.Count} items remain.");
-                }
-                else
-                {
-                    Logger.Warn("[OrderAppService] Frontend sent items but they had empty StoreProductIds. Defaulting to all active cart items.");
-                }
-            }
-
-            // Ignore any invalid/zero-quantity rows to avoid zero totals.
-            var beforeQtyFilter = cartItems.Count;
-            cartItems = cartItems.Where(ci => ci.Quantity > 0).ToList();
-            if (beforeQtyFilter != cartItems.Count)
-            {
-                Logger.Warn($"[OrderAppService] Removed {beforeQtyFilter - cartItems.Count} cart items with non-positive quantity.");
-            }
-
             if (!cartItems.Any())
-                throw new UserFriendlyException("No valid items selected for order.");
+                throw new UserFriendlyException("Cart is empty");
 
             User user;
             using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
@@ -133,109 +111,21 @@ namespace Elicom.Orders
             if (user == null)
                 throw new UserFriendlyException("User not found.");
 
-            var inputItemsByStoreProductId = (input.Items ?? new List<Elicom.OrderItems.Dto.OrderItemDto>())
-                .Where(i => i.StoreProductId != Guid.Empty)
-                .GroupBy(i => i.StoreProductId)
-                .ToDictionary(g => g.Key, g => g.First());
-            var firstValidInputPrice = (input.Items ?? new List<Elicom.OrderItems.Dto.OrderItemDto>())
-                .Where(i => i.PriceAtPurchase > 0)
-                .Select(i => i.PriceAtPurchase)
-                .FirstOrDefault();
-            Logger.Info($"[OrderAppService] Create input items: {(input.Items?.Count ?? 0)}, mapped IDs: {inputItemsByStoreProductId.Count}, first valid input price: {firstValidInputPrice}");
-
-            var totalCartItemsBeforeSanitization = cartItems.Count;
-            var checkoutRows = cartItems
-                .Where(ci => ci.StoreProduct != null && ci.StoreProduct.Store != null && ci.StoreProduct.Product != null)
-                .Select(ci =>
-                {
-                    inputItemsByStoreProductId.TryGetValue(ci.StoreProductId, out var inputItem);
-
-                    var quantity = ci.Quantity > 0
-                        ? ci.Quantity
-                        : (inputItem?.Quantity > 0 ? inputItem.Quantity : 0);
-
-                    decimal resolvedUnitPrice = ci.Price;
-                    decimal resolvedOriginalPrice = ci.OriginalPrice;
-                    decimal resolvedDiscount = ci.ResellerDiscountPercentage;
-
-                    if (resolvedUnitPrice <= 0 && inputItem != null && inputItem.PriceAtPurchase > 0)
-                    {
-                        resolvedUnitPrice = inputItem.PriceAtPurchase;
-                        if (resolvedOriginalPrice <= 0)
-                        {
-                            resolvedOriginalPrice = inputItem.PriceAtPurchase;
-                        }
-                    }
-
-                    if (resolvedUnitPrice <= 0 && ci.StoreProduct != null)
-                    {
-                        var sp = ci.StoreProduct;
-                        var calculated = sp.ResellerPrice * (1 - sp.ResellerDiscountPercentage / 100m);
-                        resolvedUnitPrice = calculated > 0 ? calculated : sp.ResellerPrice;
-                        if (resolvedOriginalPrice <= 0)
-                        {
-                            resolvedOriginalPrice = sp.ResellerPrice;
-                        }
-                        if (resolvedDiscount <= 0)
-                        {
-                            resolvedDiscount = sp.ResellerDiscountPercentage;
-                        }
-                    }
-
-                    if (resolvedUnitPrice <= 0 && ci.StoreProduct?.Product != null)
-                    {
-                        var p = ci.StoreProduct.Product;
-                        resolvedUnitPrice = p.ResellerMaxPrice;
-                        if (resolvedOriginalPrice <= 0)
-                        {
-                            resolvedOriginalPrice = p.ResellerMaxPrice;
-                        }
-                    }
-
-                    if (resolvedUnitPrice <= 0 && firstValidInputPrice > 0)
-                    {
-                        resolvedUnitPrice = firstValidInputPrice;
-                        if (resolvedOriginalPrice <= 0)
-                        {
-                            resolvedOriginalPrice = firstValidInputPrice;
-                        }
-                    }
-
-                    return new
-                    {
-                        CartItem = ci,
-                        Quantity = quantity,
-                        UnitPrice = resolvedUnitPrice,
-                        OriginalPrice = resolvedOriginalPrice > 0 ? resolvedOriginalPrice : resolvedUnitPrice,
-                        Discount = resolvedDiscount
-                    };
-                })
-                .Where(r => r.Quantity > 0 && r.UnitPrice > 0)
-                .ToList();
-
-            if (checkoutRows.Count != totalCartItemsBeforeSanitization)
-            {
-                Logger.Warn($"[OrderAppService] Checkout sanitization removed {totalCartItemsBeforeSanitization - checkoutRows.Count} invalid cart rows.");
-            }
-
-            if (!checkoutRows.Any())
-            {
-                throw new UserFriendlyException("Unable to place order. No valid priced cart items found for checkout.");
-            }
-
-            var subTotal = checkoutRows.Sum(i => i.UnitPrice * i.Quantity);
-            var totalAmount = subTotal + input.ShippingCost - input.Discount;
-
-            if (totalAmount <= 0)
-            {
-                throw new UserFriendlyException($"Unable to place order. Calculated Total Amount ({totalAmount}) must be greater than zero. Subtotal: {subTotal}, Shipping: {input.ShippingCost}, Discount: {input.Discount}");
-            }
+            var subTotal = cartItems.Sum(i => i.Price * i.Quantity);
 
             var sourcePlatform = string.IsNullOrWhiteSpace(input.SourcePlatform)
                 ? "SmartStore"
                 : input.SourcePlatform.Trim();
             var isSmartStorePlatform = sourcePlatform.Equals("SmartStore", StringComparison.OrdinalIgnoreCase);
             var isPrimeShipPlatform = sourcePlatform.Equals("PrimeShip", StringComparison.OrdinalIgnoreCase);
+
+            // Fallback: If PrimeShip and warehouse charge is missing, default to 1.00 as per requirement
+            if (isPrimeShipPlatform && input.WarehouseCharge == 0)
+            {
+                input.WarehouseCharge = 1.00m;
+            }
+
+            var totalAmount = subTotal + input.ShippingCost + input.WarehouseCharge + input.ServiceCharge - input.Discount;
 
             var paymentMethod = input.PaymentMethod?.Trim() ?? string.Empty;
             if (isPrimeShipPlatform && paymentMethod.Equals("card", StringComparison.OrdinalIgnoreCase))
@@ -301,22 +191,28 @@ namespace Elicom.Orders
                 await _walletManager.DepositAsync(PlatformAdminId, totalAmount, $"ESC-{DateTime.Now:yyyyMMddHHmmss}", $"Escrow Hold for Orders {DateTime.Now:yyyyMMddHHmmss}");
             }
             var createdOrders = new List<Order>();
-            var storeGroups = checkoutRows.GroupBy(ci => ci.CartItem.StoreProduct.StoreId).ToList();
+            var storeGroups = cartItems.GroupBy(ci => ci.StoreProduct.StoreId).ToList();
             decimal allocatedShipping = 0m;
+            decimal allocatedWarehouse = 0m;
+            decimal allocatedService = 0m;
             decimal allocatedDiscount = 0m;
 
             for (var i = 0; i < storeGroups.Count; i++)
             {
                 var group = storeGroups[i];
                 var isLast = i == storeGroups.Count - 1;
-                var groupSubTotal = group.Sum(ci => ci.UnitPrice * ci.Quantity);
+                var groupSubTotal = group.Sum(ci => ci.Price * ci.Quantity);
 
                 decimal groupShipping;
+                decimal groupWarehouse;
+                decimal groupService;
                 decimal groupDiscount;
 
                 if (subTotal <= 0)
                 {
                     groupShipping = 0;
+                    groupWarehouse = 0;
+                    groupService = 0;
                     groupDiscount = 0;
                 }
                 else
@@ -324,19 +220,29 @@ namespace Elicom.Orders
                     groupShipping = isLast
                         ? input.ShippingCost - allocatedShipping
                         : Math.Round(input.ShippingCost * (groupSubTotal / subTotal), 2);
+                    groupWarehouse = isLast
+                        ? input.WarehouseCharge - allocatedWarehouse
+                        : Math.Round(input.WarehouseCharge * (groupSubTotal / subTotal), 2);
+                    groupService = isLast
+                        ? input.ServiceCharge - allocatedService
+                        : Math.Round(input.ServiceCharge * (groupSubTotal / subTotal), 2);
                     groupDiscount = isLast
                         ? input.Discount - allocatedDiscount
                         : Math.Round(input.Discount * (groupSubTotal / subTotal), 2);
                 }
 
                 allocatedShipping += groupShipping;
+                allocatedWarehouse += groupWarehouse;
+                allocatedService += groupService;
                 allocatedDiscount += groupDiscount;
 
-                var orderTotal = groupSubTotal + groupShipping - groupDiscount;
-                var orderNumber = $"ORD-{DateTime.Now:yyyyMMddHHmmss}-{i + 1}";
+                var orderTotal = groupSubTotal + groupShipping + groupWarehouse + groupService - groupDiscount;
+                var now = DateTime.UtcNow;
+                var orderNumber = $"ORD-{now:yyyyMMddHHmmss}-{i + 1}";
 
                 var order = new Order
                 {
+                    CreationTime = now,
                     UserId = effectiveUserId,
                     OrderNumber = orderNumber,
                     PaymentMethod = paymentMethod,
@@ -350,6 +256,8 @@ namespace Elicom.Orders
                     RecipientEmail = input.RecipientEmail,
                     SubTotal = groupSubTotal,
                     ShippingCost = groupShipping,
+                    WarehouseCharge = groupWarehouse,
+                    ServiceCharge = groupService,
                     Discount = groupDiscount,
                     TotalAmount = orderTotal,
                     Status = "Pending",
@@ -367,24 +275,24 @@ namespace Elicom.Orders
                     var orderItem = new OrderItem
                     {
                         OrderId = order.Id,
-                        StoreProductId = ci.CartItem.StoreProductId,
-                        ProductId = ci.CartItem.StoreProduct.ProductId,
+                        StoreProductId = ci.StoreProductId,
+                        ProductId = ci.StoreProduct.ProductId,
                         Quantity = ci.Quantity,
-                        PriceAtPurchase = ci.UnitPrice,
+                        PriceAtPurchase = ci.Price,
                         OriginalPrice = ci.OriginalPrice,
-                        DiscountPercentage = ci.Discount,
-                        ProductName = ci.CartItem.StoreProduct.Product.Name,
-                        StoreName = ci.CartItem.StoreProduct.Store.Name
+                        DiscountPercentage = ci.ResellerDiscountPercentage,
+                        ProductName = ci.StoreProduct.Product.Name,
+                        StoreName = ci.StoreProduct.Store.Name
                     };
 
                     await _orderItemRepository.InsertAsync(orderItem);
                     order.OrderItems.Add(orderItem);
                 }
 
-                foreach (var supplierGroup in group.GroupBy(ci => ci.CartItem.StoreProduct.Product.SupplierId))
+                foreach (var supplierGroup in group.GroupBy(ci => ci.StoreProduct.Product.SupplierId))
                 {
                     var supplierId = supplierGroup.Key.GetValueOrDefault();
-                    var storeOwnerId = supplierGroup.First().CartItem.StoreProduct.Store.OwnerId;
+                    var storeOwnerId = supplierGroup.First().StoreProduct.Store.OwnerId;
                     var supplierOrder = new SupplierOrder
                     {
                         SupplierId = supplierId,
@@ -392,7 +300,7 @@ namespace Elicom.Orders
                         OrderId = order.Id,
                         ReferenceCode = $"SUP-{DateTime.Now:yyyyMMddHHmmss}-{supplierId}",
                         Status = "Purchased",
-                        TotalPurchaseAmount = supplierGroup.Sum(ci => ResolveSupplierPrice(ci.CartItem.StoreProduct.Product) * ci.Quantity),
+                        TotalPurchaseAmount = supplierGroup.Sum(ci => ResolveSupplierPrice(ci.StoreProduct.Product) * ci.Quantity),
                         CustomerName = user.Name,
                         ShippingAddress = input.ShippingAddress,
                         SourcePlatform = order.SourcePlatform,
@@ -403,9 +311,9 @@ namespace Elicom.Orders
                     {
                         supplierOrder.Items.Add(new SupplierOrderItem
                         {
-                            ProductId = ci.CartItem.StoreProduct.ProductId,
+                            ProductId = ci.StoreProduct.ProductId,
                             Quantity = ci.Quantity,
-                            PurchasePrice = ResolveSupplierPrice(ci.CartItem.StoreProduct.Product)
+                            PurchasePrice = ResolveSupplierPrice(ci.StoreProduct.Product)
                         });
                     }
 
@@ -415,7 +323,7 @@ namespace Elicom.Orders
                 await _backgroundJobManager.EnqueueAsync<OrderEmailJob, OrderEmailJobArgs>(new OrderEmailJobArgs { OrderId = order.Id });
             }
 
-            foreach (var ci in checkoutRows.Select(x => x.CartItem).Distinct())
+            foreach (var ci in cartItems)
             {
                 await _cartItemRepository.DeleteAsync(ci.Id);
             }
@@ -448,12 +356,14 @@ namespace Elicom.Orders
                     var subTotal = price * input.Quantity;
                     var totalAmount = subTotal;
 
-                    var orderNumber = $"MAN-{DateTime.Now:yyyyMMddHHmmss}";
+                    var now = DateTime.UtcNow;
+                    var orderNumber = $"MAN-{now:yyyyMMddHHmmss}";
                     var sourcePlatform = "WorldCart";
 
                     // 3. Create Order
                     var order = new Order
                     {
+                        CreationTime = now,
                         UserId = adminId,
                         OrderNumber = orderNumber,
                         PaymentMethod = "System Credit",
@@ -786,8 +696,6 @@ namespace Elicom.Orders
                 }
 
                 if (order == null) throw new UserFriendlyException("Order not found");
-                if (string.Equals(order.Status, "Rejected", StringComparison.OrdinalIgnoreCase))
-                    throw new UserFriendlyException("Rejected order cannot be shipped again.");
                 if (string.Equals(order.Status, "Delivered", StringComparison.OrdinalIgnoreCase))
                     throw new UserFriendlyException("Delivered order cannot be shipped again.");
                 if (string.Equals(order.Status, "Verified", StringComparison.OrdinalIgnoreCase))
@@ -807,7 +715,41 @@ namespace Elicom.Orders
                         .Include(sp => sp.Store).Where(sp => sp.Store.OwnerId == userId)
                         .Select(sp => sp.StoreId).Distinct().ToListAsync();
 
-                    var orderStoreIds = order.OrderItems.Select(oi => oi.StoreProduct.StoreId).Distinct().ToList();
+                    var orderItems = order.OrderItems?.ToList() ?? new List<OrderItem>();
+                    if (!orderItems.Any())
+                    {
+                        throw new UserFriendlyException("Order has no items and cannot be shipped.");
+                    }
+
+                    var orderStoreIds = orderItems
+                        .Where(oi => oi.StoreProduct != null)
+                        .Select(oi => oi.StoreProduct.StoreId)
+                        .Distinct()
+                        .ToList();
+
+                    // Fallback: resolve store IDs by StoreProductId if navigation is missing.
+                    if (!orderStoreIds.Any())
+                    {
+                        var storeProductIds = orderItems
+                            .Select(oi => oi.StoreProductId)
+                            .Where(id => id != Guid.Empty)
+                            .Distinct()
+                            .ToList();
+
+                        if (storeProductIds.Any())
+                        {
+                            orderStoreIds = await _storeProductRepository.GetAll()
+                                .Where(sp => storeProductIds.Contains(sp.Id))
+                                .Select(sp => sp.StoreId)
+                                .Distinct()
+                                .ToListAsync();
+                        }
+                    }
+
+                    if (!orderStoreIds.Any())
+                    {
+                        throw new UserFriendlyException("Unable to resolve store ownership for this order.");
+                    }
 
                     if (!sellerStores.Intersect(orderStoreIds).Any())
                     {
@@ -827,12 +769,26 @@ namespace Elicom.Orders
                     order.Status = "ShippedFromHub";
                 }
 
-                order.ShipmentDate = input.ShipmentDate;
+                // Ensure we capture EXACT UTC time for global consistency
+                var finalShipDate = input.ShipmentDate;
+                // If it's a midnight date from a picker, or we just want latest UTC
+                if (finalShipDate.Hour == 0 && finalShipDate.Minute == 0 && finalShipDate.Second == 0)
+                {
+                    finalShipDate = DateTime.UtcNow;
+                }
+                else
+                {
+                    // If a date was provided but it's not UTC, convert it
+                    finalShipDate = finalShipDate.ToUniversalTime();
+                }
+
+                order.ShipmentDate = finalShipDate;
                 order.CarrierId = input.CarrierId;
                 order.TrackingCode = input.TrackingCode;
 
                 await _orderRepository.UpdateAsync(order);
-                await TryQueueShipmentEmailAsync(order);
+                // DISABLED per request: O2 (Order shipped emails)
+                // await TryQueueShipmentEmailAsync(order);
                 return ObjectMapper.Map<OrderDto>(order);
             }
         }
@@ -868,9 +824,12 @@ namespace Elicom.Orders
                     throw new UserFriendlyException("Only shipped orders can be verified.");
 
                 order.Status = "Verified";
+                // Do NOT overwrite ShipmentDate - it records when the seller shipped
+                // ShipmentDate is used for the Tracking Verification timer
 
                 await _orderRepository.UpdateAsync(order);
-                await TryQueueOrderVerifiedEmailAsync(order);
+                // DISABLED per request: O3 (Order verified emails)
+                // await TryQueueOrderVerifiedEmailAsync(order);
                 return ObjectMapper.Map<OrderDto>(order);
             }
         }
@@ -904,6 +863,8 @@ namespace Elicom.Orders
 
                 order.Status = "Delivered";
                 order.PaymentStatus = "Completed";
+                // Record exact delivery timestamp separately (do not overwrite ShipmentDate)
+                order.DeliveredAt = DateTime.UtcNow;
 
                 var pendingTransactions = await _appTransactionRepository.GetAll()
                     .Where(t => t.OrderId == order.Id && t.Status == "Pending").ToListAsync();
@@ -915,6 +876,15 @@ namespace Elicom.Orders
                 }
 
                 await _orderRepository.UpdateAsync(order);
+                
+                // FINAL FORCE: Update via raw SQL to bypass any EF Core mapping or migration sync issues
+                // This ensures that even if EF Core doesn't "see" the new column, the database record is updated.
+                // In ABP 8, we access the context through the repository extension
+                var dbContext = _orderRepository.GetDbContext();
+                await dbContext.Database.ExecuteSqlRawAsync(
+                    "UPDATE Orders SET DeliveredAt = {0} WHERE Id = {1}",
+                    DateTime.UtcNow, order.Id);
+
                 await FinalizeOrder(order);
                 await TryQueueOrderDeliveredEmailAsync(order);
                 return ObjectMapper.Map<OrderDto>(order);
@@ -1086,12 +1056,16 @@ namespace Elicom.Orders
             var ratio = baseSubTotal <= 0 ? 1m : (mySubTotal / baseSubTotal);
 
             var myShipping = Math.Round(originalOrder.ShippingCost * ratio, 2);
+            var myWarehouse = Math.Round(originalOrder.WarehouseCharge * ratio, 2);
+            var myService = Math.Round(originalOrder.ServiceCharge * ratio, 2);
             var myDiscount = Math.Round(originalOrder.Discount * ratio, 2);
 
             dto.SubTotal = mySubTotal;
             dto.ShippingCost = myShipping;
+            dto.WarehouseCharge = myWarehouse;
+            dto.ServiceCharge = myService;
             dto.Discount = myDiscount;
-            dto.TotalAmount = mySubTotal + myShipping - myDiscount;
+            dto.TotalAmount = mySubTotal + myShipping + myWarehouse + myService - myDiscount;
         }
 
         private static void PopulateSellerAndSourceMeta(OrderDto dto, Order order)
@@ -1566,7 +1540,7 @@ namespace Elicom.Orders
                     if (sellerPayments.ContainsKey(ownerId)) sellerPayments[ownerId] += amount;
                     else sellerPayments[ownerId] = amount;
                 }
-            }
+                }
 
             foreach (var sellerPay in sellerPayments)
             {
@@ -1582,7 +1556,7 @@ namespace Elicom.Orders
                     sellerReferenceId,
                     $"Escrow Release: {order.OrderNumber} (Net: {netSellerAmount:F2}, Fee: {platformFee:F2})"
                 );
-                await TryQueueSellerPayoutEmailAsync(order, sellerPay.Key, totalAmount, platformFee, netSellerAmount);
+                // Payout settlement email disabled for World Cart seller flow.
 
                 Logger.Info(
                     $"[PAYOUT] Order {order.OrderNumber} - Seller {sellerPay.Key}: Net={netSellerAmount:F2}, Fee={platformFee:F2} (8% retained in admin escrow)"

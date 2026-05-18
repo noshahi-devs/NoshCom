@@ -21,7 +21,10 @@ namespace Elicom.Stores
         Task Reject(RejectStoreInput input);
         Task VerifyKyc(EntityDto<Guid> input);
         Task<StoreDto> GetMyStore();
+        Task<bool> IsStoreNameAvailable(string name);
         Task ToggleAdminStatus(Guid storeId, bool isActive);
+        Task SetFavorite(SetStoreFavoriteInput input);
+        Task ToggleFavorite(EntityDto<Guid> input);
         Task UpdateWithdrawPermission(UpdateWithdrawPermissionInput input);
     }
 }

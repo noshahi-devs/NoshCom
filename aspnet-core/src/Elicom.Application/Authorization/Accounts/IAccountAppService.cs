@@ -14,10 +14,6 @@ public interface IAccountAppService : IApplicationService
 
     Task<Microsoft.AspNetCore.Mvc.ContentResult> VerifyEmail(long userId, string token, string platform = "Prime Ship");
 
-    Task ForgotPassword(string email);
-
-    Task ResetPassword(ResetPasswordInput input);
-
     Task RegisterSmartStoreSeller(RegisterSmartStoreInput input);
     Task RegisterSmartStoreCustomer(RegisterSmartStoreInput input);
 

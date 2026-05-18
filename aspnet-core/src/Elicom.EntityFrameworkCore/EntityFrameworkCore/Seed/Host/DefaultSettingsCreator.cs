@@ -20,7 +20,7 @@ public class DefaultSettingsCreator
     {
         int? tenantId = null;
 
-        if (ElicomConsts.MultiTenancyEnabled == false)
+        if (!ElicomConsts.IsMultiTenancyEnabled)
         {
             tenantId = MultiTenancyConsts.DefaultTenantId;
         }

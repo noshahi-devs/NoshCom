@@ -5,8 +5,8 @@ namespace Elicom.Carts.Dto
 {
     public class CreateCartItemDto
     {
-        [Required]
-        public long UserId { get; set; }
+        // Optional for backward compatibility; server always uses session user id.
+        public long? UserId { get; set; }
 
         [Required]
         public Guid StoreProductId { get; set; }
