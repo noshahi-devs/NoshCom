@@ -1,5 +1,5 @@
-$primary-color: #F85606;
-$primary-dark: #E64A00;
+$primary-color: #10b981;
+$primary-dark: #059669;
 $danger-color: #ef4444;
 $danger-dark: #dc2626;
 $secondary-color: #6b7280;
@@ -591,28 +591,109 @@ $shadow-medium: rgba(0, 0, 0, 0.15);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    margin-top: 1.5rem;
-    padding: 1rem;
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+    padding: 1.25rem 2rem;
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
 
     .pagination-info {
-      color: $text-dark;
-      font-weight: 500;
+      color: #475569;
+      font-weight: 600;
+      font-size: 0.95rem;
     }
 
     .pagination-controls {
       @include flex-center(0.75rem);
 
+      .btn {
+        height: 40px;
+        padding: 0 1.25rem;
+        border-radius: 12px;
+        border: 1.5px solid #e2e8f0;
+        background: #ffffff;
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.9rem;
+        @include flex-center(0.5rem);
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: none;
+
+        i {
+          font-size: 0.8rem;
+          color: #64748b;
+          transition: transform 0.2s ease;
+        }
+
+        &:hover:not(:disabled) {
+          border-color: #10b981;
+          color: #10b981;
+          background: rgba(16, 185, 129, 0.04);
+          transform: translateY(-1px);
+
+          i {
+            color: #10b981;
+          }
+        }
+
+        &:active:not(:disabled) {
+          transform: translateY(0);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          background: #f8fafc;
+          border-color: #e2e8f0;
+          color: #94a3b8;
+          transform: none;
+
+          i {
+            color: #cbd5e1;
+          }
+        }
+      }
+
       .page-numbers {
-        @include flex-center(0.35rem);
+        @include flex-center(0.4rem);
 
         .page-btn {
-          padding: 0.6rem 0.8rem;
+          width: 40px;
+          height: 40px;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 12px;
+          border: 1.5px solid #e2e8f0;
+          background: #ffffff;
+          color: #475569;
+          font-weight: 700;
+          font-size: 0.95rem;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: none;
+
+          &:hover:not(.active) {
+            border-color: #10b981;
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.04);
+            transform: translateY(-1px);
+          }
 
           &.active {
-            background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
             border: none;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+            transform: scale(1.05);
+          }
+
+          &:active {
+            transform: scale(0.95);
           }
         }
       }

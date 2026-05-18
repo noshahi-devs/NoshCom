@@ -73,8 +73,8 @@ export class CustomersComponent implements OnInit {
   private initForms(): void {
     this.addCustomerForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
-      surname: ['', [Validators.required]],
-      userName: ['', [Validators.required]],
+      surname: ['-'],
+      userName: [''],
       email: ['', [Validators.required, Validators.email]],
       phone: [''],
       status: [true],
@@ -84,8 +84,8 @@ export class CustomersComponent implements OnInit {
     this.editCustomerForm = this.fb.group({
       id: [null],
       name: ['', [Validators.required, Validators.minLength(3)]],
-      surname: ['', [Validators.required]],
-      userName: ['', [Validators.required]],
+      surname: ['-'],
+      userName: [''],
       email: ['', [Validators.required, Validators.email]],
       phone: [''],
       status: [true],
@@ -272,10 +272,14 @@ export class CustomersComponent implements OnInit {
     }
 
     const formValue = this.addCustomerForm.value;
+    const nameParts = (formValue.name || '').trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '-';
+
     const input: CreateUserDto = {
-      userName: formValue.userName || formValue.email,
-      name: formValue.name,
-      surname: formValue.surname,
+      userName: formValue.email,
+      name: firstName,
+      surname: lastName,
       emailAddress: formValue.email,
       phoneNumber: formValue.phone,
       isActive: formValue.status,
@@ -303,11 +307,15 @@ export class CustomersComponent implements OnInit {
     }
 
     const formValue = this.editCustomerForm.value;
+    const nameParts = (formValue.name || '').trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '-';
+
     const input: UpdateUserDto = {
       id: formValue.id,
-      userName: formValue.userName || formValue.email,
-      name: formValue.name,
-      surname: formValue.surname,
+      userName: formValue.email,
+      name: firstName,
+      surname: lastName,
       emailAddress: formValue.email,
       phoneNumber: formValue.phone,
       isActive: formValue.status,

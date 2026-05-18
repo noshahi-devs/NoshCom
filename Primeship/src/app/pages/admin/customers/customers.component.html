@@ -120,7 +120,7 @@
     </div>
 
     <div class="pagination-controls">
-      <button class="btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+      <button class="btn prev-btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
         <i class="pi pi-angle-left"></i> Previous
       </button>
 
@@ -131,7 +131,7 @@
         </button>
       </div>
 
-      <button class="btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+      <button class="btn next-btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
         Next <i class="pi pi-angle-right"></i>
       </button>
     </div>
