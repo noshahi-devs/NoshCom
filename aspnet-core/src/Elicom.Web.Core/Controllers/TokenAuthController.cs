@@ -51,7 +51,7 @@ namespace Elicom.Controllers
             var normalizedTenant = (tenancyName ?? string.Empty).Trim().ToLowerInvariant();
             if (normalizedTenant.Contains("prime") || normalizedTenant.Contains("global"))
             {
-                return "support@globalmart.uk.com";
+                return "support@thesmartshop.uk";
             }
             return "support@thesmartshop.uk";
         }

@@ -382,7 +382,7 @@ export class OrderDetailsComponent implements OnInit {
                 this.alertService
                     .success(successMessage)
                     .then(() => {
-                        this.router.navigate(['/seller/orders']);
+                        this.router.navigate(['/seller/orders/tracking-verifications']);
                     });
             }
         });

@@ -33,9 +33,13 @@ export class AuthModalComponent implements OnInit, OnDestroy {
     showErrorModal = false;
     errorTitle = 'Registration Not Completed';
 
+    platformName: string = 'WorldCart';
+    platformDisplayName: string = 'Smart Shop UK';
+    platformInitials: string = 'S';
+
     // Loading Experience
     loadingMessage: string = 'Starting registration...';
-    private loadingMessages = [
+    loadingMessages = [
         'Creating your Smart Shop UK profile...',
         'Securing your account...',
         'Preparing your dashboard...',
@@ -89,6 +93,39 @@ export class AuthModalComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        this.platformName = resolvePlatformName();
+        if (this.platformName === 'PrimeShip') {
+            this.platformDisplayName = 'Prime Ship';
+            this.platformInitials = 'P';
+            this.loadingMessages = [
+                'Creating your Prime Ship profile...',
+                'Securing your account...',
+                'Preparing your dashboard...',
+                'Almost ready...',
+                'Finalizing your setup...'
+            ];
+        } else if (this.platformName === 'EasyFinora') {
+            this.platformDisplayName = 'Easy Finora';
+            this.platformInitials = 'E';
+            this.loadingMessages = [
+                'Creating your Easy Finora profile...',
+                'Securing your account...',
+                'Preparing your dashboard...',
+                'Almost ready...',
+                'Finalizing your setup...'
+            ];
+        } else {
+            this.platformDisplayName = 'Smart Shop UK';
+            this.platformInitials = 'S';
+            this.loadingMessages = [
+                'Creating your Smart Shop UK profile...',
+                'Securing your account...',
+                'Preparing your dashboard...',
+                'Almost ready...',
+                'Finalizing your setup...'
+            ];
+        }
+
         if (!this.pageMode) {
             // More aggressive scroll lock for both html and body
             document.body.style.overflow = 'hidden';
@@ -187,7 +224,7 @@ export class AuthModalComponent implements OnInit, OnDestroy {
         this.signInForm.disable({ emitEvent: false });
         this.errorMessage = '';
         this.showErrorModal = false;
-        this.loadingMessage = 'Signing you in to Smart Shop UK...';
+        this.loadingMessage = `Signing you in to ${this.platformDisplayName}...`;
 
         const credentials: LoginDto = {
             userNameOrEmailAddress: this.signInForm.value.email,

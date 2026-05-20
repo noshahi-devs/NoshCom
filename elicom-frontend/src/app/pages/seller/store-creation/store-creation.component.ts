@@ -89,6 +89,18 @@ export class StoreCreationComponent {
         this.storeForm.get('longDescription')?.valueChanges.subscribe(val => {
             this.storeForm.get('description')?.setValue(val, { emitEvent: false });
         });
+
+        // Clear name exists error on change
+        this.storeForm.get('name')?.valueChanges.subscribe(() => {
+            const nameControl = this.storeForm.get('name');
+            if (nameControl?.hasError('exists')) {
+                const errors = nameControl.errors;
+                if (errors) {
+                    delete errors['exists'];
+                    nameControl.setErrors(Object.keys(errors).length ? errors : null);
+                }
+            }
+        });
     }
 
     logout() {
@@ -186,13 +198,56 @@ export class StoreCreationComponent {
             return;
         }
 
-        if (step < this.currentStep) {
-            this.validateStep(step);
+        const stepValid = this.validateStep(step);
+        if (!stepValid) {
             return;
         }
 
-        const stepValid = this.validateStep(step);
-        if (!stepValid) {
+        if (step === 1) {
+            const storeName = this.storeForm.value.name;
+            this.isLoading = true;
+            this.storeService.isStoreNameAvailable(storeName).subscribe({
+                next: (available) => {
+                    this.isLoading = false;
+                    if (!available) {
+                        Swal.fire(
+                            'Store Name Exists',
+                            'Store name already exists. Please choose a different store name.',
+                            'error'
+                        );
+                        this.storeForm.get('name')?.setErrors({ exists: true });
+                        return;
+                    }
+
+                    if (this.currentStep === 1) {
+                        const groupEndStep = this.getGroupEndStep(step);
+                        if (step < groupEndStep) {
+                            this.currentStep = step + 1;
+                            this.scrollToStep(this.currentStep);
+                        }
+                    } else {
+                        Swal.fire(
+                            'Success',
+                            'Store name is available and updated successfully!',
+                            'success'
+                        );
+                    }
+                },
+                error: () => {
+                    this.isLoading = false;
+                    if (this.currentStep === 1) {
+                        const groupEndStep = this.getGroupEndStep(step);
+                        if (step < groupEndStep) {
+                            this.currentStep = step + 1;
+                            this.scrollToStep(this.currentStep);
+                        }
+                    }
+                }
+            });
+            return;
+        }
+
+        if (step < this.currentStep) {
             return;
         }
 

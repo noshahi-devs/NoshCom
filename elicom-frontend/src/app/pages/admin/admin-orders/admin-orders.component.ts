@@ -101,6 +101,7 @@ export class AdminOrdersComponent implements OnInit {
         return this.tabFilteredOrders.filter(order => {
             const haystack = [
                 order?.orderNumber,
+                order?.recipientName,
                 order?.customerName,
                 order?.userId,
                 order?.totalAmount,

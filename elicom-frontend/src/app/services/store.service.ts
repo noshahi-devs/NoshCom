@@ -239,4 +239,10 @@ export class StoreService {
     updateWithdrawPermission(input: any): Observable<any> {
         return this.http.put(`${this.apiUrl}/UpdateWithdrawPermission`, input);
     }
+
+    isStoreNameAvailable(name: string): Observable<boolean> {
+        return this.http.get<any>(`${this.apiUrl}/IsStoreNameAvailable`, { params: { name } }).pipe(
+            map((res: any) => res?.result ?? res)
+        );
+    }
 }

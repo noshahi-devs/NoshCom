@@ -1,4 +1,4 @@
-<div class="auth-modal-overlay" [class.page-mode]="pageMode">
+<div class="auth-modal-overlay" [class.page-mode]="pageMode" [class.easy-finora]="platformName === 'EasyFinora'" [class.prime-ship]="platformName === 'PrimeShip'">
     <div class="auth-modal-container" [class.page-mode]="pageMode" [class.signing-in]="isSigningIn" [class.signup-mode]="view === 'signup'" (click)="$event.stopPropagation()">
 
         <button class="close-btn" (click)="onClose()" [disabled]="isLoading || isSigningIn">&times;</button>
@@ -7,15 +7,15 @@
             <div class="scene">
                 <div class="loader-glow"></div>
                 <div class="loading-center">
-                    <div class="brand-chip">Smart Shop UK</div>
+                    <div class="brand-chip">{{ platformDisplayName }}</div>
                     <div class="nosh-loader" aria-hidden="true">
                         <span class="nosh-loader-ring"></span>
                         <span class="nosh-loader-ring-inner"></span>
                         <div class="nosh-loader-core">
-                            <span>N</span>
+                            <span>{{ platformInitials }}</span>
                         </div>
                     </div>
-                    <h3 class="loading-title">Smart Shop UK</h3>
+                    <h3 class="loading-title">{{ platformDisplayName }}</h3>
                     <p class="loading-text">{{ loadingMessage }}</p>
                     <div class="loading-progress" aria-hidden="true">
                         <div class="loading-progress-bar"></div>
@@ -44,8 +44,8 @@
                         <div class="auth-brand-mark">
                             <img src="assets/images/logo1.png" alt="Smart Shop UK logo">
                         </div>
-                        <h2>Sign In to Smart Shop UK</h2>
-                        <p class="auth-subtitle">Access your Smart Shop UK account to continue shopping, manage orders, and explore your personalized experience.</p>
+                        <h2>Sign In to {{ platformDisplayName }}</h2>
+                        <p class="auth-subtitle">Access your {{ platformDisplayName }} account to continue shopping, manage orders, and explore your personalized experience.</p>
                     </div>
 
                     <form [formGroup]="signInForm" (ngSubmit)="onSignIn()">
@@ -86,7 +86,7 @@
                     </form>
 
                     <div class="auth-footer">
-                        <p>New to Smart Shop UK? <a href="javascript:void(0)" (click)="switchView('signup')">Create an account</a></p>
+                        <p>New to {{ platformDisplayName }}? <a href="javascript:void(0)" (click)="switchView('signup')">Create an account</a></p>
                     </div>
 
                     <div *ngIf="errorMessage" class="error-message">
@@ -97,8 +97,8 @@
                 <div *ngIf="view === 'signup'" class="auth-view signup-view">
                     <div class="auth-heading">
                         <span class="auth-kicker">Get Started</span>
-                        <h2>Create Your Smart Shop UK Account</h2>
-                        <p class="auth-subtitle">Set up your Smart Shop UK account through a cleaner, more elegant signup experience.</p>
+                        <h2>Create Your {{ platformDisplayName }} Account</h2>
+                        <p class="auth-subtitle">Set up your {{ platformDisplayName }} account through a cleaner, more elegant signup experience.</p>
                     </div>
 
                     <div class="role-selector">
@@ -126,7 +126,7 @@
                                 <span class="signup-step">01</span>
                                 <div>
                                     <h3>Basic Information</h3>
-                                    <p>Tell us who will be using this Smart Shop UK account.</p>
+                                    <p>Tell us who will be using this {{ platformDisplayName }} account.</p>
                                 </div>
                             </div>
 
@@ -237,7 +237,7 @@
 
                     <p class="verification-msg">
                         We've sent a verification link to your email. Please check your inbox and spam folder to activate your
-                        Smart Shop UK account.
+                        {{ platformDisplayName }} account.
                     </p>
 
                     <div class="verification-actions">

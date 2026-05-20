@@ -11,6 +11,27 @@
                 <span>Live View</span>
             </div>
         </div>
+        
+        <!-- Workspace Tabs -->
+        <div class="workspace-tabs-wrapper">
+            <div class="workspace-tabs">
+                <button type="button" class="tab-item" [class.active]="currentTab === 'PendingVerification'" (click)="setTab('PendingVerification')">
+                    <span class="tab-indicator"></span>
+                    <i class="fa-solid fa-hourglass-half tab-icon"></i>
+                    <span class="tab-text">Pending Verification</span>
+                </button>
+                <button type="button" class="tab-item" [class.active]="currentTab === 'Verified'" (click)="setTab('Verified')">
+                    <span class="tab-indicator"></span>
+                    <i class="fa-solid fa-shield-halved tab-icon"></i>
+                    <span class="tab-text">Verified</span>
+                </button>
+                <button type="button" class="tab-item" [class.active]="currentTab === 'Delivered'" (click)="setTab('Delivered')">
+                    <span class="tab-indicator"></span>
+                    <i class="fa-solid fa-truck-fast tab-icon"></i>
+                    <span class="tab-text">Delivered</span>
+                </button>
+            </div>
+        </div>
 
         <!-- Toolbar -->
         <div class="table-tools">
@@ -69,8 +90,8 @@
 
                         <div class="col col-customer">
                             <p class="mini-label">Customer & Channel</p>
-                            <p class="customer-name">{{ order.customerName || 'Guest User' }}</p>
-                            <p class="channel-link">Smart Shop UK Elite</p>
+                            <p class="customer-name">{{ order.recipientName || order.customerName || 'Guest User' }}</p>
+                            <p class="channel-link">Smart Shop UK</p>
                         </div>
 
                         <div class="col col-status">

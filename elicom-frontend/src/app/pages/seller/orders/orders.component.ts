@@ -488,7 +488,7 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
             case 'tracking-verifications':
                 return ['shipped', 'shippedfromhub', 'verified', 'pendingverification'].includes(statusKey);
             case 'shipped':
-                return ['shipped', 'shippedfromhub', 'verified', 'delivered'].includes(statusKey);
+                return statusKey === 'delivered';
             case 'canceled':
                 return ['cancelled', 'canceled', 'cancel'].includes(statusKey);
             case 'rejected-trackings':

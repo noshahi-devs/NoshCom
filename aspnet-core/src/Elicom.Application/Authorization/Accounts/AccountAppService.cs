@@ -259,7 +259,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
         }
 
         var serverRootAddress = (await SettingManager.GetSettingValueAsync("App.ServerRootAddress"))?.TrimEnd('/');
-        if (string.IsNullOrEmpty(serverRootAddress)) serverRootAddress = "http://localhost:44311";
+        if (string.IsNullOrEmpty(serverRootAddress)) serverRootAddress = "https://localhost:44311";
 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var verificationLink = $"{serverRootAddress}/api/services/app/Account/VerifyEmail?userId={user.Id}&token={Uri.EscapeDataString(token)}&platform={Uri.EscapeDataString(platformName)}";
