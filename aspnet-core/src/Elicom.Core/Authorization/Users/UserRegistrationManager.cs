@@ -1,4 +1,4 @@
-﻿using Abp.Authorization.Users;
+using Abp.Authorization.Users;
 using Abp.Domain.Services;
 using Abp.IdentityFramework;
 using Abp.Runtime.Session;
@@ -59,7 +59,7 @@ public class UserRegistrationManager : DomainService
             IsEmailConfirmed = isEmailConfirmed,
             PhoneNumber = phoneNumber,
             Country = country,
-            WalletId = GenerateWalletId(),
+            WalletId = await GenerateWalletIdAsync(),
             Roles = new List<UserRole>()
         };
 
@@ -82,6 +82,48 @@ public class UserRegistrationManager : DomainService
             Balance = 0,
             Currency = "PKR"
         });
+
+        if (tenant.Id == 2)
+        {
+            // Switch tenant to 3 to register the user in EasyFinora as well
+            using (CurrentUnitOfWork.SetTenantId(3))
+            {
+                var easyFinoraUser = new User
+                {
+                    TenantId = 3,
+                    Name = name,
+                    Surname = surname,
+                    EmailAddress = emailAddress,
+                    IsActive = true, // Force active/confirmed for seamless multi-platform access
+                    UserName = userName,
+                    IsEmailConfirmed = true,
+                    PhoneNumber = phoneNumber,
+                    Country = country,
+                    WalletId = user.WalletId, // Share the exact same Wallet ID
+                    Roles = new List<UserRole>()
+                };
+
+                easyFinoraUser.SetNormalizedNames();
+
+                // Assign default roles in Tenant 3
+                foreach (var defaultRole in await _roleManager.Roles.Where(r => r.IsDefault).ToListAsync())
+                {
+                    easyFinoraUser.Roles.Add(new UserRole(3, easyFinoraUser.Id, defaultRole.Id));
+                }
+
+                await _userManager.InitializeOptionsAsync(3);
+                CheckErrors(await _userManager.CreateAsync(easyFinoraUser, plainPassword));
+                await CurrentUnitOfWork.SaveChangesAsync();
+
+                // Create Wallet for the user in Tenant 3
+                await _walletRepository.InsertAsync(new Wallet
+                {
+                    UserId = easyFinoraUser.Id,
+                    Balance = 0,
+                    Currency = "PKR"
+                });
+            }
+        }
 
         return user;
     }
@@ -120,13 +162,27 @@ public class UserRegistrationManager : DomainService
         return tenant;
     }
 
-    private string GenerateWalletId()
+    private async Task<string> GenerateWalletIdAsync()
     {
-        var random = new Random();
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        var randomPart = new string(Enumerable.Repeat(chars, 10)
-            .Select(s => s[random.Next(s.Length)]).ToArray());
-        return $"EF-{randomPart}";
+        using (UnitOfWorkManager.Current.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant, Abp.Domain.Uow.AbpDataFilters.MustHaveTenant))
+        {
+            var gmUserWalletIds = await _userManager.Users
+                .Where(u => u.WalletId != null && u.WalletId.StartsWith("GM-15UK"))
+                .Select(u => u.WalletId)
+                .ToListAsync();
+
+            long nextNum = 4255;
+            if (gmUserWalletIds.Any())
+            {
+                var maxNum = gmUserWalletIds
+                    .Select(id => id.Substring(7))
+                    .Select(numStr => long.TryParse(numStr, out var val) ? val : 0)
+                    .Max();
+                nextNum = Math.Max(4255, maxNum + 1);
+            }
+
+            return $"GM-15UK{nextNum}";
+        }
     }
 
     protected virtual void CheckErrors(IdentityResult identityResult)

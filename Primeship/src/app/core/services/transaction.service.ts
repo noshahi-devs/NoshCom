@@ -7,7 +7,7 @@ import { environment } from '../../../environments/environment';
     providedIn: 'root'
 })
 export class TransactionService {
-    private apiUrl = `${environment.apiUrl}/api/services/app/Transaction`;
+    private apiUrl = `${environment.apiUrl}/services/app/Transaction`;
 
     constructor(private http: HttpClient) { }
 
@@ -15,7 +15,6 @@ export class TransactionService {
         const token = sessionStorage.getItem('authToken') || localStorage.getItem('authToken');
         return new HttpHeaders({
             'Content-Type': 'application/json',
-            'Abp-TenantId': '3',
             'Authorization': `Bearer ${token}`
         });
     }

@@ -18,7 +18,12 @@
                 <span *ngIf="isLoadingBalance" class="loader-pulse"></span>
                 <span class="badge green-badge"><i class="fas fa-arrow-up"></i> 2.67%</span>
             </div>
-            <div class="card-footer">This month vs last</div>
+            <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <span style="white-space: nowrap;">ID: <strong>{{ walletData.walletId }}</strong></span>
+                <button (click)="copyWalletId()" style="background: none; border: none; cursor: pointer; color: inherit; padding: 2px 6px; font-size: 0.85em; display: flex; align-items: center; gap: 4px;" title="Copy Wallet ID">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+            </div>
         </div>
 
         <!-- Card 2: Total Deposit -->

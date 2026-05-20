@@ -1,6 +1,7 @@
 using Abp.Application.Services.Dto;
 using Abp.Authorization;
 using Abp.Domain.Repositories;
+using Abp.Domain.Uow;
 using Abp.Runtime.Session;
 using Elicom.Entities;
 using Elicom.Transactions.Dto;
@@ -101,28 +102,31 @@ namespace Elicom.Transactions
             return $"{referenceId.ToUpperInvariant()}|{movementType}|{amount}";
         }
 
-        [AbpAuthorize(Authorization.PermissionNames.Pages_GlobalPay_Admin)]
+        [AbpAuthorize(Authorization.PermissionNames.Pages_GlobalPay_Admin, Authorization.PermissionNames.Pages_PrimeShip_Admin)]
         public async Task<PagedResultDto<TransactionDto>> GetAll(PagedAndSortedResultRequestDto input)
         {
-            var walletQuery = _walletTransactionRepository.GetAll();
-            var walletItems = await walletQuery.ToListAsync();
-            var walletDtos = walletItems.Select(t => MapToDto(t)).ToList();
+            using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MustHaveTenant, AbpDataFilters.MayHaveTenant))
+            {
+                var walletQuery = _walletTransactionRepository.GetAll();
+                var walletItems = await walletQuery.ToListAsync();
+                var walletDtos = walletItems.Select(t => MapToDto(t)).ToList();
 
-            var cardQuery = _appTransactionRepository.GetAll();
-            var cardItems = await cardQuery.ToListAsync();
-            var cardDtos = cardItems.Select(t => MapToDto(t)).ToList();
+                var cardQuery = _appTransactionRepository.GetAll();
+                var cardItems = await cardQuery.ToListAsync();
+                var cardDtos = cardItems.Select(t => MapToDto(t)).ToList();
 
-            var allTransactions = walletDtos.Concat(cardDtos)
-                .OrderByDescending(t => t.CreationTime)
-                .ToList();
+                var allTransactions = walletDtos.Concat(cardDtos)
+                    .OrderByDescending(t => t.CreationTime)
+                    .ToList();
 
-            var totalCount = allTransactions.Count;
-            var pagedTransactions = allTransactions
-                .Skip(input.SkipCount)
-                .Take(input.MaxResultCount)
-                .ToList();
+                var totalCount = allTransactions.Count;
+                var pagedTransactions = allTransactions
+                    .Skip(input.SkipCount)
+                    .Take(input.MaxResultCount)
+                    .ToList();
 
-            return new PagedResultDto<TransactionDto>(totalCount, pagedTransactions);
+                return new PagedResultDto<TransactionDto>(totalCount, pagedTransactions);
+            }
         }
 
         private TransactionDto MapToDto(WalletTransaction t)

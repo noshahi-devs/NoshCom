@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { OrderService } from '../../../core/services/order.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { WalletService } from '../../../core/services/wallet.service';
 
 interface SellerProfileDraft {
   displayName: string;
@@ -40,6 +41,7 @@ export class SellerProfileComponent implements OnInit {
   activeOrders = 0;
   totalValue = 0;
   lastOrderDateLabel = 'No recent activity';
+  sellerWalletId = 'Loading...';
 
   sellerProfile: SellerProfileDraft = {
     displayName: '',
@@ -63,13 +65,32 @@ export class SellerProfileComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private orderService: OrderService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private walletService: WalletService
   ) { }
 
   ngOnInit(): void {
     this.initializeIdentity();
     this.loadDraft();
     this.loadStats();
+    this.loadWalletId();
+  }
+
+  private loadWalletId(): void {
+    this.walletService.getMyWallet().subscribe({
+      next: (res: any) => {
+        if (res.result?.displayWalletId) {
+          this.sellerWalletId = res.result.displayWalletId;
+        } else if (res.result?.id) {
+          this.sellerWalletId = res.result.id;
+        } else {
+          this.sellerWalletId = 'Not Assigned';
+        }
+      },
+      error: () => {
+        this.sellerWalletId = 'Not Assigned';
+      }
+    });
   }
 
   get completionRate(): number {
