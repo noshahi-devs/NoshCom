@@ -15,12 +15,14 @@ export class AuthGuard implements CanActivate {
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
         const url = state.url;
 
+        const token = this.authService.getToken();
+        if (!token || this.authService.isTokenExpired(token)) {
+            this.authService.handleUnauthorized(state.url);
+            return false;
+        }
+
         if (!this.authService.isAuthenticated) {
-            this.authService.setPostLoginRedirect(state.url);
-            this.authService.openAuthModal();
-            this.router.navigate(['/'], {
-                queryParams: { returnUrl: state.url }
-            });
+            this.authService.handleUnauthorized(state.url);
             return false;
         }
 

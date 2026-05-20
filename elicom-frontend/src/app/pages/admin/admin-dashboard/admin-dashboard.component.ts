@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, NgZone, ChangeDetectorRef, inject } from 
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AdminService } from '../../../services/admin.service';
 
 @Component({
     selector: 'app-admin-dashboard',
@@ -14,6 +15,12 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     private zone = inject(NgZone);
     private cdr = inject(ChangeDetectorRef);
     private router = inject(Router);
+    private adminService = inject(AdminService);
+
+    statsLoading = true;
+    heroRevenueLoading = true;
+    heroRevenue = '';
+    private pendingApprovalsCount = 0;
 
     // Clock
     currentDate: string = '';
@@ -38,10 +45,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     maintenanceModeActive = false;
 
     stats = [
-        { label: 'Total Sellers', value: '1,284', icon: 'fa-users', iconType: 'icon-primary', trend: '12%' },
-        { label: 'Pending Approvals', value: '42', icon: 'fa-clock', iconType: 'icon-alt', trend: '' },
-        { label: 'Active Products', value: '84,520', icon: 'fa-box', iconType: 'icon-primary', trend: '5.4%' },
-        { label: 'Total Revenue', value: '$1.2M', icon: 'fa-chart-pie', iconType: 'icon-alt', trend: '18%' }
+        { label: 'Total Sellers', value: '', icon: 'fa-users', iconType: 'icon-primary', trend: '' },
+        { label: 'Pending Approvals', value: '', icon: 'fa-clock', iconType: 'icon-alt', trend: '' },
+        { label: 'Active Products', value: '', icon: 'fa-box', iconType: 'icon-primary', trend: '' },
+        { label: 'Total Revenue', value: '', icon: 'fa-chart-pie', iconType: 'icon-alt', trend: '' }
     ];
 
     recentActivities = [
@@ -53,6 +60,65 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.startClock();
+        this.loadDashboardStats();
+    }
+
+    loadDashboardStats(): void {
+        this.statsLoading = true;
+        this.heroRevenueLoading = true;
+
+        this.adminService.getStats().subscribe({
+            next: (data) => {
+                this.pendingApprovalsCount = data.pendingApprovals ?? 0;
+                this.heroRevenue = this.formatCurrencyFull(data.totalRevenue ?? 0);
+
+                this.stats[0].value = this.formatNumber(data.totalSellers ?? 0);
+                this.stats[1].value = this.formatNumber(data.pendingApprovals ?? 0);
+                this.stats[2].value = this.formatNumber(data.activeProducts ?? 0);
+                this.stats[3].value = this.formatCurrencyCompact(data.totalRevenue ?? 0);
+
+                this.statsLoading = false;
+                this.heroRevenueLoading = false;
+                this.cdr.detectChanges();
+            },
+            error: (err) => {
+                this.stats.forEach(stat => (stat.value = '—'));
+                this.heroRevenue = '—';
+                this.statsLoading = false;
+                this.heroRevenueLoading = false;
+                if (err?.status === 401) {
+                    this.triggerToast('Session expired. Please sign in again.', 'warning');
+                } else if (err?.status === 408) {
+                    this.triggerToast('Stats are taking too long. Check database connection and retry.', 'warning');
+                } else {
+                    this.triggerToast('Unable to load dashboard statistics.', 'warning');
+                }
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    formatNumber(value: number): string {
+        return new Intl.NumberFormat('en-US').format(value);
+    }
+
+    formatCurrencyFull(value: number): string {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(value);
+    }
+
+    formatCurrencyCompact(value: number): string {
+        if (value >= 1_000_000) {
+            return `$${(value / 1_000_000).toFixed(1)}M`;
+        }
+        if (value >= 1_000) {
+            return `$${(value / 1_000).toFixed(1)}K`;
+        }
+        return this.formatCurrencyFull(value);
     }
 
     ngOnDestroy() {
@@ -117,7 +183,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         if (activity.action === 'Approve') {
             activity.processed = true;
             activity.message = 'Enterprise vendor "Tech Haven" onboarding request approved successfully.';
-            this.stats[1].value = (parseInt(this.stats[1].value) - 1).toString(); // Reduce pending approvals count
+            this.pendingApprovalsCount = Math.max(0, this.pendingApprovalsCount - 1);
+            this.stats[1].value = this.formatNumber(this.pendingApprovalsCount);
             this.triggerToast('Tech Haven onboarding request approved!', 'success');
         } else if (activity.action === 'Review') {
             this.triggerToast('Redirecting to Onboarding Approvals...', 'info');

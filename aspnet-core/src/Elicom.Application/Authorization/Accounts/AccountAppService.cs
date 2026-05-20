@@ -91,7 +91,11 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                 if (string.IsNullOrEmpty(clientRootAddress)) clientRootAddress = "http://localhost:4200";
 
                 string redirectPath = $"{clientRootAddress}/account/login";
-                if (platform == "Smart Store" || platform == "World Cart" || platform == "World Cart US") 
+                if (platform == "Smart Shop UK")
+                {
+                    redirectPath = clientRootAddress.Contains("localhost") ? $"{clientRootAddress}/smartstore/auth" : "https://thesmartshop.uk/smartstore/auth";
+                }
+                else if (platform == "Smart Store" || platform == "World Cart" || platform == "World Cart US") 
                 {
                     // Use production domain unless it's a local development environment
                     redirectPath = clientRootAddress.Contains("localhost") ? $"{clientRootAddress}/smartstore/auth" : "https://worldcartus.com/smartstore/auth";
@@ -104,6 +108,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
 
                 if (platform.Contains("Prime Ship")) { primaryColor = "#F85606"; icon = "&#x1F6A2;"; }
                 else if (platform.Contains("Easy Finora")) { primaryColor = "#28a745"; icon = "&#x1F4B0;"; }
+                else if (platform.Contains("Smart Shop UK") || platform.Contains("World Cart")) { primaryColor = "#F2BB13"; icon = "&#x2705;"; }
 
                 // Non-blocking post-verification welcome email
                 // DISABLED per request: A2 (Welcome after verification)
@@ -199,7 +204,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
             string platformName = "Elicom";
             string brandColor = "#007bff";
 
-            if (tenantId == 1) { platformName = "World Cart"; brandColor = "#000000"; }
+            if (tenantId == 1) { platformName = "Smart Shop UK"; brandColor = "#F2BB13"; }
             else if (tenantId == 2) { platformName = "Prime Ship UK"; brandColor = "#f85606"; }
             else if (tenantId == 3) { platformName = "Easy Finora"; brandColor = "#1de016"; }
             else if (tenantId == 4) { platformName = "Easy Finora"; brandColor = "#28a745"; }
@@ -262,7 +267,10 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
         if (string.IsNullOrEmpty(serverRootAddress)) serverRootAddress = "https://localhost:44311";
 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        var verificationLink = $"{serverRootAddress}/api/services/app/Account/VerifyEmail?userId={user.Id}&token={Uri.EscapeDataString(token)}&platform={Uri.EscapeDataString(platformName)}";
+        
+        // Ensure no double slashes in URL
+        var cleanServerRoot = serverRootAddress?.TrimEnd('/', ' ') ?? "https://localhost:44311";
+        var verificationLink = $"{cleanServerRoot}/api/services/app/Account/VerifyEmail?userId={user.Id}&token={Uri.EscapeDataString(token)}&platform={Uri.EscapeDataString(platformName)}";
 
         // var emailBody = $@"
         //     <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #ffffff;'>
@@ -477,16 +485,16 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
 </body>
 </html>";
         }
-        else // World Cart or other platforms
+        else // Smart Shop UK or other platforms
         {
-            // WORLD CART - Welcome + verification template
+            // SMART SHOP UK - Welcome + verification template
             var roles = await _userManager.GetRolesAsync(user);
             bool isSeller = roles.Any(r => r.ToLower().Contains("seller") || r.ToLower().Contains("supplier"));
             string accountType = isSeller ? "Seller Account" : "Customer Account";
             string userDisplayName = userFullName;
             string roleSpecificEnding = isSeller
-                ? "Thank you for choosing WORLD CART. We look forward to helping you grow your business!"
-                : "Thank you for choosing WORLD CART. We look forward to serving you!";
+                ? "Thank you for choosing Smart Shop UK. We look forward to helping you grow your business!"
+                : "Thank you for choosing Smart Shop UK. We look forward to serving you!";
 
             emailBody = $@"
 <!DOCTYPE html>
@@ -495,64 +503,82 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
 </head>
-<body style='margin:0; padding:0; background-color:#f3f4f6; font-family: Arial, Helvetica, sans-serif;'>
-    <table width='100%' cellpadding='0' cellspacing='0' style='background-color:#f3f4f6; padding:24px 12px;'>
+<body style='margin:0; padding:0; background-color:#fffbeb; font-family: ""Segoe UI"", Arial, Helvetica, sans-serif;'>
+    <table width='100%' cellpadding='0' cellspacing='0' style='background-color:#fffbeb; padding:30px 12px;'>
         <tr>
             <td align='center'>
-                <table width='600' cellpadding='0' cellspacing='0' style='max-width:600px; width:100%; background:#ffffff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden;'>
+                <table width='600' cellpadding='0' cellspacing='0' style='max-width:600px; width:100%; background:#ffffff; border:1px solid #fde68a; border-radius:12px; overflow:hidden; box-shadow:0 4px 24px rgba(242,187,19,0.08);'>
+
+                    <!-- Header -->
                     <tr>
-                        <td style='background:#000000; padding:26px 22px; text-align:center;'>
-                            <h1 style='margin:0; color:#ffffff; font-size:42px; font-weight:700; line-height:1.15;'>
-                                Welcome to WORLD CART!
+                        <td style='background:#F2BB13; padding:36px 28px; text-align:center;'>
+                            <h1 style='margin:0; color:#111827; font-size:30px; font-weight:800; letter-spacing:1px;'>
+                                Welcome to Smart Shop UK!
                             </h1>
-                            <p style='margin:12px 0 0; color:#efeefe; font-size:15px;'>
+                            <p style='margin:8px 0 0; color:#374151; font-size:14px; font-weight:600; letter-spacing:0.5px;'>
                                 {accountType}
                             </p>
                         </td>
                     </tr>
+
+                    <!-- Body -->
                     <tr>
-                        <td style='padding:30px 24px; color:#111827; font-size:15px; line-height:1.55;'>
-                            <p style='margin:0 0 16px;'>Dear {userDisplayName},</p>
+                        <td style='padding:34px 32px; color:#1f2937; font-size:15px; line-height:1.65;'>
+                            <p style='margin:0 0 16px;'>Dear <strong>{userDisplayName}</strong>,</p>
                             <p style='margin:0 0 16px;'>
-                                Congratulations and welcome to WORLD CART! We are thrilled to have you join our community.
+                                Congratulations and welcome to <strong>Smart Shop UK</strong>! We are thrilled to have you join our community.
                             </p>
                             <p style='margin:0 0 16px;'>
-                                Your account has been successfully created, and you are now ready to start exploring and utilizing all the features we offer.
+                                Your account has been successfully created, and you are now ready to start exploring and utilising all the features we offer.
                             </p>
-                            <p style='margin:0 0 16px;'>
-                                To get started, please verify your email address.
+                            <p style='margin:0 0 20px;'>
+                                To get started, please verify your email address by clicking the button below.
                             </p>
-                            <table width='100%' cellpadding='0' cellspacing='0' style='margin:18px 0 22px;'>
+
+                            <!-- CTA Button -->
+                            <table width='100%' cellpadding='0' cellspacing='0' style='margin:24px 0 28px;'>
                                 <tr>
                                     <td align='center'>
                                         <a href='{verificationLink}'
-                                           style='background:#000000; color:#ffffff; padding:13px 26px; text-decoration:none; border-radius:4px; font-weight:700; font-size:17px; display:inline-block;'>
-                                            Click here to verify!
+                                           style='background:#F2BB13; color:#111827; padding:14px 38px; text-decoration:none; border-radius:7px; font-weight:700; font-size:16px; display:inline-block; letter-spacing:0.4px; box-shadow:0 4px 14px rgba(242,187,19,0.40);'>
+                                            Verify My Account
                                         </a>
                                     </td>
                                 </tr>
                             </table>
-                            <p style='margin:0 0 16px;'>
+
+                            <p style='margin:0 0 14px;'>
                                 If you have any questions or need assistance, our support team is here to help.
                             </p>
-                            <p style='margin:0 0 16px;'>
+                            <p style='margin:0 0 20px;'>
                                 {roleSpecificEnding}
                             </p>
-                            <p style='font-size:13px; color:#6b7280; background:#f9fafb; padding:12px; border-radius:6px; margin:18px 0 0; border:1px solid #e5e7eb;'>
-                                This verification link expires in 24 hours.<br/>
-                                If the button doesn't work, copy this link:<br/>
-                                <span style='word-break:break-all; color:#4f46e5;'>{verificationLink}</span>
+
+                            <p style='margin:24px 0 0; font-size:14px; color:#374151;'>
+                                Kind Regards,<br/>
+                                <strong style='color:#b58500;'>Smart Shop UK Team</strong>
                             </p>
                         </td>
                     </tr>
+
+                    <!-- Divider -->
                     <tr>
-                        <td style='border-top:1px solid #e5e7eb; padding:20px; text-align:center; background:#ffffff;'>
-                            <p style='margin:0; font-size:13px; font-weight:700; color:#111827;'>WORLD CART US</p>
-                            <p style='margin:8px 0 0; font-size:12px; color:#6b7280;'>
-                                &copy; 2025-2030 World Cart Inc. All rights reserved.
-                            </p>
+                        <td style='padding:0 32px;'>
+                            <hr style='border:none; border-top:1px solid #e5e7eb; margin:0;' />
                         </td>
                     </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style='padding:20px 32px; text-align:center; background:#fffbeb;'>
+                            <p style='margin:0; font-size:13px; font-weight:700; color:#b58500; letter-spacing:0.5px;'>SMART SHOP UK</p>
+                            <p style='margin:6px 0 0; font-size:12px; color:#6b7280;'>
+                                &copy; {DateTime.UtcNow.Year} Smart Shop UK Ltd. All rights reserved.
+                            </p>
+                            <p style='margin:4px 0 0; font-size:11px; color:#9ca3af;'>support@smartshopuk.com</p>
+                        </td>
+                    </tr>
+
                 </table>
             </td>
         </tr>
@@ -574,9 +600,10 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
             emailSubject = "Action Required: Verify Your Easy Finora Account";
         }
         else if (platformName.Contains("World Cart", StringComparison.OrdinalIgnoreCase) ||
-                 platformName.Contains("Smart Store", StringComparison.OrdinalIgnoreCase))
+                 platformName.Contains("Smart Store", StringComparison.OrdinalIgnoreCase) ||
+                 platformName.Contains("Smart Shop UK", StringComparison.OrdinalIgnoreCase))
         {
-            emailSubject = "Congratulations! You've Successfully Signed Up";
+            emailSubject = "Congratulations! You've Successfully Signed Up - Smart Shop UK";
         }
         else
         {
@@ -666,7 +693,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                     0,
                     null,
                     null,
-                    "World Cart",
+                    "Smart Shop UK",
                     null,
                     user.EmailAddress,
                     emailSubject,
@@ -675,7 +702,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
             }
             catch (Exception ex)
             {
-                Logger.Warn($"[Register] WorldCart SMTP failed. Falling back to default sender. {ex.Message}");
+                Logger.Warn($"[Register] SmartShopUK SMTP failed. Falling back to default sender. {ex.Message}");
                 try
                 {
                     var mail = new System.Net.Mail.MailMessage
@@ -803,14 +830,15 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
             if (platform.Contains("Prime Ship", StringComparison.OrdinalIgnoreCase)) return "Prime Ship UK";
             if (platform.Contains("Easy Finora", StringComparison.OrdinalIgnoreCase)) return "Easy Finora";
             if (platform.Contains("World Cart", StringComparison.OrdinalIgnoreCase) ||
-                platform.Contains("Smart Store", StringComparison.OrdinalIgnoreCase)) return "World Cart";
+                platform.Contains("Smart Store", StringComparison.OrdinalIgnoreCase) ||
+                platform.Contains("Smart Shop UK", StringComparison.OrdinalIgnoreCase)) return "Smart Shop UK";
         }
 
         return tenantId switch
         {
             2 => "Prime Ship UK",
             3 => "Easy Finora",
-            _ => "World Cart"
+            _ => "Smart Shop UK"
         };
     }
 
@@ -829,13 +857,13 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
     [HttpPost]
     public async Task RegisterSmartStoreSeller(RegisterSmartStoreInput input)
     {
-        await RegisterPlatformUser(input.EmailAddress, 1, StaticRoleNames.Tenants.Seller, "Seller", "World Cart", "WC", "#000000", input.Password, input.Country, input.PhoneNumber, input.FullName);
+        await RegisterPlatformUser(input.EmailAddress, 1, StaticRoleNames.Tenants.Seller, "Seller", "Smart Shop UK", "SS", "#F2BB13", input.Password, input.Country, input.PhoneNumber, input.FullName);
     }
 
     [HttpPost]
     public async Task RegisterSmartStoreCustomer(RegisterSmartStoreInput input)
     {
-        await RegisterPlatformUser(input.EmailAddress, 1, StaticRoleNames.Tenants.Buyer, "Customer", "World Cart", "WC", "#000000", input.Password, input.Country, input.PhoneNumber, input.FullName);
+        await RegisterPlatformUser(input.EmailAddress, 1, StaticRoleNames.Tenants.Buyer, "Customer", "Smart Shop UK", "SS", "#F2BB13", input.Password, input.Country, input.PhoneNumber, input.FullName);
     }
 
     [HttpPost]
@@ -989,7 +1017,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                 {
                     var platformPermissions = new List<string>();
                     
-                    if (platformName.Contains("World Cart") || platformName.Contains("Smart Store"))
+                    if (platformName.Contains("World Cart") || platformName.Contains("Smart Store") || platformName.Contains("Smart Shop UK"))
                     {
                         platformPermissions.Add(PermissionNames.Pages_SmartStore_Seller);
                         platformPermissions.Add(PermissionNames.Pages_Stores);
@@ -1253,7 +1281,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
         try
         {
             var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(fromName ?? "World Cart", senderEmail));
+            message.From.Add(new MailboxAddress(fromName ?? "Smart Shop UK", senderEmail));
             message.To.Add(MailboxAddress.Parse(to));
             message.Subject = subject;
             message.Body = new TextPart("html") { Text = body };

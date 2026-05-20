@@ -60,6 +60,7 @@ export class AuthService {
     private _showAuthModal = new BehaviorSubject<boolean>(false);
     showAuthModal$ = this._showAuthModal.asObservable();
     private pendingReturnUrl: string | null = null;
+    private handlingUnauthorized = false;
 
     constructor(
         private http: HttpClient,
@@ -76,7 +77,67 @@ export class AuthService {
     }
 
     private checkAuthStatus(): boolean {
-        return !!this.storage.getToken();
+        const token = this.storage.getToken();
+        if (!token) {
+            return false;
+        }
+        if (this.isTokenExpired(token)) {
+            this.clearExpiredSession();
+            return false;
+        }
+        return true;
+    }
+
+    isTokenExpired(token?: string | null): boolean {
+        const value = token ?? this.storage.getToken();
+        if (!value) {
+            return true;
+        }
+
+        const expMs = this.getTokenExpirationMs(value);
+        if (!expMs) {
+            return true;
+        }
+
+        return Date.now() >= expMs - 30_000;
+    }
+
+    private getTokenExpirationMs(token: string): number | null {
+        try {
+            const payloadPart = token.split('.')[1];
+            if (!payloadPart) {
+                return null;
+            }
+            const normalized = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+            const payload = JSON.parse(atob(normalized));
+            return typeof payload.exp === 'number' ? payload.exp * 1000 : null;
+        } catch {
+            return null;
+        }
+    }
+
+    private clearExpiredSession(): void {
+        this.storage.clearAuthSession();
+        this._currentUser.next(null);
+        this._isAuthenticated.next(false);
+    }
+
+    handleUnauthorized(returnUrl?: string): void {
+        if (this.handlingUnauthorized) {
+            return;
+        }
+        this.handlingUnauthorized = true;
+
+        const targetUrl = returnUrl || this.router.url;
+        this.clearExpiredSession();
+        this.setPostLoginRedirect(targetUrl);
+        this.openAuthModal();
+        this.router.navigate(['/'], {
+            queryParams: { returnUrl: targetUrl, sessionExpired: '1' }
+        });
+        setTimeout(() => {
+            this.handlingUnauthorized = false;
+        }, 1500);
     }
 
     private _customerProfileService: any; // Direct injection might cause cycle if not careful, but typically fine.
@@ -303,7 +364,7 @@ export class AuthService {
     }
 
     getToken(): string | null {
-        return localStorage.getItem('authToken');
+        return this.storage.getToken();
     }
 
 

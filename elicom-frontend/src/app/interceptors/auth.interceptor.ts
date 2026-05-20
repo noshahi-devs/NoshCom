@@ -1,11 +1,19 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { StorageService } from '../services/storage.service';
+import { AuthService } from '../services/auth.service';
 import { resolveTenantId } from '../shared/platform-context';
+import { catchError, throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
     const storage = inject(StorageService);
-    const token = storage.getToken();
+    const authService = inject(AuthService);
+    let token = storage.getToken();
+
+    if (token && authService.isTokenExpired(token)) {
+        authService.handleUnauthorized();
+        token = null;
+    }
 
     // List of public endpoints that should NOT have the auth token attached
     const publicEndpoints = [
@@ -22,17 +30,25 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     const tenantId = resolveTenantId();
     const cultureHeaders = { 'Accept-Language': 'en-US', 'Abp.Localization.CultureName': 'en' };
 
+    const withCulture = req.clone({ setHeaders: cultureHeaders });
+
     if (token && !isPublic) {
-        const cloned = req.clone({
+        const cloned = withCulture.clone({
             setHeaders: {
                 Authorization: `Bearer ${token}`,
                 'Abp-TenantId': tenantId,
                 ...cultureHeaders
             }
         });
-        return next(cloned);
+        return next(cloned).pipe(
+            catchError((error: HttpErrorResponse) => {
+                if (error.status === 401) {
+                    authService.handleUnauthorized();
+                }
+                return throwError(() => error);
+            })
+        );
     }
 
-    // attach safe culture headers even for public calls to avoid CultureNotFoundException
-    return next(req.clone({ setHeaders: cultureHeaders }));
+    return next(withCulture);
 };

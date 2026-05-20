@@ -152,7 +152,7 @@ namespace Elicom.Web.Host.Startup
                 if (!context.Request.Path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase))
                 {
                     context.Response.Headers["Content-Security-Policy"] =
-                        "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'";
+                        "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'";
                 }
 
                 await next();

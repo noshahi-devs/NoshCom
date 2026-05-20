@@ -36,6 +36,7 @@ public static class AppConfigurations
         if (!environmentName.IsNullOrWhiteSpace())
         {
             builder = builder.AddJsonFile($"appsettings.{environmentName}.json", optional: true, reloadOnChange: true);
+            builder = builder.AddJsonFile($"appsettings.{environmentName}.Local.json", optional: true, reloadOnChange: true);
         }
 
         if (addUserSecrets)

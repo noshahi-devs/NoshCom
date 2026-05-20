@@ -254,3 +254,4 @@ paket-files/
 src/Elicom.Web.Mvc/secrets.json
 src/Elicom.Web.Host/secrets.json
 src/Elicom.Migrator/secrets.json
+**/appsettings.*.Local.json

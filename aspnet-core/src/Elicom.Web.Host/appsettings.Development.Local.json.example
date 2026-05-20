@@ -1,0 +1,6 @@
+{
+  "ConnectionStrings": {
+    "Default": "Server=(localdb)\\mssqllocaldb;Database=NoshcomDb_Local;Trusted_Connection=True;TrustServerCertificate=True;Connect Timeout=15;",
+    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=NoshcomDb_Local;Trusted_Connection=True;TrustServerCertificate=True;Connect Timeout=15;"
+  }
+}

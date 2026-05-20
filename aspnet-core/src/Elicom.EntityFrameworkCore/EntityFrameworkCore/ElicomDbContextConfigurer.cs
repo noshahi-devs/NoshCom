@@ -9,20 +9,19 @@ public static class ElicomDbContextConfigurer
 {
     public static void Configure(DbContextOptionsBuilder<ElicomDbContext> builder, string connectionString)
     {
-        builder.UseSqlServer(connectionString, options => 
+        builder.UseSqlServer(connectionString, options =>
         {
-            options.CommandTimeout(180);
+            options.CommandTimeout(30);
         })
         .ConfigureWarnings(w => w.Ignore(SqlServerEventId.SavepointsDisabledBecauseOfMARS));
     }
 
     public static void Configure(DbContextOptionsBuilder<ElicomDbContext> builder, DbConnection connection)
     {
-        builder.UseSqlServer(connection, options => 
+        builder.UseSqlServer(connection, options =>
         {
-            options.CommandTimeout(180);
+            options.CommandTimeout(30);
         })
         .ConfigureWarnings(w => w.Ignore(SqlServerEventId.SavepointsDisabledBecauseOfMARS));
     }
 }
-

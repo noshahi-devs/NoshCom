@@ -65,7 +65,12 @@
                 <div class="card-bg-icon"><i class="fa-solid fa-chart-line"></i></div>
                 <div class="card-content">
                     <span class="kpi-label">Aggregated Marketplace Revenue</span>
-                    <h2 class="kpi-value">$1,284,520.00</h2>
+                    <h2 class="kpi-value">
+                        <span *ngIf="heroRevenueLoading" class="kpi-value-loader" aria-label="Loading revenue">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </span>
+                        <span *ngIf="!heroRevenueLoading">{{ heroRevenue }}</span>
+                    </h2>
                     <div class="kpi-trend positive">
                         <i class="fa-solid fa-arrow-trend-up"></i>
                         <span>+18.4% performance gain this month</span>
@@ -93,7 +98,12 @@
                         </div>
                     </div>
                     <div class="mini-body">
-                        <h4 class="mini-value">{{ stat.value }}</h4>
+                        <h4 class="mini-value">
+                            <span *ngIf="statsLoading" class="kpi-value-loader" [attr.aria-label]="'Loading ' + stat.label">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </span>
+                            <span *ngIf="!statsLoading">{{ stat.value }}</span>
+                        </h4>
                         <span class="mini-label">{{ stat.label }}</span>
                     </div>
                 </div>

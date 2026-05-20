@@ -158,6 +158,27 @@
     }
 }
 
+.kpi-value-loader {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    color: #F2BB13;
+
+    i {
+        font-size: 1.4rem;
+    }
+}
+
+.kpi-card.mini .kpi-value-loader {
+    color: #94a3b8;
+
+    i {
+        font-size: 1.1rem;
+    }
+}
+
 .secondary-kpis {
     display: grid;
     grid-template-columns: 1fr 1fr;
