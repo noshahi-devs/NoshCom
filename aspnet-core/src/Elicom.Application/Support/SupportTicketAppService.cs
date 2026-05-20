@@ -1,6 +1,7 @@
 using Abp.Application.Services.Dto;
 using Abp.Authorization;
 using Abp.Domain.Repositories;
+using Abp.Domain.Uow;
 using Abp.Runtime.Session;
 using Abp.UI;
 using Elicom.Authorization;
@@ -85,30 +86,36 @@ namespace Elicom.Support
             );
         }
 
-        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin)]
+        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin, PermissionNames.Pages_PrimeShip_Admin)]
         public async Task<PagedResultDto<SupportTicketDto>> GetAllTickets(PagedAndSortedResultRequestDto input)
         {
-            var query = _supportTicketRepository.GetAll().Include(t => t.User);
+            using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MustHaveTenant, AbpDataFilters.MayHaveTenant))
+            {
+                var query = _supportTicketRepository.GetAll().Include(t => t.User);
 
-            var totalCount = await query.CountAsync();
-            var items = await query
-                .OrderByDescending(t => t.CreationTime)
-                .Skip(input.SkipCount)
-                .Take(input.MaxResultCount)
-                .ToListAsync();
+                var totalCount = await query.CountAsync();
+                var items = await query
+                    .OrderByDescending(t => t.CreationTime)
+                    .Skip(input.SkipCount)
+                    .Take(input.MaxResultCount)
+                    .ToListAsync();
 
-            return new PagedResultDto<SupportTicketDto>(
-                totalCount,
-                ObjectMapper.Map<List<SupportTicketDto>>(items)
-            );
+                return new PagedResultDto<SupportTicketDto>(
+                    totalCount,
+                    ObjectMapper.Map<List<SupportTicketDto>>(items)
+                );
+            }
         }
 
-        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin)]
+        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin, PermissionNames.Pages_PrimeShip_Admin)]
         public async Task UpdateStatus(UpdateSupportTicketStatusInput input)
         {
-            var ticket = await _supportTicketRepository.GetAsync(input.Id);
-            ticket.Status = input.Status;
-            ticket.AdminRemarks = input.AdminRemarks;
+            using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MustHaveTenant, AbpDataFilters.MayHaveTenant))
+            {
+                var ticket = await _supportTicketRepository.GetAsync(input.Id);
+                ticket.Status = input.Status;
+                ticket.AdminRemarks = input.AdminRemarks;
+            }
         }
     }
 }

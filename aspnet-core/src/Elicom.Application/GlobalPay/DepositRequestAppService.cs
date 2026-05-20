@@ -85,7 +85,7 @@ namespace Elicom.GlobalPay
             );
         }
 
-        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin)]
+        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin, PermissionNames.Pages_PrimeShip_Admin)]
         public async Task<PagedResultDto<DepositRequestDto>> GetAllRequests(PagedAndSortedResultRequestDto input)
         {
             // Disable multi-tenancy filter so admin sees ALL records from ALL tenants
@@ -136,7 +136,7 @@ namespace Elicom.GlobalPay
             }
         }
 
-        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin)]
+        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin, PermissionNames.Pages_PrimeShip_Admin)]
         public async Task<string> GetProofImage(Guid id)
         {
             using (CurrentUnitOfWork.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant))
@@ -150,7 +150,7 @@ namespace Elicom.GlobalPay
             }
         }
 
-        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin)]
+        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin, PermissionNames.Pages_PrimeShip_Admin)]
         public async Task Approve(ApproveDepositRequestInput input)
         {
             // Disable filters for admin to process any request
@@ -167,18 +167,32 @@ namespace Elicom.GlobalPay
                 request.Status = "Approved";
                 request.AdminRemarks = input.AdminRemarks;
 
-                // ACTUAL DEPOSIT INTO WALLET (Existing GlobalPay logic)
-                // WalletManager now handles syncing with Active Virtual Card automatically
-                await _walletManager.DepositAsync(
-                    request.UserId,
-                    request.Amount,
-                    request.Id.ToString(),
-                    $"Manual Deposit Approved - Reference: {request.Id}"
-                );
+                // Resolve user's EasyFinora (Tenant 3) account by email for unified wallet deposit
+                var requestingUser = await UserManager.FindByIdAsync(request.UserId.ToString());
+                long targetUserId = request.UserId;
+                if (requestingUser != null)
+                {
+                    var easyFinoraUser = await UserManager.Users.FirstOrDefaultAsync(u => u.TenantId == 3 && u.EmailAddress == requestingUser.EmailAddress);
+                    if (easyFinoraUser != null)
+                    {
+                        targetUserId = easyFinoraUser.Id;
+                    }
+                }
+
+                // Execute the deposit under Tenant 3 unit of work context so it saves in the Tenant 3 database table!
+                using (CurrentUnitOfWork.SetTenantId(3))
+                {
+                    await _walletManager.DepositAsync(
+                        targetUserId,
+                        request.Amount,
+                        request.Id.ToString(),
+                        $"Manual Deposit Approved - Reference: {request.Id}"
+                    );
+                }
             }
         }
 
-        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin)]
+        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin, PermissionNames.Pages_PrimeShip_Admin)]
         public async Task Reject(ApproveDepositRequestInput input)
         {
             using (CurrentUnitOfWork.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant))

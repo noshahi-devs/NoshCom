@@ -7,7 +7,7 @@ import { environment } from '../../../environments/environment';
     providedIn: 'root'
 })
 export class WithdrawService {
-    private apiUrl = `${environment.apiUrl}/api/services/app/Withdraw`;
+    private apiUrl = `${environment.apiUrl}/services/app/Withdraw`;
 
     constructor(private http: HttpClient) { }
 
@@ -15,7 +15,6 @@ export class WithdrawService {
         const token = sessionStorage.getItem('authToken') || localStorage.getItem('authToken');
         return new HttpHeaders({
             'Content-Type': 'application/json',
-            'Abp-TenantId': '3',
             'Authorization': `Bearer ${token}`
         });
     }
