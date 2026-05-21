@@ -54,15 +54,6 @@ namespace Elicom.Wallets
             }
         }
 
-        private async Task<long> GetEasyFinoraUserIdAsync(User user)
-        {
-            using (UnitOfWorkManager.Current.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant, Abp.Domain.Uow.AbpDataFilters.MustHaveTenant))
-            {
-                var easyFinoraUser = await UserManager.Users.FirstOrDefaultAsync(u => u.TenantId == 3 && u.EmailAddress == user.EmailAddress);
-                return easyFinoraUser != null ? easyFinoraUser.Id : user.Id;
-            }
-        }
-
         [Abp.Domain.Uow.UnitOfWork(System.Transactions.TransactionScopeOption.Suppress)]
         public async Task<WalletDto> GetMyWallet()
         {
@@ -81,7 +72,7 @@ namespace Elicom.Wallets
                 await CurrentUnitOfWork.SaveChangesAsync();
             }
 
-            var targetUserId = await GetEasyFinoraUserIdAsync(user);
+            var targetUserId = await ResolveGlobalMartUnifiedUserIdAsync(user);
 
             // Failsafe 2: Sync generated Wallet ID to EasyFinora (Tenant 3) user if needed
             using (UnitOfWorkManager.Current.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant, Abp.Domain.Uow.AbpDataFilters.MustHaveTenant))
@@ -113,7 +104,7 @@ namespace Elicom.Wallets
         public async Task Deposit(DepositInput input)
         {
             var user = await GetCurrentUserAsync();
-            var targetUserId = await GetEasyFinoraUserIdAsync(user);
+            var targetUserId = await ResolveGlobalMartUnifiedUserIdAsync(user);
             
             await _walletManager.DepositAsync(
                 targetUserId, 
@@ -126,7 +117,7 @@ namespace Elicom.Wallets
         public async Task Transfer(TransferInput input)
         {
             var sender = await GetCurrentUserAsync();
-            var targetSenderId = await GetEasyFinoraUserIdAsync(sender);
+            var targetSenderId = await ResolveGlobalMartUnifiedUserIdAsync(sender);
 
             User receiver = null;
 
@@ -210,7 +201,7 @@ namespace Elicom.Wallets
         public async Task<ListResultDto<WalletTransactionDto>> GetTransactions()
         {
             var user = await GetCurrentUserAsync();
-            var targetUserId = await GetEasyFinoraUserIdAsync(user);
+            var targetUserId = await ResolveGlobalMartUnifiedUserIdAsync(user);
             
             var wallet = await _walletRepository.FirstOrDefaultAsync(w => w.UserId == targetUserId);
             if (wallet == null) return new ListResultDto<WalletTransactionDto>();

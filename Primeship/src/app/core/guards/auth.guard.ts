@@ -24,7 +24,8 @@ export class AuthGuard implements CanActivate {
 
     // Role-based authorization
     if (url.startsWith('/admin')) {
-      if (this.authService.isAdmin()) {
+      const email = (this.authService.getUserEmail() || localStorage.getItem('userEmail') || '').trim();
+      if (this.authService.isAdmin() || this.authService.isAdminEmail(email)) {
         return true;
       }
       // If not admin, try to redirect to seller dashboard if they are a seller

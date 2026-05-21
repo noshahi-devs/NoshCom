@@ -5,8 +5,18 @@ import { Router } from '@angular/router';
 import { ToastService } from '../../../core/services/toast.service';
 import { WithdrawService } from '../../../core/services/withdraw.service';
 import { WalletService } from '../../../core/services/wallet.service';
-import { TransactionService } from '../../../core/services/transaction.service';
 import { DatePipe } from '@angular/common';
+
+interface WithdrawHistoryRow {
+    id: string;
+    referenceId?: string;
+    type: string;
+    amount: number;
+    status: string;
+    date: string;
+    transactionNumber: string;
+    method?: string;
+}
 
 @Component({
     selector: 'app-seller-withdraw',
@@ -18,10 +28,8 @@ export class SellerWithdrawComponent implements OnInit {
 
     showWithdrawForm = false;
     
-    // Transaction History properties
-    filterType = 'all'; // Default to all
-    allTransactions: any[] = [];
-    totalCount = 0;
+    filterType = 'all';
+    allWithdrawRows: WithdrawHistoryRow[] = [];
     currentPage = 1;
     maxResultCount = 10;
     private readonly minTransactionIdLength = 8;
@@ -51,7 +59,6 @@ export class SellerWithdrawComponent implements OnInit {
         private toastService: ToastService,
         private withdrawService: WithdrawService,
         private walletService: WalletService,
-        private transactionService: TransactionService,
         private router: Router,
         private cdr: ChangeDetectorRef
     ) { }
@@ -59,7 +66,7 @@ export class SellerWithdrawComponent implements OnInit {
     ngOnInit() {
         this.loadWalletBalance();
         this.fetchExchangeRates();
-        this.loadTransactions();
+        this.loadWithdrawHistory();
     }
 
 
@@ -125,15 +132,16 @@ export class SellerWithdrawComponent implements OnInit {
         this.cdr.detectChanges();
 
         const paymentDetails = this.withdrawMethod === 'bank'
-            ? `Bank: ${this.bankDetails.bankName}, Title: ${this.bankDetails.accountTitle}, Acc: ${this.bankDetails.accountNumber}, IBAN: ${this.bankDetails.iban}`
-            : `CryptoId: ${this.cryptoDetails.cryptoId}, CryptoTitle: ${this.cryptoDetails.cryptoTitle}`;
+            ? (this.bankDetails.accountNumber || '').trim()
+            : (this.cryptoDetails.cryptoId || '').trim();
 
         const input = {
+            cardId: 0,
             amount: this.amount,
             method: this.withdrawMethod === 'bank' ? 'Bank Transfer' : 'Crypto',
             paymentDetails: paymentDetails,
             localAmount: this.calculateLocalAmount(),
-            localCurrency: 'PKR' // Defaulting to PKR for user's request context
+            localCurrency: 'PKR'
         };
 
         console.log('Withdraw: Submit Payload:', input);
@@ -143,11 +151,17 @@ export class SellerWithdrawComponent implements OnInit {
                 console.log('Withdraw: Submit Response:', res);
                 this.toastService.showSuccess(`Your withdrawal request for $${input.amount} has been submitted successfully.`);
                 this.resetForm();
-                this.router.navigate(['/seller/wallet']);
+                this.showWithdrawForm = false;
+                this.currentPage = 1;
+                this.loadWithdrawHistory();
+                this.loadWalletBalance();
             },
             error: (err) => {
                 console.error('Withdraw: Submit Error:', err);
-                this.toastService.showError(err.error?.error?.message || 'Failed to submit withdrawal request');
+                const msg = err.error?.error?.message
+                    || err.error?.message
+                    || (err.status === 404 ? 'Withdrawal service unavailable. Restart the backend and try again.' : 'Failed to submit withdrawal request');
+                this.toastService.showError(msg);
                 this.isLoading = false;
                 this.cdr.detectChanges();
             }
@@ -179,61 +193,78 @@ export class SellerWithdrawComponent implements OnInit {
         };
         this.isLoading = false;
     }
-    // Transaction History methods
-    loadTransactions() {
+    toggleWithdrawView() {
+        this.showWithdrawForm = !this.showWithdrawForm;
+        if (!this.showWithdrawForm) {
+            this.currentPage = 1;
+            this.loadWithdrawHistory();
+            this.loadWalletBalance();
+        }
+    }
+
+    loadWithdrawHistory() {
         this.isLoading = true;
         this.cdr.detectChanges();
 
-        const skipCount = (this.currentPage - 1) * this.maxResultCount;
-
-        this.transactionService.getHistory(skipCount, this.maxResultCount).subscribe({
+        this.withdrawService.getMyWithdrawRequests(0, 500).subscribe({
             next: (res: any) => {
-                this.totalCount = res?.result?.totalCount ?? 0;
                 const rawItems = res?.result?.items ?? [];
-                const processedItems: any[] = [];
-                const seenPairs = new Set<string>();
-
-                rawItems.forEach((t: any) => {
-                    const type = this.normalizeType(t);
-                    const amountValue = t.movementType === 'Debit' ? -t.amount : t.amount;
-                    const date = t.creationTime;
-                    const desc = t.description;
-                    const dedupeKey = `${Math.abs(amountValue)}_${desc}_${date}`;
-
-                    if (type === 'Payout' || type === 'Deposit') {
-                        if (seenPairs.has(dedupeKey)) return;
-                        seenPairs.add(dedupeKey);
-                    }
-
-                    processedItems.push({
-                        id: t.id,
-                        referenceId: t.referenceId,
-                        type: type,
-                        amount: amountValue,
-                        status: t.status || 'Approved',
-                        date: date,
-                        description: desc,
-                        cardId: t.cardId,
-                        category: t.category
-                    });
-                });
-
-                this.allTransactions = processedItems;
+                this.allWithdrawRows = rawItems.map((w: any) => this.mapWithdrawRow(w));
                 this.isLoading = false;
                 this.cdr.detectChanges();
             },
             error: (err: any) => {
-                console.error('Transactions: List Error:', err);
+                console.error('Withdraw history load error:', err);
+                this.allWithdrawRows = [];
                 this.isLoading = false;
                 this.cdr.detectChanges();
             }
         });
     }
 
+    private mapWithdrawRow(w: any): WithdrawHistoryRow {
+        const method = (w.method || 'Bank').toString();
+        const status = (w.status || 'Pending').toString();
+        const paymentDetails = (w.paymentDetails || '').toString().trim();
+
+        return {
+            id: w.id?.toString() ?? '',
+            referenceId: w.id?.toString(),
+            type: 'Withdrawal',
+            amount: -Math.abs(Number(w.amount) || 0),
+            status,
+            date: w.creationTime,
+            transactionNumber: this.extractTransactionNumber(paymentDetails, method),
+            method
+        };
+    }
+
+    private extractTransactionNumber(paymentDetails: string, method: string): string {
+        const raw = (paymentDetails || '').trim();
+        if (!raw) return '—';
+
+        const cryptoIdMatch = raw.match(/CryptoId:\s*([^,]+)/i);
+        if (cryptoIdMatch?.[1]) return cryptoIdMatch[1].trim();
+
+        const accMatch = raw.match(/Acc:\s*([^,]+)/i);
+        if (accMatch?.[1]) return accMatch[1].trim();
+
+        const ibanMatch = raw.match(/IBAN:\s*([^,]+)/i);
+        if (ibanMatch?.[1] && method.toLowerCase().includes('bank')) {
+            return ibanMatch[1].trim();
+        }
+
+        if (!raw.includes(':') && !raw.includes(',')) {
+            return raw;
+        }
+
+        return raw.split(',')[0].trim() || '—';
+    }
+
     changePage(page: number) {
         if (page >= 1 && page <= this.totalPages) {
             this.currentPage = page;
-            this.loadTransactions();
+            this.cdr.detectChanges();
         }
     }
 
@@ -265,9 +296,18 @@ export class SellerWithdrawComponent implements OnInit {
         return Math.min(this.currentPage * this.maxResultCount, this.totalCount);
     }
 
-    get filteredTransactions() {
-        if (this.filterType === 'all') return this.allTransactions;
-        return this.allTransactions.filter(t => this.matchesFilter(t, this.filterType));
+    get totalCount(): number {
+        return this.filteredWithdrawals.length;
+    }
+
+    get filteredWithdrawals(): WithdrawHistoryRow[] {
+        if (this.filterType === 'all') return this.allWithdrawRows;
+        return this.allWithdrawRows.filter(t => this.matchesFilter(t, this.filterType));
+    }
+
+    get paginatedWithdrawals(): WithdrawHistoryRow[] {
+        const start = (this.currentPage - 1) * this.maxResultCount;
+        return this.filteredWithdrawals.slice(start, start + this.maxResultCount);
     }
 
     get skeletonRows(): number[] {
@@ -276,6 +316,8 @@ export class SellerWithdrawComponent implements OnInit {
 
     setFilter(type: string) {
         this.filterType = type;
+        this.currentPage = 1;
+        this.cdr.detectChanges();
     }
 
     private matchesFilter(transaction: any, filter: string): boolean {
@@ -300,19 +342,19 @@ export class SellerWithdrawComponent implements OnInit {
         return displayId;
     }
 
-    getDisplayTransactionId(transaction: any): string {
-        const referenceId = this.normalizeTransactionIdValue(transaction?.referenceId);
+    getDisplayTransactionId(row: WithdrawHistoryRow): string {
+        const referenceId = this.normalizeTransactionIdValue(row?.referenceId);
         if (referenceId) return this.formatTransactionId(referenceId);
-        const transactionId = this.normalizeTransactionIdValue(transaction?.id);
+        const transactionId = this.normalizeTransactionIdValue(row?.id);
         if (!transactionId) return '';
         return this.formatTransactionId(transactionId);
     }
 
-    getTransactionIdTooltip(transaction: any): string {
-        const referenceId = this.normalizeTransactionIdValue(transaction?.referenceId);
-        const transactionId = this.normalizeTransactionIdValue(transaction?.id);
+    getTransactionIdTooltip(row: WithdrawHistoryRow): string {
+        const referenceId = this.normalizeTransactionIdValue(row?.referenceId);
+        const transactionId = this.normalizeTransactionIdValue(row?.id);
         if (referenceId && transactionId && referenceId !== transactionId) {
-            return `Reference: ${referenceId}\nInternal: ${transactionId}`;
+            return `Request: ${transactionId}`;
         }
         return referenceId || transactionId || '';
     }
@@ -334,19 +376,4 @@ export class SellerWithdrawComponent implements OnInit {
         return hash || 1;
     }
 
-    private normalizeType(transaction: any): string {
-        const category = (transaction?.category || '').toString().trim().toLowerCase();
-        const description = (transaction?.description || '').toString().toLowerCase();
-        const movementType = (transaction?.movementType || '').toString().toLowerCase();
-
-        if (category.includes('deposit')) return 'Deposit';
-        if (category.includes('withdraw')) return 'Withdrawal';
-        if (category.includes('transfer')) return 'Transfer';
-        if (category.includes('payout')) return 'Payout';
-        if (movementType.includes('transfer')) return 'Transfer';
-        if (movementType === 'debit' && description.includes('withdraw')) return 'Withdrawal';
-        if (movementType === 'credit' && description.includes('deposit')) return 'Deposit';
-        if (!category) return 'Unknown';
-        return category.charAt(0).toUpperCase() + category.slice(1);
-    }
 }

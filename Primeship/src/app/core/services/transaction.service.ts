@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AuthService } from './auth.service';
 
 @Injectable({
     providedIn: 'root'
@@ -9,30 +10,21 @@ import { environment } from '../../../environments/environment';
 export class TransactionService {
     private apiUrl = `${environment.apiUrl}/services/app/Transaction`;
 
-    constructor(private http: HttpClient) { }
-
-    private getHeaders() {
-        const token = sessionStorage.getItem('authToken') || localStorage.getItem('authToken');
-        return new HttpHeaders({
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        });
-    }
+    constructor(
+        private http: HttpClient,
+        private authService: AuthService
+    ) { }
 
     getHistory(skipCount: number = 0, maxResultCount: number = 10): Observable<any> {
-        console.log('TransactionService.getHistory called');
-
         return this.http.get(`${this.apiUrl}/GetHistory`, {
-            headers: this.getHeaders(),
+            headers: this.authService.getAuthHeaders(),
             params: { skipCount, maxResultCount }
-        }).pipe(
-            tap(response => console.log('TransactionService.getHistory response is:', response))
-        );
+        });
     }
 
     getAllTransactions(skipCount: number = 0, maxResultCount: number = 50): Observable<any> {
         return this.http.get(`${this.apiUrl}/GetAll`, {
-            headers: this.getHeaders(),
+            headers: this.authService.getAuthHeaders(),
             params: { skipCount, maxResultCount }
         });
     }

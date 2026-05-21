@@ -33,17 +33,22 @@ namespace Elicom.Transactions
 
         public async Task<PagedResultDto<TransactionDto>> GetHistory(PagedAndSortedResultRequestDto input)
         {
-            var userId = AbpSession.GetUserId();
-            var wallet = await _walletRepository.FirstOrDefaultAsync(w => w.UserId == userId);
+            var user = await GetCurrentUserAsync();
+            var targetUserId = await ResolveGlobalMartUnifiedUserIdAsync(user);
+            var linkedUserIds = await GetGlobalMartLinkedUserIdsAsync(user);
+
+            var wallet = await _walletRepository.FirstOrDefaultAsync(w => w.UserId == targetUserId);
 
             // Fetch Wallet Transactions
-            var walletQuery = _walletTransactionRepository.GetAll().Where(t => t.WalletId == (wallet != null ? wallet.Id : Guid.Empty));
+            var walletQuery = wallet == null
+                ? _walletTransactionRepository.GetAll().Where(_ => false)
+                : _walletTransactionRepository.GetAll().Where(t => t.WalletId == wallet.Id);
             var walletItems = await walletQuery.ToListAsync();
             var walletDtos = walletItems.Select(t => MapToDto(t)).ToList();
 
             // Fetch Card Transactions
             var cardQuery = _appTransactionRepository.GetAll()
-                .Where(t => t.UserId == userId && t.Status == "Approved");
+                .Where(t => linkedUserIds.Contains(t.UserId) && t.Status == "Approved");
             var cardItems = await cardQuery.ToListAsync();
             var cardDtos = cardItems.Select(t => MapToDto(t)).ToList();
 

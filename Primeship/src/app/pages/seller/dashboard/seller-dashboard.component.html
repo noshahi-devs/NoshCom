@@ -10,10 +10,10 @@
         </div>
         <div class="metric-card peach">
             <div class="metric-info">
-                <span class="label">Stock Count</span>
-                <h2 class="value">{{ statsCards[0].value }}</h2>
+                <span class="label">Pending / Processing</span>
+                <h2 class="value">{{ pendingProcessingCount }}</h2>
             </div>
-            <i class="fas fa-boxes card-icon icon-3d"></i>
+            <i class="fas fa-hourglass-half card-icon icon-3d"></i>
         </div>
         <div class="metric-card cream">
             <div class="metric-info">
@@ -24,10 +24,10 @@
         </div>
         <div class="metric-card navy">
             <div class="metric-info">
-                <span class="label">Awaiting Delivery</span>
-                <h2 class="value">{{ pendingDeliveriesCount }}</h2>
+                <span class="label">Delivered Orders</span>
+                <h2 class="value">{{ deliveredOrdersCount }}</h2>
             </div>
-            <i class="fas fa-truck card-icon icon-3d"></i>
+            <i class="fas fa-circle-check card-icon icon-3d"></i>
         </div>
     </section>
 

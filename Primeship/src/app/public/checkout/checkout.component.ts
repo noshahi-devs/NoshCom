@@ -205,11 +205,11 @@ export class CheckoutComponent implements OnInit {
     return digits.length >= 4 ? digits.slice(-4) : '';
   }
 
-  private isGlobal Mart UKSelected(): boolean {
+  private isGlobalMartUkSelected(): boolean {
     return this.checkoutForm.get('paymentMethod')?.value === 'easy_finora';
   }
 
-  private showGlobal Mart UKOnlyPopup(): void {
+  private showGlobalMartUkOnlyPopup(): void {
     void Swal.fire({
       icon: 'info',
       title: 'In Progress',
@@ -444,8 +444,8 @@ export class CheckoutComponent implements OnInit {
       return;
     }
     if (this.checkoutForm.valid && this.isAddressSubmitted && this.selectedShippingMethod) {
-      if (!this.isGlobal Mart UKSelected()) {
-        this.showGlobal Mart UKOnlyPopup();
+      if (!this.isGlobalMartUkSelected()) {
+        this.showGlobalMartUkOnlyPopup();
         return;
       }
       this.isPaymentSubmitted = true;
@@ -472,8 +472,8 @@ export class CheckoutComponent implements OnInit {
       this.router.navigate(['/cart']);
       return;
     }
-    if (!this.isGlobal Mart UKSelected()) {
-      this.showGlobal Mart UKOnlyPopup();
+    if (!this.isGlobalMartUkSelected()) {
+      this.showGlobalMartUkOnlyPopup();
       this.goBackToPayment();
       return;
     }

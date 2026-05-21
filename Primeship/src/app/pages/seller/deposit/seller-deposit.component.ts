@@ -5,8 +5,19 @@ import { Router } from '@angular/router';
 import { ToastService } from '../../../core/services/toast.service';
 import { DepositService } from '../../../core/services/deposit.service';
 import { WalletService } from '../../../core/services/wallet.service';
-import { TransactionService } from '../../../core/services/transaction.service';
 import { DatePipe } from '@angular/common';
+
+interface DepositHistoryRow {
+    id: string;
+    referenceId?: string;
+    type: string;
+    amount: number;
+    status: string;
+    date: string;
+    description: string;
+    method?: string;
+    country?: string;
+}
 
 interface BankAccount {
     id: number;
@@ -37,10 +48,9 @@ export class SellerDepositComponent implements OnInit {
 
     showDepositForm = false;
     
-    // Transaction History properties
-    filterType = 'all'; // Default to all
-    allTransactions: any[] = [];
-    totalCount = 0;
+    // Deposit history
+    filterType = 'all';
+    allDepositRows: DepositHistoryRow[] = [];
     currentPage = 1;
     maxResultCount = 10;
     private readonly minTransactionIdLength = 8;
@@ -74,7 +84,6 @@ export class SellerDepositComponent implements OnInit {
         private toastService: ToastService,
         private depositService: DepositService,
         private walletService: WalletService,
-        private transactionService: TransactionService,
         private router: Router,
         private cdr: ChangeDetectorRef
     ) { }
@@ -82,7 +91,7 @@ export class SellerDepositComponent implements OnInit {
     ngOnInit() {
         this.loadWalletBalance();
         this.fetchExchangeRates();
-        this.loadTransactions();
+        this.loadDepositHistory();
     }
 
     fetchExchangeRates() {
@@ -738,61 +747,61 @@ export class SellerDepositComponent implements OnInit {
             });
         });
     }
-    // Transaction History methods
-    loadTransactions() {
+    toggleDepositView() {
+        this.showDepositForm = !this.showDepositForm;
+        if (!this.showDepositForm) {
+            this.currentPage = 1;
+            this.loadDepositHistory();
+            this.loadWalletBalance();
+        }
+    }
+
+    loadDepositHistory() {
         this.isLoading = true;
         this.cdr.detectChanges();
 
-        const skipCount = (this.currentPage - 1) * this.maxResultCount;
-
-        this.transactionService.getHistory(skipCount, this.maxResultCount).subscribe({
+        this.depositService.getMyDepositRequests(0, 500).subscribe({
             next: (res: any) => {
-                this.totalCount = res?.result?.totalCount ?? 0;
                 const rawItems = res?.result?.items ?? [];
-                const processedItems: any[] = [];
-                const seenPairs = new Set<string>();
-
-                rawItems.forEach((t: any) => {
-                    const type = this.normalizeType(t);
-                    const amountValue = t.movementType === 'Debit' ? -t.amount : t.amount;
-                    const date = t.creationTime;
-                    const desc = t.description;
-                    const dedupeKey = `${Math.abs(amountValue)}_${desc}_${date}`;
-
-                    if (type === 'Payout' || type === 'Deposit') {
-                        if (seenPairs.has(dedupeKey)) return;
-                        seenPairs.add(dedupeKey);
-                    }
-
-                    processedItems.push({
-                        id: t.id,
-                        referenceId: t.referenceId,
-                        type: type,
-                        amount: amountValue,
-                        status: t.status || 'Approved',
-                        date: date,
-                        description: desc,
-                        cardId: t.cardId,
-                        category: t.category
-                    });
-                });
-
-                this.allTransactions = processedItems;
+                this.allDepositRows = rawItems.map((d: any) => this.mapDepositRow(d));
                 this.isLoading = false;
                 this.cdr.detectChanges();
             },
             error: (err: any) => {
-                console.error('Transactions: List Error:', err);
+                console.error('Deposit history load error:', err);
+                this.allDepositRows = [];
                 this.isLoading = false;
                 this.cdr.detectChanges();
             }
         });
     }
 
+    private mapDepositRow(d: any): DepositHistoryRow {
+        const method = (d.method || 'P2P').toString();
+        const country = (d.country || '').toString();
+        const referenceId = (d.referenceId || '').toString().trim();
+        const status = (d.status || 'Pending').toString();
+        const parts = [method];
+        if (country) parts.push(country);
+        if (referenceId) parts.push(`Ref: ${referenceId}`);
+
+        return {
+            id: d.id?.toString() ?? '',
+            referenceId: referenceId || undefined,
+            type: 'Deposit',
+            amount: Math.abs(Number(d.amount) || 0),
+            status,
+            date: d.creationTime,
+            description: parts.join(' · '),
+            method,
+            country
+        };
+    }
+
     changePage(page: number) {
         if (page >= 1 && page <= this.totalPages) {
             this.currentPage = page;
-            this.loadTransactions();
+            this.cdr.detectChanges();
         }
     }
 
@@ -824,9 +833,18 @@ export class SellerDepositComponent implements OnInit {
         return Math.min(this.currentPage * this.maxResultCount, this.totalCount);
     }
 
-    get filteredTransactions() {
-        if (this.filterType === 'all') return this.allTransactions;
-        return this.allTransactions.filter(t => this.matchesFilter(t, this.filterType));
+    get totalCount(): number {
+        return this.filteredDeposits.length;
+    }
+
+    get filteredDeposits(): DepositHistoryRow[] {
+        if (this.filterType === 'all') return this.allDepositRows;
+        return this.allDepositRows.filter(t => this.matchesFilter(t, this.filterType));
+    }
+
+    get paginatedDeposits(): DepositHistoryRow[] {
+        const start = (this.currentPage - 1) * this.maxResultCount;
+        return this.filteredDeposits.slice(start, start + this.maxResultCount);
     }
 
     get skeletonRows(): number[] {
@@ -835,6 +853,8 @@ export class SellerDepositComponent implements OnInit {
 
     setFilter(type: string) {
         this.filterType = type;
+        this.currentPage = 1;
+        this.cdr.detectChanges();
     }
 
     private matchesFilter(transaction: any, filter: string): boolean {
@@ -859,19 +879,19 @@ export class SellerDepositComponent implements OnInit {
         return displayId;
     }
 
-    getDisplayTransactionId(transaction: any): string {
-        const referenceId = this.normalizeTransactionIdValue(transaction?.referenceId);
+    getDisplayTransactionId(row: DepositHistoryRow): string {
+        const referenceId = this.normalizeTransactionIdValue(row?.referenceId);
         if (referenceId) return this.formatTransactionId(referenceId);
-        const transactionId = this.normalizeTransactionIdValue(transaction?.id);
+        const transactionId = this.normalizeTransactionIdValue(row?.id);
         if (!transactionId) return '';
         return this.formatTransactionId(transactionId);
     }
 
-    getTransactionIdTooltip(transaction: any): string {
-        const referenceId = this.normalizeTransactionIdValue(transaction?.referenceId);
-        const transactionId = this.normalizeTransactionIdValue(transaction?.id);
+    getTransactionIdTooltip(row: DepositHistoryRow): string {
+        const referenceId = this.normalizeTransactionIdValue(row?.referenceId);
+        const transactionId = this.normalizeTransactionIdValue(row?.id);
         if (referenceId && transactionId && referenceId !== transactionId) {
-            return `Reference: ${referenceId}\nInternal: ${transactionId}`;
+            return `Reference: ${referenceId}\nRequest: ${transactionId}`;
         }
         return referenceId || transactionId || '';
     }
@@ -893,19 +913,4 @@ export class SellerDepositComponent implements OnInit {
         return hash || 1;
     }
 
-    private normalizeType(transaction: any): string {
-        const category = (transaction?.category || '').toString().trim().toLowerCase();
-        const description = (transaction?.description || '').toString().toLowerCase();
-        const movementType = (transaction?.movementType || '').toString().toLowerCase();
-
-        if (category.includes('deposit')) return 'Deposit';
-        if (category.includes('withdraw')) return 'Withdrawal';
-        if (category.includes('transfer')) return 'Transfer';
-        if (category.includes('payout')) return 'Payout';
-        if (movementType.includes('transfer')) return 'Transfer';
-        if (movementType === 'debit' && description.includes('withdraw')) return 'Withdrawal';
-        if (movementType === 'credit' && description.includes('deposit')) return 'Deposit';
-        if (!category) return 'Unknown';
-        return category.charAt(0).toUpperCase() + category.slice(1);
-    }
 }

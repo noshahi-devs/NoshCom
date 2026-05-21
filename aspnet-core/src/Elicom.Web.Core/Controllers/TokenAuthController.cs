@@ -256,6 +256,139 @@ namespace Elicom.Controllers
             }
         }
 
+        private static bool IsGlobalMartUkTenancy(string tenancyName)
+        {
+            if (string.IsNullOrWhiteSpace(tenancyName))
+            {
+                return false;
+            }
+
+            var normalized = tenancyName.Trim().ToLowerInvariant();
+            return normalized == "primeship"
+                   || normalized == "easyfinora"
+                   || normalized == "globalpay";
+        }
+
+        private static IEnumerable<string> GetGlobalMartSiblingTenancies(string tenancyName)
+        {
+            var normalized = tenancyName.Trim().ToLowerInvariant();
+            if (normalized == "primeship")
+            {
+                return new[] { "easyfinora", "globalpay" };
+            }
+
+            return new[] { "primeship" };
+        }
+
+        private async Task<AbpLoginResult<Tenant, User>> TryGlobalMartSiblingLoginAsync(
+            string usernameOrEmailAddress,
+            string password,
+            string currentTenancyName,
+            AbpLoginResult<Tenant, User> currentResult)
+        {
+            var adminPreferred = await TryGlobalMartAdminPreferredLoginAsync(usernameOrEmailAddress, password);
+            if (adminPreferred != null && adminPreferred.Result == AbpLoginResultType.Success)
+            {
+                return adminPreferred;
+            }
+
+            foreach (var siblingTenancy in GetGlobalMartSiblingTenancies(currentTenancyName))
+            {
+                var siblingResult = await _logInManager.LoginAsync(usernameOrEmailAddress, password, siblingTenancy);
+                if (siblingResult.Result == AbpLoginResultType.Success)
+                {
+                    Logger.Info($"[Login] Global Mart sibling login succeeded on '{siblingTenancy}' for '{usernameOrEmailAddress}'.");
+                    return siblingResult;
+                }
+
+                string prefix;
+                if (siblingTenancy == "globalpay" || siblingTenancy == "easyfinora")
+                {
+                    prefix = "GP_";
+                }
+                else if (siblingTenancy == "primeship")
+                {
+                    prefix = "PS_";
+                }
+                else
+                {
+                    prefix = string.Empty;
+                }
+
+                if (!string.IsNullOrEmpty(prefix) && !usernameOrEmailAddress.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    var prefixedSiblingResult = await _logInManager.LoginAsync(prefix + usernameOrEmailAddress, password, siblingTenancy);
+                    if (prefixedSiblingResult.Result == AbpLoginResultType.Success)
+                    {
+                        Logger.Info($"[Login] Global Mart prefixed sibling login succeeded on '{siblingTenancy}' for '{usernameOrEmailAddress}'.");
+                        return prefixedSiblingResult;
+                    }
+
+                    if (prefixedSiblingResult.Result != AbpLoginResultType.InvalidUserNameOrEmailAddress)
+                    {
+                        return prefixedSiblingResult;
+                    }
+                }
+
+                if (siblingResult.Result != AbpLoginResultType.InvalidUserNameOrEmailAddress)
+                {
+                    return siblingResult;
+                }
+            }
+
+            return currentResult;
+        }
+
+        private async Task<AbpLoginResult<Tenant, User>> TryGlobalMartAdminPreferredLoginAsync(
+            string usernameOrEmailAddress,
+            string password)
+        {
+            var normalized = (usernameOrEmailAddress ?? string.Empty).Trim().ToLowerInvariant();
+            if (string.IsNullOrWhiteSpace(normalized) ||
+                (!IsAdminIdentifier(normalized) && !normalized.Contains("@")))
+            {
+                return null;
+            }
+
+            using (UnitOfWorkManager.Current.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant, Abp.Domain.Uow.AbpDataFilters.MustHaveTenant))
+            {
+                var candidates = await _userManager.Users
+                    .IgnoreQueryFilters()
+                    .Where(u =>
+                        (u.TenantId == 2 || u.TenantId == 3) &&
+                        (u.EmailAddress.ToLower() == normalized ||
+                         u.UserName.ToLower() == normalized ||
+                         u.UserName.ToLower() == "ps_" + normalized ||
+                         u.UserName.ToLower() == "gp_" + normalized))
+                    .ToListAsync();
+
+                foreach (var user in candidates.OrderByDescending(u => u.TenantId == 2))
+                {
+                    var roles = await _userManager.GetRolesAsync(user);
+                    if (!roles.Any(IsAdminRoleName))
+                    {
+                        continue;
+                    }
+
+                    var tenant = user.TenantId.HasValue ? _tenantCache.GetOrNull(user.TenantId.Value) : null;
+                    var tenancyName = tenant?.TenancyName;
+                    if (string.IsNullOrWhiteSpace(tenancyName))
+                    {
+                        continue;
+                    }
+
+                    var loginResult = await _logInManager.LoginAsync(user.UserName, password, tenancyName);
+                    if (loginResult.Result == AbpLoginResultType.Success)
+                    {
+                        Logger.Info($"[Login] Global Mart admin-preferred login on tenant {user.TenantId} for {normalized}.");
+                        return loginResult;
+                    }
+                }
+            }
+
+            return null;
+        }
+
         private string GetTenancyNameOrNull()
         {
             int? tenantId = AbpSession.TenantId;
@@ -308,6 +441,18 @@ namespace Elicom.Controllers
                         loginResult = prefixedLoginResult;
                     }
                 }
+            }
+
+            // Global Mart UK: allow login on sibling tenant (PrimeShip <-> EasyFinora).
+            if (loginResult.Result == AbpLoginResultType.InvalidUserNameOrEmailAddress &&
+                hasTenantContext &&
+                IsGlobalMartUkTenancy(tenancyName))
+            {
+                loginResult = await TryGlobalMartSiblingLoginAsync(
+                    usernameOrEmailAddress,
+                    password,
+                    tenancyName,
+                    loginResult);
             }
 
             // Cross-tenant fallback is allowed only when no explicit tenant context is supplied.
@@ -416,8 +561,21 @@ namespace Elicom.Controllers
 
             // Explicit fail-safe: Add roles if missing from identity
             var roles = (await _userManager.GetRolesAsync(user)).ToList();
+            var adminAllowed = IsAdminEmailAllowed(user) ||
+                               IsAdminIdentifier(user?.EmailAddress) ||
+                               IsAdminIdentifier(user?.UserName);
+
+            if (adminAllowed && !roles.Any(IsAdminRoleName))
+            {
+                var adminRoleName = Authorization.Roles.StaticRoleNames.Tenants.Admin;
+                if (!await _userManager.IsInRoleAsync(user, adminRoleName))
+                {
+                    await _userManager.AddToRoleAsync(user, adminRoleName);
+                }
+                roles.Add(adminRoleName);
+            }
+
             var hasAdminRole = roles.Any(IsAdminRoleName) || claims.Any(IsAdminRoleClaim);
-            var adminAllowed = IsAdminEmailAllowed(user);
             if (hasAdminRole && !adminAllowed)
             {
                 claims.RemoveAll(IsAdminRoleClaim);
@@ -554,6 +712,9 @@ namespace Elicom.Controllers
                    normalized == "secureadmin@wc.com" ||
                    normalized == "secureadmin@ps.com" ||
                    normalized == "secureadmin@ef.com" ||
+                   normalized == "admin@primeshipuk.com" ||
+                   normalized == "ps_admin@primeshipuk.com" ||
+                   normalized == "gp_admin@primeshipuk.com" ||
                    normalized == "ss_secureadmin@wc.com" ||
                    normalized == "ps_secureadmin@ps.com" ||
                    normalized == "gp_secureadmin@ef.com";

@@ -143,8 +143,8 @@ namespace Elicom.Tests.Transactions
                 ExpiryDate = card.ExpiryDate,
                 Amount = 300,
                 ReferenceId = referenceId,
-                SourcePlatform = "WorldCart",
-                Description = "WorldCart product purchase via Easy Finora Card"
+                SourcePlatform = "Smart Shop UK",
+                Description = "Smart Shop UK product purchase via Global Mart UK"
             });
 
             var history = await _transactionAppService.GetHistory(new Abp.Application.Services.Dto.PagedAndSortedResultRequestDto

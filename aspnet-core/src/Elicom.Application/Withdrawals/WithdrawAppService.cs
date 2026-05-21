@@ -45,12 +45,13 @@ namespace Elicom.Withdrawals
 
         public async Task<WithdrawalEligibilityDto> GetWithdrawalEligibility()
         {
-            var userId = AbpSession.GetUserId();
+            var user = await GetCurrentUserAsync();
+            var linkedUserIds = await GetGlobalMartLinkedUserIdsAsync(user);
             var result = new WithdrawalEligibilityDto { IsEligible = true };
 
             // 1. Get first successful order (Verified at Hub)
             var firstOrder = await _supplierOrderRepository.GetAll()
-                .Where(o => o.SupplierId == userId && o.Status == "Verified")
+                .Where(o => linkedUserIds.Contains(o.SupplierId) && o.Status == "Verified")
                 .OrderBy(o => o.CreationTime)
                 .FirstOrDefaultAsync();
 
@@ -63,7 +64,7 @@ namespace Elicom.Withdrawals
 
             // 2. Get withdrawal count and last withdrawal date
             var withdrawals = await _withdrawRepository.GetAll()
-                .Where(w => w.UserId == userId && w.Status == "Approved")
+                .Where(w => linkedUserIds.Contains(w.UserId) && w.Status == "Approved")
                 .OrderByDescending(w => w.CreationTime)
                 .ToListAsync();
 
@@ -106,46 +107,61 @@ namespace Elicom.Withdrawals
 
         public async Task<WithdrawRequestDto> SubmitWithdrawRequest(CreateWithdrawRequestInput input)
         {
-            var userId = AbpSession.GetUserId();
-
-            // 1. Verify card destination belongs to the current user and check wallet balance
-            var card = await _cardRepository.GetAsync(input.CardId);
-            if (card.UserId != userId)
+            if (input.Amount <= 0)
             {
-                throw new UserFriendlyException("Selected card must belong to you.");
+                throw new UserFriendlyException("Amount must be greater than zero.");
             }
 
-            var walletBalance = await _walletManager.GetBalanceAsync(userId);
+            var user = await GetCurrentUserAsync();
+            var walletUserId = await ResolveGlobalMartUnifiedUserIdAsync(user);
+            var linkedUserIds = await GetGlobalMartLinkedUserIdsAsync(user);
+
+            var walletBalance = await _walletManager.GetBalanceAsync(walletUserId);
             if (walletBalance < input.Amount)
             {
                 throw new UserFriendlyException($"Insufficient wallet balance. Available: ${walletBalance:F2}, Requested: ${input.Amount:F2}");
             }
 
-            // 2. Create withdrawal request
+            VirtualCard card = null;
+            if (input.CardId > 0)
+            {
+                card = await _cardRepository.GetAsync(input.CardId);
+                if (!linkedUserIds.Contains(card.UserId))
+                {
+                    throw new UserFriendlyException("Selected card must belong to you.");
+                }
+            }
+
             var serviceFee = Math.Round(input.Amount * 0.03m, 2);
             var netAmount = input.Amount - serviceFee;
+            var paymentDetails = (input.PaymentDetails ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(paymentDetails))
+            {
+                paymentDetails = card != null
+                    ? $"Card ending {card.CardNumber.Substring(Math.Max(0, card.CardNumber.Length - 4))}"
+                    : "Wallet payout details pending";
+            }
 
             var request = new WithdrawRequest
             {
                 TenantId = AbpSession.GetTenantId(),
-                UserId = userId,
-                CardId = input.CardId,
+                UserId = walletUserId,
+                CardId = input.CardId > 0 ? input.CardId : 0,
                 Amount = input.Amount,
                 ServiceFee = serviceFee,
                 NetAmount = netAmount,
                 Currency = "USD",
                 Method = input.Method ?? "Bank Transfer",
-                PaymentDetails = input.PaymentDetails ?? $"Card Ending {card.CardNumber.Substring(card.CardNumber.Length - 4)}",
+                PaymentDetails = paymentDetails,
                 LocalAmount = input.LocalAmount,
-                LocalCurrency = input.LocalCurrency,
+                LocalCurrency = string.IsNullOrWhiteSpace(input.LocalCurrency) ? "USD" : input.LocalCurrency,
                 Status = "Pending"
             };
 
             var id = await _withdrawRepository.InsertAndGetIdAsync(request);
 
-            // 3. Immediately reserve the amount from wallet and card while request is pending.
             var debited = await _walletManager.TryDebitAsync(
-                userId,
+                walletUserId,
                 input.Amount,
                 id.ToString(),
                 $"Withdrawal #{id} pending approval"
@@ -156,29 +172,34 @@ namespace Elicom.Withdrawals
                 throw new UserFriendlyException("Insufficient wallet balance for this withdrawal.");
             }
 
-            card.Balance -= input.Amount;
-            await _cardRepository.UpdateAsync(card);
+            if (card != null)
+            {
+                card.Balance -= input.Amount;
+                await _cardRepository.UpdateAsync(card);
+            }
 
             await _transactionRepository.InsertAsync(new AppTransaction
             {
                 TenantId = request.TenantId,
-                UserId = userId,
-                CardId = input.CardId,
+                UserId = walletUserId,
+                CardId = input.CardId > 0 ? input.CardId : null,
                 Amount = -input.Amount,
                 MovementType = "Debit",
                 Category = "Withdrawal",
                 ReferenceId = id.ToString(),
                 Status = "Pending",
-                Description = $"Withdrawal request of ${input.Amount} submitted and reserved from Card {input.CardId}"
+                Description = card != null
+                    ? $"Withdrawal request of ${input.Amount} submitted and reserved from Card {input.CardId}"
+                    : $"Withdrawal request of ${input.Amount} submitted from wallet"
             });
 
             await CurrentUnitOfWork.SaveChangesAsync();
-            
+
             return new WithdrawRequestDto
             {
                 Id = id,
-                UserId = userId,
-                CardId = input.CardId,
+                UserId = walletUserId,
+                CardId = request.CardId,
                 Amount = input.Amount,
                 ServiceFee = serviceFee,
                 NetAmount = netAmount,
@@ -191,8 +212,9 @@ namespace Elicom.Withdrawals
 
         public async Task<PagedResultDto<WithdrawRequestDto>> GetMyWithdrawRequests(PagedAndSortedResultRequestDto input)
         {
-            var userId = AbpSession.GetUserId();
-            var query = _withdrawRepository.GetAll().Where(r => r.UserId == userId);
+            var user = await GetCurrentUserAsync();
+            var linkedUserIds = await GetGlobalMartLinkedUserIdsAsync(user);
+            var query = _withdrawRepository.GetAll().Where(r => linkedUserIds.Contains(r.UserId));
 
             var totalCount = await query.CountAsync();
             var items = await query
@@ -223,7 +245,11 @@ namespace Elicom.Withdrawals
             );
         }
 
-        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin, PermissionNames.Pages_PrimeShip_Admin)]
+        [AbpAuthorize(
+            PermissionNames.Admin,
+            PermissionNames.Pages_GlobalPay_Admin,
+            PermissionNames.Pages_PrimeShip_Admin,
+            PermissionNames.Pages_SmartStore_Admin)]
         public async Task ApproveWithdraw(ApproveWithdrawRequestInput input)
         {
             using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MustHaveTenant, AbpDataFilters.MayHaveTenant))
@@ -257,7 +283,11 @@ namespace Elicom.Withdrawals
             }
         }
 
-        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin, PermissionNames.Pages_PrimeShip_Admin)]
+        [AbpAuthorize(
+            PermissionNames.Admin,
+            PermissionNames.Pages_GlobalPay_Admin,
+            PermissionNames.Pages_PrimeShip_Admin,
+            PermissionNames.Pages_SmartStore_Admin)]
         public async Task RejectWithdraw(ApproveWithdrawRequestInput input)
         {
             using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MustHaveTenant, AbpDataFilters.MayHaveTenant))
@@ -313,7 +343,11 @@ namespace Elicom.Withdrawals
             }
         }
 
-        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin, PermissionNames.Pages_PrimeShip_Admin)]
+        [AbpAuthorize(
+            PermissionNames.Admin,
+            PermissionNames.Pages_GlobalPay_Admin,
+            PermissionNames.Pages_PrimeShip_Admin,
+            PermissionNames.Pages_SmartStore_Admin)]
         public async Task<PagedResultDto<WithdrawRequestDto>> GetAllWithdrawRequests(PagedAndSortedResultRequestDto input)
         {
             using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MustHaveTenant, AbpDataFilters.MayHaveTenant))
@@ -351,7 +385,11 @@ namespace Elicom.Withdrawals
             }
         }
 
-        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin, PermissionNames.Pages_PrimeShip_Admin)]
+        [AbpAuthorize(
+            PermissionNames.Admin,
+            PermissionNames.Pages_GlobalPay_Admin,
+            PermissionNames.Pages_PrimeShip_Admin,
+            PermissionNames.Pages_SmartStore_Admin)]
         public async Task<string> GetPaymentProof(long id)
         {
             using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MustHaveTenant, AbpDataFilters.MayHaveTenant))

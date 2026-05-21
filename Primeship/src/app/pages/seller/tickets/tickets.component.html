@@ -81,19 +81,20 @@
             </span>
           </td>
           <td class="date-cell">{{ ticket.creationTime | date:'MMM d, yyyy HH:mm' }}</td>
-          <td>
-            <div class="reply-status">
-              <span *ngIf="ticket.adminRemarks" class="replied-status">
-                <i class="fas fa-comment-dots"></i> Replied
-              </span>
-              <span *ngIf="!ticket.adminRemarks" class="pending-status">
-                <i class="far fa-clock"></i> Pending
-              </span>
-              <div class="admin-remarks-box" *ngIf="ticket.adminRemarks">
-                <strong>Admin Response:</strong>
-                <p>{{ ticket.adminRemarks }}</p>
-              </div>
-            </div>
+          <td class="replies-cell">
+            <button
+              type="button"
+              class="reply-eye-btn"
+              *ngIf="hasAdminReply(ticket)"
+              (click)="viewAdminReply(ticket)"
+              title="View admin reply"
+              aria-label="View admin reply"
+            >
+              <i class="fas fa-eye"></i>
+            </button>
+            <span class="reply-eye-muted" *ngIf="!hasAdminReply(ticket)" title="No admin reply yet">
+              <i class="fas fa-eye-slash"></i>
+            </span>
           </td>
         </tr>
         <tr *ngIf="tickets.length === 0 && !isLoading">

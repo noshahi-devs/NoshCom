@@ -17,7 +17,8 @@ export class SellerDashboardComponent implements OnInit {
   isLoadingStats = true;
   isLoadingOrders = true;
   isLoadingCategories = true;
-  pendingDeliveriesCount = '0';
+  deliveredOrdersCount = '0';
+  pendingProcessingCount = '0';
   overviewSeries: { label: string; shortLabel: string; amount: number; orders: number }[] = [];
   topCategories: { name: string; count: number; iconClass: string; accentClass: string }[] = [];
   statsCards = [
@@ -118,14 +119,9 @@ export class SellerDashboardComponent implements OnInit {
 
   private processStats(orders: any[]): void {
     const orderCount = orders.length;
-    const pendingCount = orders.filter(o => {
-      const s = (o.status || '').toLowerCase();
-      return ['pending', 'purchased', 'processing', 'shipped', 'verified'].includes(s);
-    }).length;
-    const completedSalesCount = orders.filter(o => {
-      const s = (o.status || '').toLowerCase();
-      return ['delivered', 'settled'].includes(s);
-    }).length;
+    const pendingProcessing = orders.filter(o => this.isPendingProcessingOrder(o)).length;
+    const deliveredCount = orders.filter(o => this.isDeliveredOrder(o)).length;
+    const completedSalesCount = deliveredCount;
     const totalItems = orders.reduce((sum, order) => {
       const items = order.items || order.orderItems || [];
       return sum + items.reduce((itemSum: number, item: any) => {
@@ -137,8 +133,19 @@ export class SellerDashboardComponent implements OnInit {
     this.statsCards[0].value = totalItems.toLocaleString();
     this.statsCards[1].value = completedSalesCount.toLocaleString();
     this.statsCards[2].value = orderCount.toLocaleString();
-    this.pendingDeliveriesCount = pendingCount.toLocaleString();
+    this.deliveredOrdersCount = deliveredCount.toLocaleString();
+    this.pendingProcessingCount = pendingProcessing.toLocaleString();
     this.overviewSeries = this.buildOverviewSeries(orders);
+  }
+
+  private isPendingProcessingOrder(order: any): boolean {
+    const status = (order?.status || '').toString().trim().toLowerCase();
+    return ['pending', 'purchased', 'processing', 'verified'].includes(status);
+  }
+
+  private isDeliveredOrder(order: any): boolean {
+    const status = (order?.status || '').toString().trim().toLowerCase();
+    return ['delivered', 'settled'].includes(status);
   }
 
   private buildOverviewSeries(orders: any[]): { label: string; shortLabel: string; amount: number; orders: number }[] {

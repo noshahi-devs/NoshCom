@@ -56,7 +56,7 @@ namespace Elicom.GlobalPay
                 ProofImage = input.ProofImage,
                 Status = "Pending",
                 Method = input.Method ?? "P2P",
-                SourcePlatform = AbpSession.TenantId == 3 ? "EasyFinora" : "GlobalPay",
+                SourcePlatform = GetSourcePlatform(AbpSession.TenantId),
                 DestinationAccount = GetDestinationAccountForCountry(input.Country),
                 ReferenceId = input.ReferenceId
             };
@@ -68,9 +68,10 @@ namespace Elicom.GlobalPay
         public async Task<PagedResultDto<DepositRequestDto>> GetMyRequests(PagedAndSortedResultRequestDto input)
         {
             var user = await GetCurrentUserAsync();
+            var linkedUserIds = await GetGlobalMartLinkedUserIdsAsync(user);
 
             var query = _depositRequestRepository.GetAll()
-                .Where(r => r.UserId == user.Id);
+                .Where(r => linkedUserIds.Contains(r.UserId));
 
             var totalCount = await query.CountAsync();
             var items = await query
@@ -85,7 +86,11 @@ namespace Elicom.GlobalPay
             );
         }
 
-        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin, PermissionNames.Pages_PrimeShip_Admin)]
+        [AbpAuthorize(
+            PermissionNames.Admin,
+            PermissionNames.Pages_GlobalPay_Admin,
+            PermissionNames.Pages_PrimeShip_Admin,
+            PermissionNames.Pages_SmartStore_Admin)]
         public async Task<PagedResultDto<DepositRequestDto>> GetAllRequests(PagedAndSortedResultRequestDto input)
         {
             // Disable multi-tenancy filter so admin sees ALL records from ALL tenants
@@ -136,7 +141,11 @@ namespace Elicom.GlobalPay
             }
         }
 
-        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin, PermissionNames.Pages_PrimeShip_Admin)]
+        [AbpAuthorize(
+            PermissionNames.Admin,
+            PermissionNames.Pages_GlobalPay_Admin,
+            PermissionNames.Pages_PrimeShip_Admin,
+            PermissionNames.Pages_SmartStore_Admin)]
         public async Task<string> GetProofImage(Guid id)
         {
             using (CurrentUnitOfWork.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant))
@@ -150,64 +159,105 @@ namespace Elicom.GlobalPay
             }
         }
 
-        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin, PermissionNames.Pages_PrimeShip_Admin)]
+        [AbpAuthorize(
+            PermissionNames.Admin,
+            PermissionNames.Pages_GlobalPay_Admin,
+            PermissionNames.Pages_PrimeShip_Admin,
+            PermissionNames.Pages_SmartStore_Admin)]
         public async Task Approve(ApproveDepositRequestInput input)
         {
-            // Disable filters for admin to process any request
+            if (input == null || input.Id == Guid.Empty)
+            {
+                throw new UserFriendlyException("Invalid deposit request id.");
+            }
+
             using (CurrentUnitOfWork.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant))
             using (CurrentUnitOfWork.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MustHaveTenant))
             {
-                var request = await _depositRequestRepository.GetAsync(input.Id);
+                var request = await _depositRequestRepository.FirstOrDefaultAsync(input.Id);
+                if (request == null)
+                {
+                    throw new UserFriendlyException("Deposit request was not found.");
+                }
 
-                if (request.Status != "Pending")
+                if (!string.Equals(request.Status, "Pending", StringComparison.OrdinalIgnoreCase))
                 {
                     throw new UserFriendlyException("Only pending requests can be approved.");
                 }
 
-                request.Status = "Approved";
-                request.AdminRemarks = input.AdminRemarks;
+                var requestingUser = await UserManager.Users
+                    .IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(u => u.Id == request.UserId);
 
-                // Resolve user's EasyFinora (Tenant 3) account by email for unified wallet deposit
-                var requestingUser = await UserManager.FindByIdAsync(request.UserId.ToString());
-                long targetUserId = request.UserId;
-                if (requestingUser != null)
+                if (requestingUser == null)
                 {
-                    var easyFinoraUser = await UserManager.Users.FirstOrDefaultAsync(u => u.TenantId == 3 && u.EmailAddress == requestingUser.EmailAddress);
-                    if (easyFinoraUser != null)
-                    {
-                        targetUserId = easyFinoraUser.Id;
-                    }
+                    throw new UserFriendlyException("Seller account for this deposit could not be found.");
                 }
 
-                // Execute the deposit under Tenant 3 unit of work context so it saves in the Tenant 3 database table!
+                var targetUserId = await ResolveGlobalMartUnifiedUserIdAsync(requestingUser);
+
+                request.Status = "Approved";
+                request.AdminRemarks = string.IsNullOrWhiteSpace(input.AdminRemarks)
+                    ? "Approved"
+                    : input.AdminRemarks.Trim();
+                await _depositRequestRepository.UpdateAsync(request);
+
                 using (CurrentUnitOfWork.SetTenantId(3))
                 {
                     await _walletManager.DepositAsync(
                         targetUserId,
                         request.Amount,
                         request.Id.ToString(),
-                        $"Manual Deposit Approved - Reference: {request.Id}"
+                        $"Manual Deposit Request"
                     );
                 }
+
+                await CurrentUnitOfWork.SaveChangesAsync();
             }
         }
 
-        [AbpAuthorize(PermissionNames.Pages_GlobalPay_Admin, PermissionNames.Pages_PrimeShip_Admin)]
+        [AbpAuthorize(
+            PermissionNames.Admin,
+            PermissionNames.Pages_GlobalPay_Admin,
+            PermissionNames.Pages_PrimeShip_Admin,
+            PermissionNames.Pages_SmartStore_Admin)]
         public async Task Reject(ApproveDepositRequestInput input)
         {
             using (CurrentUnitOfWork.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant))
             using (CurrentUnitOfWork.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MustHaveTenant))
             {
-                var request = await _depositRequestRepository.GetAsync(input.Id);
+                if (input == null || input.Id == Guid.Empty)
+                {
+                    throw new UserFriendlyException("Invalid deposit request id.");
+                }
 
-                if (request.Status != "Pending")
+                var request = await _depositRequestRepository.FirstOrDefaultAsync(input.Id);
+                if (request == null)
+                {
+                    throw new UserFriendlyException("Deposit request was not found.");
+                }
+
+                if (!string.Equals(request.Status, "Pending", StringComparison.OrdinalIgnoreCase))
                 {
                     throw new UserFriendlyException("Only pending requests can be rejected.");
                 }
 
                 request.Status = "Rejected";
                 request.AdminRemarks = input.AdminRemarks;
+                await _depositRequestRepository.UpdateAsync(request);
+                await CurrentUnitOfWork.SaveChangesAsync();
             }
+        }
+
+        private static string GetSourcePlatform(int? tenantId)
+        {
+            return tenantId switch
+            {
+                3 => "EasyFinora",
+                2 => "Global Mart UK",
+                1 => "Smart Shop UK",
+                _ => "GlobalPay"
+            };
         }
 
         private string GetDestinationAccountForCountry(string country)

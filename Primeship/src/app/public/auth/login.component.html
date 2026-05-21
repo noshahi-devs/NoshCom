@@ -4,12 +4,16 @@
   <div class="auth-form-panel">
     <div class="form-panel-inner">
       <div class="auth-form-header">
-        <div class="welcome-icon"><i class="fas fa-user-circle"></i></div>
-        <h2>Welcome Back</h2>
-        <p>Use your email to continue</p>
+        <div class="welcome-icon"><i class="fas" [ngClass]="mfaStep ? 'fa-shield-alt' : 'fa-user-circle'"></i></div>
+        <h2>{{ mfaStep ? 'Verify Your Login' : 'Welcome Back' }}</h2>
+        <p *ngIf="!mfaStep">Use your email to continue</p>
+        <p *ngIf="mfaStep" class="mfa-hint">
+          {{ mfaMessage || 'Enter the code sent to your email.' }}
+          <span *ngIf="mfaDestination"> ({{ mfaDestination }})</span>
+        </p>
       </div>
 
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <form *ngIf="!mfaStep" [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
         <div class="field-group">
           <label><i class="fas fa-envelope"></i> Email</label>
           <input type="email" class="nosh-input" formControlName="email" placeholder="name@company.com">
@@ -46,8 +50,28 @@
         </button>
       </form>
 
-      <div class="auth-divider"><span>New here?</span></div>
-      <div class="auth-form-footer">
+      <form *ngIf="mfaStep" [formGroup]="mfaForm" (ngSubmit)="onSubmit()" class="auth-form">
+        <div class="field-group">
+          <label><i class="fas fa-key"></i> Verification Code</label>
+          <input type="text" class="nosh-input mfa-code-input" formControlName="code"
+            placeholder="6-digit code" maxlength="8" autocomplete="one-time-code">
+          <div class="field-error" *ngIf="mfaForm.get('code')?.invalid && mfaForm.get('code')?.touched">
+            <i class="fas fa-exclamation-circle"></i> Enter the code from your email
+          </div>
+        </div>
+
+        <button type="submit" class="nosh-btn-primary" [disabled]="mfaForm.invalid || isLoading">
+          <span *ngIf="!isLoading">Verify &amp; Continue</span>
+          <i class="fas fa-spinner fa-spin" *ngIf="isLoading"></i>
+        </button>
+
+        <button type="button" class="btn-back-login" (click)="backToCredentials()" [disabled]="isLoading">
+          <i class="fas fa-arrow-left"></i> Back to login
+        </button>
+      </form>
+
+      <div class="auth-divider" *ngIf="!mfaStep"><span>New here?</span></div>
+      <div class="auth-form-footer" *ngIf="!mfaStep">
         <p>Don't have an account? <a routerLink="/auth/register">Create one free</a></p>
       </div>
     </div>

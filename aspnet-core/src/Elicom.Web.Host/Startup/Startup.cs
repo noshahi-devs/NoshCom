@@ -1,5 +1,4 @@
 using Abp.AspNetCore;
-using Abp.AspNetCore.Mvc.Antiforgery;
 using Abp.AspNetCore.SignalR.Hubs;
 using Abp.Castle.Logging.Log4Net;
 using Abp.Extensions;
@@ -47,10 +46,9 @@ namespace Elicom.Web.Host.Startup
         public void ConfigureServices(IServiceCollection services)
         {
             //MVC
-            services.AddControllersWithViews(options =>
-            {
-                options.Filters.Add(new AbpAutoValidateAntiforgeryTokenAttribute());
-            });
+            // JWT Bearer SPA clients (Primeship, EasyFinora) do not send CSRF cookies via the /api proxy.
+            // Antiforgery stays enabled for classic MVC; app service POSTs use [AbpAuthorize] + Bearer token.
+            services.AddControllersWithViews();
 
             IdentityRegistrar.Register(services);
             AuthConfigurer.Configure(services, _appConfiguration);

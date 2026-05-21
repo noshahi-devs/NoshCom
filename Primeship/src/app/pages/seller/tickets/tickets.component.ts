@@ -80,4 +80,41 @@ export class SellerTicketsComponent implements OnInit {
       }
     });
   }
+
+  hasAdminReply(ticket: any): boolean {
+    return !!(ticket?.adminRemarks ?? '').toString().trim();
+  }
+
+  viewAdminReply(ticket: any): void {
+    const remarks = (ticket?.adminRemarks ?? '').toString().trim();
+    if (!remarks) return;
+
+    const title = this.escapeHtml(ticket?.title || 'Support Ticket');
+    const body = this.escapeHtml(remarks).replace(/\n/g, '<br>');
+
+    void Swal.fire({
+      title: 'Admin Reply',
+      html: `
+        <p class="swal-ticket-subject">Ticket: <strong>${title}</strong></p>
+        <div class="swal-ticket-reply">${body}</div>
+      `,
+      icon: 'info',
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#10b981',
+      showCloseButton: true,
+      width: 520,
+      customClass: {
+        popup: 'swal-ticket-reply-popup',
+        confirmButton: 'swal-ticket-ok-btn'
+      }
+    });
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
 }

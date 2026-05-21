@@ -10,6 +10,7 @@ using Elicom.Authorization.Accounts.Dto;
 using Elicom.Authorization.Users;
 using Elicom.Authorization.Roles;
 using Elicom.BackgroundJobs;
+using Elicom.Common;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
@@ -81,6 +82,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
             {
                 user.IsActive = true;
                 await _userManager.UpdateAsync(user);
+                await SyncGlobalMartSiblingAccountsAsync(user);
 
                 // Get ClientRootAddress from platform-specific settings
                 string clientRootAddressSetting = "App.SmartStore.ClientRootAddress";
@@ -109,7 +111,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                 string primaryColor = "#000000";
                 string icon = "&#x2705;";
 
-                if (platform.Contains("Prime Ship") || platform.Contains("Global Mart")) { primaryColor = "#0DB17C"; icon = "&#x1F6A2;"; }
+                if (platform.Contains("Prime Ship") || platform.Contains("Global Mart")) { primaryColor = "#5ABA81"; icon = "&#x1F6A2;"; }
                 else if (platform.Contains("Easy Finora")) { primaryColor = "#28a745"; icon = "&#x1F4B0;"; }
                 else if (platform.Contains("Smart Shop UK") || platform.Contains("World Cart")) { primaryColor = "#F2BB13"; icon = "&#x2705;"; }
 
@@ -214,7 +216,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
             string brandColor = "#007bff";
 
             if (tenantId == 1) { platformName = "World Cart"; brandColor = "#000000"; }
-            else if (tenantId == 2) { platformName = "Global Mart UK"; brandColor = "#0DB17C"; }
+            else if (tenantId == 2) { platformName = "Global Mart UK"; brandColor = "#5ABA81"; }
             else if (tenantId == 3) { platformName = "Easy Finora"; brandColor = "#1de016"; }
             else if (tenantId == 4) { platformName = "Easy Finora"; brandColor = "#28a745"; }
 
@@ -293,7 +295,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
 
         if (platformName.Contains("Prime Ship") || platformName.Contains("Global Mart"))
         {
-            // GLOBAL MART UK - Compact Professional Theme (Orange to match website)
+            // GLOBAL MART UK - Compact Professional Theme (#5ABA81 brand green)
             emailBody = $@"
 <!DOCTYPE html>
 <html>
@@ -301,17 +303,17 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
 </head>
-<body style='margin:0; padding:0; background-color:#fff5f0; font-family: ""Segoe UI"", Tahoma, Geneva, Verdana, sans-serif;'>
+<body style='margin:0; padding:0; background-color:#eef8f3; font-family: ""Segoe UI"", Tahoma, Geneva, Verdana, sans-serif;'>
 
-    <table width='100%' cellpadding='0' cellspacing='0' style='background-color:#fff5f0; padding:30px 20px;'>
+    <table width='100%' cellpadding='0' cellspacing='0' style='background-color:#eef8f3; padding:30px 20px;'>
         <tr>
             <td align='center'>
 
-                <table width='600' cellpadding='0' cellspacing='0' style='background:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 4px 20px rgba(248,86,6,0.15);'>
+                <table width='600' cellpadding='0' cellspacing='0' style='background:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 4px 20px rgba(90,186,129,0.18);'>
                     
-                    <!-- Compact Header with Orange Theme -->
+                    <!-- Compact Header -->
                     <tr>
-                        <td style='background: linear-gradient(135deg, #F85606 0%, #FF2E00 100%); padding:25px 30px; text-align:center;'>
+                        <td style='background: linear-gradient(135deg, #5ABA81 0%, #3D9468 100%); padding:25px 30px; text-align:center;'>
                             <div style='display:inline-block; background:rgba(255,255,255,0.15); width:60px; height:60px; border-radius:50%; line-height:60px; margin-bottom:10px; border:2px solid rgba(255,255,255,0.3);'>
                                 <span style='font-size:30px;'>&#x1F6A2;</span>
                             </div>
@@ -326,7 +328,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                     <tr>
                         <td style='padding:30px 35px; color:#2c3e50; font-size:15px; line-height:1.6;'>
 
-                            <h2 style='margin:0 0 15px; font-weight:600; color:#F85606; font-size:20px;'>Verify Your Account</h2>
+                            <h2 style='margin:0 0 15px; font-weight:600; color:#5ABA81; font-size:20px;'>Verify Your Account</h2>
 
                             <p style='margin:0 0 12px;'>Dear <strong>{(string.IsNullOrEmpty(user.Name) ? user.UserName : user.Name)}</strong>,</p>
 
@@ -339,7 +341,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                                 <tr>
                                     <td align='center'>
                                         <a href='{verificationLink}' 
-                                           style='background: linear-gradient(135deg, #F85606 0%, #FF2E00 100%);
+                                           style='background: linear-gradient(135deg, #5ABA81 0%, #3D9468 100%);
                                                   color:#ffffff; 
                                                   padding:14px 40px; 
                                                   text-decoration:none; 
@@ -347,7 +349,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                                                   font-weight:700; 
                                                   font-size:15px;
                                                   display:inline-block;
-                                                  box-shadow: 0 4px 12px rgba(248,86,6,0.3);
+                                                  box-shadow: 0 4px 12px rgba(90,186,129,0.35);
                                                   text-transform:uppercase;
                                                   letter-spacing:0.5px;'>
                                             Verify Email
@@ -356,21 +358,21 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                                 </tr>
                             </table>
 
-                            <p style='font-size:12px; color:#7f8c8d; background:#fff9e6; padding:12px; border-radius:5px; margin:0 0 18px; border-left:3px solid #ffc107;'>
+                            <p style='font-size:12px; color:#7f8c8d; background:#f0faf5; padding:12px; border-radius:5px; margin:0 0 18px; border-left:3px solid #5ABA81;'>
                                 This link expires in 24 hours. Didn't sign up? Ignore this email.
                             </p>
 
                             <p style='margin:0; font-size:14px; color:#2c3e50;'>
                                 Kind Regards,<br/>
-                                <strong style='color:#F85606;'>Global Mart UK Team</strong>
+                                <strong style='color:#5ABA81;'>Global Mart UK Team</strong>
                             </p>
 
                         </td>
                     </tr>
 
-                    <!-- Compact Footer with Orange Theme -->
+                    <!-- Compact Footer -->
                     <tr>
-                        <td style='background:#F85606; padding:18px 30px; text-align:center;'>
+                        <td style='background:#5ABA81; padding:18px 30px; text-align:center;'>
                             <p style='margin:0; font-size:12px; color:rgba(255,255,255,0.95);'>
                                 London, UK | support@globalmart.uk.com
                             </p>
@@ -602,8 +604,13 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
             emailSubject = $"Verify Your {platformName} Account";
         }
 
-        if (platformName.Contains("Prime Ship", StringComparison.OrdinalIgnoreCase))
+        if (platformName.Contains("Prime Ship", StringComparison.OrdinalIgnoreCase) ||
+            platformName.Contains("Primeship", StringComparison.OrdinalIgnoreCase) ||
+            platformName.Contains("Global Mart", StringComparison.OrdinalIgnoreCase))
         {
+            var primeShipFromName = platformName.Contains("Global Mart", StringComparison.OrdinalIgnoreCase)
+                ? "Global Mart UK"
+                : "Prime Ship UK";
             try
             {
                 await SendEmailWithCustomSmtp(
@@ -611,7 +618,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                     0,
                     null,
                     null,
-                    "Prime Ship UK",
+                    primeShipFromName,
                     null,
                     user.EmailAddress,
                     emailSubject,
@@ -620,23 +627,8 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
             }
             catch (Exception ex)
             {
-                Logger.Warn($"[Register] PrimeShip SMTP failed. Falling back to default sender. {ex.Message}");
-                try
-                {
-                    var mail = new System.Net.Mail.MailMessage
-                    {
-                        Subject = emailSubject,
-                        Body = emailBody,
-                        IsBodyHtml = true
-                    };
-                    mail.To.Add(user.EmailAddress);
-                    await _emailSender.SendAsync(mail);
-                }
-                catch (Exception fallbackEx)
-                {
-                    Logger.Error($"[Register] PrimeShip fallback email failed for {user.EmailAddress}: {fallbackEx.Message}", fallbackEx);
-                    throw;
-                }
+                Logger.Warn($"[Register] PrimeShip SMTP failed. Retrying with explicit Global Mart UK sender. {ex.Message}");
+                await SendGlobalMartRegistrationEmailAsync(user.EmailAddress, emailSubject, emailBody);
             }
         }
         else if (platformName.Contains("Easy Finora", StringComparison.OrdinalIgnoreCase))
@@ -751,8 +743,9 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
 
     private string BuildWelcomeAfterVerificationEmailBody(User user, string platformName, bool isSeller)
     {
-        var brandColor = platformName.Contains("Prime Ship", StringComparison.OrdinalIgnoreCase)
-            ? "#f85606"
+        var brandColor = platformName.Contains("Prime Ship", StringComparison.OrdinalIgnoreCase) ||
+                         platformName.Contains("Global Mart", StringComparison.OrdinalIgnoreCase)
+            ? "#5ABA81"
             : platformName.Contains("Easy Finora", StringComparison.OrdinalIgnoreCase)
                 ? "#28a745"
                 : "#F2BB13";
@@ -870,13 +863,13 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
     [HttpPost]
     public async Task RegisterPrimeShipSeller(RegisterPrimeShipInput input)
     {
-        await RegisterPlatformUser(input.EmailAddress, 2, StaticRoleNames.Tenants.Supplier, "Seller", "Global Mart UK", "PS", "#0DB17C", input.Password, input.Country, input.PhoneNumber, input.FullName);
+        await RegisterPlatformUser(input.EmailAddress, 2, StaticRoleNames.Tenants.Supplier, "Seller", "Global Mart UK", "PS", "#5ABA81", input.Password, input.Country, input.PhoneNumber, input.FullName);
     }
 
     [HttpPost]
     public async Task RegisterPrimeShipCustomer(RegisterPrimeShipInput input)
     {
-        await RegisterPlatformUser(input.EmailAddress, 2, StaticRoleNames.Tenants.Reseller, "Customer", "Global Mart UK", "PS", "#0DB17C", input.Password, input.Country, input.PhoneNumber, input.FullName);
+        await RegisterPlatformUser(input.EmailAddress, 2, StaticRoleNames.Tenants.Reseller, "Customer", "Global Mart UK", "PS", "#5ABA81", input.Password, input.Country, input.PhoneNumber, input.FullName);
     }
 
     [HttpPost]
@@ -974,7 +967,8 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
 
                 Logger.Info($"[Register] User not found. Calling UserRegistrationManager.RegisterAsync...");
                 var isPrimeShipSignup = platformName.Contains("Prime Ship", StringComparison.OrdinalIgnoreCase) ||
-                                        platformName.Contains("Primeship", StringComparison.OrdinalIgnoreCase);
+                                        platformName.Contains("Primeship", StringComparison.OrdinalIgnoreCase) ||
+                                        platformName.Contains("Global Mart", StringComparison.OrdinalIgnoreCase);
 
                 // Create new user (RegisterAsync also handles Wallet creation and sets IsActive=true)
                 var user = await _userRegistrationManager.RegisterAsync(
@@ -1020,7 +1014,8 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                         platformPermissions.Add(PermissionNames.Pages_StoreProducts_Edit);
                         platformPermissions.Add(PermissionNames.Pages_StoreProducts_Delete);
                     }
-                    else if (platformName.Contains("Prime Ship") || platformName.Contains("Primeship"))
+                    else if (platformName.Contains("Prime Ship") || platformName.Contains("Primeship") ||
+                             platformName.Contains("Global Mart"))
                     {
                         platformPermissions.Add(PermissionNames.Pages_PrimeShip);
                         platformPermissions.Add(PermissionNames.Pages_Stores);
@@ -1071,6 +1066,17 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                     Logger.Info($"[Register] Role assigned successfully.");
                 }
 
+                if (tenantId == 2)
+                {
+                    await EnsureGlobalMartEasyFinoraMirrorAsync(
+                        normalizedEmail,
+                        password,
+                        name,
+                        surname,
+                        phoneNumber,
+                        country);
+                }
+
                 // 5. Verification Email
                 try
                 {
@@ -1096,6 +1102,123 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
         {
             Logger.Error($"[Register] CRITICAL REGISTRATION ERROR for {email}: {ex.Message}", ex);
             throw new UserFriendlyException($"Registration failed for '{email}'. Please contact support with this error: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// PrimeShip (tenant 2) signup also provisions EasyFinora (tenant 3) for unified wallet/deposit APIs.
+    /// </summary>
+    private async Task EnsureGlobalMartEasyFinoraMirrorAsync(
+        string normalizedEmail,
+        string password,
+        string name,
+        string surname,
+        string phoneNumber,
+        string country)
+    {
+        const int easyFinoraTenantId = 3;
+        const string prefix = "GP_";
+        const string roleName = StaticRoleNames.Tenants.Reseller;
+
+        try
+        {
+            using (CurrentUnitOfWork.SetTenantId(easyFinoraTenantId))
+            {
+                var existing = await _userManager.Users
+                    .IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(u =>
+                        u.TenantId == easyFinoraTenantId &&
+                        u.EmailAddress != null &&
+                        u.EmailAddress.ToLower() == normalizedEmail);
+
+                if (existing != null)
+                {
+                    Logger.Info($"[Register] EasyFinora mirror already exists for {normalizedEmail}.");
+                    return;
+                }
+
+                var mirrorUserName = $"{prefix}{normalizedEmail}";
+                var mirror = await _userRegistrationManager.RegisterAsync(
+                    name,
+                    surname,
+                    normalizedEmail,
+                    mirrorUserName,
+                    password,
+                    false,
+                    phoneNumber,
+                    country);
+
+                var role = await _roleManager.FindByNameAsync(roleName);
+                if (role == null)
+                {
+                    role = new Roles.Role(easyFinoraTenantId, roleName, roleName) { IsStatic = true };
+                    await _roleManager.CreateAsync(role);
+                    await CurrentUnitOfWork.SaveChangesAsync();
+                }
+
+                var granted = await _roleManager.GetGrantedPermissionsAsync(role);
+                var toGrant = new[]
+                    {
+                        PermissionNames.Pages_GlobalPay,
+                        PermissionNames.Pages_PrimeShip
+                    }
+                    .Where(p => !granted.Any(g => g.Name == p))
+                    .Select(p => _permissionManager.GetPermission(p))
+                    .ToList();
+
+                if (toGrant.Any())
+                {
+                    await _roleManager.SetGrantedPermissionsAsync(role, granted.Concat(toGrant));
+                    await CurrentUnitOfWork.SaveChangesAsync();
+                }
+
+                if (!await _userManager.IsInRoleAsync(mirror, roleName))
+                {
+                    await _userManager.AddToRoleAsync(mirror, roleName);
+                    await CurrentUnitOfWork.SaveChangesAsync();
+                }
+
+                Logger.Info($"[Register] EasyFinora mirror created for {normalizedEmail} (UserId={mirror.Id}).");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Warn($"[Register] Could not create EasyFinora mirror for {normalizedEmail}: {ex.Message}");
+        }
+    }
+
+    private async Task SyncGlobalMartSiblingAccountsAsync(User verifiedUser)
+    {
+        if (verifiedUser?.EmailAddress == null || !IsGlobalMartUkTenant(verifiedUser.TenantId))
+        {
+            return;
+        }
+
+        var normalizedEmail = verifiedUser.EmailAddress.Trim().ToLowerInvariant();
+        int? siblingTenantId = verifiedUser.TenantId == 2 ? 3 : verifiedUser.TenantId == 3 ? 2 : null;
+        if (!siblingTenantId.HasValue)
+        {
+            return;
+        }
+
+        using (UnitOfWorkManager.Current.DisableFilter(Abp.Domain.Uow.AbpDataFilters.MayHaveTenant, Abp.Domain.Uow.AbpDataFilters.MustHaveTenant))
+        {
+            var sibling = await _userManager.Users
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(u =>
+                    u.TenantId == siblingTenantId &&
+                    u.EmailAddress != null &&
+                    u.EmailAddress.ToLower() == normalizedEmail);
+
+            if (sibling == null)
+            {
+                return;
+            }
+
+            sibling.IsEmailConfirmed = true;
+            sibling.IsActive = true;
+            await _userManager.UpdateAsync(sibling);
+            Logger.Info($"[VerifyEmail] Synced sibling tenant {siblingTenantId} account for {normalizedEmail}.");
         }
     }
 
@@ -1266,12 +1389,23 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
         };
         var enableSsl = !string.Equals(enableSslRaw, "false", StringComparison.OrdinalIgnoreCase);
 
-        Logger.Info($"[SMTP] Sending email to {to} via {resolvedHost}:{port} (TLS={enableSsl}) using {credentialsSource} credentials as {senderEmail}.");
+        var configuredDisplayName = _configuration[$"{sectionPrefix}:FromDisplayName"];
+        var senderDisplayName = FirstNonEmpty(fromName, configuredDisplayName);
+        if (string.IsNullOrWhiteSpace(senderDisplayName))
+        {
+            senderDisplayName = sectionPrefix.Contains("PrimeShip", StringComparison.OrdinalIgnoreCase)
+                ? "Global Mart UK"
+                : sectionPrefix.Contains("EasyFinora", StringComparison.OrdinalIgnoreCase)
+                    ? "Easy Finora"
+                    : EmailBrandingHelper.SmartShopPlatformName;
+        }
+
+        Logger.Info($"[SMTP] Sending email to {to} via {resolvedHost}:{port} (TLS={enableSsl}) using {credentialsSource} credentials as {senderDisplayName} <{senderEmail}>.");
 
         try
         {
             var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(fromName ?? "Smart Shop UK", senderEmail));
+            message.From.Add(new MailboxAddress(senderDisplayName, senderEmail));
             message.To.Add(MailboxAddress.Parse(to));
             message.Subject = subject;
             message.Body = new TextPart("html") { Text = body };
@@ -1359,12 +1493,62 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
         }
 
         if (platformName.Contains("Prime Ship", StringComparison.OrdinalIgnoreCase) ||
-            platformName.Contains("Primeship", StringComparison.OrdinalIgnoreCase))
+            platformName.Contains("Primeship", StringComparison.OrdinalIgnoreCase) ||
+            platformName.Contains("Global Mart", StringComparison.OrdinalIgnoreCase))
         {
             return "EmailSettings:PrimeShip";
         }
 
         return "EmailSettings:WorldCart";
+    }
+
+    private async Task SendGlobalMartRegistrationEmailAsync(string to, string subject, string body)
+    {
+        var host = _configuration["EmailSettings:PrimeShip:SmtpHost"];
+        var portText = _configuration["EmailSettings:PrimeShip:Port"];
+        var user = _configuration["EmailSettings:PrimeShip:Username"];
+        var pass = _configuration["EmailSettings:PrimeShip:Password"];
+        var fromEmail = _configuration["EmailSettings:PrimeShip:FromAddress"];
+        var port = int.TryParse(portText, out var parsedPort) && parsedPort > 0 ? parsedPort : 587;
+
+        try
+        {
+            await SendEmailWithCustomSmtp(
+                host,
+                port,
+                user,
+                pass,
+                "Global Mart UK",
+                fromEmail,
+                to,
+                subject,
+                body);
+            return;
+        }
+        catch (Exception explicitEx)
+        {
+            Logger.Warn($"[Register] Explicit Global Mart UK SMTP failed: {explicitEx.Message}");
+        }
+
+        try
+        {
+            var mail = new System.Net.Mail.MailMessage
+            {
+                Subject = subject,
+                Body = body,
+                IsBodyHtml = true,
+                From = new System.Net.Mail.MailAddress(
+                    fromEmail ?? "support@globalmart.uk.com",
+                    "Global Mart UK")
+            };
+            mail.To.Add(to);
+            await _emailSender.SendAsync(mail);
+        }
+        catch (Exception fallbackEx)
+        {
+            Logger.Error($"[Register] Global Mart UK fallback email failed for {to}: {fallbackEx.Message}", fallbackEx);
+            throw;
+        }
     }
 
     private static string FirstNonEmpty(params string[] values)

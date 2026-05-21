@@ -14,9 +14,10 @@ namespace Elicom.Common
         {
             var platform = (sourcePlatform ?? string.Empty).Trim();
 
-            if (platform.Contains("Prime", StringComparison.OrdinalIgnoreCase))
+            if (platform.Contains("Global Mart", StringComparison.OrdinalIgnoreCase) ||
+                platform.Contains("Prime", StringComparison.OrdinalIgnoreCase))
             {
-                return ("Prime Ship UK", "#f85606", "support@primeshipuk.com", "PRIME SHIP UK", "Prime Ship UK");
+                return ("Global Mart UK", "#5ABA81", "support@globalmart.uk.com", "GLOBAL MART UK", "Global Mart UK");
             }
 
             if (platform.Contains("Finora", StringComparison.OrdinalIgnoreCase) ||

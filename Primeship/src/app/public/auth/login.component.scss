@@ -36,6 +36,40 @@ $bg-input: #F1F5F9;
   background: #fff;
 }
 
+.mfa-hint {
+  color: $text-muted;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.mfa-code-input {
+  letter-spacing: 0.2em;
+  text-align: center;
+  font-weight: 600;
+}
+
+.btn-back-login {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  color: $text-muted;
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: $brand-dark;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
 .form-panel-inner {
   width: 100%;
   max-width: 380px;

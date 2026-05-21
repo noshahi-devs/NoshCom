@@ -19,11 +19,11 @@
                 </div>
             </div>
             <div class="header-actions">
-                <button class="btn-3d btn-primary-glass" (click)="showWithdrawForm = !showWithdrawForm">
+                <button class="btn-3d btn-primary-glass" (click)="toggleWithdrawView()">
                     <i class="fas" [class.fa-history]="showWithdrawForm" [class.fa-plus-circle]="!showWithdrawForm"></i>
                     {{ showWithdrawForm ? 'View History' : 'Withdraw Money' }}
                 </button>
-                <button class="btn-secondary-glass" (click)="currentPage = 1; loadTransactions()">
+                <button class="btn-secondary-glass" (click)="currentPage = 1; loadWithdrawHistory(); loadWalletBalance()">
                     <i class="fas fa-sync-alt"></i>
                     Refresh View
                 </button>
@@ -38,7 +38,7 @@
             <div class="method-card" [class.active]="withdrawMethod === 'bank'" (click)="withdrawMethod = 'bank'">
                 <div class="card-glow"></div>
                 <div class="card-content">
-                    <div class="icon-container">
+                    <div class="icon-container bank">
                         <i class="fas fa-university"></i>
                     </div>
                     <h4>Bank Transfer</h4>
@@ -171,12 +171,12 @@
 
     <!-- Withdrawal History Table -->
     <div class="history-view" *ngIf="!showWithdrawForm">
-        <div class="filter-header" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+        <div class="history-toolbar">
             <div class="filter-buttons">
-                <button class="filter-btn" [class.active]="filterType === 'all'" (click)="setFilter('all')">All</button>
-                <button class="filter-btn" [class.active]="filterType === 'approved'" (click)="setFilter('approved')">Approved</button>
-                <button class="filter-btn" [class.active]="filterType === 'pending'" (click)="setFilter('pending')">Pending</button>
-                <button class="filter-btn" [class.active]="filterType === 'rejected'" (click)="setFilter('rejected')">Rejected</button>
+                <button type="button" class="filter-btn" [class.active]="filterType === 'all'" (click)="setFilter('all')">All</button>
+                <button type="button" class="filter-btn" [class.active]="filterType === 'approved'" (click)="setFilter('approved')">Approved</button>
+                <button type="button" class="filter-btn" [class.active]="filterType === 'pending'" (click)="setFilter('pending')">Pending</button>
+                <button type="button" class="filter-btn" [class.active]="filterType === 'rejected'" (click)="setFilter('rejected')">Rejected</button>
             </div>
             <div class="inline-loader" *ngIf="isLoading">
                 <span class="dot"></span>
@@ -184,67 +184,71 @@
             </div>
         </div>
 
-        <div class="transactions-table-3d">
-            <div class="table-header">
-                <div class="col">Transaction ID</div>
-                <div class="col">Type</div>
-                <div class="col">Description</div>
-                <div class="col">Amount</div>
-                <div class="col">Status</div>
-                <div class="col">Date</div>
+        <div class="withdraw-history-card">
+            <div class="withdraw-table-head">
+                <span>Request ID</span>
+                <span>Method</span>
+                <span>Transaction Number / ID</span>
+                <span>Amount</span>
+                <span>Status</span>
+                <span>Date</span>
             </div>
 
-            <ng-container *ngIf="isLoading && !allTransactions.length">
-                <div class="table-row ghost-row" *ngFor="let _ of skeletonRows">
-                    <div class="col"><span class="ghost-line id"></span></div>
-                    <div class="col"><span class="ghost-pill"></span></div>
-                    <div class="col"><span class="ghost-line desc"></span></div>
-                    <div class="col"><span class="ghost-line amt"></span></div>
-                    <div class="col"><span class="ghost-pill muted"></span></div>
-                    <div class="col"><span class="ghost-line date"></span></div>
+            <ng-container *ngIf="isLoading && !allWithdrawRows.length">
+                <div class="withdraw-table-row skeleton" *ngFor="let _ of skeletonRows">
+                    <span class="sk-line sk-id"></span>
+                    <span class="sk-pill"></span>
+                    <span class="sk-line sk-desc"></span>
+                    <span class="sk-pill sk-amt"></span>
+                    <span class="sk-pill sk-muted"></span>
+                    <span class="sk-line sk-date"></span>
                 </div>
             </ng-container>
 
-            <ng-container *ngIf="!isLoading || allTransactions.length">
-                <div class="table-row" *ngFor="let txn of filteredTransactions">
-                    <div class="col id-col">
+            <ng-container *ngIf="!isLoading || allWithdrawRows.length">
+                <div class="withdraw-table-row" *ngFor="let txn of paginatedWithdrawals">
+                    <div class="cell ref-cell">
                         <span class="transaction-id-chip" [attr.title]="getTransactionIdTooltip(txn)">
                             {{ getDisplayTransactionId(txn) }}
                         </span>
                     </div>
-                    <div class="col">
-                        <span class="type-badge" [ngClass]="(txn.type || 'unknown').toLowerCase()">{{ txn.type }}</span>
+                    <div class="cell">
+                        <span class="method-badge">{{ txn.method || 'Bank' }}</span>
                     </div>
-                    <div class="col">{{ txn.description }}</div>
-                    <div class="col amount-col" [class.negative]="txn.amount < 0" [class.positive]="txn.amount > 0">
-                        <span class="amount-pill">
-                            {{ txn.amount | currency: 'USD' }}
-                        </span>
+                    <div class="cell txn-cell">
+                        <span class="txn-number">{{ txn.transactionNumber }}</span>
                     </div>
-                    <div class="col">
-                        <span class="status-badge" [ngClass]="(txn.status || 'completed').toLowerCase()">{{ txn.status }}</span>
+                    <div class="cell amount-cell negative">
+                        <span class="amount-pill">{{ txn.amount | currency:'USD' }}</span>
                     </div>
-                    <div class="col">{{ txn.date | date: 'MMM d, h:mm a' }}</div>
+                    <div class="cell">
+                        <span class="status-badge" [ngClass]="(txn.status || 'pending').toLowerCase()">{{ txn.status }}</span>
+                    </div>
+                    <div class="cell date-cell">
+                        <span class="date-main">{{ txn.date | date:'MMM d, yyyy' }}</span>
+                        <span class="date-sub">{{ txn.date | date:'h:mm a' }}</span>
+                    </div>
                 </div>
 
-                <div class="empty-state" *ngIf="!filteredTransactions.length">
-                    <p>No withdrawals found.</p>
+                <div class="empty-state" *ngIf="!isLoading && !paginatedWithdrawals.length">
+                    <i class="fas fa-inbox"></i>
+                    <p>No {{ filterType === 'all' ? '' : filterType }} withdrawals found.</p>
+                    <button type="button" class="btn-3d btn-primary-glass" (click)="showWithdrawForm = true">Request Withdrawal</button>
                 </div>
             </ng-container>
 
-            <!-- Pagination -->
             <div class="pagination-container" *ngIf="totalCount > 0">
                 <div class="pagination-info">
-                    Showing {{ getStartIndex() }} - {{ getEndIndex() }} of {{ totalCount }}
+                    Showing {{ getStartIndex() }} – {{ getEndIndex() }} of {{ totalCount }}
                 </div>
                 <div class="pagination-controls">
-                    <button class="btn-pagination" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">‹</button>
+                    <button type="button" class="btn-pagination" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)" aria-label="Previous page">‹</button>
                     <div class="page-numbers">
-                        <button *ngFor="let page of getPageNumbers()" class="page-btn" [class.active]="page === currentPage" (click)="changePage(page)">
+                        <button type="button" *ngFor="let page of getPageNumbers()" class="page-btn" [class.active]="page === currentPage" (click)="changePage(page)">
                             {{ page }}
                         </button>
                     </div>
-                    <button class="btn-pagination" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">›</button>
+                    <button type="button" class="btn-pagination" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)" aria-label="Next page">›</button>
                 </div>
             </div>
         </div>

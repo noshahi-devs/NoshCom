@@ -6,12 +6,13 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { httpLoadingInterceptor } from './core/interceptors/http-loading.interceptor';
+import { authInterceptor } from './core/interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideAnimations(),
-    provideHttpClient(withFetch(), withInterceptors([httpLoadingInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([authInterceptor, httpLoadingInterceptor])),
     provideRouter(routes),
     { provide: LOCALE_ID, useValue: 'en-US' },
     { provide: DEFAULT_CURRENCY_CODE, useValue: 'USD' }

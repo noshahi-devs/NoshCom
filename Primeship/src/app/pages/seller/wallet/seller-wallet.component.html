@@ -13,10 +13,13 @@
             </div>
             <div class="card-body">
                 <ng-container *ngIf="!isLoadingBalance">
-                    <h2>{{ walletData.balance | currency:'USD':'symbol':'1.0-0' }}</h2>
+                    <h2>{{ walletData.balance | currency:'USD':'symbol':'1.0-2' }}</h2>
                 </ng-container>
                 <span *ngIf="isLoadingBalance" class="loader-pulse"></span>
-                <span class="badge green-badge"><i class="fas fa-arrow-up"></i> 2.67%</span>
+                <span *ngIf="!isLoadingBalance && monthChangePercent !== 0" class="badge" [class.green-badge]="monthChangePercent >= 0" [class.red-badge]="monthChangePercent < 0">
+                    <i class="fas" [ngClass]="monthChangePercent >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+                    {{ monthChangePercent | number:'1.1-1' }}%
+                </span>
             </div>
             <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <span style="white-space: nowrap;">ID: <strong>{{ walletData.walletId }}</strong></span>
@@ -36,75 +39,57 @@
             </div>
             <div class="card-body">
                 <ng-container *ngIf="!isLoadingStats">
-                    <h2>{{ stats[0].value | currency:'USD':'symbol':'1.0-0' }}</h2>
+                    <h2>{{ totalDeposits | currency:'USD':'symbol':'1.0-2' }}</h2>
                 </ng-container>
                 <span *ngIf="isLoadingStats" class="loader-pulse dark"></span>
-                <span class="badge green-badge"><i class="fas fa-arrow-up"></i> 2.67%</span>
+                <span *ngIf="!isLoadingStats && pendingDepositsCount > 0" class="badge orange-badge">
+                    <i class="fas fa-clock"></i> {{ pendingDepositsCount }} pending
+                </span>
             </div>
-            <div class="card-footer">This month vs last</div>
+            <div class="card-footer">Approved deposits · {{ pendingDepositsAmount | currency:'USD':'symbol':'1.0-0' }} awaiting approval</div>
         </div>
 
-        <!-- Card 3: Revenue Bar Chart (spans 2 cols x 2 rows) -->
+        <!-- Daily activity chart -->
         <div class="dash-card chart-card revenue-chart">
             <div class="card-header flex-between">
                 <div class="chart-title">
-                    <span>Revenue</span>
-                    <span class="sub-text">This month vs last</span>
+                    <span>Daily Transactions</span>
+                    <span class="sub-text">Deposit · Withdrawal · Transfer (last 7 days)</span>
                 </div>
-                <button class="arrow-btn white-btn">
+                <button class="arrow-btn white-btn" [routerLink]="['/seller/transfer']">
                     <i class="fas fa-arrow-right" style="transform: rotate(-45deg);"></i>
                 </button>
             </div>
-            <div class="bar-chart">
+            <div class="chart-legend-row">
+                <span class="legend-chip deposit"><span class="dot"></span> Deposit</span>
+                <span class="legend-chip withdraw"><span class="dot"></span> Withdrawal</span>
+                <span class="legend-chip transfer"><span class="dot"></span> Transfer</span>
+            </div>
+            <div class="bar-chart" *ngIf="!isLoadingStats">
                 <div class="y-axis">
-                    <span>$ 25,000</span>
-                    <span>$ 20,000</span>
-                    <span>$ 15,000</span>
-                    <span>$ 10,000</span>
-                    <span>$ 5,000</span>
-                    <span>$ 1,000</span>
-                    <span>$ 0</span>
+                    <span *ngFor="let label of chartYAxisLabels">{{ label }}</span>
                 </div>
                 <div class="bars">
-                    <div class="bar-group">
-                        <div class="bar" style="height:75%"></div>
-                        <span class="x-label">1 AUG</span>
-                    </div>
-                    <div class="bar-group">
-                        <div class="bar" style="height:40%"></div>
-                        <span class="x-label">2 AUG</span>
-                    </div>
-                    <div class="bar-group">
-                        <div class="bar has-tooltip" style="height:55%">
-                            <div class="bar-tooltip">$14,867</div>
+                    <div class="bar-group" *ngFor="let day of dailyActivity">
+                        <div class="bar-stack" [class.has-tooltip]="getDayTotal(day) > 0">
+                            <div class="bar-segment deposit" *ngIf="day.deposit > 0" [style.height.%]="getStackHeight(day.deposit)"></div>
+                            <div class="bar-segment withdraw" *ngIf="day.withdraw > 0" [style.height.%]="getStackHeight(day.withdraw)"></div>
+                            <div class="bar-segment transfer" *ngIf="day.transfer > 0" [style.height.%]="getStackHeight(day.transfer)"></div>
+                            <div class="bar-segment empty" *ngIf="getDayTotal(day) === 0" style="height: 4%"></div>
+                            <div class="bar-tooltip" *ngIf="getDayTotal(day) > 0">
+                                D {{ day.deposit | currency:'USD':'symbol':'1.0-0' }} ·
+                                W {{ day.withdraw | currency:'USD':'symbol':'1.0-0' }} ·
+                                T {{ day.transfer | currency:'USD':'symbol':'1.0-0' }}
+                            </div>
                         </div>
-                        <span class="x-label">3 AUG</span>
-                    </div>
-                    <div class="bar-group">
-                        <div class="bar" style="height:50%"></div>
-                        <span class="x-label">4 AUG</span>
-                    </div>
-                    <div class="bar-group">
-                        <div class="bar" style="height:65%"></div>
-                        <span class="x-label">5 AUG</span>
-                    </div>
-                    <div class="bar-group">
-                        <div class="bar" style="height:85%"></div>
-                        <span class="x-label">6 AUG</span>
-                    </div>
-                    <div class="bar-group">
-                        <div class="bar" style="height:90%"></div>
-                        <span class="x-label">7 AUG</span>
-                    </div>
-                    <div class="bar-group">
-                        <div class="bar" style="height:90%"></div>
-                        <span class="x-label">8 AUG</span>
+                        <span class="x-label">{{ day.shortLabel }}</span>
                     </div>
                 </div>
             </div>
+            <div class="chart-empty" *ngIf="isLoadingStats">Loading activity…</div>
         </div>
 
-        <!-- Card 3: Total Withdrawals -->
+        <!-- Card: Total Withdrawals -->
         <div class="dash-card dark-card">
             <div class="card-header">
                 <span>Total Withdrawals</span>
@@ -114,64 +99,66 @@
             </div>
             <div class="card-body">
                 <ng-container *ngIf="!isLoadingStats">
-                    <h2>{{ stats[1].value | currency:'USD':'symbol':'1.0-0' }}</h2>
+                    <h2>{{ totalWithdrawals | currency:'USD':'symbol':'1.0-2' }}</h2>
                 </ng-container>
                 <span *ngIf="isLoadingStats" class="loader-pulse dark"></span>
-                <span class="badge red-badge"><i class="fas fa-arrow-down"></i> 2.67%</span>
             </div>
-            <div class="card-footer">This month vs last</div>
+            <div class="card-footer">Approved withdrawals to date</div>
         </div>
 
-        <!-- Card 4: Recent Transactions -->
+        <!-- Card: Total Transfers -->
         <div class="dash-card dark-card">
             <div class="card-header">
-                <span>Recent Transactions</span>
+                <span>Total Transfers</span>
                 <button class="arrow-btn green-btn" [routerLink]="['/seller/transfer']">
                     <i class="fas fa-arrow-right" style="transform: rotate(-45deg);"></i>
                 </button>
             </div>
             <div class="card-body">
                 <ng-container *ngIf="!isLoadingStats">
-                    <h2>{{ stats[2].value }}</h2>
+                    <h2>{{ totalTransfers | currency:'USD':'symbol':'1.0-2' }}</h2>
                 </ng-container>
                 <span *ngIf="isLoadingStats" class="loader-pulse dark"></span>
-                <span class="badge green-badge"><i class="fas fa-chart-line"></i> Total</span>
             </div>
-            <div class="card-footer">This month vs last</div>
+            <div class="card-footer">{{ transactionCount }} transactions in history</div>
         </div>
 
-
-
-
-        <!-- Row 3: Bottom Left two cards + Donut chart -->
+        <!-- Row 3: Bottom cards -->
         <div class="bottom-row-wrapper">
-            <!-- Orders card -->
+            <!-- Activity summary -->
             <div class="dash-card dark-card icon-card">
                 <div class="icon-circle">
                     <i class="fas fa-check"></i>
                 </div>
                 <div class="card-body">
                     <h2>
-                        <ng-container *ngIf="!isLoadingStats">{{ stats[2].value }}</ng-container>
+                        <ng-container *ngIf="!isLoadingStats">{{ transactionCount }}</ng-container>
                         <span *ngIf="isLoadingStats" class="loader-pulse dark"></span>
                         <span class="unit"> transactions</span>
                     </h2>
-                    <p><span class="highlight-orange">Recent activity</span> in your account.</p>
+                    <p><span class="highlight-orange">Recent activity</span> in your wallet.</p>
                 </div>
             </div>
 
-            <button class="overlap-btn">
+            <button class="overlap-btn" [routerLink]="['/seller/transfer']">
                 <i class="fas fa-arrow-right" style="transform: rotate(-45deg);"></i>
             </button>
 
-            <!-- Quick Actions card -->
-            <div class="dash-card dark-card icon-card">
+            <!-- Wallet benefit card -->
+            <div class="dash-card dark-card icon-card wallet-benefit-card">
                 <div class="icon-circle user-icon">
                     <i class="fas fa-wallet"></i>
                 </div>
                 <div class="card-body">
-                    <h2>3 <span class="unit">actions</span></h2>
-                    <p><span class="highlight-orange">available</span> for your wallet.</p>
+                    <h2>
+                        <ng-container *ngIf="!isLoadingBalance">{{ walletData.balance | currency:'USD':'symbol':'1.0-0' }}</ng-container>
+                        <span *ngIf="isLoadingBalance" class="loader-pulse dark"></span>
+                        <span class="unit"> available</span>
+                    </h2>
+                    <p>
+                        <span class="highlight-orange">{{ totalDeposits | currency:'USD':'symbol':'1.0-0' }}</span> deposited
+                        <span *ngIf="pendingDepositsCount > 0"> · {{ pendingDepositsAmount | currency:'USD':'symbol':'1.0-0' }} pending</span>
+                    </p>
                     <div class="actions-pill-group">
                         <button class="pill-btn deposit-pill" [routerLink]="['/seller/deposit']">
                             <i class="fas fa-plus"></i> Deposit
@@ -191,25 +178,24 @@
         <div class="dash-card chart-card donut-chart-card">
             <div class="card-header flex-between">
                 <div class="chart-title">
-                    <span>Sales by Category</span>
-                    <span class="sub-text">This month vs last</span>
+                    <span>Activity Breakdown</span>
+                    <span class="sub-text">By transaction type</span>
                 </div>
-                <button class="arrow-btn white-btn">
-                    <i class="fas fa-arrow-right" style="transform: rotate(-45deg);"></i>
-                </button>
             </div>
             <div class="donut-content">
                 <div class="donut-wrapper">
-                    <div class="donut" style="background: conic-gradient(#10B981 0% 30%, #059669 30% 55%, #34d399 55% 70%, #6ee7b7 70% 85%, #a7f3d0 85% 100%); border-radius:50%; position:relative;">
-                        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:72px;height:72px;background:#ffffff;border-radius:50%;"></div>
+                    <div class="donut" [style.background]="donutGradient">
+                        <div class="donut-hole"></div>
                     </div>
                 </div>
                 <div class="legend">
-                    <div class="legend-item"><span class="dot" style="background:#10B981"></span> Deposits</div>
-                    <div class="legend-item"><span class="dot" style="background:#059669"></span> Withdrawals</div>
-                    <div class="legend-item"><span class="dot" style="background:#34d399"></span> Transfers</div>
-                    <div class="legend-item"><span class="dot" style="background:#6ee7b7"></span> Purchases</div>
-                    <div class="legend-item"><span class="dot" style="background:#a7f3d0"></span> Refunds</div>
+                    <div class="legend-item" *ngFor="let slice of breakdownSlices">
+                        <span class="dot" [style.background]="slice.color"></span>
+                        {{ slice.label }} ({{ slice.displayPercent }})
+                    </div>
+                    <div class="legend-item muted" *ngIf="breakdownSlices.length === 0 && !isLoadingStats">
+                        No activity yet — make a deposit to see breakdown.
+                    </div>
                 </div>
             </div>
         </div>

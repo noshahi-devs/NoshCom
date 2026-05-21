@@ -143,10 +143,10 @@
                 </div>
 
                 <div class="method-logo-wrap" aria-hidden="true">
-                  <ng-container *ngIf="method.id !== 'easy_finora'; else Global Mart UKFallbackLogo">
+                  <ng-container *ngIf="method.id !== 'easy_finora'; else globalMartUkFallbackLogo">
                     <img [src]="method.logoSrc" [alt]="method.name" class="method-logo">
                   </ng-container>
-                  <ng-template #Global Mart UKFallbackLogo>
+                  <ng-template #globalMartUkFallbackLogo>
                     <div class="method-logo-fallback">
                       <i class="fas fa-building"></i>
                     </div>

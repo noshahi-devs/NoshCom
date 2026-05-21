@@ -1,16 +1,24 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { StoreService } from '../../../services/store.service';
 
-interface AdminUser {
+export type SellerStatusFilter = 'all' | 'active' | 'inactive' | 'block' | 'warning';
+
+export interface AdminUser {
     id: number;
+    storeId: string;
     name: string;
     email: string;
+    storeName: string;
     role: string;
     status: string;
     lastLogin: string;
     blocked: boolean;
     blockReason: string;
+    hasWarning: boolean;
+    isAdminActive: boolean;
+    createdAt?: string;
 }
 
 @Component({
@@ -21,12 +29,17 @@ interface AdminUser {
     styleUrls: ['./user-management.component.scss']
 })
 export class UserManagementComponent implements OnInit, OnDestroy {
-    users: AdminUser[] = [
-        { id: 1, name: 'Adeel Noshahi',  email: 'noshahi@elicom.com',   role: 'Super Admin',       status: 'Active',   lastLogin: '10 mins ago', blocked: false, blockReason: '' },
-        { id: 2, name: 'Sarah Ahmed',    email: 'sarah.a@elicom.com',   role: 'Support Lead',      status: 'Active',   lastLogin: '2 hours ago', blocked: false, blockReason: '' },
-        { id: 3, name: 'Mike Johnson',   email: 'mike@elicom.com',      role: 'Financial Auditor', status: 'Inactive', lastLogin: '2 days ago',  blocked: false, blockReason: '' },
-        { id: 4, name: 'Jessica Lee',    email: 'jessica.l@elicom.com', role: 'KYC Reviewer',      status: 'Active',   lastLogin: 'Just now',    blocked: false, blockReason: '' }
-    ];
+    private storeService = inject(StoreService);
+    private cdr = inject(ChangeDetectorRef);
+
+    users: AdminUser[] = [];
+    filteredUsers: AdminUser[] = [];
+    isLoading = false;
+
+    searchTerm = '';
+    filterMode: SellerStatusFilter = 'all';
+    pageSize = 10;
+    currentPage = 1;
 
     // ── Add Modal ──
     showAddModal = false;
@@ -34,73 +47,219 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
     // ── Edit Modal ──
     showEditModal = false;
-    editUser: AdminUser = { id: 0, name: '', email: '', role: '', status: '', lastLogin: '', blocked: false, blockReason: '' };
+    editUser: AdminUser = this.emptyUser();
 
     // ── Block Modal ──
-    showBlockModal   = false;
+    showBlockModal = false;
     blockTarget: AdminUser | null = null;
     blockReasonInput = '';
 
-    // ── Seller Blocked Popup (simulates what seller sees on login) ──
-    showBlockedPopup   = false;
+    // ── Seller Blocked Popup ──
+    showBlockedPopup = false;
     blockedPopupUser: AdminUser | null = null;
 
     // ── Warning Modal ──
-    showWarningModal  = false;
+    showWarningModal = false;
     warningTarget: AdminUser | null = null;
-    warningSubject    = '';
-    warningMessage    = '';
-    selectedSeverity  = 'medium';
+    warningSubject = '';
+    warningMessage = '';
+    selectedSeverity = 'medium';
 
     warningSeverityLevels = [
-        { value: 'low',    label: 'Advisory', color: '#28a745', icon: 'fas fa-info-circle'      },
-        { value: 'medium', label: 'Warning',  color: '#F2BB13', icon: 'fas fa-exclamation-circle'},
-        { value: 'high',   label: 'Critical', color: '#dc3545', icon: 'fas fa-skull-crossbones'  },
+        { value: 'low', label: 'Advisory', color: '#28a745', icon: 'fas fa-info-circle' },
+        { value: 'medium', label: 'Warning', color: '#F2BB13', icon: 'fas fa-exclamation-circle' },
+        { value: 'high', label: 'Critical', color: '#dc3545', icon: 'fas fa-skull-crossbones' },
     ];
 
-    ngOnInit(): void { }
+    ngOnInit(): void {
+        this.loadSellers();
+    }
 
     ngOnDestroy(): void {
         this.clearModalClasses();
     }
 
-    private addModalClasses()    { document.documentElement.classList.add('modal-open');    document.body.classList.add('modal-open');    }
-    private clearModalClasses()  { document.documentElement.classList.remove('modal-open'); document.body.classList.remove('modal-open'); }
+    loadSellers(): void {
+        this.isLoading = true;
+        this.storeService.getAllStores().subscribe({
+            next: (res: any) => {
+                const items = res?.result?.items || res?.result || res || [];
+                const list = Array.isArray(items) ? items : [];
+                const previous = new Map(this.users.map(u => [u.storeId, u]));
 
-    // ── Add Modal ──
-    openAddModal()  { this.showAddModal = true;  this.addModalClasses(); }
+                this.users = list.map((store: any) => {
+                    const storeId = String(store.id || '');
+                    const prev = previous.get(storeId);
+                    const isAdminActive = !!store.isAdminActive;
+                    const blocked = prev?.blocked ?? false;
+                    const hasWarning = prev?.hasWarning ?? false;
+
+                    return {
+                        id: Number(store.ownerId) || 0,
+                        storeId,
+                        name: (store.kyc?.fullName || store.name || 'Unnamed Seller').trim(),
+                        email: (store.supportEmail || '').trim(),
+                        storeName: (store.name || '').trim(),
+                        role: 'Seller',
+                        status: blocked ? 'Blocked' : (isAdminActive ? 'Active' : 'Inactive'),
+                        lastLogin: this.formatJoinedLabel(store.createdAt),
+                        blocked,
+                        blockReason: prev?.blockReason || '',
+                        hasWarning,
+                        isAdminActive,
+                        createdAt: store.createdAt
+                    };
+                });
+
+                this.applyFilters();
+                this.isLoading = false;
+                this.cdr.detectChanges();
+            },
+            error: (err) => {
+                console.error('Error loading Smart Shop UK sellers:', err);
+                this.users = [];
+                this.applyFilters();
+                this.isLoading = false;
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    applyFilters(): void {
+        const term = (this.searchTerm || '').trim().toLowerCase();
+
+        this.filteredUsers = this.users.filter(user => {
+            if (this.filterMode === 'active') {
+                if (user.blocked || !user.isAdminActive) return false;
+            } else if (this.filterMode === 'inactive') {
+                if (user.blocked || user.isAdminActive) return false;
+            } else if (this.filterMode === 'block') {
+                if (!user.blocked) return false;
+            } else if (this.filterMode === 'warning') {
+                if (!user.hasWarning) return false;
+            }
+
+            if (!term) return true;
+            const haystack = [user.name, user.storeName, user.email].join(' ').toLowerCase();
+            return haystack.includes(term);
+        });
+
+        this.filteredUsers.sort((a, b) => {
+            const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return bDate - aDate;
+        });
+
+        if (this.currentPage > this.totalPages) {
+            this.currentPage = Math.max(1, this.totalPages);
+        }
+    }
+
+    onSearchChange(): void {
+        this.currentPage = 1;
+        this.applyFilters();
+    }
+
+    setFilter(mode: SellerStatusFilter): void {
+        this.filterMode = mode;
+        this.currentPage = 1;
+        this.applyFilters();
+    }
+
+    get pagedUsers(): AdminUser[] {
+        const start = (this.currentPage - 1) * this.pageSize;
+        return this.filteredUsers.slice(start, start + this.pageSize);
+    }
+
+    get totalPages(): number {
+        return Math.max(1, Math.ceil(this.filteredUsers.length / this.pageSize));
+    }
+
+    get showingFrom(): number {
+        if (!this.filteredUsers.length) return 0;
+        return (this.currentPage - 1) * this.pageSize + 1;
+    }
+
+    get showingTo(): number {
+        if (!this.filteredUsers.length) return 0;
+        return Math.min(this.currentPage * this.pageSize, this.filteredUsers.length);
+    }
+
+    goPrevious(): void {
+        if (this.currentPage > 1) {
+            this.currentPage--;
+        }
+    }
+
+    goNext(): void {
+        if (this.currentPage < this.totalPages) {
+            this.currentPage++;
+        }
+    }
+
+    private formatJoinedLabel(value: string | null | undefined): string {
+        if (!value) return '—';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '—';
+        return `Joined ${new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).format(date)}`;
+    }
+
+    private emptyUser(): AdminUser {
+        return {
+            id: 0,
+            storeId: '',
+            name: '',
+            email: '',
+            storeName: '',
+            role: 'Seller',
+            status: 'Active',
+            lastLogin: '',
+            blocked: false,
+            blockReason: '',
+            hasWarning: false,
+            isAdminActive: true
+        };
+    }
+
+    private syncUser(patch: Partial<AdminUser> & { storeId: string }): void {
+        const apply = (u: AdminUser) => {
+            if (u.storeId !== patch.storeId) return u;
+            return { ...u, ...patch };
+        };
+        this.users = this.users.map(apply);
+        this.applyFilters();
+    }
+
+    private addModalClasses() { document.documentElement.classList.add('modal-open'); document.body.classList.add('modal-open'); }
+    private clearModalClasses() { document.documentElement.classList.remove('modal-open'); document.body.classList.remove('modal-open'); }
+
+    openAddModal() { this.showAddModal = true; this.addModalClasses(); }
     closeAddModal() { this.showAddModal = false; this.clearModalClasses(); }
 
     addUser() {
         if (!this.newUser.name.trim() || !this.newUser.email.trim()) return;
-        this.users.unshift({
-            id: this.users.length + 1,
-            ...this.newUser,
-            status: 'Active',
-            lastLogin: 'Never',
-            blocked: false,
-            blockReason: ''
-        });
         this.closeAddModal();
         this.newUser = { name: '', email: '', role: 'Support Staff' };
     }
 
-    // ── Edit Modal ──
     openEditModal(user: AdminUser) { this.editUser = { ...user }; this.showEditModal = true; this.addModalClasses(); }
-    closeEditModal()               { this.showEditModal = false; this.clearModalClasses(); }
+    closeEditModal() { this.showEditModal = false; this.clearModalClasses(); }
 
     saveEditUser() {
         if (!this.editUser.name.trim() || !this.editUser.email.trim()) return;
-        const idx = this.users.findIndex(u => u.id === this.editUser.id);
-        if (idx !== -1) this.users[idx] = { ...this.editUser };
+        this.syncUser({
+            storeId: this.editUser.storeId,
+            name: this.editUser.name.trim(),
+            email: this.editUser.email.trim(),
+            role: this.editUser.role
+        });
         this.closeEditModal();
     }
 
-    // ── Block Modal ──
     openBlockModal(user: AdminUser) {
-        this.blockTarget      = user;
+        this.blockTarget = user;
         this.blockReasonInput = '';
-        this.showBlockModal   = true;
+        this.showBlockModal = true;
         this.addModalClasses();
     }
 
@@ -108,25 +267,24 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
     confirmBlock() {
         if (!this.blockTarget) return;
-        const idx = this.users.findIndex(u => u.id === this.blockTarget!.id);
-        if (idx !== -1) {
-            this.users[idx].blocked     = true;
-            this.users[idx].blockReason = this.blockReasonInput.trim();
-            this.users[idx].status      = 'Blocked';
-        }
+        this.syncUser({
+            storeId: this.blockTarget.storeId,
+            blocked: true,
+            blockReason: this.blockReasonInput.trim(),
+            status: 'Blocked'
+        });
         this.closeBlockModal();
     }
 
     unblockUser(user: AdminUser) {
-        const idx = this.users.findIndex(u => u.id === user.id);
-        if (idx !== -1) {
-            this.users[idx].blocked     = false;
-            this.users[idx].blockReason = '';
-            this.users[idx].status      = 'Active';
-        }
+        this.syncUser({
+            storeId: user.storeId,
+            blocked: false,
+            blockReason: '',
+            status: user.isAdminActive ? 'Active' : 'Inactive'
+        });
     }
 
-    // ── Seller Blocked Popup (preview / simulate) ──
     previewBlockedPopup(user: AdminUser) {
         this.blockedPopupUser = user;
         this.showBlockedPopup = true;
@@ -135,11 +293,10 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
     closeBlockedPopup() { this.showBlockedPopup = false; this.clearModalClasses(); }
 
-    // ── Warning Modal ──
     openWarningModal(user: AdminUser) {
-        this.warningTarget   = user;
-        this.warningSubject  = '';
-        this.warningMessage  = '';
+        this.warningTarget = user;
+        this.warningSubject = '';
+        this.warningMessage = '';
         this.selectedSeverity = 'medium';
         this.showWarningModal = true;
         this.addModalClasses();
@@ -148,7 +305,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     closeWarningModal() { this.showWarningModal = false; this.clearModalClasses(); }
 
     sendWarning() {
-        if (!this.warningSubject.trim() || !this.warningMessage.trim()) return;
+        if (!this.warningSubject.trim() || !this.warningMessage.trim() || !this.warningTarget) return;
+        this.syncUser({ storeId: this.warningTarget.storeId, hasWarning: true });
         console.log('Warning dispatched:', {
             to: this.warningTarget,
             severity: this.selectedSeverity,
@@ -158,9 +316,19 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         this.closeWarningModal();
     }
 
-    // ── Toggle Status (Suspend / Activate) ──
     toggleStatus(user: AdminUser) {
-        if (user.blocked) return; // blocked users can't be toggled
-        user.status = user.status === 'Active' ? 'Inactive' : 'Active';
+        if (user.blocked || !user.storeId) return;
+        const newStatus = !user.isAdminActive;
+        this.storeService.toggleAdminStatus(user.storeId, newStatus).subscribe({
+            next: () => {
+                this.syncUser({
+                    storeId: user.storeId,
+                    isAdminActive: newStatus,
+                    status: newStatus ? 'Active' : 'Inactive'
+                });
+                this.cdr.detectChanges();
+            },
+            error: (err) => console.error('Error toggling seller status:', err)
+        });
     }
 }

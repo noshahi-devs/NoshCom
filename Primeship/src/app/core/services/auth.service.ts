@@ -106,40 +106,60 @@ export class AuthService {
             {
                 headers: this.getTenantHeaders()
             }
-        ).pipe(
-            tap(response => {
-                console.log('📦 AuthService received response:', response);
-
-                // API returns: { result: { accessToken, userId }, success, error }
-                if (response && response.result && response.result.accessToken) {
-                    console.log('✅ Valid token found in response.result');
-                    console.log('💾 Storing token:', response.result.accessToken.substring(0, 20) + '...');
-                    console.log('💾 Storing userId:', response.result.userId);
-
-                    this.setToken(response.result.accessToken);
-                    this.setUserId(response.result.userId.toString());
-
-                    // Decode token to get roles early
-                    const roles = this.getUserRoles();
-                    if (roles) {
-                        localStorage.setItem('userRoles', JSON.stringify(roles));
-                    }
-
-                    console.log('✅ Token stored in localStorage');
-                    console.log('🔍 Verify token in localStorage:', localStorage.getItem('authToken')?.substring(0, 20) + '...');
-
-                    this.currentUserSubject.next({
-                        token: response.result.accessToken,
-                        userId: response.result.userId,
-                        roles: roles
-                    });
-
-                    console.log('✅ currentUserSubject updated');
-                } else {
-                    console.error('❌ Invalid response structure:', response);
-                }
-            })
         );
+    }
+
+    /**
+     * Complete MFA step after admin login (same Authenticate endpoint).
+     */
+    verifyMfaLogin(
+        credentials: LoginInput,
+        mfaChallengeId: string,
+        mfaCode: string
+    ): Observable<any> {
+        return this.http.post<any>(
+            `${this.apiUrl}/TokenAuth/Authenticate`,
+            {
+                userNameOrEmailAddress: credentials.userNameOrEmailAddress,
+                password: credentials.password,
+                rememberClient: credentials.rememberClient ?? false,
+                mfaChallengeId,
+                mfaCode
+            },
+            { headers: this.getTenantHeaders() }
+        );
+    }
+
+    /**
+     * Persist token from a successful Authenticate response.
+     */
+    storeTokenFromResponse(response: any): boolean {
+        const result = response?.result;
+        if (!result?.accessToken) {
+            return false;
+        }
+
+        this.setToken(result.accessToken);
+        if (result.userId) {
+            this.setUserId(result.userId.toString());
+        }
+
+        const roles = this.getUserRoles();
+        if (roles?.length) {
+            localStorage.setItem('userRoles', JSON.stringify(roles));
+        }
+
+        this.currentUserSubject.next({
+            token: result.accessToken,
+            userId: result.userId,
+            roles
+        });
+
+        return true;
+    }
+
+    isMfaRequired(response: any): boolean {
+        return !!response?.result?.mfaRequired && !!response?.result?.mfaChallengeId;
     }
 
     /**
@@ -156,15 +176,50 @@ export class AuthService {
      * Check if user is authenticated
      */
     isAuthenticated(): boolean {
-        const token = this.getToken();
-        return !!token;
+        return !!this.getBearerToken();
+    }
+
+    getTenantId(): string {
+        return this.tenantId;
     }
 
     /**
      * Get stored token
      */
     getToken(): string | null {
-        return localStorage.getItem('authToken');
+        return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    }
+
+    /**
+     * Bearer token for API calls (validated loosely so login tokens are not dropped).
+     */
+    getBearerToken(): string | null {
+        const raw = this.getToken();
+        if (!raw) {
+            return null;
+        }
+
+        let token = raw.trim();
+        token = token.replace(/^Bearer\s+/i, '').trim();
+        token = token.replace(/^"+|"+$/g, '').trim();
+
+        if (!token || token === 'null' || token === 'undefined') {
+            return null;
+        }
+
+        return token;
+    }
+
+    handleUnauthorized(): void {
+        localStorage.removeItem('authToken');
+        sessionStorage.removeItem('authToken');
+        this.currentUserSubject.next(null);
+
+        if (!this.router.url.startsWith('/auth/login')) {
+            this.router.navigate(['/auth/login'], {
+                queryParams: { returnUrl: this.router.url, reason: 'session-expired' }
+            });
+        }
     }
 
     /**
@@ -298,7 +353,30 @@ export class AuthService {
     }
 
     isAdmin(): boolean {
-        return this.hasRole('Admin');
+        if (this.hasRole('Admin')) {
+            return true;
+        }
+
+        const email = (this.getUserEmail() || localStorage.getItem('userEmail') || '').trim().toLowerCase();
+        return this.isAdminEmail(email);
+    }
+
+    isAdminEmail(email: string): boolean {
+        const normalized = (email || '').trim().toLowerCase();
+        if (!normalized) {
+            return false;
+        }
+
+        const allowlisted = [
+            'secureadmin@ps.com',
+            'secureadmin@ef.com',
+            'admin@primeshipuk.com',
+            'ps_secureadmin@ps.com',
+            'gp_secureadmin@ef.com'
+        ];
+
+        return allowlisted.includes(normalized) ||
+            normalized.startsWith('admin@') && normalized.includes('primeship');
     }
 
     isSeller(): boolean {
@@ -323,34 +401,17 @@ export class AuthService {
      * Get auth headers with token
      */
     getAuthHeaders(): HttpHeaders {
-        const token = this.getNormalizedToken();
+        const token = this.getBearerToken();
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
             'Abp-TenantId': this.tenantId
         };
 
-        // Do not send a malformed bearer token (e.g. "Bearer null").
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
 
         return new HttpHeaders(headers);
-    }
-
-    private getNormalizedToken(): string | null {
-        const raw = this.getToken();
-        if (!raw) return null;
-
-        let token = raw.trim();
-        token = token.replace(/^Bearer\s+/i, '').trim();
-        token = token.replace(/^"+|"+$/g, '').trim();
-
-        // JWT should be 3 dot-separated base64url segments.
-        if (!/^[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+$/.test(token)) {
-            return null;
-        }
-
-        return token;
     }
 
     private getDecodedTokenPayload(): any | null {

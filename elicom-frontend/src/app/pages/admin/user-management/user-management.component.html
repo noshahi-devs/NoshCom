@@ -2,37 +2,56 @@
     <section class="orders-table-card">
         <div class="orders-card-top">
             <div class="orders-card-copy">
-                <div class="orders-card-kicker">Administration & Identity</div>
-                <h4>User Management Workspace</h4>
+                <div class="orders-card-kicker">Smart Shop UK</div>
+                <h4>Seller Management Workspace</h4>
             </div>
             <div class="orders-live-chip">
                 <i class="fa-solid fa-user-shield"></i>
-                <span>Executive Access Controls</span>
+                <span>Platform Seller Directory</span>
             </div>
         </div>
 
         <div class="table-tools">
             <div class="entries-info">
-                <span class="entries-label">Active Directory</span>
-                <span class="entries-chip">{{ users.length }} System Users</span>
+                <span class="entries-label">Rows Per Page</span>
+                <span class="entries-chip">{{ pageSize }}</span>
             </div>
             <div class="filter-pills d-none d-lg-flex" style="margin: 0 40px; gap: 10px;">
-                <button class="btn-primary-glow" (click)="openAddModal()">
+                <!-- <button class="btn-primary-glow" (click)="openAddModal()">
                     <i class="fas fa-plus me-2"></i> Provision New Admin
-                </button>
+                </button> -->
+                <button class="filter-pill" [class.active]="filterMode === 'all'" (click)="setFilter('all')">All</button>
+                <button class="filter-pill" [class.active]="filterMode === 'active'" (click)="setFilter('active')">Active</button>
+                <button class="filter-pill" [class.active]="filterMode === 'inactive'" (click)="setFilter('inactive')">Inactive</button>
+                <button class="filter-pill" [class.active]="filterMode === 'block'" (click)="setFilter('block')">Block</button>
+                <button class="filter-pill" [class.active]="filterMode === 'warning'" (click)="setFilter('warning')">Warning</button>
             </div>
             <div class="search-wrap">
-                <label for="userSearch">Directory Search</label>
+                <label for="userSearch">Search Sellers</label>
                 <div class="search-input-container">
                     <span class="search-icon-badge"><i class="fa-solid fa-magnifying-glass"></i></span>
-                    <input id="userSearch" type="text" placeholder="Search by name, email, or role...">
+                    <input id="userSearch" type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()"
+                        placeholder="Search by seller name, store, or email...">
                 </div>
             </div>
         </div>
 
         <div class="orders-workspace-stack">
             <div class="orders-cards-container">
-                <div *ngFor="let user of users" class="order-item-card">
+                <ng-container *ngIf="isLoading">
+                    <div class="users-loading-state">
+                        <i class="fas fa-circle-notch fa-spin fa-3x mb-3"></i>
+                        <h5 class="fw-bold">Loading Smart Shop UK sellers...</h5>
+                    </div>
+                </ng-container>
+
+                <div *ngIf="!isLoading && pagedUsers.length === 0" class="users-empty-state">
+                    <i class="fas fa-users-slash fa-4x mb-3"></i>
+                    <h5 class="fw-bold">No sellers found</h5>
+                    <p>Try a different filter or search term.</p>
+                </div>
+
+                <div *ngFor="let user of pagedUsers" class="order-item-card">
                     <!-- Status Accent Strip — red if blocked -->
                     <div class="status-accent-strip"
                          [style.background]="user.blocked ? '#dc3545' : '#F2BB13'"></div>
@@ -40,31 +59,33 @@
                     <div class="card-row card-main-row">
                         <div class="col col-id">
                             <div class="icon-wrap" [class.icon-verified]="!user.blocked"
-                                 [style.background]="user.blocked ? 'rgba(220,53,69,0.1)' : ''">
+                                 [style.background]="user.blocked ? 'rgba(220,53,69,0.1)' : user.hasWarning ? 'rgba(242,187,19,0.15)' : ''">
                                 <i class="fa-solid"
-                                   [class.fa-user-tie]="!user.blocked && user.status === 'Active'"
+                                   [class.fa-shop]="!user.blocked && user.status === 'Active' && !user.hasWarning"
                                    [class.fa-user-lock]="user.blocked"
-                                   [class.fa-user-slash]="!user.blocked && user.status !== 'Active'"
-                                   [style.color]="user.blocked ? '#dc3545' : ''"></i>
+                                   [class.fa-exclamation-triangle]="user.hasWarning && !user.blocked"
+                                   [class.fa-user-slash]="!user.blocked && user.status !== 'Active' && !user.hasWarning"
+                                   [style.color]="user.blocked ? '#dc3545' : user.hasWarning ? '#b48d0e' : ''"></i>
                             </div>
                             <div class="id-group">
-                                <p class="mini-label">Administrative Principal</p>
+                                <p class="mini-label">Seller Identity</p>
                                 <p class="id-val">{{ user.name }}</p>
-                                <p class="channel-link">{{ user.email }}</p>
+                                <p class="channel-link">{{ user.storeName }}</p>
                             </div>
                         </div>
 
                         <div class="col col-customer">
-                            <p class="mini-label">Security Role</p>
+                            <p class="mini-label">Contact</p>
                             <span class="role-pill-elite">{{ user.role }}</span>
+                            <p class="channel-link mt-1 mb-0">{{ user.email || 'No email' }}</p>
                         </div>
 
                         <div class="col col-status">
                             <p class="mini-label">Account Status</p>
                             <span class="status-pill-modern"
-                                  [style.color]="user.blocked ? '#dc3545' : user.status === 'Active' ? '#111' : '#888'"
-                                  [style.fontWeight]="user.blocked ? '800' : ''">
-                                {{ user.blocked ? 'BLOCKED' : (user.status | uppercase) }}
+                                  [style.color]="user.blocked ? '#dc3545' : user.hasWarning ? '#b48d0e' : user.status === 'Active' ? '#111' : '#888'"
+                                  [style.fontWeight]="user.blocked || user.hasWarning ? '800' : ''">
+                                {{ user.blocked ? 'BLOCKED' : user.hasWarning ? 'WARNING' : (user.status | uppercase) }}
                             </span>
                         </div>
 
@@ -120,28 +141,28 @@
                         <div class="col col-timeline">
                             <i class="fa-solid fa-clock-rotate-left meta-icon"></i>
                             <div class="timeline-group">
-                                <p class="mini-label">Last Synchronization</p>
-                                <p class="timeline-val">Authenticated recently from Secure Portal Node</p>
+                                <p class="mini-label">Store Onboarded</p>
+                                <p class="timeline-val">{{ user.lastLogin }}</p>
                             </div>
                         </div>
                         <div class="col col-carrier">
-                            <p class="mini-label">Access Level</p>
+                            <p class="mini-label">Platform</p>
                             <div class="carrier-group">
-                                <i class="fas fa-shield-halved" style="color: #111;"></i>
+                                <i class="fas fa-store" style="color: #111;"></i>
                                 <div class="authority-stack">
-                                    <span class="tier-val">Tier-1</span>
-                                    <span class="authority-val">Authority</span>
+                                    <span class="tier-val">Smart Shop</span>
+                                    <span class="authority-val">UK</span>
                                 </div>
-                                <span class="method-chip ms-auto">{{ user.role === 'Super Admin' ? 'ROOT' : 'RESTRICTED' }}</span>
+                                <span class="method-chip ms-auto">SELLER</span>
                             </div>
                         </div>
                         <div class="col col-window">
-                            <p class="mini-label">Authentication Mode</p>
-                            <p class="window-val fw-bold" style="color: #111;">Standard Web Login</p>
+                            <p class="mini-label">Store</p>
+                            <p class="window-val fw-bold" style="color: #111;">{{ user.storeName }}</p>
                         </div>
                         <div class="col col-elapsed">
-                            <p class="mini-label">Principal ID</p>
-                            <p class="elapsed-val">USR-{{ user.name.split(' ')[0] | uppercase }}-2026</p>
+                            <p class="mini-label">Owner ID</p>
+                            <p class="elapsed-val">#{{ user.id }}</p>
                         </div>
                     </div>
                 </div>
@@ -150,8 +171,17 @@
 
         <div class="table-footer">
             <div class="info-text">
-                <span class="info-pill">Identity Directory</span>
-                <span class="info-total">Displaying {{ users.length }} Administrative Nodes</span>
+                <span class="info-pill">Displaying {{ showingFrom }} - {{ showingTo }}</span>
+                <span class="info-total">of {{ filteredUsers.length }} Smart Shop UK Sellers</span>
+            </div>
+            <div class="pager">
+                <button type="button" [disabled]="currentPage === 1" (click)="goPrevious()">
+                    <i class="fa-solid fa-angle-left me-1"></i> Previous
+                </button>
+                <span>{{ currentPage }} / {{ totalPages }}</span>
+                <button type="button" [disabled]="currentPage === totalPages || totalPages === 0" (click)="goNext()">
+                    Next <i class="fa-solid fa-angle-right ms-1"></i>
+                </button>
             </div>
         </div>
     </section>

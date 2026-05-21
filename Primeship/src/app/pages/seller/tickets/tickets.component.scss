@@ -311,50 +311,48 @@
   white-space: nowrap;
 }
 
-.reply-status {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.replies-cell {
+  text-align: center;
+  vertical-align: middle;
+}
 
-  .replied-status {
-    color: #059669;
-    font-weight: 700;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+.reply-eye-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  i {
+    font-size: 18px;
   }
 
-  .pending-status {
-    color: #94a3b8;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  &:hover {
+    background: #10b981;
+    color: #fff;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
   }
+}
 
-  .admin-remarks-box {
-    background: #f8fafc;
-    border-left: 3px solid #10b981;
-    border-radius: 0 8px 8px 0;
-    padding: 10px 14px;
-    margin-top: 6px;
+.reply-eye-muted {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #94a3b8;
 
-    strong {
-      font-size: 11px;
-      color: #475569;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      display: block;
-      margin-bottom: 2px;
-    }
-
-    p {
-      font-size: 13px;
-      color: #334155;
-      margin: 0;
-      line-height: 1.4;
-    }
+  i {
+    font-size: 18px;
   }
 }
 

@@ -95,7 +95,8 @@ namespace Elicom.Web.Host.Startup
             {
                 if (int.TryParse(requestTenantHeader, out var headerTenantId) &&
                     int.TryParse(tokenTenantClaim, out var tokenTenantId) &&
-                    headerTenantId != tokenTenantId)
+                    headerTenantId != tokenTenantId &&
+                    !IsGlobalMartUkSiblingTenant(headerTenantId, tokenTenantId))
                 {
                     context.Fail("Tenant mismatch. Please login again from the correct platform.");
                     return;
@@ -154,6 +155,15 @@ namespace Elicom.Web.Host.Startup
             {
                 context.Fail("Token has been revoked. Please login again.");
             }
+        }
+
+        /// <summary>
+        /// Global Mart UK: PrimeShip (tenant 2) and EasyFinora (tenant 3) share one product surface.
+        /// </summary>
+        private static bool IsGlobalMartUkSiblingTenant(int headerTenantId, int tokenTenantId)
+        {
+            var globalMartTenants = new[] { 2, 3 };
+            return globalMartTenants.Contains(headerTenantId) && globalMartTenants.Contains(tokenTenantId);
         }
     }
 }

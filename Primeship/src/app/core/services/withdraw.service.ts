@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AuthService } from './auth.service';
 
 @Injectable({
     providedIn: 'root'
@@ -9,49 +10,52 @@ import { environment } from '../../../environments/environment';
 export class WithdrawService {
     private apiUrl = `${environment.apiUrl}/services/app/Withdraw`;
 
-    constructor(private http: HttpClient) { }
-
-    private getHeaders() {
-        const token = sessionStorage.getItem('authToken') || localStorage.getItem('authToken');
-        return new HttpHeaders({
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        });
-    }
+    constructor(
+        private http: HttpClient,
+        private authService: AuthService
+    ) { }
 
     submitWithdrawRequest(input: any): Observable<any> {
-        return this.http.post(`${this.apiUrl}/SubmitWithdrawRequest`, input, { headers: this.getHeaders() });
+        return this.http.post(`${this.apiUrl}/SubmitWithdrawRequest`, input, {
+            headers: this.authService.getAuthHeaders()
+        });
     }
 
     getMyWithdrawRequests(skipCount: number = 0, maxResultCount: number = 10): Observable<any> {
         return this.http.get(`${this.apiUrl}/GetMyWithdrawRequests`, {
-            headers: this.getHeaders(),
+            headers: this.authService.getAuthHeaders(),
             params: { skipCount, maxResultCount }
         });
     }
 
     getAllWithdrawRequests(skipCount: number = 0, maxResultCount: number = 50): Observable<any> {
         return this.http.get(`${this.apiUrl}/GetAllWithdrawRequests`, {
-            headers: this.getHeaders(),
-            params: { skipCount, maxResultCount }
+            headers: this.authService.getAuthHeaders(),
+            params: { skipCount, maxResultCount, _t: new Date().getTime() }
+        });
+    }
+
+    getWithdrawalEligibility(): Observable<any> {
+        return this.http.get(`${this.apiUrl}/GetWithdrawalEligibility`, {
+            headers: this.authService.getAuthHeaders()
         });
     }
 
     approveWithdraw(id: number, adminRemarks: string, paymentProof: string = ''): Observable<any> {
         return this.http.post(`${this.apiUrl}/ApproveWithdraw`, { id, adminRemarks, paymentProof }, {
-            headers: this.getHeaders()
+            headers: this.authService.getAuthHeaders()
         });
     }
 
     rejectWithdraw(id: number, adminRemarks: string): Observable<any> {
         return this.http.post(`${this.apiUrl}/RejectWithdraw`, { id, adminRemarks }, {
-            headers: this.getHeaders()
+            headers: this.authService.getAuthHeaders()
         });
     }
 
     getPaymentProof(id: number): Observable<any> {
         return this.http.get(`${this.apiUrl}/GetPaymentProof`, {
-            headers: this.getHeaders(),
+            headers: this.authService.getAuthHeaders(),
             params: { id }
         });
     }

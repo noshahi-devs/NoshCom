@@ -51,14 +51,15 @@ namespace Elicom.Cards
 
         public async Task<UserBalanceDto> GetBalance()
         {
-            var userId = AbpSession.GetUserId();
+            var user = await GetCurrentUserAsync();
+            var linkedUserIds = await GetGlobalMartLinkedUserIdsAsync(user);
 
             var totalBalance = await _cardRepository.GetAll()
-                .Where(c => c.UserId == userId)
+                .Where(c => linkedUserIds.Contains(c.UserId))
                 .SumAsync(c => c.Balance);
 
             var pendingDeposit = await _depositRepository.GetAll()
-                .Where(r => r.UserId == userId && r.Status == "Pending")
+                .Where(r => linkedUserIds.Contains(r.UserId) && r.Status == "Pending")
                 .SumAsync(r => r.Amount);
 
             // Withdrawal amount is already reserved from the balance at submit time,

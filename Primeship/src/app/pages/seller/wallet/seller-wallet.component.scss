@@ -173,11 +173,67 @@
     }
 }
 
+.chart-legend-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+
+    .legend-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        color: #9ca3af;
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        &.deposit .dot { background: #10B981; }
+        &.withdraw .dot { background: #ef4444; }
+        &.transfer .dot { background: #3b82f6; }
+    }
+}
+
+.chart-empty {
+    margin-top: 24px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.orange-badge {
+    background: rgba(251, 146, 60, 0.15);
+    color: #fb923c;
+}
+
+.wallet-benefit-card .card-body h2 {
+    font-size: 28px;
+}
+
+.donut-hole {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 72px;
+    height: 72px;
+    background: #0d1f18;
+    border-radius: 50%;
+}
+
+.legend-item.muted {
+    color: #6b7280;
+    font-size: 12px;
+}
+
 .bar-chart {
     display: flex;
     gap: 12px;
     flex: 1;
-    margin-top: 20px;
+    margin-top: 12px;
     height: 200px;
 
     .y-axis {
@@ -208,6 +264,51 @@
             justify-content: flex-end;
             height: 100%;
             position: relative;
+
+            .bar-stack {
+                width: 100%;
+                max-width: 28px;
+                display: flex;
+                flex-direction: column-reverse;
+                align-items: stretch;
+                justify-content: flex-end;
+                min-height: 8px;
+                position: relative;
+
+                &.has-tooltip:hover .bar-tooltip {
+                    opacity: 1;
+                    transform: translateX(-50%) translateY(0);
+                }
+
+                .bar-segment {
+                    width: 100%;
+                    border-radius: 4px 4px 0 0;
+                    min-height: 4px;
+
+                    &.deposit { background: linear-gradient(180deg, #34d399, #10B981); }
+                    &.withdraw { background: linear-gradient(180deg, #f87171, #ef4444); }
+                    &.transfer { background: linear-gradient(180deg, #60a5fa, #3b82f6); }
+                    &.empty { background: rgba(255,255,255,0.08); border-radius: 6px; }
+                }
+
+                .bar-tooltip {
+                    position: absolute;
+                    top: -40px;
+                    left: 50%;
+                    transform: translateX(-50%) translateY(4px);
+                    background: #064e3b;
+                    color: #a7f3d0;
+                    padding: 4px 6px;
+                    border-radius: 6px;
+                    font-size: 9px;
+                    font-weight: 600;
+                    white-space: nowrap;
+                    opacity: 0;
+                    transition: all 0.2s ease;
+                    pointer-events: none;
+                    z-index: 2;
+                }
+            }
 
             .bar {
                 width: 100%;
