@@ -32,8 +32,10 @@ export class ProductGridComponent implements OnInit, OnChanges {
   private readonly initialVisibleCount = 15; // 3 rows x 5 columns
   private readonly viewMoreStep = 10; // 2 rows x 5 columns
   private readonly pageSize = 20;
+  private readonly searchPageSize = 100;
   private skipCount = 0;
   private totalCount = 0;
+  private loadRequestId = 0;
   visibleCount = this.initialVisibleCount;
 
   constructor(
@@ -50,7 +52,10 @@ export class ProductGridComponent implements OnInit, OnChanges {
       this.totalCount = this.products.length;
       this.applyFilters();
       this.isLoading = false;
-    } else {
+      return;
+    }
+
+    if (!this.hasSearchOrCategory()) {
       this.loadProducts();
     }
   }
@@ -68,9 +73,11 @@ export class ProductGridComponent implements OnInit, OnChanges {
       
       const prev = changes['filterData'].previousValue;
       const curr = changes['filterData'].currentValue;
-      const searchChanged = prev && (prev.search !== curr.search || prev.category !== curr.category);
+      const contextChanged = !prev
+        || prev.search !== curr.search
+        || prev.category !== curr.category;
       
-      if (searchChanged) {
+      if (contextChanged && !(this.products && this.products.length > 0)) {
         this.loadProducts();
       } else {
         this.applyFilters();
@@ -79,58 +86,93 @@ export class ProductGridComponent implements OnInit, OnChanges {
     }
   }
 
+  private hasSearchOrCategory(): boolean {
+    return !!(this.filterData?.search || this.filterData?.category);
+  }
+
+  private getActiveSearchTerm(): string {
+    return (this.filterData?.search || this.filterData?.category || '').trim();
+  }
+
+  private getPageSize(): number {
+    return this.filterData?.search ? this.searchPageSize : this.pageSize;
+  }
+
   loadProducts() {
     if (this.products && this.products.length > 0) return;
 
+    const requestId = ++this.loadRequestId;
     this.isLoading = true;
+    this.isLoadingMore = false;
     this.skipCount = 0;
     this.totalCount = 0;
     this.allProducts = [];
 
-    const searchTerm = this.filterData?.search || this.filterData?.category || '';
+    const searchTerm = this.getActiveSearchTerm();
+    const pageSize = this.getPageSize();
 
-    this.productService.getProductsForCards(this.skipCount, this.pageSize, searchTerm).subscribe({
+    this.productService.getProductsForCards(this.skipCount, pageSize, searchTerm).subscribe({
       next: (res: any) => {
+        if (requestId !== this.loadRequestId) return;
+
         const items = this.extractItems(res);
         this.totalCount = this.extractTotalCount(res, items.length);
         this.skipCount = items.length;
         this.allProducts = items;
         this.productsLoaded.emit(this.allProducts);
         this.applyFilters();
-        this.ensureEnoughFilteredProducts();
         this.isLoading = false;
+
+        if (searchTerm && this.skipCount < this.totalCount) {
+          this.loadMoreProducts(requestId);
+        } else {
+          this.ensureEnoughFilteredProducts();
+        }
+
         this.cdr.detectChanges();
       },
       error: (err) => {
+        if (requestId !== this.loadRequestId) return;
         console.error('Failed to load products', err);
         this.isLoading = false;
       }
     });
   }
 
-  private loadMoreProducts() {
+  private loadMoreProducts(requestId: number = this.loadRequestId) {
     if (this.products && this.products.length > 0) return;
+    if (requestId !== this.loadRequestId) return;
     if (this.isLoadingMore || this.skipCount >= this.totalCount) {
       this.applyFilters();
       return;
     }
 
     this.isLoadingMore = true;
-    const searchTerm = this.filterData?.search || this.filterData?.category || '';
+    const searchTerm = this.getActiveSearchTerm();
+    const pageSize = this.getPageSize();
 
-    this.productService.getProductsForCards(this.skipCount, this.pageSize, searchTerm).subscribe({
+    this.productService.getProductsForCards(this.skipCount, pageSize, searchTerm).subscribe({
       next: (res: any) => {
+        if (requestId !== this.loadRequestId) return;
+
         const items = this.extractItems(res);
         this.totalCount = this.extractTotalCount(res, this.totalCount || this.allProducts.length + items.length);
         this.skipCount += items.length;
         this.allProducts = [...this.allProducts, ...items];
         this.productsLoaded.emit(this.allProducts);
         this.applyFilters();
-        this.ensureEnoughFilteredProducts();
         this.isLoadingMore = false;
+
+        if (searchTerm && this.skipCount < this.totalCount) {
+          this.loadMoreProducts(requestId);
+        } else {
+          this.ensureEnoughFilteredProducts();
+        }
+
         this.cdr.detectChanges();
       },
       error: (err) => {
+        if (requestId !== this.loadRequestId) return;
         console.error('Failed to load more products', err);
         this.isLoadingMore = false;
         this.applyFilters();
@@ -182,9 +224,25 @@ export class ProductGridComponent implements OnInit, OnChanges {
     const normalize = (value: any): string =>
       (value ?? '').toString().toLowerCase().replace(/\s+/g, ' ').trim();
 
+    const compact = (value: any): string =>
+      normalize(value).replace(/[^a-z0-9]/g, '');
+
     const matchesTerm = (product: any, rawTerm: string): boolean => {
       const term = normalize(rawTerm);
       if (!term) return true;
+
+      const compactTerm = compact(rawTerm);
+      const title = normalize(this.getTitle(product));
+      const compactTitle = compact(this.getTitle(product));
+
+      if (title.includes(term) || (compactTerm.length >= 2 && compactTitle.includes(compactTerm))) {
+        return true;
+      }
+
+      const keywords = term.split(/[\s,/_-]+/).filter(Boolean);
+      if (keywords.length > 1) {
+        return keywords.every(keyword => title.includes(keyword) || compactTitle.includes(compact(keyword)));
+      }
 
       const searchableFields = [
         product.categoryName,
@@ -205,8 +263,8 @@ export class ProductGridComponent implements OnInit, OnChanges {
       filtered = filtered.filter(p => matchesTerm(p, this.filterData.category));
     }
 
-    // 1b. Free text search (header search: q=...)
-    if (this.filterData.search) {
+    // 1b. Free text search (header search: q=...) — skip when API already searched by name
+    if (this.filterData.search && this.filterData.category) {
       filtered = filtered.filter(p => matchesTerm(p, this.filterData.search));
     }
 

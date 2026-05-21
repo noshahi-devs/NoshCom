@@ -37,40 +37,42 @@ export class SearchResult implements OnInit {
     private searchService: SearchService,
     private categoryService: CategoryService,
     private cdr: ChangeDetectorRef
-  ) { }
+  ) {
+    this.applyRouteFilters(this.route.snapshot.queryParams);
+  }
 
   ngOnInit() {
-    // 1. Listen for route params (category links + free text search)
     this.route.queryParams.subscribe(params => {
-      const category = params['cat'] || params['category'];
-      const query = params['q'];
-
-      if (category) {
-        this.categoryTitle = category;
-        this.selectedCategoryLabel = category;
-        this.filterData = { ...this.filterData, category, search: '' };
-        this.searchService.setSearchTerm(category);
-      } else if (query) {
-        this.categoryTitle = query;
-        this.selectedCategoryLabel = '';
-        this.filterData = { ...this.filterData, search: query, category: '' };
-        this.searchService.setSearchTerm(query);
-      } else {
-        this.categoryTitle = '';
-        this.selectedCategoryLabel = '';
-        this.filterData = { ...this.filterData, category: '', search: '' };
-      }
-    });
-
-    // Also handle dynamic search terms
-    this.searchService.searchTerm$.subscribe(term => {
-      if (term && term !== this.categoryTitle) {
-        this.categoryTitle = term;
-        this.filterData = { ...this.filterData, search: term, category: '' };
-      }
+      this.applyRouteFilters(params);
+      this.cdr.detectChanges();
     });
 
     this.loadAllCategories();
+  }
+
+  private applyRouteFilters(params: Record<string, string | undefined>) {
+    const category = params['cat'] || params['category'];
+    const query = (params['q'] || '').trim();
+
+    if (query) {
+      this.categoryTitle = query;
+      this.selectedCategoryLabel = '';
+      this.filterData = { ...this.filterData, search: query, category: '' };
+      this.searchService.setSearchTerm(query);
+      return;
+    }
+
+    if (category) {
+      this.categoryTitle = category;
+      this.selectedCategoryLabel = category;
+      this.filterData = { ...this.filterData, category, search: '' };
+      this.searchService.setSearchTerm(category);
+      return;
+    }
+
+    this.categoryTitle = '';
+    this.selectedCategoryLabel = '';
+    this.filterData = { ...this.filterData, category: '', search: '' };
   }
 
   loadAllCategories() {

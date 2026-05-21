@@ -55,23 +55,39 @@ namespace Elicom.Homepage
                         sp.Store != null && sp.Store.Status)
                     .AsQueryable();
 
-                // 2️⃣ Filter by Search Term (Keyword matching across product and store details)
+                // 2️⃣ Filter by Search Term (SQL-translatable name/keyword matching)
                 if (!string.IsNullOrWhiteSpace(input.SearchTerm))
                 {
-                    var keywords = input.SearchTerm.Split(new[] { ' ', ',', '-', '_' }, StringSplitOptions.RemoveEmptyEntries)
+                    var rawTerm = input.SearchTerm.Trim();
+                    var lowerTerm = rawTerm.ToLowerInvariant();
+                    var keywords = rawTerm
+                        .Split(new[] { ' ', ',', '-', '_' }, StringSplitOptions.RemoveEmptyEntries)
                         .Select(k => k.Trim().ToLowerInvariant())
                         .Where(k => k.Length > 0)
+                        .Distinct()
                         .ToList();
+
+                    var compactTerm = new string(lowerTerm.Where(char.IsLetterOrDigit).ToArray());
 
                     if (keywords.Any())
                     {
                         baseQuery = baseQuery.Where(sp =>
-                            keywords.All(k =>
-                                (sp.Product != null && sp.Product.Name != null && sp.Product.Name.ToLower().Contains(k)) ||
-                                (sp.Product != null && sp.Product.Description != null && sp.Product.Description.ToLower().Contains(k)) ||
-                                (sp.Product != null && sp.Product.SKU != null && sp.Product.SKU.ToLower().Contains(k)) ||
-                                (sp.Product != null && sp.Product.BrandName != null && sp.Product.BrandName.ToLower().Contains(k)) ||
-                                (sp.Store != null && sp.Store.Name != null && sp.Store.Name.ToLower().Contains(k))
+                            sp.Product != null && (
+                                (sp.Product.Name != null && (
+                                    sp.Product.Name.ToLower().Contains(lowerTerm) ||
+                                    (!string.IsNullOrEmpty(compactTerm) &&
+                                     sp.Product.Name.ToLower().Replace(" ", "").Replace("-", "").Replace("_", "").Contains(compactTerm))
+                                )) ||
+                                keywords.All(k =>
+                                    (sp.Product.Name != null && (
+                                        sp.Product.Name.ToLower().Contains(k) ||
+                                        sp.Product.Name.ToLower().Replace(" ", "").Replace("-", "").Replace("_", "").Contains(k)
+                                    )) ||
+                                    (sp.Product.SKU != null && sp.Product.SKU.ToLower().Contains(k)) ||
+                                    (sp.Product.Description != null && sp.Product.Description.ToLower().Contains(k)) ||
+                                    (sp.Product.BrandName != null && sp.Product.BrandName.ToLower().Contains(k)) ||
+                                    (sp.Store != null && sp.Store.Name != null && sp.Store.Name.ToLower().Contains(k))
+                                )
                             )
                         );
                     }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
@@ -14,6 +14,8 @@ import { take } from 'rxjs';
     styleUrls: ['./customer-dashboard.component.scss']
 })
 export class CustomerDashboardComponent implements OnInit {
+    private cdr = inject(ChangeDetectorRef);
+
     userName = 'prismaticadeel';
     totalSpend = 0;
     orderProgress = 0;
@@ -77,8 +79,8 @@ export class CustomerDashboardComponent implements OnInit {
     loadUserData() {
         this.authService.currentUser$.subscribe(user => {
             if (user) {
-                // Use name or userName as fallback
                 this.userName = user.name || user.userName || 'User';
+                this.cdr.detectChanges();
             }
         });
     }
@@ -93,9 +95,11 @@ export class CustomerDashboardComponent implements OnInit {
                         walletAsset.unit = wallet.currency === 'USD' ? '$' : wallet.currency;
                     }
                 }
+                this.cdr.detectChanges();
             },
             error: (err) => {
                 console.warn('Failed to load wallet balance', err);
+                this.cdr.detectChanges();
             }
         });
     }
@@ -110,7 +114,7 @@ export class CustomerDashboardComponent implements OnInit {
                 const orders = this.extractOrdersFromPagedResponse(res);
                 if (orders.length > 0) {
                     this.applyOrderStats(orders);
-                    this.ordersLoading = false;
+                    this.finishOrdersLoad();
                     return;
                 }
                 this.loadOrdersFallbackByUserId();
@@ -119,23 +123,28 @@ export class CustomerDashboardComponent implements OnInit {
         });
     }
 
+    private finishOrdersLoad(): void {
+        this.ordersLoading = false;
+        this.cdr.detectChanges();
+    }
+
     private loadOrdersFallbackByUserId(): void {
         this.authService.currentUser$.pipe(take(1)).subscribe(user => {
             const numericUserId = Number(user?.id);
             if (Number.isNaN(numericUserId) || numericUserId <= 0) {
                 this.applyOrderStats([]);
-                this.ordersLoading = false;
+                this.finishOrdersLoad();
                 return;
             }
 
             this.orderService.getCustomerOrders(numericUserId).subscribe({
                 next: (fallbackOrders) => {
                     this.applyOrderStats(Array.isArray(fallbackOrders) ? fallbackOrders : []);
-                    this.ordersLoading = false;
+                    this.finishOrdersLoad();
                 },
                 error: () => {
                     this.applyOrderStats([]);
-                    this.ordersLoading = false;
+                    this.finishOrdersLoad();
                 }
             });
         });

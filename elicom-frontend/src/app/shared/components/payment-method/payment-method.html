@@ -24,7 +24,7 @@
   <div class="payment-form-area animate-fade-in">
     <div class="card-inputs">
       
-      <!-- Nosh Pay Suggestion -->
+      <!-- Visa Card Suggestion -->
       <div class="method-info mb-4" *ngIf="selectedMethodId === 'finora'">
         <i class="pi pi-info-circle me-3"></i>
         <span>{{ selectedMethod.statusMsg }}</span>
@@ -34,7 +34,8 @@
         <label class="field-label">Card Number</label>
         <div class="input-wrapper" [class.error-border]="submitted && cardErrors.number">
           <i class="pi pi-credit-card"></i>
-          <input type="text" placeholder="0000 0000 0000 0000" [value]="card.number"
+          <input type="text" inputmode="numeric" autocomplete="cc-number" maxlength="19"
+            placeholder="0000 0000 0000 0000" [value]="card.number"
             (input)="formatCardNumber($event)">
         </div>
         <div class="error-msg" *ngIf="submitted && cardErrors.number">
@@ -69,20 +70,18 @@
       </div>
 
       <div class="form-group mb-4">
-        <label class="field-label">Card Holder Name</label>
+        <label class="field-label">Card Holder Name <span class="optional-label">(Optional)</span></label>
         <div class="form-control">
-          <input type="text" placeholder="Name on card" [(ngModel)]="card.holder">
+          <input type="text" placeholder="Name on card (optional)" [(ngModel)]="card.holder">
         </div>
       </div>
 
       <!-- Easy Finora Verification -->
       <div class="finora-check mt-3" *ngIf="selectedMethodId === 'finora'">
         <div class="alerts mb-3">
-          <div class="alert alert-info d-flex align-items-center animate-fade-in" *ngIf="isVerified">
+          <div class="alert alert-success d-flex align-items-center animate-fade-in" *ngIf="isVerified">
             <i class="pi pi-check-circle me-2"></i>
-            <div>
-              Verified! Available Balance: <strong class="text-success">${{ verifiedBalance | number:'1.2-2' }}</strong>
-            </div>
+            <div><strong>Card Verified</strong></div>
           </div>
 
           <div class="alert alert-danger animate-fade-in" *ngIf="verificationMessage">
@@ -90,7 +89,7 @@
           </div>
 
           <div class="alert alert-warning animate-fade-in" *ngIf="submitted && !isVerified && !verificationMessage">
-            <i class="pi pi-exclamation-triangle me-2"></i> Please verify your card balance before continuing.
+            <i class="pi pi-exclamation-triangle me-2"></i> Please verify your card before confirming the order.
           </div>
         </div>
       </div>
@@ -101,9 +100,10 @@
 
   <div class="actions mt-4" [class.dual-actions]="selectedMethodId === 'finora'">
     <ng-container *ngIf="selectedMethodId === 'finora'; else singleAction">
-      <button type="button" class="btn btn-outline-primary verify-btn" (click)="verifyFinora()" [disabled]="isVerifying">
+      <button type="button" class="btn btn-outline-primary verify-btn" (click)="verifyFinora()" [disabled]="isVerifying || isVerified">
         <span *ngIf="isVerifying"><i class="pi pi-spin pi-spinner me-2"></i> Verifying...</span>
-        <span *ngIf="!isVerifying"><i class="pi pi-shield me-2"></i> Verify Card Balance</span>
+        <span *ngIf="!isVerifying && isVerified"><i class="pi pi-check-circle me-2"></i> Card Verified</span>
+        <span *ngIf="!isVerifying && !isVerified"><i class="pi pi-shield me-2"></i> Verify Card</span>
       </button>
 
       <button class="btn btn-save-payment" (click)="saveCard()" [disabled]="!isActive || isProcessing">

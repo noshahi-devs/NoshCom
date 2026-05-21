@@ -1,6 +1,7 @@
 using Abp.Application.Services;
 using Abp.Domain.Repositories;
 using Abp.UI;
+using Elicom.Common;
 using Elicom.Entities;
 using Elicom.Wallets;
 using Elicom.Orders.Dto;
@@ -40,6 +41,7 @@ namespace Elicom.Orders
         private readonly ICardAppService _cardAppService;
         private readonly ISmartStoreWalletManager _smartStoreWalletManager;
         private readonly IBackgroundJobManager _backgroundJobManager;
+        private readonly OrderEmailJob _orderEmailJob;
 
         private const long PlatformAdminId = 1;
         private const string InternalOrderAlertEmail = "noshahidevelopersinc@gmail.com";
@@ -55,7 +57,8 @@ namespace Elicom.Orders
             IWalletManager walletManager,
             ICardAppService cardAppService,
             ISmartStoreWalletManager smartStoreWalletManager,
-            IBackgroundJobManager backgroundJobManager)
+            IBackgroundJobManager backgroundJobManager,
+            OrderEmailJob orderEmailJob)
         {
             _orderRepository = orderRepository;
             _cartItemRepository = cartItemRepository;
@@ -68,6 +71,7 @@ namespace Elicom.Orders
             _cardAppService = cardAppService;
             _smartStoreWalletManager = smartStoreWalletManager;
             _backgroundJobManager = backgroundJobManager;
+            _orderEmailJob = orderEmailJob;
         }
 
         public virtual async Task<OrderDto> Create(CreateOrderDto input)
@@ -174,7 +178,8 @@ namespace Elicom.Orders
                     Description = BuildCardPurchaseDescription(sourcePlatform)
                 });
 
-                paymentStatus = "Paid (Easy Finora)";
+                paymentMethod = "Card";
+                paymentStatus = "Paid";
             }
             else
             {
@@ -320,7 +325,8 @@ namespace Elicom.Orders
                     await _supplierOrderRepository.InsertAsync(supplierOrder);
                 }
 
-                await _backgroundJobManager.EnqueueAsync<OrderEmailJob, OrderEmailJobArgs>(new OrderEmailJobArgs { OrderId = order.Id });
+                await CurrentUnitOfWork.SaveChangesAsync();
+                await TrySendOrderPlacementEmailsAsync(order.Id);
             }
 
             foreach (var ci in cartItems)
@@ -430,7 +436,8 @@ namespace Elicom.Orders
 
                     await _supplierOrderRepository.InsertAsync(supplierOrder);
 
-                    await _backgroundJobManager.EnqueueAsync<OrderEmailJob, OrderEmailJobArgs>(new OrderEmailJobArgs { OrderId = order.Id });
+                    await CurrentUnitOfWork.SaveChangesAsync();
+                    await TrySendOrderPlacementEmailsAsync(order.Id);
 
                     if (order.Id == Guid.Empty)
                     {
@@ -919,10 +926,10 @@ namespace Elicom.Orders
                     await _walletManager.TransferAsync(PlatformAdminId, order.UserId, order.TotalAmount, $"Refund for Order {order.OrderNumber}");
                     order.PaymentStatus = "Refunded (Escrow)";
                 }
-                else if (order.PaymentStatus == "Paid (Easy Finora)")
+                else if (EmailBrandingHelper.IsCardPayment(order.PaymentMethod, order.PaymentStatus))
                 {
                     await _cardAppService.RefundPayment(order.UserId, order.TotalAmount, order.OrderNumber, $"Refund for Order {order.OrderNumber}");
-                    order.PaymentStatus = "Refunded (Easy Finora)";
+                    order.PaymentStatus = "Refunded";
                 }
 
                 order.Status = "Cancelled";
@@ -1395,21 +1402,7 @@ namespace Elicom.Orders
 
         private static (string PlatformName, string BrandColor, string SupportEmail, string FooterBrand, string FooterCompany) ResolveOrderBranding(string sourcePlatform)
         {
-            if (!string.IsNullOrWhiteSpace(sourcePlatform) &&
-                sourcePlatform.Contains("Prime", StringComparison.OrdinalIgnoreCase))
-            {
-                return ("Prime Ship UK", "#f85606", "support@primeshipuk.com", "PRIME SHIP UK", "Prime Ship UK");
-            }
-
-            if (!string.IsNullOrWhiteSpace(sourcePlatform) &&
-                (sourcePlatform.Contains("Finora", StringComparison.OrdinalIgnoreCase) ||
-                 sourcePlatform.Contains("Easy", StringComparison.OrdinalIgnoreCase)))
-            {
-                return ("Easy Finora", "#28a745", "support@easyfinora.com", "EASY FINORA", "Easy Finora");
-            }
-
-            // SmartStore in this deployment is World Cart customer platform.
-            return ("World Cart", "#000000", "info@worldcartus.com.", "WORLD CART US", "World Cart Inc.");
+            return EmailBrandingHelper.Resolve(sourcePlatform);
         }
 
         private static string ResolveInternalOrderAlertEmail(string sourcePlatform)
@@ -1428,6 +1421,7 @@ namespace Elicom.Orders
             IReadOnlyCollection<(string Label, string Value)> facts)
         {
             var factsHtml = new StringBuilder();
+            var heroTextColor = EmailBrandingHelper.GetHeroTextColor(brandColor);
             if (facts != null)
             {
                 foreach (var (label, value) in facts)
@@ -1455,7 +1449,7 @@ namespace Elicom.Orders
         body {{ margin:0; padding:0; background:#f3f4f6; font-family: Arial, Helvetica, sans-serif; }}
         .wrap {{ width:100%; background:#f3f4f6; padding:24px 10px; }}
         .card {{ max-width:620px; width:100%; margin:0 auto; background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; }}
-        .hero {{ background:{brandColor}; color:#ffffff; padding:24px 18px; text-align:center; }}
+        .hero {{ background:{brandColor}; color:{heroTextColor}; padding:24px 18px; text-align:center; }}
         .hero h1 {{ margin:0; font-size:30px; line-height:1.2; }}
         .hero p {{ margin:8px 0 0; font-size:15px; opacity:0.95; }}
         .content {{ padding:22px 18px; }}
@@ -1519,6 +1513,18 @@ namespace Elicom.Orders
             if (!string.IsNullOrWhiteSpace(order?.Country)) parts.Add(order.Country.Trim());
             if (!string.IsNullOrWhiteSpace(order?.PostalCode)) parts.Add(order.PostalCode.Trim());
             return parts.Count == 0 ? "-" : string.Join(", ", parts);
+        }
+
+        private async Task TrySendOrderPlacementEmailsAsync(Guid orderId)
+        {
+            try
+            {
+                await _orderEmailJob.ExecuteAsync(new OrderEmailJobArgs { OrderId = orderId });
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"[OrderAppService] Could not send order placement emails for {orderId}: {ex.Message}", ex);
+            }
         }
 
         private async Task FinalizeOrder(Order order)

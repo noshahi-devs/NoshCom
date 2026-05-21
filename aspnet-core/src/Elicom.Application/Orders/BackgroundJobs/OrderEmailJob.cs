@@ -2,6 +2,7 @@ using Abp.BackgroundJobs;
 using Abp.Dependency;
 using Abp.Domain.Repositories;
 using Elicom.BackgroundJobs;
+using Elicom.Common;
 using Elicom.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -21,18 +22,18 @@ namespace Elicom.Orders.BackgroundJobs
         private readonly IRepository<Order, Guid> _orderRepository;
         private readonly IRepository<StoreProduct, Guid> _storeProductRepository;
         private readonly UserManager _userManager;
-        private readonly IBackgroundJobManager _backgroundJobManager;
+        private readonly PlatformEmailJob _platformEmailJob;
 
         public OrderEmailJob(
             IRepository<Order, Guid> orderRepository,
             IRepository<StoreProduct, Guid> storeProductRepository,
             UserManager userManager,
-            IBackgroundJobManager backgroundJobManager)
+            PlatformEmailJob platformEmailJob)
         {
             _orderRepository = orderRepository;
             _storeProductRepository = storeProductRepository;
             _userManager = userManager;
-            _backgroundJobManager = backgroundJobManager;
+            _platformEmailJob = platformEmailJob;
         }
 
         [UnitOfWork(System.Transactions.TransactionScopeOption.Suppress)]
@@ -50,12 +51,18 @@ namespace Elicom.Orders.BackgroundJobs
                     return;
                 }
 
+                if (order.PlacementEmailsSentAt.HasValue)
+                {
+                    Logger.Info($"OrderEmailJob: Skipping duplicate run for order {order.OrderNumber} (emails sent at {order.PlacementEmailsSentAt:O}).");
+                    return;
+                }
+
                 try
                 {
-                    var user = await _userManager.FindByIdAsync(order.UserId.ToString());
+                    var user = await FindUserByIdAsync(order.UserId);
                     var customerEmail = user?.EmailAddress ?? order.RecipientEmail;
                     var adminEmail = "noshahidevelopersinc@gmail.com";
-                    var branding = ResolveBranding(order.SourcePlatform);
+                    var branding = EmailBrandingHelper.ResolveForOrderInvoice(order.SourcePlatform);
                     var customerName = !string.IsNullOrWhiteSpace(order.RecipientName)
                         ? order.RecipientName
                         : (!string.IsNullOrWhiteSpace(user?.Name) ? user.Name : "Customer");
@@ -84,7 +91,7 @@ namespace Elicom.Orders.BackgroundJobs
                         order,
                         allRows,
                         storeNames);
-                    await SendEmailAsync(branding.PlatformName, customerEmail, $"Order Invoice - {order.OrderNumber}", customerBody);
+                    await SendEmailAsync(customerEmail, $"Order Invoice - {order.OrderNumber}", customerBody);
 
                     // 2) Admin new-order mail
                     var adminBody = BuildOrderInvoiceHtml(
@@ -96,15 +103,22 @@ namespace Elicom.Orders.BackgroundJobs
                         order,
                         allRows,
                         storeNames);
-                    await SendEmailAsync(branding.PlatformName, adminEmail, $"[ALERT] New Order - {order.OrderNumber}", adminBody);
+                    await SendEmailAsync(adminEmail, $"[ALERT] New Order - {order.OrderNumber}", adminBody);
 
                     // 3) Seller invoice mail (per store owner)
                     var storeGroups = storeProducts.GroupBy(sp => sp.StoreId);
+                    var sellerEmailsSent = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                     foreach (var group in storeGroups)
                     {
                         var store = group.First().Store;
-                        var owner = await _userManager.FindByIdAsync(store.OwnerId.ToString());
-                        if (owner != null)
+                        if (store == null)
+                        {
+                            Logger.Warn($"OrderEmailJob: Missing store for order {order.OrderNumber}.");
+                            continue;
+                        }
+
+                        var owner = await FindUserByIdAsync(store.OwnerId);
+                        if (owner != null && sellerEmailsSent.Add(owner.EmailAddress))
                         {
                             var sellerRows = allRows
                                 .Where(x => x.StoreId == store.Id)
@@ -124,19 +138,28 @@ namespace Elicom.Orders.BackgroundJobs
                                 sellerRows,
                                 store.Name);
 
-                            await SendEmailAsync(branding.PlatformName, owner.EmailAddress, $"New Order Received - {order.OrderNumber}", sellerBody);
+                            await SendEmailAsync(owner.EmailAddress, $"New Order Received - {order.OrderNumber}", sellerBody);
+                            Logger.Info($"OrderEmailJob: Seller invoice queued for {owner.EmailAddress} ({order.OrderNumber}).");
+                        }
+                        else if (owner == null)
+                        {
+                            Logger.Warn($"OrderEmailJob: Seller owner {store.OwnerId} not found for order {order.OrderNumber}.");
                         }
                     }
+
+                    order.PlacementEmailsSentAt = DateTime.UtcNow;
+                    await _orderRepository.UpdateAsync(order);
+                    await CurrentUnitOfWork.SaveChangesAsync();
                 }
                 catch (Exception ex)
                 {
                     Logger.Error("Failed to send order placement emails", ex);
-                    throw; // Re-throw to let ABP retry the job
+                    throw;
                 }
             }
         }
 
-        private async Task SendEmailAsync(string platformName, string to, string subject, string body)
+        private async Task SendEmailAsync(string to, string subject, string body)
         {
             if (string.IsNullOrWhiteSpace(to))
             {
@@ -145,10 +168,9 @@ namespace Elicom.Orders.BackgroundJobs
 
             try
             {
-                await _backgroundJobManager.EnqueueAsync<PlatformEmailJob, PlatformEmailJobArgs>(
-                    new PlatformEmailJobArgs
+                await _platformEmailJob.ExecuteAsync(new PlatformEmailJobArgs
                 {
-                    PlatformName = platformName,
+                    PlatformName = EmailBrandingHelper.SmartShopPlatformName,
                     To = to,
                     Subject = subject,
                     HtmlBody = body
@@ -156,26 +178,19 @@ namespace Elicom.Orders.BackgroundJobs
             }
             catch (Exception ex)
             {
-                Logger.Error($"Email error to {to}: {ex.Message}");
+                Logger.Error($"Email error to {to}: {ex.Message}", ex);
+                throw;
             }
         }
 
-        private static (string PlatformName, string BrandColor, string SupportEmail, string FooterBrand, string FooterCompany) ResolveBranding(string sourcePlatform)
+        private async Task<User> FindUserByIdAsync(long userId)
         {
-            if (!string.IsNullOrWhiteSpace(sourcePlatform) &&
-                sourcePlatform.Contains("Prime", StringComparison.OrdinalIgnoreCase))
+            using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
             {
-                return ("Prime Ship UK", "#f85606", "support@primeshipuk.com", "PRIME SHIP UK", "Prime Ship UK");
+                return await _userManager.Users
+                    .IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(u => u.Id == userId);
             }
-
-            if (!string.IsNullOrWhiteSpace(sourcePlatform) &&
-                (sourcePlatform.Contains("Finora", StringComparison.OrdinalIgnoreCase) ||
-                 sourcePlatform.Contains("Easy", StringComparison.OrdinalIgnoreCase)))
-            {
-                return ("Easy Finora", "#28a745", "support@easyfinora.com", "EASY FINORA", "Easy Finora");
-            }
-
-            return ("World Cart", "#000000", "info@worldcartus.com.", "WORLD CART US", "World Cart Inc.");
         }
 
         private static List<InvoiceLineRow> BuildInvoiceRows(
@@ -235,9 +250,12 @@ namespace Elicom.Orders.BackgroundJobs
             var subTotal = order.SubTotal.ToString("C", currency);
             var shipping = order.ShippingCost.ToString("C", currency);
             var discount = order.Discount.ToString("C", currency);
-            var paymentStatus = string.IsNullOrWhiteSpace(order.PaymentStatus) ? "Pending" : order.PaymentStatus;
-            var paymentMethod = string.IsNullOrWhiteSpace(order.PaymentMethod) ? "-" : order.PaymentMethod;
+            var paymentMethod = EmailBrandingHelper.FormatPaymentMethodForEmail(order.PaymentMethod, order.PaymentStatus);
             var safeStore = string.IsNullOrWhiteSpace(storeName) ? "Store" : storeName;
+            var heroTextColor = EmailBrandingHelper.GetHeroTextColor(branding.BrandColor);
+            var paymentMethodLine = EmailBrandingHelper.IsCardPayment(order.PaymentMethod, order.PaymentStatus)
+                ? WebUtility.HtmlEncode(paymentMethod)
+                : $"{WebUtility.HtmlEncode(paymentMethod)} <span class='badge'>{WebUtility.HtmlEncode(string.IsNullOrWhiteSpace(order.PaymentStatus) ? "Pending" : order.PaymentStatus)}</span>";
 
             return $@"
 <!DOCTYPE html>
@@ -249,7 +267,7 @@ namespace Elicom.Orders.BackgroundJobs
         body {{ margin:0; padding:0; background:#f3f4f6; font-family: Arial, Helvetica, sans-serif; }}
         .wrap {{ width:100%; background:#f3f4f6; padding:24px 10px; }}
         .card {{ max-width:640px; width:100%; margin:0 auto; background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; }}
-        .hero {{ background:{branding.BrandColor}; color:#ffffff; text-align:center; padding:28px 18px; }}
+        .hero {{ background:{branding.BrandColor}; color:{heroTextColor}; text-align:center; padding:28px 18px; }}
         .hero h1 {{ margin:0; font-size:36px; line-height:1.1; }}
         .hero p {{ margin:8px 0 0; font-size:15px; opacity:0.95; }}
         .section {{ padding:24px 24px 18px; border-top:1px solid #e5e7eb; }}
@@ -257,11 +275,11 @@ namespace Elicom.Orders.BackgroundJobs
         .meta p {{ margin:6px 0; color:#1f2937; font-size:15px; }}
         .label {{ font-weight:700; }}
         .line-table {{ width:100%; border-collapse:collapse; table-layout:fixed; }}
-        .line-table th {{ background:{branding.BrandColor}; color:#ffffff; text-align:left; padding:12px; font-size:15px; }}
+        .line-table th {{ background:{branding.BrandColor}; color:{heroTextColor}; text-align:left; padding:12px; font-size:15px; }}
         .line-table th.qty, .line-table td.col-qty {{ width:90px; text-align:center; }}
         .line-table th.price, .line-table td.col-price {{ width:130px; text-align:right; }}
         .line-table td {{ border:1px solid #e5e7eb; padding:12px; color:#111827; font-size:14px; vertical-align:top; word-break:break-word; }}
-        .totals {{ background:{branding.BrandColor}; color:#ffffff; padding:14px 16px; }}
+        .totals {{ background:{branding.BrandColor}; color:{heroTextColor}; padding:14px 16px; }}
         .totals-row {{ display:flex; justify-content:space-between; margin:4px 0; font-size:15px; }}
         .totals-row.total {{ font-size:26px; font-weight:700; margin-top:8px; }}
         .badge {{ display:inline-block; background:#eef2ff; color:#3730a3; border:1px solid #c7d2fe; padding:3px 8px; border-radius:999px; font-size:12px; margin-left:8px; }}
@@ -294,7 +312,7 @@ namespace Elicom.Orders.BackgroundJobs
                     <p><span class='label'>Store:</span> {WebUtility.HtmlEncode(safeStore)}</p>
                     <p><span class='label'>Order Number:</span> {WebUtility.HtmlEncode(order.OrderNumber)}</p>
                     <p><span class='label'>Receive Date:</span> {receiveDate:MM-dd-yyyy HH:mm:ss}</p>
-                    <p><span class='label'>Payment Method:</span> {WebUtility.HtmlEncode(paymentMethod)} <span class='badge'>{WebUtility.HtmlEncode(paymentStatus)}</span></p>
+                    <p><span class='label'>Payment Method:</span> {paymentMethodLine}</p>
                     <p><span class='label'>Copy:</span> {WebUtility.HtmlEncode(copyType)}</p>
                 </div>
             </div>

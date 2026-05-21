@@ -2100,6 +2100,9 @@ namespace Elicom.Migrations
                     b.Property<string>("PaymentStatus")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("PlacementEmailsSentAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("PostalCode")
                         .HasColumnType("nvarchar(max)");
 

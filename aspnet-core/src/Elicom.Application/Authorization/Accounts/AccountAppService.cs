@@ -729,8 +729,9 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
             r.Contains("supplier", StringComparison.OrdinalIgnoreCase) ||
             r.Contains("reseller", StringComparison.OrdinalIgnoreCase));
 
-        var subject = platformName.Contains("World Cart", StringComparison.OrdinalIgnoreCase)
-            ? "Your Account is Verified - Welcome to WORLD CART"
+        var subject = platformName.Contains("Smart Shop UK", StringComparison.OrdinalIgnoreCase) ||
+                      platformName.Contains("World Cart", StringComparison.OrdinalIgnoreCase)
+            ? "Your Account is Verified - Welcome to Smart Shop UK"
             : $"Your {platformName} Account is Verified";
 
         var body = BuildWelcomeAfterVerificationEmailBody(
@@ -754,9 +755,12 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
             ? "#f85606"
             : platformName.Contains("Easy Finora", StringComparison.OrdinalIgnoreCase)
                 ? "#28a745"
-                : "#000000";
+                : "#F2BB13";
 
-        var supportEmail = GetSenderEmailForPlatform(platformName);
+        var supportEmail = platformName.Contains("Smart Shop UK", StringComparison.OrdinalIgnoreCase) ||
+                           platformName.Contains("World Cart", StringComparison.OrdinalIgnoreCase)
+            ? "support@thesmartshop.uk"
+            : GetSenderEmailForPlatform(platformName);
         var userName = string.IsNullOrWhiteSpace(user?.Name) ? (user?.UserName ?? "User") : user.Name;
 
         var roleSpecificParagraph = isSeller
@@ -767,12 +771,17 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
             ? $"Thank you for choosing {platformName}. We look forward to helping you grow your business!"
             : $"Thank you for choosing {platformName}. We look forward to serving you!";
 
-        var footerBrand = platformName.Contains("World Cart", StringComparison.OrdinalIgnoreCase)
-            ? "WORLD CART US"
+        var footerBrand = platformName.Contains("World Cart", StringComparison.OrdinalIgnoreCase) ||
+                          platformName.Contains("Smart Shop UK", StringComparison.OrdinalIgnoreCase)
+            ? "SMART SHOP UK"
             : platformName.ToUpperInvariant();
-        var footerCompany = platformName.Contains("World Cart", StringComparison.OrdinalIgnoreCase)
-            ? "World Cart Inc."
+        var footerCompany = platformName.Contains("World Cart", StringComparison.OrdinalIgnoreCase) ||
+                            platformName.Contains("Smart Shop UK", StringComparison.OrdinalIgnoreCase)
+            ? "Smart Shop UK"
             : platformName;
+        var heroTextColor = string.Equals(brandColor, "#F2BB13", StringComparison.OrdinalIgnoreCase)
+            ? "#111827"
+            : "#ffffff";
 
         return $@"
 <!DOCTYPE html>
@@ -788,7 +797,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                 <table width='600' cellpadding='0' cellspacing='0' style='max-width:600px; width:100%; background:#ffffff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden;'>
                     <tr>
                         <td style='background:{brandColor}; padding:26px 22px; text-align:center;'>
-                            <h1 style='margin:0; color:#ffffff; font-size:40px; font-weight:700; line-height:1.15;'>Your Account is Verified!</h1>
+                            <h1 style='margin:0; color:{heroTextColor}; font-size:40px; font-weight:700; line-height:1.15;'>Your Account is Verified!</h1>
                         </td>
                     </tr>
                     <tr>
@@ -1324,7 +1333,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
     {
         if (string.IsNullOrWhiteSpace(platformName))
         {
-            return "info@worldcartus.com";
+            return "support@thesmartshop.uk";
         }
 
         if (platformName.Contains("Easy Finora", StringComparison.OrdinalIgnoreCase))
@@ -1339,7 +1348,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
             return "support@globalmart.uk.com";
         }
 
-        return "info@worldcartus.com";
+        return "support@thesmartshop.uk";
     }
 
     private static string GetEmailSectionPrefix(string platformName)

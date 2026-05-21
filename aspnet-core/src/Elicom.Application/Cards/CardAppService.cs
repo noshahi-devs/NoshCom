@@ -11,6 +11,7 @@ using Abp.Runtime.Session;
 using Abp.UI;
 using Elicom.Authorization.Users;
 using Elicom.Cards.Dto;
+using Elicom.Common;
 using Elicom.Configuration;
 
 using Elicom.Entities;
@@ -77,6 +78,15 @@ namespace Elicom.Cards
         {
             // Clean card number (remove spaces)
             var cleanCardNumber = NormalizeCardNumber(input.CardNumber);
+
+            if (cleanCardNumber.Length != 16 || !cleanCardNumber.All(char.IsDigit))
+            {
+                return new CardValidationResultDto
+                {
+                    IsValid = false,
+                    Message = "Card number must be exactly 16 digits."
+                };
+            }
 
             // Cross-tenant lookup: Ignore filters to find the card in any tenant (usually Tenant 3)
             using (UnitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
@@ -1129,8 +1139,8 @@ namespace Elicom.Cards
 
             var normalized = sourcePlatform.Trim();
             if (normalized.Equals("PrimeShip", StringComparison.OrdinalIgnoreCase)) return "PrimeShip";
-            if (normalized.Equals("SmartStore", StringComparison.OrdinalIgnoreCase)) return "World Cart";
-            if (normalized.Equals("WorldCart", StringComparison.OrdinalIgnoreCase)) return "World Cart";
+            if (normalized.Equals("SmartStore", StringComparison.OrdinalIgnoreCase)) return EmailBrandingHelper.SmartShopPlatformName;
+            if (normalized.Equals("WorldCart", StringComparison.OrdinalIgnoreCase)) return EmailBrandingHelper.SmartShopPlatformName;
 
             return normalized;
         }

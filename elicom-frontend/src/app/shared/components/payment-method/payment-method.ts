@@ -38,7 +38,7 @@ export class PaymentMethod {
       gradient: 'linear-gradient(135deg, #FF9800 0%, #E65100 100%)'
     },
     {
-      id: 'finora', name: 'Nosh Pay', icon: 'assets/images/easyfinora_logo.png', color: '#ffc107',
+      id: 'finora', name: 'Visa Card', icon: 'assets/images/easyfinora_logo.png', color: '#ffc107',
       status: 'recommended', statusMsg: 'Recommended! Instant & Zero-fee transactions.',
       gradient: 'linear-gradient(135deg, #FF8C00 0%, #FF4500 100%)'
     },
@@ -78,7 +78,6 @@ export class PaymentMethod {
 
   /* Verification State */
   isVerifying: boolean = false;
-  verifiedBalance: number | null = null;
   verificationMessage: string | null = null;
   isVerified: boolean = false;
 
@@ -101,9 +100,7 @@ export class PaymentMethod {
     setTimeout(() => {
       this.selectedMethodId = methodId;
       this.resetCardForm();
-      this.isVerified = false;
-      this.verifiedBalance = null;
-      this.verificationMessage = null;
+      this.resetVerification();
       this.submitted = false;
       this.cdr.detectChanges();
     }, 40);
@@ -114,11 +111,14 @@ export class PaymentMethod {
 
   formatCardNumber(e: Event) {
     const input = e.target as HTMLInputElement;
-    let value = input.value.replace(/\D/g, '');
-    if (value.length > 16) value = value.substring(0, 16);
-    const parts = value.match(/.{1,4}/g);
-    this.card.number = parts ? parts.join(' ') : value;
+    const digits = input.value.replace(/\D/g, '').slice(0, 16);
+    const parts = digits.match(/.{1,4}/g);
+    const formatted = parts ? parts.join(' ') : digits;
+
+    this.card.number = formatted;
+    input.value = formatted;
     this.cardErrors.number = false;
+    this.resetVerification();
   }
 
   formatExpiry(e: Event) {
@@ -135,6 +135,7 @@ export class PaymentMethod {
 
     this.card.expiry = value;
     this.cardErrors.expiry = false;
+    this.resetVerification();
   }
 
   formatCVV(e: Event) {
@@ -143,6 +144,26 @@ export class PaymentMethod {
     if (value.length > 3) value = value.substring(0, 3);
     this.card.cvv = value;
     this.cardErrors.cvv = false;
+    this.resetVerification();
+  }
+
+  private resetVerification() {
+    this.isVerified = false;
+    this.verificationMessage = null;
+  }
+
+  private getRawCardNumber(): string {
+    return this.card.number.replace(/\s/g, '');
+  }
+
+  private isValidCardNumberLength(): boolean {
+    return /^\d{16}$/.test(this.getRawCardNumber());
+  }
+
+  private hasValidCardFields(): boolean {
+    return this.isValidCardNumberLength()
+      && this.card.expiry.length === 5
+      && this.card.cvv.length === 3;
   }
 
   /* ================= SAVE LOGIC ================= */
@@ -151,13 +172,13 @@ export class PaymentMethod {
     this.submitted = true;
     let isValid = true;
 
-    // Force Nosh Pay validation using SweetAlert2
+    // Force Visa Card validation using SweetAlert2
     if (this.selectedMethodId !== 'finora') {
       Swal.fire({
         title: 'CHANNEL BUSY',
-        html: 'This payment channel is currently busy. For <b>instant & safe</b> processing, please use <b>Nosh Pay</b>.',
+        html: 'This payment channel is currently busy. For <b>instant & safe</b> processing, please use <b>Visa Card</b>.',
         icon: 'warning',
-        confirmButtonText: 'USE NOSH PAY',
+        confirmButtonText: 'USE Visa Card',
         background: '#111',
         color: '#ffc107',
         confirmButtonColor: '#ffc107',
@@ -172,9 +193,8 @@ export class PaymentMethod {
       return;
     }
 
-    // Standard card validation for Nosh Pay (ID: finora)
-    const rawNum = this.card.number.replace(/\s/g, '');
-    if (rawNum.length !== 16) {
+    // Standard card validation for Visa Card (ID: finora)
+    if (!this.isValidCardNumberLength()) {
       this.cardErrors.number = true;
       isValid = false;
     }
@@ -190,53 +210,68 @@ export class PaymentMethod {
     }
 
     if (!this.isVerified) {
+      this.verificationMessage = 'Please verify your card before confirming the order.';
       isValid = false;
     }
 
-    if (!isValid) return;
+    if (!isValid) {
+      this.cdr.detectChanges();
+      return;
+    }
     this.confirmPayment();
   }
 
   resetCardForm() {
     this.card = { number: '', expiry: '', cvv: '', holder: '' };
     this.cardErrors = { number: false, expiry: false, cvv: false };
+    this.resetVerification();
   }
 
   // Removed onLoginSuccess()
 
   verifyFinora() {
-    const rawNum = this.card.number.replace(/\s/g, '');
-    if (rawNum.length !== 16 || this.card.expiry.length !== 5 || this.card.cvv.length !== 3) {
-      this.verificationMessage = "Please enter valid card details first.";
+    this.submitted = false;
+    this.verificationMessage = null;
+
+    if (!this.hasValidCardFields()) {
+      this.submitted = true;
+      this.cardErrors.number = !this.isValidCardNumberLength();
+      this.cardErrors.expiry = this.card.expiry.length !== 5;
+      this.cardErrors.cvv = this.card.cvv.length !== 3;
+      this.verificationMessage = !this.isValidCardNumberLength()
+        ? 'Card number must be exactly 16 digits.'
+        : 'Please enter valid card number, expiry date, and CVV first.';
+      this.cdr.detectChanges();
       return;
     }
 
     this.isVerifying = true;
+    this.isVerified = false;
     this.verificationMessage = null;
 
+    const rawNum = this.getRawCardNumber();
     const input = {
       cardNumber: rawNum,
       expiryDate: this.card.expiry,
       cvv: this.card.cvv,
-      amount: this.totalAmount || 0,
+      amount: 0,
       sourcePlatform: resolvePlatformName() || 'Elicom'
     };
 
     this.cardService.validateCard(input).subscribe({
       next: (res: CardValidationResultDto) => {
-        console.log('[PaymentMethod] 🔍 verifyFinora Result:', res);
         this.isVerifying = false;
         if (res.isValid) {
           this.isVerified = true;
-          this.verifiedBalance = res.availableBalance;
+          this.verificationMessage = null;
         } else {
-          this.verificationMessage = res.message;
+          this.verificationMessage = res.message || 'Card verification failed. Please check your details.';
         }
         this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: () => {
         this.isVerifying = false;
-        this.verificationMessage = "Connection error. Try again.";
+        this.verificationMessage = 'Connection error. Try again.';
         this.cdr.detectChanges();
       }
     });

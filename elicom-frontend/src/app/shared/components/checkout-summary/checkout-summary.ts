@@ -18,7 +18,6 @@ export class CheckoutSummary {
   @Input() showPlaceOrder: boolean = true;
   @Output() placeOrder = new EventEmitter<void>();
 
-  readonly PLATFORM_TAX_RATE = 0; // 0%
   readonly DELIVERY_RATE = 0; // 0%
 
   get itemsCount(): number {
@@ -46,12 +45,7 @@ export class CheckoutSummary {
     return parseFloat((this.subtotal * this.DELIVERY_RATE).toFixed(2));
   }
 
-  get platformTax(): number {
-    if (this.subtotal <= 0) return 0;
-    return parseFloat((this.subtotal * this.PLATFORM_TAX_RATE).toFixed(2));
-  }
-
   get orderTotal(): number {
-    return parseFloat((this.subtotal + this.deliveryCharges + this.platformTax).toFixed(2));
+    return parseFloat((this.subtotal + this.deliveryCharges).toFixed(2));
   }
 }

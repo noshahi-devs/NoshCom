@@ -243,6 +243,14 @@
   letter-spacing: 0.1em;
   margin-bottom: 8px;
   display: block;
+
+  .optional-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: none;
+    letter-spacing: 0;
+  }
 }
 
 .input-wrapper, 

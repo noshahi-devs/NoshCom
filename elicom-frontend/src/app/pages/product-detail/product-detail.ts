@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Breadcrumb } from '../../shared/breadcrumb/breadcrumb';
@@ -6,6 +6,7 @@ import { ProductGallery } from '../../shared/components/product-gallery/product-
 import { ProductInfo } from '../../shared/components/product-info/product-info';
 import { ProductService, ProductDetailDto, ProductCardDto } from '../../services/product';
 import { environment } from '../../../environments/environment';
+import { NoshLoader } from '../../shared/components/nosh-loader/nosh-loader';
 import { SmartPricePipe } from '../../shared/pipes/smart-price.pipe';
 
 @Component({
@@ -17,12 +18,17 @@ import { SmartPricePipe } from '../../shared/pipes/smart-price.pipe';
     Breadcrumb,
     SmartPricePipe,
     ProductGallery,
-    ProductInfo
+    ProductInfo,
+    NoshLoader
   ],
   templateUrl: './product-detail.html',
   styleUrls: ['./product-detail.scss']
 })
-export class ProductDetail implements OnInit {
+export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
+
+  @ViewChild('gallerySticky') gallerySticky?: ElementRef<HTMLElement>;
+  @ViewChild('galleryColumn') galleryColumn?: ElementRef<HTMLElement>;
+  @ViewChild('productLayout') productLayout?: ElementRef<HTMLElement>;
 
   productData?: ProductDetailDto | null;
   breadcrumbItems: string[] = ['Home'];
@@ -34,6 +40,11 @@ export class ProductDetail implements OnInit {
   relatedSkeletonCards = Array.from({ length: 10 });
   favoriteKeys = new Set<string>();
   burstingFavoriteKeys = new Set<string>();
+  private stickyRefreshTimer?: ReturnType<typeof setTimeout>;
+  private stickyFrame?: number;
+  private stickyActive = false;
+  private resizeListener = () => this.scheduleStickyUpdate();
+  private scrollListener = () => this.scheduleStickyUpdate();
 
   constructor(
     private route: ActivatedRoute,
@@ -42,11 +53,9 @@ export class ProductDetail implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    console.log('ProductDetail: Component Initialized');
     this.route.params.subscribe(params => {
       const productId = params['productId'];
       const storeProductId = params['storeProductId'];
-      console.log('ProductDetail Route Params:', params);
       if (productId && storeProductId) {
         this.loadProductDetail(productId, storeProductId);
       } else {
@@ -56,7 +65,151 @@ export class ProductDetail implements OnInit {
     });
   }
 
+  ngAfterViewInit(): void {
+    this.bindStickyListeners();
+    this.scheduleStickyUpdate();
+  }
+
+  ngOnDestroy(): void {
+    this.unbindStickyListeners();
+    if (this.stickyRefreshTimer) {
+      clearTimeout(this.stickyRefreshTimer);
+    }
+    if (this.stickyFrame) {
+      cancelAnimationFrame(this.stickyFrame);
+    }
+    this.resetGallerySticky();
+  }
+
+  private bindStickyListeners(): void {
+    if (typeof window === 'undefined' || this.stickyActive) {
+      return;
+    }
+    window.addEventListener('scroll', this.scrollListener, { passive: true });
+    window.addEventListener('resize', this.resizeListener, { passive: true });
+    this.stickyActive = true;
+  }
+
+  private unbindStickyListeners(): void {
+    if (typeof window === 'undefined' || !this.stickyActive) {
+      return;
+    }
+    window.removeEventListener('scroll', this.scrollListener);
+    window.removeEventListener('resize', this.resizeListener);
+    this.stickyActive = false;
+  }
+
+  private scheduleStickyUpdate(): void {
+    if (this.stickyFrame) {
+      cancelAnimationFrame(this.stickyFrame);
+    }
+    this.stickyFrame = requestAnimationFrame(() => this.updateGallerySticky());
+  }
+
+  private scheduleStickyRefresh(): void {
+    if (this.stickyRefreshTimer) {
+      clearTimeout(this.stickyRefreshTimer);
+    }
+
+    this.bindStickyListeners();
+
+    this.stickyRefreshTimer = setTimeout(() => {
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      }
+      this.resetGallerySticky();
+      this.scheduleStickyUpdate();
+    }, 0);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => this.scheduleStickyUpdate());
+    });
+
+    setTimeout(() => this.scheduleStickyUpdate(), 350);
+    setTimeout(() => this.scheduleStickyUpdate(), 900);
+  }
+
+  private getStickyTopOffset(): number {
+    const shell = this.productLayout?.nativeElement.closest('.app-shell') as HTMLElement | null;
+    const raw = shell
+      ? getComputedStyle(shell).getPropertyValue('--wc-sticky-top').trim()
+      : getComputedStyle(document.documentElement).getPropertyValue('--wc-sticky-top').trim();
+    const parsed = parseInt(raw, 10);
+    return Number.isFinite(parsed) ? parsed : 92;
+  }
+
+  private resetGallerySticky(): void {
+    const stickyEl = this.gallerySticky?.nativeElement;
+    const columnEl = this.galleryColumn?.nativeElement;
+    if (!stickyEl) {
+      return;
+    }
+
+    stickyEl.style.position = '';
+    stickyEl.style.top = '';
+    stickyEl.style.left = '';
+    stickyEl.style.width = '';
+    stickyEl.style.zIndex = '';
+    stickyEl.classList.remove('is-fixed', 'is-pinned');
+
+    if (columnEl) {
+      columnEl.style.minHeight = '';
+    }
+  }
+
+  private updateGallerySticky(): void {
+    if (typeof window === 'undefined' || window.innerWidth <= 768 || this.isLoading || !this.productData) {
+      this.resetGallerySticky();
+      return;
+    }
+
+    const layoutEl = this.productLayout?.nativeElement;
+    const columnEl = this.galleryColumn?.nativeElement;
+    const stickyEl = this.gallerySticky?.nativeElement;
+    if (!layoutEl || !columnEl || !stickyEl) {
+      return;
+    }
+
+    const stickyTop = this.getStickyTopOffset();
+    const scrollY = window.scrollY;
+    const layoutRect = layoutEl.getBoundingClientRect();
+    const columnRect = columnEl.getBoundingClientRect();
+    const layoutTop = scrollY + layoutRect.top;
+    const layoutHeight = layoutEl.offsetHeight;
+    const columnHeight = columnEl.offsetHeight;
+    const galleryHeight = stickyEl.offsetHeight;
+    const stickStart = layoutTop - stickyTop;
+    const stickEnd = layoutTop + layoutHeight - galleryHeight - stickyTop;
+
+    columnEl.style.minHeight = `${galleryHeight}px`;
+
+    if (scrollY <= stickStart) {
+      this.resetGallerySticky();
+      return;
+    }
+
+    if (scrollY >= stickEnd) {
+      stickyEl.classList.remove('is-fixed');
+      stickyEl.classList.add('is-pinned');
+      stickyEl.style.position = 'absolute';
+      stickyEl.style.top = `${Math.max(0, columnHeight - galleryHeight)}px`;
+      stickyEl.style.left = '0';
+      stickyEl.style.width = '100%';
+      stickyEl.style.zIndex = '10';
+      return;
+    }
+
+    stickyEl.classList.remove('is-pinned');
+    stickyEl.classList.add('is-fixed');
+    stickyEl.style.position = 'fixed';
+    stickyEl.style.top = `${stickyTop}px`;
+    stickyEl.style.left = `${columnRect.left}px`;
+    stickyEl.style.width = `${columnRect.width}px`;
+    stickyEl.style.zIndex = '10';
+  }
+
   loadProductDetail(productId: string, storeProductId: string) {
+    this.resetGallerySticky();
     this.isLoading = true;
     this.errorHappened = false;
     this.productService.getProductDetail(productId, storeProductId).subscribe({
@@ -74,6 +227,7 @@ export class ProductDetail implements OnInit {
           this.errorHappened = true;
         }
         this.cdr.detectChanges();
+        this.scheduleStickyRefresh();
       },
       error: (err) => {
         console.error('Error fetching product details', err);

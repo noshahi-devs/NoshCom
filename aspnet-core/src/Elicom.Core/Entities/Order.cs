@@ -55,6 +55,8 @@ namespace Elicom.Entities
         // Store/Admin sets when delivering to buyer
         public string DeliveryTrackingNumber { get; set; }
 
+        public DateTime? PlacementEmailsSentAt { get; set; }
+
         public virtual ICollection<OrderItem> OrderItems { get; set; }
     }
 }

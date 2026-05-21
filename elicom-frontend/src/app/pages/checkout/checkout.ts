@@ -172,7 +172,7 @@ export class Checkout {
           this.triggerConfetti();
           Swal.fire({
             title: '<strong>ORDER CONFIRMED!</strong>',
-            html: `Thank you for your purchase! Your order has been placed securely${this.selectedPaymentMethod === 'finora' ? ' with <b>Nosh Pay</b>' : ''}.`,
+            html: `Thank you for your purchase! Your order has been placed securely${this.selectedPaymentMethod === 'finora' ? ' with <b>Visa Card</b>' : ''}.`,
             icon: 'success',
             showConfirmButton: false,
             timer: 3000,

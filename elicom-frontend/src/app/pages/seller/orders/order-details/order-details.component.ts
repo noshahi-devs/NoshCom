@@ -102,10 +102,9 @@ export class OrderDetailsComponent implements OnInit {
             subtotal: itemsTotal,
             shippingFee: data.shippingCost || 0,
             platformFee: platformFeeAmount,
-            taxAmount: itemsTotal * 0.04, // Mock 4% tax from screenshot
             platformFeeRatePercent: (platformFeeRate * 100),
             payoutAmount: netPayoutAmount,
-            grandTotal: itemsTotal + (itemsTotal * 0.04), // subtotal + tax
+            grandTotal: data.totalAmount ?? itemsTotal,
             shippingService: 'Standard',
             fulfillment: 'Seller',
             salesChannel: 'thesmartshop.uk',
@@ -127,7 +126,6 @@ export class OrderDetailsComponent implements OnInit {
                 const itemSubtotal = item.priceAtPurchase * item.quantity;
                 const itemPlatformFee = itemSubtotal * platformFeeRate;
                 const itemNetPayout = Math.max(0, itemSubtotal - itemPlatformFee);
-                const itemTax = itemSubtotal * 0.04;
                 return {
                     id: item.id,
                     name: item.productName,
@@ -136,9 +134,9 @@ export class OrderDetailsComponent implements OnInit {
                     price: item.priceAtPurchase,
                     quantity: item.quantity,
                     subtotal: itemSubtotal.toFixed(2),
-                    tax: itemTax.toFixed(2),
                     platformFee: itemPlatformFee.toFixed(2),
-                    total: (itemSubtotal + itemTax).toFixed(2),
+                    netPayout: itemNetPayout.toFixed(2),
+                    total: itemSubtotal.toFixed(2),
                     image: this.resolveProductImage(item.imageUrl)
                 };
             })

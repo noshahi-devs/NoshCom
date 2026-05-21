@@ -72,7 +72,7 @@ namespace Elicom.Tests.Stores
                     args.To == ownerEmail &&
                     args.Subject.Contains("We Received Your Store Application") &&
                     args.HtmlBody.Contains("Store Application Received") &&
-                    args.HtmlBody.Contains("WORLD CART US")),
+                    args.HtmlBody.Contains("SMART SHOP UK")),
                 Arg.Any<BackgroundJobPriority>(),
                 Arg.Any<TimeSpan?>());
         }

@@ -1,4 +1,5 @@
 using Abp.BackgroundJobs;
+using Elicom.Common;
 using Abp.Configuration;
 using Abp.Dependency;
 using Abp.Net.Mail;
@@ -133,9 +134,20 @@ namespace Elicom.BackgroundJobs
                 _configuration[$"{sectionPrefix}:FromAddress"],
                 GetSenderEmailForPlatform(args.PlatformName),
                 await _settingManager.GetSettingValueAsync(EmailSettingNames.DefaultFromAddress),
-                "support@globalmart.uk.com");
+                EmailBrandingHelper.SmartShopSupportEmail);
 
-            var senderName = string.IsNullOrWhiteSpace(args.PlatformName) ? "Global Mart UK" : args.PlatformName;
+            var configuredDisplayName = _configuration[$"{sectionPrefix}:FromDisplayName"];
+            var senderName = IsSmartShopEmail(args.PlatformName, sectionPrefix)
+                ? EmailBrandingHelper.SmartShopPlatformName
+                : EmailBrandingHelper.NormalizeSenderDisplayName(
+                    !string.IsNullOrWhiteSpace(configuredDisplayName)
+                        ? configuredDisplayName
+                        : args.PlatformName);
+
+            if (IsSmartShopEmail(args.PlatformName, sectionPrefix))
+            {
+                senderEmail = EmailBrandingHelper.SmartShopSupportEmail;
+            }
 
             try
             {
@@ -198,12 +210,17 @@ namespace Elicom.BackgroundJobs
         {
             if (string.IsNullOrWhiteSpace(platformName))
             {
-                return "support@globalmart.uk.com";
+                return EmailBrandingHelper.SmartShopSupportEmail;
             }
 
             if (platformName.Contains("Easy Finora", StringComparison.OrdinalIgnoreCase))
             {
                 return "info@easyfinora.com";
+            }
+
+            if (platformName.Contains("Global Mart", StringComparison.OrdinalIgnoreCase))
+            {
+                return "support@globalmart.uk.com";
             }
 
             if (platformName.Contains("Prime Ship", StringComparison.OrdinalIgnoreCase) ||
@@ -212,7 +229,7 @@ namespace Elicom.BackgroundJobs
                 return "info@primeshipuk.com";
             }
 
-            return "support@globalmart.uk.com";
+            return EmailBrandingHelper.SmartShopSupportEmail;
         }
 
         private static string GetEmailSectionPrefix(string platformName)
@@ -225,12 +242,13 @@ namespace Elicom.BackgroundJobs
 
             if (!string.IsNullOrWhiteSpace(platformName) &&
                 (platformName.Contains("Prime Ship", StringComparison.OrdinalIgnoreCase) ||
-                 platformName.Contains("Primeship", StringComparison.OrdinalIgnoreCase)))
+                 platformName.Contains("Primeship", StringComparison.OrdinalIgnoreCase) ||
+                 platformName.Contains("Global Mart", StringComparison.OrdinalIgnoreCase)))
             {
                 return "EmailSettings:PrimeShip";
             }
 
-            return "EmailSettings:PrimeShip";
+            return "EmailSettings:WorldCart";
         }
 
         private static string FirstNonEmpty(params string[] values)
@@ -278,6 +296,12 @@ namespace Elicom.BackgroundJobs
             }
 
             return sb.ToString();
+        }
+
+        private static bool IsSmartShopEmail(string platformName, string sectionPrefix)
+        {
+            return string.Equals(sectionPrefix, "EmailSettings:WorldCart", StringComparison.OrdinalIgnoreCase) ||
+                   EmailBrandingHelper.IsSmartShopPlatform(platformName);
         }
 
     }

@@ -1,13 +1,15 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { SellerDashboardService, SellerDashboardStats } from '../../../../services/seller-dashboard.service';
 import { StoreService } from '../../../../services/store.service';
+import { OrderService } from '../../../../services/order.service';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AppPageLoaderService } from '../../../../services/app-page-loader.service';
-import { ChangeDetectorRef } from '@angular/core';
 
 import { DateRangePickerComponent, DateRangeResult } from '../../../../shared/date-range-picker/date-range-picker.component';
+
+type OrderStatusFilter = 'all' | 'delivered' | 'pending' | 'reject';
 
 @Component({
   selector: 'app-sales-report',
@@ -16,17 +18,24 @@ import { DateRangePickerComponent, DateRangeResult } from '../../../../shared/da
   templateUrl: './sales-report.component.html',
   styleUrls: ['./sales-report.component.scss']
 })
-export class SalesReportComponent implements OnInit {
+export class SalesReportComponent implements OnInit, OnDestroy {
   private dashboardService = inject(SellerDashboardService);
   private storeService = inject(StoreService);
+  private orderService = inject(OrderService);
   private router = inject(Router);
   private loaderService = inject(AppPageLoaderService);
   private cdr = inject(ChangeDetectorRef);
 
   stats?: SellerDashboardStats;
-  isLoading = false; // Local flag mainly for internal states if needed, but not for UI overlay
+  isLoading = false;
+  ordersLoading = false;
   currentStore: any;
   currentDateRange: DateRangeResult = { label: 'Maximum Data', id: 'max' };
+  statusFilter: OrderStatusFilter = 'all';
+  allOrders: any[] = [];
+  filteredOrders: any[] = [];
+  currentPage = 1;
+  pageSize = 10;
   currentTimeDisplay = '';
   currentDateDisplay = '';
   hourHandRotation = 0;
@@ -71,7 +80,148 @@ export class SalesReportComponent implements OnInit {
           this.cdr.detectChanges();
         }
       });
+
+      this.loadOrders(storeId);
     });
+  }
+
+  private loadOrders(storeId: string): void {
+    if (!storeId) {
+      this.allOrders = [];
+      this.applyOrderFilters();
+      return;
+    }
+
+    this.ordersLoading = true;
+    this.orderService.getOrdersByStore(storeId).subscribe({
+      next: (response) => {
+        const res = response.body?.result || [];
+        this.allOrders = Array.isArray(res) ? res : [];
+        this.ordersLoading = false;
+        this.applyOrderFilters();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load sales report orders:', err);
+        this.allOrders = [];
+        this.ordersLoading = false;
+        this.applyOrderFilters();
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  setStatusFilter(filter: OrderStatusFilter): void {
+    this.statusFilter = filter;
+    this.currentPage = 1;
+    this.applyOrderFilters();
+  }
+
+  get pagedOrders(): any[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredOrders.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredOrders.length / this.pageSize));
+  }
+
+  get showingFrom(): number {
+    if (!this.filteredOrders.length) return 0;
+    return (this.currentPage - 1) * this.pageSize + 1;
+  }
+
+  get showingTo(): number {
+    if (!this.filteredOrders.length) return 0;
+    return Math.min(this.currentPage * this.pageSize, this.filteredOrders.length);
+  }
+
+  goPrevious(): void {
+    if (this.currentPage > 1) {
+      this.currentPage -= 1;
+    }
+  }
+
+  goNext(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage += 1;
+    }
+  }
+
+  private applyOrderFilters(): void {
+    let list = [...this.allOrders];
+
+    if (this.currentDateRange.startDate) {
+      const start = new Date(this.currentDateRange.startDate);
+      list = list.filter((order) => {
+        const createdAt = this.parseOrderDate(order?.creationTime);
+        return createdAt ? createdAt >= start : false;
+      });
+    }
+
+    if (this.currentDateRange.endDate) {
+      const end = new Date(this.currentDateRange.endDate);
+      end.setHours(23, 59, 59, 999);
+      list = list.filter((order) => {
+        const createdAt = this.parseOrderDate(order?.creationTime);
+        return createdAt ? createdAt <= end : false;
+      });
+    }
+
+    if (this.statusFilter !== 'all') {
+      list = list.filter((order) => this.matchesStatusFilter(order?.status));
+    }
+
+    list.sort((a, b) => {
+      const aTs = this.parseOrderDate(a?.creationTime)?.getTime() || 0;
+      const bTs = this.parseOrderDate(b?.creationTime)?.getTime() || 0;
+      return bTs - aTs;
+    });
+
+    this.filteredOrders = list;
+
+    if (this.currentPage > this.totalPages) {
+      this.currentPage = this.totalPages;
+    }
+  }
+
+  private matchesStatusFilter(status: string): boolean {
+    const key = this.normalizeStatus(status);
+
+    switch (this.statusFilter) {
+      case 'delivered':
+        return key === 'delivered';
+      case 'pending':
+        return [
+          'pending',
+          'processing',
+          'shipped',
+          'shippedfromhub',
+          'verified',
+          'pendingverification'
+        ].includes(key);
+      case 'reject':
+        return [
+          'rejected',
+          'cancelled',
+          'canceled',
+          'cancel',
+          'rejectedtracking',
+          'trackingrejected'
+        ].includes(key);
+      default:
+        return true;
+    }
+  }
+
+  private normalizeStatus(status: string): string {
+    return (status || '').trim().toLowerCase().replace(/\s+/g, '');
+  }
+
+  private parseOrderDate(value: any): Date | null {
+    if (!value) return null;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
   }
 
   onRangeChange(range: DateRangeResult) {
@@ -100,10 +250,14 @@ export class SalesReportComponent implements OnInit {
   }
 
   getStatusClass(status: string): string {
-    const s = (status || '').toLowerCase();
-    if (s === 'delivered' || s === 'completed' || s === 'shipped') return 'shipped';
-    if (s === 'pending' || s === 'processing') return 'pending';
-    if (s === 'canceled' || s === 'returned') return 'cancelled';
+    const s = this.normalizeStatus(status);
+    if (s === 'delivered' || s === 'completed') return 'shipped';
+    if (['pending', 'processing', 'shipped', 'shippedfromhub', 'verified', 'pendingverification'].includes(s)) {
+      return 'pending';
+    }
+    if (['rejected', 'cancelled', 'canceled', 'cancel', 'rejectedtracking', 'trackingrejected'].includes(s)) {
+      return 'rejected';
+    }
     return 'default';
   }
 

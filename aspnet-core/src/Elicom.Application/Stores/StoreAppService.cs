@@ -4,6 +4,7 @@ using Abp.Domain.Repositories;
 using Abp.Dependency;
 using Elicom.Authorization;
 using Elicom.Entities;
+using Elicom.Common;
 using Elicom.Stores.Dto;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -658,9 +659,9 @@ namespace Elicom.Stores
         {
             return tenantId switch
             {
-                2 => ("Prime Ship UK", "#f85606", "support@primeshipuk.com", "PRIME SHIP UK", "Prime Ship UK"),
-                3 => ("Easy Finora", "#28a745", "support@easyfinora.com", "EASY FINORA", "Easy Finora"),
-                _ => ("World Cart", "#000000", "info@worldcartus.com.", "WORLD CART US", "World Cart Inc.")
+                2 => EmailBrandingHelper.Resolve("PrimeShip"),
+                3 => EmailBrandingHelper.Resolve("EasyFinora"),
+                _ => EmailBrandingHelper.Resolve("SmartStore")
             };
         }
 
@@ -687,7 +688,7 @@ namespace Elicom.Stores
                 <table width='600' cellpadding='0' cellspacing='0' style='max-width:600px; width:100%; background:#ffffff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden;'>
                     <tr>
                         <td style='background:{brandColor}; padding:24px 20px; text-align:center;'>
-                            <h1 style='margin:0; color:#ffffff; font-size:34px; font-weight:700;'>Store Application Received</h1>
+                            <h1 style='margin:0; color:{EmailBrandingHelper.GetHeroTextColor(brandColor)}; font-size:34px; font-weight:700;'>Store Application Received</h1>
                         </td>
                     </tr>
                     <tr>
@@ -753,7 +754,7 @@ namespace Elicom.Stores
                 <table width='600' cellpadding='0' cellspacing='0' style='max-width:600px; width:100%; background:#ffffff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden;'>
                     <tr>
                         <td style='background:{brandColor}; padding:24px 20px; text-align:center;'>
-                            <h1 style='margin:0; color:#ffffff; font-size:32px; font-weight:700;'>{decisionHeading}</h1>
+                            <h1 style='margin:0; color:{EmailBrandingHelper.GetHeroTextColor(brandColor)}; font-size:32px; font-weight:700;'>{decisionHeading}</h1>
                         </td>
                     </tr>
                     <tr>

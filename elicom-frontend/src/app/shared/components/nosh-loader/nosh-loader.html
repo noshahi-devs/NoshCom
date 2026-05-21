@@ -1,0 +1,22 @@
+<div class="nosh-loader-shell" [class.compact]="compact">
+  <div class="three-d-loading-container">
+    <div class="scene">
+      <div class="loader-glow"></div>
+      <div class="loading-center">
+        <div class="brand-chip">{{ brandName }}</div>
+        <div class="nosh-loader" aria-hidden="true">
+          <span class="nosh-loader-ring"></span>
+          <span class="nosh-loader-ring-inner"></span>
+          <div class="nosh-loader-core">
+            <span>{{ brandInitials }}</span>
+          </div>
+        </div>
+        <h3 class="loading-title">{{ title || brandName }}</h3>
+        <p class="loading-text" *ngIf="message">{{ message }}</p>
+        <div class="loading-progress" aria-hidden="true">
+          <div class="loading-progress-bar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

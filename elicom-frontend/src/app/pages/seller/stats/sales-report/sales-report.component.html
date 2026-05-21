@@ -123,7 +123,7 @@
             <div class="col-md-3">
                 <div class="mini-card">
                     <div class="mini-content">
-                        <span class="label">World Cart Fees</span>
+                        <span class="label">Platform Fees</span>
                         <span class="value" *ngIf="stats">{{ stats.zalandoFees | currency }}</span>
                         <div class="skeleton skeleton-text" *ngIf="!stats" style="width: 120px; height: 2.5rem;"></div>
                     </div>
@@ -156,17 +156,39 @@
     </div>
 
     <!-- Recent Orders Table -->
-    <!-- Hyper-Luxe Order Cards -->
-    <div class="workspace-shell" *ngIf="stats">
+    <div class="workspace-shell">
         <div class="orders-card-top">
             <div class="table-header-copy">
                 <span class="table-kicker">Performance Activity</span>
                 <h5><i class="fa-solid fa-list-check me-2"></i> Recent Sale Orders</h5>
             </div>
+            <div class="orders-live-chip">
+                <i class="fa-solid fa-wave-square"></i>
+                <span>{{ filteredOrders.length }} Orders</span>
+            </div>
         </div>
 
-        <div class="orders-grid">
-            <div *ngFor="let order of stats.recentOrders; let i = index" 
+        <div class="sr-order-filters">
+            <button type="button" class="sr-filter-btn" [class.active]="statusFilter === 'all'" (click)="setStatusFilter('all')">
+                All
+            </button>
+            <button type="button" class="sr-filter-btn" [class.active]="statusFilter === 'delivered'" (click)="setStatusFilter('delivered')">
+                Delivered
+            </button>
+            <button type="button" class="sr-filter-btn" [class.active]="statusFilter === 'pending'" (click)="setStatusFilter('pending')">
+                Pending
+            </button>
+            <button type="button" class="sr-filter-btn" [class.active]="statusFilter === 'reject'" (click)="setStatusFilter('reject')">
+                Reject
+            </button>
+        </div>
+
+        <div *ngIf="ordersLoading" class="skeleton-stack">
+            <div *ngFor="let i of [1,2,3]" class="skeleton-card"></div>
+        </div>
+
+        <div class="orders-grid" *ngIf="!ordersLoading && pagedOrders.length > 0">
+            <div *ngFor="let order of pagedOrders; let i = index" 
                  class="order-card-3d"
                  [style.--theme-primary]="['#2563eb','#059669','#6366f1','#e11d48','#d97706','#7c3aed'][i % 6]"
                  [style.--theme-bg]="['#eff6ff','#ecfdf5','#f5f3ff','#fff1f2','#fffbeb','#f5f3ff'][i % 6]"
@@ -233,10 +255,32 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Skeleton Loader -->
-    <div *ngIf="!stats" class="skeleton-stack">
-        <div *ngFor="let i of [1,2,3]" class="skeleton-card"></div>
+        <div *ngIf="!ordersLoading && pagedOrders.length === 0" class="empty-workspace">
+            <div class="empty-shell">
+                <div class="empty-icon-ring">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+                <h5>No Orders Found</h5>
+                <p>No orders match the selected filter in this date range.</p>
+            </div>
+        </div>
+
+        <div class="table-footer" *ngIf="!ordersLoading && filteredOrders.length > 0">
+            <div class="info-text">
+                <span class="info-pill">Showing {{ showingFrom }} - {{ showingTo }}</span>
+                <span class="info-total">of {{ filteredOrders.length }} orders</span>
+            </div>
+
+            <div class="pager">
+                <button type="button" (click)="goPrevious()" [disabled]="currentPage <= 1">
+                    <i class="fa-solid fa-angle-left me-1"></i> Prev
+                </button>
+                <span>{{ currentPage }}</span>
+                <button type="button" (click)="goNext()" [disabled]="currentPage >= totalPages">
+                    Next <i class="fa-solid fa-angle-right ms-1"></i>
+                </button>
+            </div>
+        </div>
     </div>
 </div>

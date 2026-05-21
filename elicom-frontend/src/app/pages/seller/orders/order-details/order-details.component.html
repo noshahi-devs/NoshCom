@@ -181,15 +181,15 @@
                         <span class="meta-value">${{ order?.subtotal | number:'1.2-2' }}</span>
                     </div>
                     <div class="od-detail-row">
-                        <span class="meta-label">Platform Fee</span>
+                        <span class="meta-label">Platform Fee (8%)</span>
                         <span class="meta-value">${{ order?.platformFee | number:'1.2-2' }}</span>
                     </div>
                     <div class="od-detail-row">
-                        <span class="meta-label">Tax</span>
-                        <span class="meta-value success">4% (${{ order?.taxAmount | number:'1.2-2' }})</span>
+                        <span class="meta-label">Your Earnings</span>
+                        <span class="meta-value success">${{ order?.payoutAmount | number:'1.2-2' }}</span>
                     </div>
                     <div class="od-detail-row total-row">
-                        <span class="meta-label">Grand Total</span>
+                        <span class="meta-label">Order Total</span>
                         <span class="meta-value">${{ order?.grandTotal | number:'1.2-2' }}</span>
                     </div>
                 </div>
@@ -243,12 +243,12 @@
                                 <span class="meta-value">${{ item.subtotal }}</span>
                             </div>
                             <div class="od-detail-row">
-                                <span class="meta-label">Tax</span>
-                                <span class="meta-value success">4% (${{ item.tax }})</span>
+                                <span class="meta-label">Platform Fee (8%)</span>
+                                <span class="meta-value">${{ item.platformFee }}</span>
                             </div>
                             <div class="od-detail-row">
-                                <span class="meta-label">Platform Fee</span>
-                                <span class="meta-value">${{ item.platformFee }}</span>
+                                <span class="meta-label">Your Earnings</span>
+                                <span class="meta-value success">${{ item.netPayout }}</span>
                             </div>
                             <div class="od-detail-row total-row">
                                 <span class="meta-label">Item Total</span>
@@ -281,7 +281,7 @@
                     <label>Carrier</label>
                     <select [(ngModel)]="fulfillmentForm.carrierId">
                         <option value="" selected disabled>Choose Carrier</option>
-                        <option value="Eliship">Eliship</option>
+                        <option value="Global Mart UK">Global Mart UK</option>
                         <option value="USPS">USPS Express</option>
                         <option value="UPS">UPS Worldwide</option>
                         <option value="FedEx">FedEx Ground</option>
@@ -342,7 +342,7 @@
                 <article class="od-admin-card">
                     <div class="od-card-head">
                         <div>
-                            <div class="od-card-kicker">PrimeShip Source</div>
+                            <div class="od-card-kicker">Global Mart UK Source</div>
                             <h3>Supplier Reference</h3>
                         </div>
                         <div class="od-icon-badge tone-rose">

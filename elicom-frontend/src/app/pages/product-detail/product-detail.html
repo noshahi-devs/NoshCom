@@ -4,25 +4,13 @@
 <div class="home-wrapper">
 
   <div *ngIf="isLoading" class="pd-loader-wrap">
-    <div class="pd-loader-card">
-      <div class="pd-loader-badge">Smart Shop UK</div>
-      <div class="pd-loader-orbit">
-        <span class="pd-loader-ring pd-loader-ring-1"></span>
-        <span class="pd-loader-ring pd-loader-ring-2"></span>
-        <span class="pd-loader-core">N</span>
-        <span class="pd-loader-shine"></span>
-      </div>
-      <h3>Getting Everything Ready</h3>
-      <p>Curating product visuals, price details, and key shopping information for you...</p>
-      <div class="pd-loader-track">
-        <span></span>
-      </div>
-      <div class="pd-loader-dots">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    </div>
+    <app-nosh-loader
+      [compact]="true"
+      brandName="Smart Shop UK"
+      brandInitials="S"
+      title="Getting Everything Ready"
+      message="Curating product visuals, price details, and key shopping information for you..."
+    ></app-nosh-loader>
   </div>
 
   <div *ngIf="!isLoading && errorHappened" class="pd-error-wrap">
@@ -33,9 +21,11 @@
 
   <div *ngIf="!isLoading && !errorHappened && productData">
     <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
-    <div class="product-layout">
-      <div class="product-gallery-sticky">
-        <app-product-gallery id="gallery" #gallery [productData]="productData"></app-product-gallery>
+    <div class="product-layout" #productLayout>
+      <div class="product-gallery-column" #galleryColumn>
+        <div class="product-gallery-sticky" #gallerySticky>
+          <app-product-gallery id="gallery" #gallery [productData]="productData"></app-product-gallery>
+        </div>
       </div>
       <app-product-info [productData]="productData" (colorSelected)="gallery.setMainImage($event)"></app-product-info>
     </div>
