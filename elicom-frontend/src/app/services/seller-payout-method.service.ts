@@ -110,7 +110,9 @@ export class SellerPayoutMethodService {
 
     saveMyPayoutMethodLocal(input: SaveSellerPayoutMethodInput): SellerPayoutMethodDto {
         const methodKey = (input.methodKey || '').toLowerCase();
-        const methodLabel = methodKey === 'easyfinora'
+        const methodLabel = methodKey === 'globalmart'
+            ? 'Global Mart UK'
+            : methodKey === 'easyfinora'
             ? 'Easy Finora Card'
             : methodKey === 'bank'
                 ? 'Bank Transfer'
@@ -138,7 +140,9 @@ export class SellerPayoutMethodService {
             expiryDate: input.expiryDate || '',
             isEasyFinoraVerified: methodKey !== 'easyfinora',
             verificationMessage: methodKey === 'easyfinora' ? 'Saved locally (backend sync pending)' : 'Ready',
-            paymentDetails: methodKey === 'easyfinora'
+            paymentDetails: methodKey === 'globalmart'
+                ? `Global Mart UK Wallet ID: ${input.walletId || ''}`
+                : methodKey === 'easyfinora'
                 ? `NoshPay Wallet ID: ${input.walletId || ''}`
                 : `Country: ${input.country || ''}; Bank: ${input.bankName || ''}; Account Type: ${input.accountType || ''}; Account Title: ${input.accountTitle || ''}; Account: ${input.accountNumber || ''}; Routing: ${input.routingNumber || ''}; Reference: ${input.swiftCode || ''}`
         };

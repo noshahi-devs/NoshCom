@@ -2,8 +2,9 @@
     <section class="wallet-cards" *ngIf="isWalletView">
         <article class="summary-card card-wallet">
             <div class="card-title">Wallet Balance</div>
-            <div class="card-sub">Wallet ID: <ng-container *ngIf="!isLoading; else idLoader">{{ walletId || 'N/A'
-                    }}</ng-container></div>
+            <!-- Wallet ID hidden from seller wallet card -->
+            <!-- <div class="card-sub">Wallet ID: <ng-container *ngIf="!isLoading; else idLoader">{{ walletId || 'N/A'
+                    }}</ng-container></div> -->
             <div class="card-value"><ng-container *ngIf="!isLoading; else numLoader">${{ balance | number:'1.2-2'
                     }}</ng-container></div>
             <i class="fa-solid fa-wallet card-icon"></i>

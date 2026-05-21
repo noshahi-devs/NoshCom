@@ -258,4 +258,22 @@ export class FinancialPayoutsComponent implements OnInit, OnDestroy {
         }
         return trimmed;
     }
+
+    displayChannel(method?: string): string {
+        const normalized = (method || '').trim().toLowerCase();
+        if (normalized === 'globalmart' || normalized === 'easyfinora' || normalized.includes('global mart')) {
+            return 'Global Mart UK';
+        }
+        if (normalized === 'bank') return 'Bank';
+        return method || 'N/A';
+    }
+
+    displayDestination(details?: string): string {
+        if (!details) return 'N/A';
+        return details
+            .replace(/Easy\s*Finora\s*Wallet\s*ID\s*:/gi, 'Global Mart UK Wallet ID:')
+            .replace(/EasyFinora\s*Wallet\s*ID\s*:/gi, 'Global Mart UK Wallet ID:')
+            .replace(/Easy\s*Finora/gi, 'Global Mart UK')
+            .replace(/EasyFinora/gi, 'Global Mart UK');
+    }
 }

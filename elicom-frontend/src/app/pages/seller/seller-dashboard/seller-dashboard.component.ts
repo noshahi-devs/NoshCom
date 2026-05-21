@@ -240,24 +240,17 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
     }
 
     private resolveStoreFallbackAndLoadStats(): void {
-        this.storeService.getAllStores().pipe(
-            map((res: any) => {
-                const payload = res?.result ?? res;
-                if (Array.isArray(payload?.items)) return payload.items;
-                if (Array.isArray(payload)) return payload;
-                return [];
-            }),
+        this.storeService.getMyStore().pipe(
+            map((res: any) => res?.result || res || null),
             catchError((err) => {
                 console.warn('Fallback store resolution failed:', err);
-                return of([]);
+                return of(null);
             })
-        ).subscribe((stores: any[]) => {
-            const userId = Number(this.currentUser?.id);
-            const ownedStore = stores.find(s => Number(s?.ownerId) === userId) || null;
+        ).subscribe((ownedStore) => {
             this.currentStore = ownedStore;
 
             if (!ownedStore) {
-                console.warn('No owned store found in fallback list. Loading aggregate seller stats only.');
+                console.warn('No owned store found via GetMyStore. Loading aggregate seller stats only.');
             }
 
             this.isStoreLoading = false;

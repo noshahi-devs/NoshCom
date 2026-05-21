@@ -176,16 +176,12 @@ export class OrderDetailsComponent implements OnInit {
         const storeName = this.order?.sellerInfo?.storeName;
         if (!storeName || storeName === 'N/A') return;
 
-        this.storeService.getAllStores().subscribe({
-            next: (res: any) => {
-                const stores = this.extractStores(res);
-                if (!stores.length) return;
-
-                const matched = stores.find((s: any) =>
-                    String(s?.name || '').trim().toLowerCase() === String(storeName).trim().toLowerCase()
-                );
-
+        this.storeService.getMyStoreCached().subscribe({
+            next: (matched: any) => {
                 if (!matched) return;
+
+                const matchedName = String(matched?.name || '').trim().toLowerCase();
+                if (matchedName && matchedName !== String(storeName).trim().toLowerCase()) return;
 
                 this.order.sellerInfo = {
                     sellerName: this.asDisplayValue(

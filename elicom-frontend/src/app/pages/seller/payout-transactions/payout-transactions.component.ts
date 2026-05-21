@@ -118,7 +118,7 @@ export class PayoutTransactionsComponent implements OnInit {
 
     getMethodLabel(method?: string): string {
         const normalized = this.normalizeStatus(method);
-        if (normalized === 'easyfinora') return 'NoshPay';
+        if (normalized === 'easyfinora') return 'Global Mart UK';
         if (normalized === 'bank') return 'Bank';
         return method ? method.charAt(0).toUpperCase() + method.slice(1) : 'Third Party';
     }
@@ -126,10 +126,10 @@ export class PayoutTransactionsComponent implements OnInit {
     getReceiveInLabel(paymentDetails?: string): string {
         if (!paymentDetails) return 'API Payout';
         const normalized = paymentDetails
-            .replace(/Easy\s*Finora\s*Wallet\s*ID\s*:/i, 'NoshPay Wallet ID:')
-            .replace(/EasyFinora\s*Wallet\s*ID\s*:/i, 'NoshPay Wallet ID:')
-            .replace(/Easy\s*Finora/gi, 'NoshPay')
-            .replace(/EasyFinora/gi, 'NoshPay');
+            .replace(/Easy\s*Finora\s*Wallet\s*ID\s*:/i, 'Global Mart UK Wallet ID:')
+            .replace(/EasyFinora\s*Wallet\s*ID\s*:/i, 'Global Mart UK Wallet ID:')
+            .replace(/Easy\s*Finora/gi, 'Global Mart UK')
+            .replace(/EasyFinora/gi, 'Global Mart UK');
 
         const getField = (label: string) => {
             const regex = new RegExp(`(?:^|[,;\\n])\\s*${label}\\s*:\\s*([^,;\\n]*)`, 'i');
@@ -143,7 +143,7 @@ export class PayoutTransactionsComponent implements OnInit {
         const account = getField('Account Number') || getField('Account No') || getField('Acc') || getField('A/C') || getField('Acct') || getField('Account');
         if (account) return account;
 
-        const walletId = getField('Wallet ID') || getField('Wallet') || getField('NoshPay Wallet ID');
+        const walletId = getField('Wallet ID') || getField('Wallet') || getField('Global Mart UK Wallet ID');
         if (walletId) return walletId;
 
         return '';

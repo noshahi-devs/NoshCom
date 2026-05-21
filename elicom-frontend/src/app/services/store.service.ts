@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, shareReplay, tap, map, catchError, switchMap, BehaviorSubject } from 'rxjs';
+import { Observable, of, shareReplay, tap, map, catchError, BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface StoreDto {
@@ -108,17 +108,9 @@ export class StoreService {
             return this.myStore$;
         }
 
-        // Prefer resolving from GetAll to avoid hard dependency on GetMyStore behavior.
-        // Fallback to GetMyStore only when owner resolution is not available.
-        this.myStore$ = this.resolveOwnedStoreFromAllStores().pipe(
-            switchMap(({ store, resolved }) => {
-                if (store) return of(store);
-                if (resolved) return of(null);
-                return this.getMyStore().pipe(
-                    map((res: any) => res?.result || res || null),
-                    catchError(() => of(null))
-                );
-            }),
+        this.myStore$ = this.getMyStore().pipe(
+            map((res: any) => res?.result || res || null),
+            catchError(() => of(null)),
             tap((store) => {
                 if (store) {
                     localStorage.setItem(this.cacheKey, JSON.stringify(store));
@@ -129,28 +121,6 @@ export class StoreService {
         );
 
         return this.myStore$;
-    }
-
-    private resolveOwnedStoreFromAllStores(): Observable<{ store: any | null; resolved: boolean }> {
-        return this.getAllStores().pipe(
-            map((res: any) => {
-                const payload = res?.result ?? res;
-                const stores = Array.isArray(payload?.items)
-                    ? payload.items
-                    : (Array.isArray(payload) ? payload : []);
-
-                const currentUserId = this.getCurrentUserId();
-                if (!currentUserId) {
-                    return { store: null, resolved: false };
-                }
-
-                return {
-                    store: stores.find((s: any) => Number(s?.ownerId) === currentUserId) || null,
-                    resolved: true
-                };
-            }),
-            catchError(() => of({ store: null, resolved: false }))
-        );
     }
 
     private getCurrentUserId(): number | null {

@@ -64,7 +64,7 @@
                         <div class="col col-customer">
                             <p class="mini-label">Merchant Principal</p>
                             <p class="customer-name">{{ displaySellerName(req.sellerName) }}</p>
-                            <p class="channel-link text-truncate" style="max-width: 280px; color: #888;">{{ req.accountDetails }}</p>
+                            <p class="channel-link text-truncate" style="max-width: 280px; color: #888;">{{ displayDestination(req.accountDetails) }}</p>
                         </div>
 
                         <div class="col col-status">
@@ -105,7 +105,7 @@
                             <p class="mini-label">Disbursement Channel</p>
                             <div class="carrier-group">
                                 <i class="fas" [ngClass]="req.method === 'PayPal' ? 'fa-brands fa-paypal' : 'fa-building-columns'" style="font-size: 1rem; color: #111;"></i>
-                                <span class="carrier-name">{{ req.method }}</span>
+                                <span class="carrier-name">{{ displayChannel(req.method) }}</span>
                                 <span class="method-chip">{{ req.status === 'pending' ? 'UNSETTLED' : 'VERIFIED' }}</span>
                             </div>
                         </div>
@@ -182,11 +182,11 @@
                         </div>
                         <div class="col-6 text-end">
                             <label class="mini-label d-block mb-1">Channel</label>
-                            <span class="summary-value">{{selectedRequest.method}}</span>
+                            <span class="summary-value">{{ displayChannel(selectedRequest.method) }}</span>
                         </div>
                         <div class="col-12">
                             <label class="mini-label d-block mb-1">Destination Details</label>
-                            <span class="summary-value text-break">{{selectedRequest.accountDetails}}</span>
+                            <span class="summary-value text-break">{{ displayDestination(selectedRequest.accountDetails) }}</span>
                         </div>
                     </div>
                 </div>

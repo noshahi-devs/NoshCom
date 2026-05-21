@@ -143,10 +143,10 @@
                 </div>
 
                 <div class="method-logo-wrap" aria-hidden="true">
-                  <ng-container *ngIf="method.id !== 'easy_finora'; else noshpayFallbackLogo">
+                  <ng-container *ngIf="method.id !== 'easy_finora'; else Global Mart UKFallbackLogo">
                     <img [src]="method.logoSrc" [alt]="method.name" class="method-logo">
                   </ng-container>
-                  <ng-template #noshpayFallbackLogo>
+                  <ng-template #Global Mart UKFallbackLogo>
                     <div class="method-logo-fallback">
                       <i class="fas fa-building"></i>
                     </div>
@@ -180,7 +180,7 @@
               <div class="verify-box" *ngIf="checkoutForm.get('paymentMethod')?.value === 'easy_finora'">
                 <i class="fas fa-shield-alt"></i>
                 <div class="info">
-                  <h6>NoshPay Verification</h6>
+                  <h6>Global Mart UK Verification</h6>
                   <p *ngIf="!isBalanceVerified && !verificationError">Verify balance before final confirmation.</p>
                   <p *ngIf="isBalanceVerified">Balance verified: {{ verifiedBalance | currency }}</p>
                   <p *ngIf="verificationError">{{ verificationError }}</p>
@@ -301,7 +301,7 @@
 
           <div class="order-summary-note">
             <i class="fas fa-info-circle me-2" style="color: var(--primary);"></i>
-            By placing your order, you agree to NoshPay's sourcing terms and conditions.
+            By placing your order, you agree to Global Mart UK's sourcing terms and conditions.
           </div>
         </div>
       </aside>

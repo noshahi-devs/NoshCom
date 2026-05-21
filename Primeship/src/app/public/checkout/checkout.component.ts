@@ -65,7 +65,7 @@ export class CheckoutComponent implements OnInit {
     { id: 'mastercard', name: 'Master Card', icon: 'fab fa-cc-mastercard', logoSrc: 'assets/brands/mastercard.svg' },
     { id: 'discover', name: 'Discover', icon: 'fab fa-cc-mastercard', logoSrc: 'assets/brands/discover.svg' },
     { id: 'amex', name: 'American Express', icon: 'fab fa-cc-mastercard', logoSrc: 'assets/brands/amex.svg' },
-    { id: 'easy_finora', name: 'NoshPay', icon: 'fas fa-wallet', logoSrc: 'assets/brands/easy-finora.svg' }
+    { id: 'easy_finora', name: 'Global Mart UK', icon: 'fas fa-wallet', logoSrc: 'assets/brands/easy-finora.svg' }
   ];
 
   constructor(
@@ -205,15 +205,15 @@ export class CheckoutComponent implements OnInit {
     return digits.length >= 4 ? digits.slice(-4) : '';
   }
 
-  private isNoshPaySelected(): boolean {
+  private isGlobal Mart UKSelected(): boolean {
     return this.checkoutForm.get('paymentMethod')?.value === 'easy_finora';
   }
 
-  private showNoshPayOnlyPopup(): void {
+  private showGlobal Mart UKOnlyPopup(): void {
     void Swal.fire({
       icon: 'info',
       title: 'In Progress',
-      text: 'Use only NoshPay method.',
+      text: 'Use only Global Mart UK method.',
       confirmButtonText: 'OK',
       confirmButtonColor: '#10B981'
     });
@@ -444,8 +444,8 @@ export class CheckoutComponent implements OnInit {
       return;
     }
     if (this.checkoutForm.valid && this.isAddressSubmitted && this.selectedShippingMethod) {
-      if (!this.isNoshPaySelected()) {
-        this.showNoshPayOnlyPopup();
+      if (!this.isGlobal Mart UKSelected()) {
+        this.showGlobal Mart UKOnlyPopup();
         return;
       }
       this.isPaymentSubmitted = true;
@@ -472,8 +472,8 @@ export class CheckoutComponent implements OnInit {
       this.router.navigate(['/cart']);
       return;
     }
-    if (!this.isNoshPaySelected()) {
-      this.showNoshPayOnlyPopup();
+    if (!this.isGlobal Mart UKSelected()) {
+      this.showGlobal Mart UKOnlyPopup();
       this.goBackToPayment();
       return;
     }

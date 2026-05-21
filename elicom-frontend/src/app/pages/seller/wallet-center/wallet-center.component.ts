@@ -337,11 +337,21 @@ export class WalletCenterComponent implements OnInit {
             return this.activeMethod.receiveIn || 'API Payout';
         }
 
+        const normalized = paymentDetails
+            .replace(/Easy\s*Finora\s*Wallet\s*ID\s*:/i, 'Global Mart UK Wallet ID:')
+            .replace(/EasyFinora\s*Wallet\s*ID\s*:/i, 'Global Mart UK Wallet ID:')
+            .replace(/Easy\s*Finora/gi, 'Global Mart UK')
+            .replace(/EasyFinora/gi, 'Global Mart UK');
+
+        return this.formatReceiveInDetails(normalized);
+    }
+
+    private formatReceiveInDetails(paymentDetails: string): string {
         return paymentDetails
-            .replace(/Easy\s*Finora\s*Wallet\s*ID\s*:/i, 'NoshPay Wallet ID:')
-            .replace(/EasyFinora\s*Wallet\s*ID\s*:/i, 'NoshPay Wallet ID:')
-            .replace(/Easy\s*Finora/gi, 'NoshPay')
-            .replace(/EasyFinora/gi, 'NoshPay');
+            .split(/[;\n]+/)
+            .map(part => part.trim())
+            .filter(part => part && !/^(routing|swift)\s*:/i.test(part))
+            .join('; ');
     }
 
     getRelativeDate(dateValue: string): string {
@@ -383,8 +393,14 @@ export class WalletCenterComponent implements OnInit {
             return;
         }
 
-        const method = this.activeMethod.methodKey || this.activeMethod.method || 'thirdparty';
-        const details = this.activeMethod.paymentDetails || `${this.activeMethod.receiveIn} | Wallet ID: ${this.activeMethod.walletId}`;
+        const methodKey = (this.activeMethod.methodKey || this.activeMethod.method || '').toLowerCase();
+        const method = (methodKey === 'globalmart' || methodKey === 'easyfinora') ? 'globalmart' : methodKey;
+        const walletTarget = this.activeMethod.walletId && this.activeMethod.walletId !== 'Not set'
+            ? this.activeMethod.walletId
+            : this.extractWalletId(this.activeMethod.paymentDetails || '');
+        const details = (method === 'globalmart' && walletTarget)
+            ? `Global Mart UK Wallet ID: ${walletTarget}`
+            : (this.activeMethod.paymentDetails || `${this.activeMethod.receiveIn} | Wallet ID: ${this.activeMethod.walletId}`);
 
         this.isSubmitting = true;
         this.withdrawalService.submitWithdrawRequest({
@@ -525,7 +541,7 @@ export class WalletCenterComponent implements OnInit {
         this.activeMethod = {
             method: displayMethod,
             methodKey: normalizedMethod,
-            receiveIn: normalizedMethod === 'easyfinora' ? 'NoshPay' : 'World Cart API',
+            receiveIn: (normalizedMethod === 'easyfinora' || normalizedMethod === 'globalmart') ? 'Global Mart UK' : 'World Cart API',
             walletId: extractedWalletId,
             accountTitle: 'Not set',
             country: '',
@@ -551,8 +567,8 @@ export class WalletCenterComponent implements OnInit {
 
         const receiveIn = normalizedMethod === 'bank'
             ? [saved.country, saved.accountType].filter(Boolean).join(' • ') || 'Bank Transfer'
-            : normalizedMethod === 'easyfinora'
-                ? 'NoshPay'
+            : (normalizedMethod === 'easyfinora' || normalizedMethod === 'globalmart')
+                ? 'Global Mart UK'
                 : 'World Cart API';
 
         const payoutTarget = normalizedMethod === 'bank'
@@ -589,8 +605,8 @@ export class WalletCenterComponent implements OnInit {
 
         const receiveIn = normalizedMethod === 'bank'
             ? [saved.country || parsedBankDetails?.country, saved.accountType || parsedBankDetails?.accountType].filter(Boolean).join(' • ') || 'Bank Transfer'
-            : normalizedMethod === 'easyfinora'
-                ? 'NoshPay'
+            : (normalizedMethod === 'easyfinora' || normalizedMethod === 'globalmart')
+                ? 'Global Mart UK'
                 : 'World Cart API';
 
         const payoutTarget = normalizedMethod === 'bank'
@@ -614,8 +630,8 @@ export class WalletCenterComponent implements OnInit {
     }
 
     private getPayoutDisplayLabel(methodKey: string, fallback: string): string {
-        if (methodKey === 'easyfinora') {
-            return 'NoshPay';
+        if (methodKey === 'globalmart' || methodKey === 'easyfinora') {
+            return 'Global Mart UK';
         }
 
         if (methodKey === 'bank') {

@@ -90,11 +90,13 @@ namespace Elicom.Withdrawals
                 ExpiryDate = (input.ExpiryDate ?? string.Empty).Trim()
             };
 
-            if (methodKey == "easyfinora")
+            if (methodKey == "easyfinora" || methodKey == "globalmart")
             {
                 if (setting.WalletId.IsNullOrWhiteSpace())
                 {
-                    throw new UserFriendlyException("EasyFinora Wallet ID is required.");
+                    throw new UserFriendlyException(methodKey == "globalmart"
+                        ? "Global Mart UK Wallet ID is required."
+                        : "EasyFinora Wallet ID is required.");
                 }
             }
             else if (methodKey == "bank" || methodKey == "wise")
@@ -162,24 +164,33 @@ namespace Elicom.Withdrawals
             }
 
             var methodKey = (input.Method ?? string.Empty).Trim().ToLowerInvariant();
-            if (methodKey == "easyfinora")
+            if (IsGlobalMartWalletPayoutMethod(methodKey, input.PaymentDetails))
             {
                 var walletId = ExtractWalletId(input.PaymentDetails);
                 if (walletId.IsNullOrWhiteSpace())
                 {
-                    throw new UserFriendlyException("EasyFinora Wallet ID is required in payout details.");
+                    walletId = ExtractWalletIdFromRaw(input.PaymentDetails);
+                }
+
+                if (walletId.IsNullOrWhiteSpace())
+                {
+                    throw new UserFriendlyException("Global Mart UK Wallet ID is required in payout details.");
                 }
 
                 var recipientUser = await FindUserByWalletIdAsync(walletId);
                 if (recipientUser == null)
                 {
-                    throw new UserFriendlyException("EasyFinora Wallet ID not found.");
+                    throw new UserFriendlyException("Global Mart UK Wallet ID not found.");
                 }
+            }
 
-                var hasActiveCard = await HasAnyActiveCardAsync(recipientUser.Id);
-                if (!hasActiveCard)
+            var normalizedWalletId = string.Empty;
+            if (IsGlobalMartWalletPayoutMethod(methodKey, input.PaymentDetails))
+            {
+                normalizedWalletId = ExtractWalletId(input.PaymentDetails);
+                if (normalizedWalletId.IsNullOrWhiteSpace())
                 {
-                    throw new UserFriendlyException("Selected EasyFinora account is not verified by admin.");
+                    normalizedWalletId = ExtractWalletIdFromRaw(input.PaymentDetails);
                 }
             }
 
@@ -189,8 +200,12 @@ namespace Elicom.Withdrawals
                 UserId = userId,
                 CardId = 0,
                 Amount = input.Amount,
-                Method = string.IsNullOrWhiteSpace(input.Method) ? "Bank Transfer" : input.Method,
-                PaymentDetails = string.IsNullOrWhiteSpace(input.PaymentDetails) ? "Seller requested payout" : input.PaymentDetails,
+                Method = IsGlobalMartWalletPayoutMethod(methodKey, input.PaymentDetails)
+                    ? "globalmart"
+                    : (string.IsNullOrWhiteSpace(input.Method) ? "Bank Transfer" : input.Method),
+                PaymentDetails = !normalizedWalletId.IsNullOrWhiteSpace()
+                    ? $"Global Mart UK Wallet ID: {normalizedWalletId}"
+                    : (string.IsNullOrWhiteSpace(input.PaymentDetails) ? "Seller requested payout" : input.PaymentDetails),
                 LocalAmount = input.LocalAmount,
                 LocalCurrency = string.IsNullOrWhiteSpace(input.LocalCurrency) ? "USD" : input.LocalCurrency,
                 Status = "Pending"
@@ -322,16 +337,15 @@ namespace Elicom.Withdrawals
                 throw new UserFriendlyException("Only pending requests can be approved.");
             }
 
-            var isEasyFinoraMethod = IsEasyFinoraMethod(request.Method, request.PaymentDetails);
+            var isGlobalMartWalletPayout = IsGlobalMartWalletPayoutMethod(request.Method, request.PaymentDetails);
             var walletId = ExtractWalletId(request.PaymentDetails);
             SellerPayoutMethodSetting payoutSetting = null;
-            if (walletId.IsNullOrWhiteSpace() && isEasyFinoraMethod)
+            if (walletId.IsNullOrWhiteSpace() && isGlobalMartWalletPayout)
             {
-                // Backward compatibility: older requests may store only raw wallet id text.
                 walletId = ExtractWalletIdFromRaw(request.PaymentDetails);
             }
 
-            if (isEasyFinoraMethod)
+            if (isGlobalMartWalletPayout)
             {
                 payoutSetting = await GetSavedPayoutMethodSettingAsync(new UserIdentifier(request.TenantId, request.UserId));
                 if (walletId.IsNullOrWhiteSpace())
@@ -340,101 +354,46 @@ namespace Elicom.Withdrawals
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(walletId))
+            if (isGlobalMartWalletPayout)
             {
-                var recipientUser = await FindUserByWalletIdAsync(walletId);
-                if (recipientUser == null && isEasyFinoraMethod)
+                if (walletId.IsNullOrWhiteSpace())
                 {
-                    // Last fallback: default to seller user itself if wallet id could not be resolved.
-                    using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
-                    {
-                        recipientUser = await _userRepository.GetAll()
-                            .IgnoreQueryFilters()
-                            .FirstOrDefaultAsync(u => u.Id == request.UserId);
-                    }
+                    throw new UserFriendlyException("Global Mart UK Wallet ID not found in payout details.");
                 }
 
+                var recipientUser = await FindUserByWalletIdAsync(walletId);
                 if (recipientUser == null)
                 {
-                    throw new UserFriendlyException("Target EasyFinora wallet not found.");
+                    throw new UserFriendlyException("Global Mart UK wallet not found.");
                 }
 
-                using (CurrentUnitOfWork.SetTenantId(recipientUser.TenantId))
+                var creditUserId = await ResolveWalletCreditUserIdAsync(recipientUser);
+
+                using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
                 {
                     await _walletManager.DepositAsync(
-                        recipientUser.Id,
+                        creditUserId,
                         request.Amount,
                         request.Id.ToString(),
-                        $"SmartStore payout approved to Wallet ID {walletId}"
+                        $"Smart Shop payout approved to Global Mart UK Wallet ID {walletId}"
                     );
 
                     await _transactionRepository.InsertAsync(new AppTransaction
                     {
                         TenantId = recipientUser.TenantId ?? request.TenantId,
-                        UserId = recipientUser.Id,
+                        UserId = creditUserId,
                         CardId = null,
                         Amount = request.Amount,
                         MovementType = "Credit",
                         Category = "Payout",
                         ReferenceId = request.Id.ToString(),
                         Status = "Approved",
-                        Description = $"WorldCartUs payout approved to Wallet ID {walletId}"
+                        Description = $"Smart Shop payout approved to Global Mart UK Wallet ID {walletId}"
                     });
                 }
             }
             else
             {
-                if (isEasyFinoraMethod)
-                {
-                    var candidateCardNumber = payoutSetting?.CardNumber;
-                    if (!candidateCardNumber.IsNullOrWhiteSpace())
-                    {
-                        var candidateCard = await FindEasyFinoraCardAsync(candidateCardNumber);
-                        if (candidateCard != null)
-                        {
-                            using (CurrentUnitOfWork.SetTenantId(candidateCard.TenantId))
-                            {
-                                await _walletManager.DepositAsync(
-                                    candidateCard.UserId,
-                                    request.Amount,
-                                    request.Id.ToString(),
-                                    $"SmartStore payout approved for Card ****{GetLast4(candidateCard.CardNumber)}"
-                                );
-
-                                candidateCard.Balance += request.Amount;
-                                await _cardRepository.UpdateAsync(candidateCard);
-
-                                await _transactionRepository.InsertAsync(new AppTransaction
-                                {
-                                    TenantId = candidateCard.TenantId,
-                                    UserId = candidateCard.UserId,
-                                    CardId = candidateCard.Id,
-                                    Amount = request.Amount,
-                                    MovementType = "Credit",
-                                    Category = "Payout",
-                                    ReferenceId = request.Id.ToString(),
-                                    Status = "Approved",
-                                    Description = $"SmartStore payout approved for Card ****{GetLast4(candidateCard.CardNumber)}"
-                                });
-                            }
-
-                            request.Status = "Approved";
-                            request.AdminRemarks = input.AdminRemarks;
-                            request.PaymentProof = input.PaymentProof;
-
-                            await _withdrawRepository.UpdateAsync(request);
-                            await _smartStoreWalletManager.UpdateTransactionStatusAsync(
-                                request.UserId,
-                                request.Id.ToString(),
-                                "Completed"
-                            );
-                            return;
-                        }
-                    }
-
-                    throw new UserFriendlyException("EasyFinora payout target not found (wallet/card).");
-                }
-
                 var cardNumber = ExtractCardNumber(request.PaymentDetails);
                 if (string.IsNullOrWhiteSpace(cardNumber))
                 {
@@ -625,6 +584,11 @@ namespace Elicom.Withdrawals
                     dto.VerificationMessage = "Not verified";
                 }
             }
+            else if ((setting.MethodKey ?? string.Empty).Equals("globalmart", StringComparison.OrdinalIgnoreCase))
+            {
+                dto.IsEasyFinoraVerified = true;
+                dto.VerificationMessage = "Global Mart UK wallet linked";
+            }
             else
             {
                 dto.IsEasyFinoraVerified = true;
@@ -698,6 +662,7 @@ namespace Elicom.Withdrawals
             return key switch
             {
                 "easyfinora" => "Easy Finora Card",
+                "globalmart" => "Global Mart UK",
                 "bank" => "Bank Transfer",
                 "wise" => "Wise",
                 "paypal" => "PayPal",
@@ -712,6 +677,7 @@ namespace Elicom.Withdrawals
             return key switch
             {
                 "easyfinora" => $"EasyFinora Wallet ID: {setting.WalletId}",
+                "globalmart" => $"Global Mart UK Wallet ID: {setting.WalletId}",
                 "bank" or "wise" => $"Account Title: {setting.AccountTitle}; Bank: {setting.BankName}; Account: {setting.AccountNumber}; Routing: {setting.RoutingNumber}; SWIFT: {setting.SwiftCode}",
                 "paypal" or "stripe" => $"Wallet ID: {setting.WalletId}",
                 _ => string.Empty
@@ -764,16 +730,45 @@ namespace Elicom.Withdrawals
             return ExtractWalletIdFromRaw(paymentDetails);
         }
 
-        private static bool IsEasyFinoraMethod(string method, string paymentDetails)
+        private static bool IsGlobalMartWalletPayoutMethod(string method, string paymentDetails)
         {
             var normalized = (method ?? string.Empty).Trim().ToLowerInvariant();
-            if (normalized == "easyfinora" || normalized.Contains("easy finora"))
+            if (normalized == "globalmart" ||
+                normalized == "easyfinora" ||
+                normalized.Contains("global mart") ||
+                normalized.Contains("easy finora"))
             {
                 return true;
             }
 
             var details = (paymentDetails ?? string.Empty).Trim().ToLowerInvariant();
-            return details.Contains("easyfinora") || details.Contains("easy finora");
+            return details.Contains("global mart uk") ||
+                   details.Contains("easyfinora") ||
+                   details.Contains("easy finora") ||
+                   Regex.IsMatch(details, @"\bgm-15uk\d+\b", RegexOptions.IgnoreCase) ||
+                   Regex.IsMatch(details, @"\bef-[a-z0-9-]+\b", RegexOptions.IgnoreCase);
+        }
+
+        private async Task<long> ResolveWalletCreditUserIdAsync(User walletOwner)
+        {
+            if (walletOwner == null)
+            {
+                return 0;
+            }
+
+            using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MayHaveTenant, AbpDataFilters.MustHaveTenant))
+            {
+                var linkedUser = await _userRepository.GetAll()
+                    .IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(u => u.TenantId == 3 && u.EmailAddress == walletOwner.EmailAddress);
+
+                return linkedUser?.Id ?? walletOwner.Id;
+            }
+        }
+
+        private static bool IsEasyFinoraMethod(string method, string paymentDetails)
+        {
+            return IsGlobalMartWalletPayoutMethod(method, paymentDetails);
         }
 
         private static string ExtractWalletIdFromRaw(string paymentDetails)
@@ -781,6 +776,18 @@ namespace Elicom.Withdrawals
             if (paymentDetails.IsNullOrWhiteSpace()) return string.Empty;
 
             var text = paymentDetails.Trim();
+            var gmMatch = Regex.Match(text, @"\bGM-15UK\d+\b", RegexOptions.IgnoreCase);
+            if (gmMatch.Success)
+            {
+                return CleanWalletIdToken(gmMatch.Value);
+            }
+
+            var gmGenericMatch = Regex.Match(text, @"\bGM-[A-Z0-9-]{4,}\b", RegexOptions.IgnoreCase);
+            if (gmGenericMatch.Success)
+            {
+                return CleanWalletIdToken(gmGenericMatch.Value);
+            }
+
             var efMatch = Regex.Match(text, @"\bEF-[A-Z0-9-]{4,}\b", RegexOptions.IgnoreCase);
             if (efMatch.Success)
             {

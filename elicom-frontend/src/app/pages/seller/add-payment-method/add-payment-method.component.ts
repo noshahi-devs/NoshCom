@@ -50,7 +50,7 @@ export class AddPaymentMethodComponent implements OnInit, OnDestroy {
     // Options
     thirdPartyOptions = [
         { label: 'Big Commerce', value: 'Big Commerce' },
-        { label: 'NoshPay', value: 'Easy Finora' },
+        { label: 'Global Mart UK', value: 'Global Mart UK' },
         { label: 'Eastnets', value: 'Eastnets' },
         { label: 'Facilita Pay', value: 'Facilita Pay' },
         { label: 'Paddle', value: 'Paddle' }
@@ -283,50 +283,28 @@ export class AddPaymentMethodComponent implements OnInit, OnDestroy {
         }
     }
 
+    private readonly globalMartOnlyMessage =
+        'Only Global Mart UK is supported for third-party payouts. Please select Global Mart UK and enter your wallet ID.';
+
     savePaymentMethod() {
+        if (this.activeTab === 'bank') {
+            this.alert.error(this.globalMartOnlyMessage);
+            return;
+        }
+
         if (this.activeTab === 'thirdparty') {
             if (!this.selectedThirdParty) {
                 this.alert.warning('Please select a third-party service.');
                 return;
             }
 
-            if (this.selectedThirdParty !== 'Easy Finora') {
-                this.alert.error('Please use NoshPay wallet only');
+            if (this.selectedThirdParty !== 'Global Mart UK') {
+                this.alert.error(this.globalMartOnlyMessage);
                 return;
             }
 
             if (!this.walletId.trim()) {
                 this.alert.warning('Please enter your Wallet ID.');
-                return;
-            }
-        } else {
-            if (!this.bankCountry.trim()) {
-                this.alert.warning('Please enter your country.');
-                return;
-            }
-
-            if (!this.bankName.trim()) {
-                this.alert.warning('Please enter your bank name.');
-                return;
-            }
-
-            if (!this.bankAccountTitle.trim()) {
-                this.alert.warning('Please enter the account holder name.');
-                return;
-            }
-
-            if (!this.bankAccountNumber.trim()) {
-                this.alert.warning('Please enter your account number.');
-                return;
-            }
-
-            if (!this.bankAccountType.trim()) {
-                this.alert.warning('Please choose your account type.');
-                return;
-            }
-
-            if (this.normalizedBankCountry !== 'pakistan' && !this.routingNumber.trim()) {
-                this.alert.warning(`Please enter ${this.bankRoutingLabel.replace('*', '').trim().toLowerCase()}.`);
                 return;
             }
         }
@@ -377,8 +355,7 @@ export class AddPaymentMethodComponent implements OnInit, OnDestroy {
                 this.referenceNumber = method.swiftCode || '';
             } else {
                 this.activeTab = 'thirdparty';
-                // Detect provider if possible, otherwise default to Easy Finora since it's the only one allowed
-                this.selectedThirdParty = 'Easy Finora';
+                this.selectedThirdParty = 'Global Mart UK';
                 this.walletId = method.walletId || '';
             }
         });
@@ -387,7 +364,7 @@ export class AddPaymentMethodComponent implements OnInit, OnDestroy {
     private buildPayload(): SaveSellerPayoutMethodInput | null {
         if (this.activeTab === 'thirdparty') {
             return {
-                methodKey: 'easyfinora', // Always maps to easyfinora for third party allowed selection
+                methodKey: 'globalmart',
                 walletId: this.walletId.trim()
             };
         } else {
