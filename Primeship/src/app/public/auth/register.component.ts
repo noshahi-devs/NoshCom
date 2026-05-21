@@ -22,6 +22,8 @@ export class RegisterComponent implements OnInit {
   isSuccess = false;
   confettiPieces = Array(100).fill(0);
 
+  registeredEmail = '';
+
   countries = [
     'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany',
     'France', 'Spain', 'Italy', 'Netherlands', 'Belgium', 'Switzerland',
@@ -70,8 +72,10 @@ export class RegisterComponent implements OnInit {
   onSubmit(): void {
     if (this.registerForm.valid) {
       // Start processing UI
+      this.isLoading = true;
       this.isProcessing = true;
       this.isSuccess = false;
+      this.registeredEmail = this.registerForm.value.email;
       this.showCelebration = true;
       window.scrollTo({ top: 0, behavior: 'smooth' });
       this.cdr.detectChanges();
@@ -82,23 +86,25 @@ export class RegisterComponent implements OnInit {
         password: this.registerForm.value.password,
         phoneNumber: this.registerForm.value.phone,
         country: this.registerForm.value.country,
-        isActive: true,
-        isEmailConfirmed: true
+        isActive: false,
+        isEmailConfirmed: false
       };
 
       this.authService.registerSeller(registerData).subscribe({
         next: (response) => {
+          this.isLoading = false;
           this.isProcessing = false;
           this.isSuccess = true;
           this.cdr.detectChanges();
 
           this.toastService.showSuccess(
-            'Registration successful! Your account is active and verified.'
+            'Registration successful! Please check your email to verify your account.'
           );
 
           this.registerForm.reset();
         },
         error: (error) => {
+          this.isLoading = false;
           this.isProcessing = false;
           this.isSuccess = false;
           this.showCelebration = false;

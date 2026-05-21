@@ -43,9 +43,9 @@ declare var lucide: any;
         <div class="header-main-bar">
           <div class="container-header header-main-flex">
             <div class="search-section">
-              <a routerLink="/home" class="header-main-logo" aria-label="Eliship Home">
-                <span class="header-main-logo-mark" aria-hidden="true">E</span>
-                <span class="header-main-logo-text">ELISHIP</span>
+              <a routerLink="/home" class="header-main-logo" aria-label="Global Mart UK Home">
+                <span class="header-main-logo-mark" aria-hidden="true">G</span>
+                <span class="header-main-logo-text">GLOBAL MART UK</span>
               </a>
               <div class="search-box">
                 <input type="text" [(ngModel)]="searchTerm" placeholder="Find anything home..." (keyup.enter)="onSearch()" />
@@ -346,7 +346,7 @@ declare var lucide: any;
         </div>
       </div>
 
-      <!-- Global Eliship Footer -->
+      <!-- Global Global Mart UK Footer -->
       <footer class="wf-footer" *ngIf="!isAuthPage">
         <hr class="wf-footer-hr" />
 
@@ -356,13 +356,13 @@ declare var lucide: any;
               <section class="wf-footer-col">
                 <h2 class="wf-footer-title">About Us</h2>
                 <ul class="wf-footer-list">
-                  <li><a routerLink="/about-us">About Eliship</a></li>
-                  <li><a routerLink="/rewards">Eliship Rewards</a></li>
-                  <li><a href="#" (click)="openMerchantPortal($event)">Eliship Professional</a></li>
+                  <li><a routerLink="/about-us">About Global Mart UK</a></li>
+                  <li><a routerLink="/rewards">Global Mart UK Rewards</a></li>
+                  <li><a href="#" (click)="openMerchantPortal($event)">Global Mart UK Professional</a></li>
                   <li><a routerLink="/design-services">Design Services</a></li>
                   <li><a routerLink="/gift-card">Gift Cards</a></li>
-                  <li><a routerLink="/cash-registry">Eliship Cash Registry</a></li>
-                  <li><a routerLink="/credit-card">Eliship Credit Card</a></li>
+                  <li><a routerLink="/cash-registry">Global Mart UK Cash Registry</a></li>
+                  <li><a routerLink="/credit-card">Global Mart UK Credit Card</a></li>
                 </ul>
               </section>
 
@@ -408,7 +408,7 @@ declare var lucide: any;
             </section>
 
             <div class="wf-footer-bottom" aria-label="Footer bottom">
-              <div class="wf-footer-copy">Copyright Â© 2026 Eliship. All rights reserved.</div>
+              <div class="wf-footer-copy">Copyright Â© 2026 Global Mart UK. All rights reserved.</div>
               <div class="wf-footer-social">
                 <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
                 <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>

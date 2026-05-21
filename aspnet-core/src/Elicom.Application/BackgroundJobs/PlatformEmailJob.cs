@@ -133,9 +133,9 @@ namespace Elicom.BackgroundJobs
                 _configuration[$"{sectionPrefix}:FromAddress"],
                 GetSenderEmailForPlatform(args.PlatformName),
                 await _settingManager.GetSettingValueAsync(EmailSettingNames.DefaultFromAddress),
-                "info@worldcartus.com");
+                "support@globalmart.uk.com");
 
-            var senderName = string.IsNullOrWhiteSpace(args.PlatformName) ? "World Cart" : args.PlatformName;
+            var senderName = string.IsNullOrWhiteSpace(args.PlatformName) ? "Global Mart UK" : args.PlatformName;
 
             try
             {
@@ -198,7 +198,7 @@ namespace Elicom.BackgroundJobs
         {
             if (string.IsNullOrWhiteSpace(platformName))
             {
-                return "info@worldcartus.com";
+                return "support@globalmart.uk.com";
             }
 
             if (platformName.Contains("Easy Finora", StringComparison.OrdinalIgnoreCase))
@@ -212,7 +212,7 @@ namespace Elicom.BackgroundJobs
                 return "info@primeshipuk.com";
             }
 
-            return "info@worldcartus.com";
+            return "support@globalmart.uk.com";
         }
 
         private static string GetEmailSectionPrefix(string platformName)
@@ -230,7 +230,7 @@ namespace Elicom.BackgroundJobs
                 return "EmailSettings:PrimeShip";
             }
 
-            return "EmailSettings:WorldCart";
+            return "EmailSettings:PrimeShip";
         }
 
         private static string FirstNonEmpty(params string[] values)

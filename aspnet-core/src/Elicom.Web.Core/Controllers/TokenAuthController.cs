@@ -33,6 +33,7 @@ using System.Threading.Tasks;
 namespace Elicom.Controllers
 {
     [Route("api/[controller]/[action]")]
+    [IgnoreAntiforgeryToken]
     public class TokenAuthController : ElicomControllerBase
     {
         private readonly LogInManager _logInManager;

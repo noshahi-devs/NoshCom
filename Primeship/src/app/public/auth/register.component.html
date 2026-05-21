@@ -77,3 +77,48 @@
     </div>
   </div>
 </div>
+
+<!-- Celebration / Verification Modal -->
+<div class="success-modal-overlay" *ngIf="showCelebration">
+  <!-- Processing State -->
+  <div class="modal-processing-card" *ngIf="isProcessing">
+    <div class="premium-loader-spinner"></div>
+    <h3>Creating Your Account</h3>
+    <p>Please wait while we set up your Global Mart UK profile...</p>
+  </div>
+
+  <!-- Success State: Gmail Verification Prompt -->
+  <div class="success-modal-card" *ngIf="isSuccess">
+    <div class="success-icon-wrap">
+      <div class="success-envelope-icon"><i class="fas fa-envelope-open-text"></i></div>
+      <div class="pulse-ring"></div>
+    </div>
+    
+    <h2>Verify Your Email</h2>
+    <p class="modal-sub">We've sent a verification link to your Gmail</p>
+    
+    <div class="email-badge">
+      <i class="fas fa-user-check"></i> <span>{{ registeredEmail }}</span>
+    </div>
+
+    <div class="instructions-box">
+      <p><i class="fas fa-info-circle"></i> <strong>What to do next:</strong></p>
+      <ul>
+        <li>Open your Gmail account inbox.</li>
+        <li>Look for the email from <strong>Global Mart UK</strong> with the subject <em>"Verify Your Global Mart UK Account"</em>.</li>
+        <li>Click on the <strong>Verify Email</strong> button to activate your seller portal.</li>
+      </ul>
+    </div>
+
+    <div class="modal-action-row" style="display: flex; gap: 12px; justify-content: center;">
+      <a href="https://mail.google.com" target="_blank" class="nosh-btn-primary" style="background: #EA4335;">
+        <i class="fab fa-google"></i> Open Gmail
+      </a>
+      <button class="nosh-btn-primary login-btn" (click)="closeModal()">
+        <i class="fas fa-sign-in-alt"></i> Go to Login
+      </button>
+    </div>
+
+    <p class="spam-warning">Didn't find the email? Please check your <strong>Spam / Junk</strong> folder.</p>
+  </div>
+</div>
