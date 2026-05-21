@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe, PercentPipe } from '@angular/common';
 import { SellerDashboardService, SellerDashboardStats, OrderPaymentTransaction } from '../../../../services/seller-dashboard.service';
 import { StoreService } from '../../../../services/store.service';
@@ -7,15 +7,16 @@ import { AppPageLoaderService } from '../../../../services/app-page-loader.servi
 import { ChangeDetectorRef } from '@angular/core';
 
 import { DateRangePickerComponent, DateRangeResult } from '../../../../shared/date-range-picker/date-range-picker.component';
+import { AnalogClockComponent } from '../../../../shared/components/analog-clock/analog-clock.component';
 
 @Component({
   selector: 'app-revenue-profit',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DatePipe, PercentPipe, DateRangePickerComponent],
+  imports: [CommonModule, CurrencyPipe, DatePipe, PercentPipe, DateRangePickerComponent, AnalogClockComponent],
   templateUrl: './revenue-profit.component.html',
   styleUrls: ['./revenue-profit.component.scss']
 })
-export class RevenueProfitComponent implements OnInit, OnDestroy {
+export class RevenueProfitComponent implements OnInit {
   private dashboardService = inject(SellerDashboardService);
   private storeService = inject(StoreService);
   private router = inject(Router);
@@ -28,24 +29,9 @@ export class RevenueProfitComponent implements OnInit, OnDestroy {
   hasLoaded = false;
   currentStore: any;
   currentDateRange: DateRangeResult = { label: 'Maximum Data', id: 'max' };
-  currentTimeDisplay = '';
-  currentDateDisplay = '';
-  hourHandRotation = 0;
-  minuteHandRotation = 0;
-  secondHandRotation = 0;
-  private clockTimer: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit() {
-    this.updateClock();
-    this.clockTimer = setInterval(() => this.updateClock(), 1000);
     this.loadData();
-  }
-
-  ngOnDestroy() {
-    if (this.clockTimer) {
-      clearInterval(this.clockTimer);
-      this.clockTimer = null;
-    }
   }
 
   loadData() {
@@ -113,28 +99,5 @@ export class RevenueProfitComponent implements OnInit, OnDestroy {
     if (s === 'pending' || s === 'processing') return 'pending';
     if (s === 'canceled' || s === 'returned') return 'cancelled';
     return 'default';
-  }
-
-  private updateClock() {
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    const seconds = now.getSeconds();
-
-    this.currentTimeDisplay = now.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
-
-    this.currentDateDisplay = now.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    }).replace(/ /g, '-');
-
-    this.hourHandRotation = ((hours % 12) + minutes / 60) * 30;
-    this.minuteHandRotation = (minutes + seconds / 60) * 6;
-    this.secondHandRotation = seconds * 6;
   }
 }

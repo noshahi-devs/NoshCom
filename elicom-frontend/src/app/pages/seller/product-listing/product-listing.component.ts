@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener, inject, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, HostListener, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -6,22 +6,22 @@ import { StoreService } from '../../../services/store.service';
 import { StoreProductService } from '../../../services/store-product.service';
 import { AlertService } from '../../../services/alert.service';
 import { CategoryService } from '../../../services/category';
+import { AnalogClockComponent } from '../../../shared/components/analog-clock/analog-clock.component';
 
 @Component({
     selector: 'app-product-listing',
     standalone: true,
-    imports: [CommonModule, RouterModule, FormsModule],
+    imports: [CommonModule, RouterModule, FormsModule, AnalogClockComponent],
     templateUrl: './product-listing.component.html',
     styleUrls: ['./product-listing.component.scss']
 })
-export class ProductListingComponent implements OnInit, OnDestroy {
+export class ProductListingComponent implements OnInit {
     private storeService = inject(StoreService);
     private storeProductService = inject(StoreProductService);
     private categoryService = inject(CategoryService);
     private alert = inject(AlertService);
     private router = inject(Router);
     private cdr = inject(ChangeDetectorRef);
-    private zone = inject(NgZone);
     protected readonly Math = Math;
 
     products: any[] = [];
@@ -36,12 +36,6 @@ export class ProductListingComponent implements OnInit, OnDestroy {
     sortOption: string = 'default';
     isLoading: boolean = true;
     currentStore: any = null;
-    currentTime: string = '';
-    currentDate: string = '';
-    hourHandRotation: number = 0;
-    minuteHandRotation: number = 0;
-    secondHandRotation: number = 0;
-    private timer: ReturnType<typeof setInterval> | null = null;
 
     // Pagination State
     totalProducts: number = 0;
@@ -112,16 +106,8 @@ export class ProductListingComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.startClock();
         this.loadCategoryOptions();
         this.loadStoreAndProducts();
-    }
-
-    ngOnDestroy() {
-        if (this.timer) {
-            clearInterval(this.timer);
-            this.timer = null;
-        }
     }
 
     loadStoreAndProducts() {
@@ -379,38 +365,4 @@ export class ProductListingComponent implements OnInit, OnDestroy {
         return 'fa-layer-group';
     }
 
-    private startClock() {
-        this.updateTime();
-        this.zone.runOutsideAngular(() => {
-            this.timer = setInterval(() => {
-                this.zone.run(() => {
-                    this.updateTime();
-                    this.cdr.markForCheck();
-                });
-            }, 1000);
-        });
-    }
-
-    private updateTime() {
-        const now = new Date();
-        this.currentTime = new Intl.DateTimeFormat('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-        }).format(now);
-
-        this.currentDate = new Intl.DateTimeFormat('en-GB', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        }).format(now).replace(/ /g, '-');
-
-        const hours = now.getHours() % 12;
-        const minutes = now.getMinutes();
-        const seconds = now.getSeconds();
-
-        this.hourHandRotation = (hours * 30) + (minutes * 0.5) + (seconds * (0.5 / 60));
-        this.minuteHandRotation = (minutes * 6) + (seconds * 0.1);
-        this.secondHandRotation = seconds * 6;
-    }
 }

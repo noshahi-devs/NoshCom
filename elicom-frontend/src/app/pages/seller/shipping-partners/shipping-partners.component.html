@@ -20,30 +20,7 @@
         </div>
 
         <div class="sp-right-stack">
-            <div class="sp-time-card">
-                <div class="sp-analog-clock">
-                    <div class="sp-clock-ring sp-clock-ring-one"></div>
-                    <div class="sp-clock-ring sp-clock-ring-two"></div>
-                    <div class="sp-clock-mark sp-mark-12"></div>
-                    <div class="sp-clock-mark sp-mark-3"></div>
-                    <div class="sp-clock-mark sp-mark-6"></div>
-                    <div class="sp-clock-mark sp-mark-9"></div>
-                    <div class="sp-clock-hand sp-hour-hand" [style.transform]="'translateX(-50%) rotate(' + hourHandRotation + 'deg)'"></div>
-                    <div class="sp-clock-hand sp-minute-hand" [style.transform]="'translateX(-50%) rotate(' + minuteHandRotation + 'deg)'"></div>
-                    <div class="sp-clock-hand sp-second-hand" [style.transform]="'translateX(-50%) rotate(' + secondHandRotation + 'deg)'"></div>
-                    <div class="sp-clock-center"></div>
-                </div>
-                <div class="sp-time-copy">
-                    <div class="sp-time-main">{{ currentTimeDisplay }}</div>
-                    <div class="sp-time-date">{{ currentDateDisplay }}</div>
-                    <div class="sp-time-location-pill">
-                        <div class="sp-flag-wrap">
-                            <img src="https://flagcdn.com/w80/us.png" alt="US flag">
-                        </div>
-                        <div class="sp-time-location">US | GMT-5</div>
-                    </div>
-                </div>
-            </div>
+            <app-analog-clock></app-analog-clock>
         </div>
 
         <div class="sp-filter-center">

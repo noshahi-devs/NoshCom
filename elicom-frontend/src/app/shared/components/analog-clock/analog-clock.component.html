@@ -1,0 +1,24 @@
+<div class="ac-time-card">
+    <div class="ac-analog-clock">
+        <div class="ac-clock-ring ac-clock-ring-one"></div>
+        <div class="ac-clock-ring ac-clock-ring-two"></div>
+        <div class="ac-clock-mark ac-mark-12"></div>
+        <div class="ac-clock-mark ac-mark-3"></div>
+        <div class="ac-clock-mark ac-mark-6"></div>
+        <div class="ac-clock-mark ac-mark-9"></div>
+        <div class="ac-clock-hand ac-hour-hand" [style.transform]="'translateX(-50%) rotate(' + clock.hourHandRotation + 'deg)'"></div>
+        <div class="ac-clock-hand ac-minute-hand" [style.transform]="'translateX(-50%) rotate(' + clock.minuteHandRotation + 'deg)'"></div>
+        <div class="ac-clock-hand ac-second-hand" [style.transform]="'translateX(-50%) rotate(' + clock.secondHandRotation + 'deg)'"></div>
+        <div class="ac-clock-center"></div>
+    </div>
+    <div class="ac-time-copy">
+        <div class="ac-time-main">{{ clock.currentTime }}</div>
+        <div class="ac-time-date">{{ clock.currentDate }}</div>
+        <div class="ac-time-location-pill">
+            <div class="ac-flag-wrap">
+                <img src="https://flagcdn.com/w80/us.png" alt="US flag">
+            </div>
+            <div class="ac-time-location">US | GMT-5</div>
+        </div>
+    </div>
+</div>

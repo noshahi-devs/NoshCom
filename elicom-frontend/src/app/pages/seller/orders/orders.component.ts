@@ -1,9 +1,10 @@
-import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { OrderService } from '../../../services/order.service';
 import { StoreService } from '../../../services/store.service';
+import { AnalogClockComponent } from '../../../shared/components/analog-clock/analog-clock.component';
 import Swal from 'sweetalert2';
 
 type OrderViewKey =
@@ -45,7 +46,7 @@ interface SellerOrderRow {
 @Component({
     selector: 'app-seller-orders',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule],
+    imports: [CommonModule, FormsModule, RouterModule, AnalogClockComponent],
     templateUrl: './orders.component.html',
     styleUrls: ['./orders.component.scss']
 })
@@ -55,7 +56,6 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
     private orderService = inject(OrderService);
     private storeService = inject(StoreService);
     private cdr = inject(ChangeDetectorRef);
-    private zone = inject(NgZone);
 
     isLoading = false;
     isClockSynced = false;
@@ -64,11 +64,6 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
     pageSize = 10;
     currentPage = 1;
     currentStore: any = null;
-    currentTime = '';
-    currentDate = '';
-    hourHandRotation = 0;
-    minuteHandRotation = 0;
-    secondHandRotation = 0;
 
     orderView: OrderViewKey = 'unshipped';
     viewConfig: OrderViewConfig = this.getViewConfig('unshipped');
@@ -78,7 +73,6 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
 
     private routeDataSub: any;
     private relativeTimeTimer: any;
-    private clockTimer: ReturnType<typeof setInterval> | null = null;
     private nowEpoch = Date.now();
     private serverClockOffset = 0; // ms to add to Date.now() to sync with server
 
@@ -92,7 +86,6 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
         });
 
         this.startRelativeTicker();
-        this.startClock();
         this.loadStoreSummary();
         this.loadOrders();
     }
@@ -104,10 +97,6 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
         if (this.relativeTimeTimer) {
             clearInterval(this.relativeTimeTimer);
             this.relativeTimeTimer = null;
-        }
-        if (this.clockTimer) {
-            clearInterval(this.clockTimer);
-            this.clockTimer = null;
         }
     }
 
@@ -593,52 +582,6 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
         const to = new Date(baseDate);
         to.setDate(baseDate.getDate() + endOffsetDays);
         return `${from.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })} to ${to.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}`;
-    }
-
-    private startClock(): void {
-        this.updateClock();
-        if (this.clockTimer) {
-            clearInterval(this.clockTimer);
-        }
-
-        this.zone.runOutsideAngular(() => {
-            this.clockTimer = setInterval(() => {
-                this.zone.run(() => {
-                    this.updateClock();
-                    this.cdr.markForCheck();
-                });
-            }, 1000);
-        });
-    }
-
-    private updateClock(): void {
-        const now = new Date();
-        const formatter = new Intl.DateTimeFormat('en-US', {
-            timeZone: 'America/New_York',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-        });
-
-        const dateFormatter = new Intl.DateTimeFormat('en-GB', {
-            timeZone: 'America/New_York',
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        });
-
-        this.currentTime = formatter.format(now);
-        this.currentDate = dateFormatter.format(now).replace(/ /g, '-');
-
-        const ny = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-        const hours = ny.getHours();
-        const minutes = ny.getMinutes();
-        const seconds = ny.getSeconds();
-        const hours12 = hours % 12;
-
-        this.hourHandRotation = (hours12 + minutes / 60 + seconds / 3600) * 30;
-        this.minuteHandRotation = (minutes + seconds / 60) * 6;
-        this.secondHandRotation = seconds * 6;
     }
 
     private startRelativeTicker(): void {

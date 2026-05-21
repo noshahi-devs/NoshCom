@@ -1,38 +1,31 @@
-import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AlertService } from '../../../services/alert.service';
 import { SellerPayoutMethodService, SaveSellerPayoutMethodInput } from '../../../services/seller-payout-method.service';
 import { StoreService } from '../../../services/store.service';
+import { AnalogClockComponent } from '../../../shared/components/analog-clock/analog-clock.component';
 import { catchError, of } from 'rxjs';
 
 @Component({
     selector: 'app-add-payment-method',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule],
+    imports: [CommonModule, FormsModule, RouterModule, AnalogClockComponent],
     templateUrl: './add-payment-method.component.html',
     styleUrl: './add-payment-method.page.scss'
 })
-export class AddPaymentMethodComponent implements OnInit, OnDestroy {
+export class AddPaymentMethodComponent implements OnInit {
     private payoutMethodService = inject(SellerPayoutMethodService);
     private alert = inject(AlertService);
     private router = inject(Router);
     private storeService = inject(StoreService);
-    private cdr = inject(ChangeDetectorRef);
-    private zone = inject(NgZone);
 
     // Navigation and State
     activeTab: 'bank' | 'thirdparty' = 'bank';
     isSaving: boolean = false;
     isLoadingCurrent: boolean = false;
     currentStore: any = null;
-    currentTime = '';
-    currentDate = '';
-    hourHandRotation = 0;
-    minuteHandRotation = 0;
-    secondHandRotation = 0;
-    private clockTimer: ReturnType<typeof setInterval> | null = null;
 
     // Bank Form Fields
     bankCountry: string = '';
@@ -147,14 +140,7 @@ export class AddPaymentMethodComponent implements OnInit, OnDestroy {
             this.currentStore = (res as any)?.result || res || this.currentStore;
         });
 
-        this.startClock();
         this.loadCurrentMethod();
-    }
-
-    ngOnDestroy(): void {
-        if (this.clockTimer) {
-            clearInterval(this.clockTimer);
-        }
     }
 
     setTab(tab: 'bank' | 'thirdparty'): void {
@@ -387,43 +373,5 @@ export class AddPaymentMethodComponent implements OnInit, OnDestroy {
             || err?.error?.message
             || err?.message
             || 'Failed to save payout method.';
-    }
-
-    private startClock(): void {
-        this.updateClock();
-        if (this.clockTimer) {
-            clearInterval(this.clockTimer);
-        }
-
-        this.zone.runOutsideAngular(() => {
-            this.clockTimer = setInterval(() => {
-                this.zone.run(() => {
-                    this.updateClock();
-                    this.cdr.markForCheck();
-                });
-            }, 1000);
-        });
-    }
-
-    private updateClock(): void {
-        const now = new Date();
-        this.currentTime = now.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-        });
-        this.currentDate = now.toLocaleDateString('en-GB', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        }).replace(/ /g, '-').toUpperCase();
-
-        const hours = now.getHours() % 12;
-        const minutes = now.getMinutes();
-        const seconds = now.getSeconds();
-
-        this.hourHandRotation = (hours * 30) + (minutes * 0.5);
-        this.minuteHandRotation = (minutes * 6) + (seconds * 0.1);
-        this.secondHandRotation = seconds * 6;
     }
 }

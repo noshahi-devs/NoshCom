@@ -1,6 +1,7 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AnalogClockComponent } from '../../../shared/components/analog-clock/analog-clock.component';
 
 interface Store {
     id: number;
@@ -22,11 +23,11 @@ interface Store {
 @Component({
     selector: 'app-warehouse',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, AnalogClockComponent],
     templateUrl: './warehouse.component.html',
     styleUrls: ['./warehouse.component.scss']
 })
-export class WarehouseComponent implements OnInit {
+export class WarehouseComponent {
     stores: Store[] = [
         {
             id: 1,
@@ -192,24 +193,6 @@ export class WarehouseComponent implements OnInit {
 
     selectedStore: Store | null = null;
     isEditing = false;
-    currentTimeDisplay = '';
-    currentDateDisplay = '';
-    hourHandRotation = 0;
-    minuteHandRotation = 0;
-    secondHandRotation = 0;
-    private clockTimer: ReturnType<typeof setInterval> | null = null;
-
-    ngOnInit() {
-        this.updateClock();
-        this.clockTimer = setInterval(() => this.updateClock(), 1000);
-    }
-
-    ngOnDestroy() {
-        if (this.clockTimer) {
-            clearInterval(this.clockTimer);
-            this.clockTimer = null;
-        }
-    }
 
     get activeStoresCount(): number {
         return this.stores.filter(s => s.isActive).length;
@@ -297,28 +280,5 @@ export class WarehouseComponent implements OnInit {
 
     getAirTransitDays(store: Store): number {
         return store.airTransitDays ?? 8;
-    }
-
-    private updateClock() {
-        const now = new Date();
-        const hours = now.getHours();
-        const minutes = now.getMinutes();
-        const seconds = now.getSeconds();
-
-        this.currentTimeDisplay = now.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-        });
-
-        this.currentDateDisplay = now.toLocaleDateString('en-GB', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        }).replace(/ /g, '-');
-
-        this.hourHandRotation = ((hours % 12) + minutes / 60) * 30;
-        this.minuteHandRotation = (minutes + seconds / 60) * 6;
-        this.secondHandRotation = seconds * 6;
     }
 }

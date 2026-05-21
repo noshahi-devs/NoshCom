@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { SellerDashboardService, SellerDashboardStats } from '../../../../services/seller-dashboard.service';
 import { StoreService } from '../../../../services/store.service';
@@ -8,17 +8,18 @@ import { Router } from '@angular/router';
 import { AppPageLoaderService } from '../../../../services/app-page-loader.service';
 
 import { DateRangePickerComponent, DateRangeResult } from '../../../../shared/date-range-picker/date-range-picker.component';
+import { AnalogClockComponent } from '../../../../shared/components/analog-clock/analog-clock.component';
 
 type OrderStatusFilter = 'all' | 'delivered' | 'pending' | 'reject';
 
 @Component({
   selector: 'app-sales-report',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DatePipe, FormsModule, DateRangePickerComponent],
+  imports: [CommonModule, CurrencyPipe, DatePipe, FormsModule, DateRangePickerComponent, AnalogClockComponent],
   templateUrl: './sales-report.component.html',
   styleUrls: ['./sales-report.component.scss']
 })
-export class SalesReportComponent implements OnInit, OnDestroy {
+export class SalesReportComponent implements OnInit {
   private dashboardService = inject(SellerDashboardService);
   private storeService = inject(StoreService);
   private orderService = inject(OrderService);
@@ -36,24 +37,9 @@ export class SalesReportComponent implements OnInit, OnDestroy {
   filteredOrders: any[] = [];
   currentPage = 1;
   pageSize = 10;
-  currentTimeDisplay = '';
-  currentDateDisplay = '';
-  hourHandRotation = 0;
-  minuteHandRotation = 0;
-  secondHandRotation = 0;
-  private clockTimer: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit() {
-    this.updateClock();
-    this.clockTimer = setInterval(() => this.updateClock(), 1000);
     this.loadData();
-  }
-
-  ngOnDestroy() {
-    if (this.clockTimer) {
-      clearInterval(this.clockTimer);
-      this.clockTimer = null;
-    }
   }
 
   loadData() {
@@ -259,28 +245,5 @@ export class SalesReportComponent implements OnInit, OnDestroy {
       return 'rejected';
     }
     return 'default';
-  }
-
-  private updateClock() {
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    const seconds = now.getSeconds();
-
-    this.currentTimeDisplay = now.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
-
-    this.currentDateDisplay = now.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    }).replace(/ /g, '-');
-
-    this.hourHandRotation = ((hours % 12) + minutes / 60) * 30;
-    this.minuteHandRotation = (minutes + seconds / 60) * 6;
-    this.secondHandRotation = seconds * 6;
   }
 }

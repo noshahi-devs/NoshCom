@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener, inject, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, HostListener, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -8,16 +8,17 @@ import { StoreService } from '../../../services/store.service';
 import { AlertService } from '../../../services/alert.service';
 import { AppPageLoaderService } from '../../../services/app-page-loader.service';
 import { CategoryService } from '../../../services/category';
+import { AnalogClockComponent } from '../../../shared/components/analog-clock/analog-clock.component';
 import Swal from 'sweetalert2';
 
 @Component({
     selector: 'app-add-product-mapping',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, AnalogClockComponent],
     templateUrl: './add-product-mapping.component.html',
     styleUrls: ['./add-product-mapping.component.scss']
 })
-export class AddProductMappingComponent implements OnInit, OnDestroy {
+export class AddProductMappingComponent implements OnInit {
     private productService = inject(ProductService);
     private storeProductService = inject(StoreProductService);
     private storeService = inject(StoreService);
@@ -26,7 +27,6 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
     private cdr = inject(ChangeDetectorRef);
     private alert = inject(AlertService);
     private pageLoader = inject(AppPageLoaderService);
-    private zone = inject(NgZone);
 
     searchQuery: string = '';
     isSearching: boolean = false;
@@ -59,17 +59,10 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
     isPublishing: boolean = false;
     private readonly titlePreviewLength = 92;
     private readonly previewCardCount = 10;
-    currentDate: string = '';
-    currentTime: string = '';
-    hourHandRotation = 0;
-    minuteHandRotation = 0;
-    secondHandRotation = 0;
-    private timer: any;
 
     ngOnInit() {
         this.loadStore();
         this.loadCategoryShowcase();
-        this.startClock();
 
         // Check if we are in view-only mode from listing
         const state = window.history.state;
@@ -95,12 +88,6 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
         }
     }
 
-    ngOnDestroy(): void {
-        if (this.timer) {
-            clearInterval(this.timer);
-        }
-    }
-
     loadStore() {
         this.storeService.getMyStoreCached().subscribe({
             next: (res) => {
@@ -123,47 +110,6 @@ export class AddProductMappingComponent implements OnInit, OnDestroy {
             year: 'numeric'
         }).format(new Date(createdAt));
         return `Joined Date: ${formatted}`;
-    }
-
-    private startClock(): void {
-        this.updateTime();
-        this.zone.runOutsideAngular(() => {
-            this.timer = setInterval(() => {
-                this.zone.run(() => {
-                    this.updateTime();
-                    this.cdr.markForCheck();
-                });
-            }, 1000);
-        });
-    }
-
-    private updateTime(): void {
-        const now = new Date();
-        const formatter = new Intl.DateTimeFormat('en-US', {
-            timeZone: 'America/New_York',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-        });
-
-        const dateFormatter = new Intl.DateTimeFormat('en-GB', {
-            timeZone: 'America/New_York',
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        });
-
-        this.currentTime = formatter.format(now);
-        this.currentDate = dateFormatter.format(now).replace(/ /g, '-');
-
-        const ny = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-        const hours = ny.getHours();
-        const minutes = ny.getMinutes();
-        const seconds = ny.getSeconds();
-        const hours12 = hours % 12;
-        this.hourHandRotation = (hours12 + minutes / 60 + seconds / 3600) * 30;
-        this.minuteHandRotation = (minutes + seconds / 60) * 6;
-        this.secondHandRotation = seconds * 6;
     }
 
     toggleCategoryDropdown(event?: Event): void {

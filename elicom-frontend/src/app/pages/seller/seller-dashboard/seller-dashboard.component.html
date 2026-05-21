@@ -33,30 +33,7 @@
             </div>
 
             <div class="sd-right-stack">
-                <div class="sd-time-card">
-                    <div class="sd-analog-clock">
-                        <div class="sd-clock-ring sd-clock-ring-one"></div>
-                        <div class="sd-clock-ring sd-clock-ring-two"></div>
-                        <div class="sd-clock-mark sd-mark-12"></div>
-                        <div class="sd-clock-mark sd-mark-3"></div>
-                        <div class="sd-clock-mark sd-mark-6"></div>
-                        <div class="sd-clock-mark sd-mark-9"></div>
-                        <div class="sd-clock-hand sd-hour-hand" [style.transform]="'translateX(-50%) rotate(' + hourHandRotation + 'deg)'"></div>
-                        <div class="sd-clock-hand sd-minute-hand" [style.transform]="'translateX(-50%) rotate(' + minuteHandRotation + 'deg)'"></div>
-                        <div class="sd-clock-hand sd-second-hand" [style.transform]="'translateX(-50%) rotate(' + secondHandRotation + 'deg)'"></div>
-                        <div class="sd-clock-center"></div>
-                    </div>
-                    <div class="sd-time-copy">
-                        <div class="sd-time-main">{{ currentTime }}</div>
-                        <div class="sd-time-date">{{ currentDate }}</div>
-                        <div class="sd-time-location-pill">
-                            <div class="sd-flag-wrap">
-                                <img src="https://flagcdn.com/w80/us.png" alt="US flag">
-                            </div>
-                            <div class="sd-time-location">US | GMT-5</div>
-                        </div>
-                    </div>
-                </div>
+                <app-analog-clock></app-analog-clock>
             </div>
         </section>
 

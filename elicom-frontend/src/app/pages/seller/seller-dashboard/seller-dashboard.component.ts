@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener, inject, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
@@ -8,11 +8,12 @@ import { StoreProductService } from '../../../services/store-product.service';
 import { WalletService } from '../../../services/wallet.service';
 import { catchError, map, of, forkJoin } from 'rxjs';
 import { DateRangePickerComponent, DateRangeResult } from '../../../shared/date-range-picker/date-range-picker.component';
+import { AnalogClockComponent } from '../../../shared/components/analog-clock/analog-clock.component';
 
 @Component({
     selector: 'app-seller-dashboard',
     standalone: true,
-    imports: [CommonModule, RouterModule, DateRangePickerComponent],
+    imports: [CommonModule, RouterModule, DateRangePickerComponent, AnalogClockComponent],
     templateUrl: './seller-dashboard.component.html',
     styleUrls: ['./seller-dashboard.component.scss']
 })
@@ -21,7 +22,6 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
     private readonly demoOrderSeries = [18, 34, 26, 52, 64, 82, 96];
     private authService = inject(AuthService);
     private cdr = inject(ChangeDetectorRef);
-    private zone = inject(NgZone);
 
     private storeService = inject(StoreService);
     private dashboardService = inject(SellerDashboardService);
@@ -36,20 +36,12 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
     stats: SellerDashboardStats | null = null;
     private readonly emptyGuid = '00000000-0000-0000-0000-000000000000';
 
-    // Clock
-    currentDate: string = '';
-    currentTime: string = '';
-    hourHandRotation = 0;
-    minuteHandRotation = 0;
-    secondHandRotation = 0;
-    private timer: any;
     private statusCheckTimer: any;
     statsWindow: 'day' | 'week' | 'month' = 'week';
     currentDateRange: DateRangeResult = { label: 'Maximum Data', id: 'max' };
 
     ngOnInit() {
         this.currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        this.startClock();
 
         // Use reactive stream for store updates
         this.storeService.currentStore$.subscribe(store => {
@@ -89,55 +81,6 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.stopStatusPolling();
-        if (this.timer) {
-            clearInterval(this.timer);
-        }
-    }
-
-    startClock() {
-        this.updateTime();
-        this.zone.runOutsideAngular(() => {
-            this.timer = setInterval(() => {
-                this.zone.run(() => {
-                    this.updateTime();
-                    this.cdr.markForCheck();
-                });
-            }, 1000);
-        });
-    }
-
-    updateTime() {
-        const now = new Date();
-        const nyDate = new Intl.DateTimeFormat('en-GB', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-            timeZone: 'America/New_York'
-        }).format(now);
-        const nyTime = new Intl.DateTimeFormat('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-            timeZone: 'America/New_York'
-        }).format(now);
-        const nyParts = new Intl.DateTimeFormat('en-US', {
-            hour: 'numeric',
-            minute: 'numeric',
-            second: 'numeric',
-            hour12: false,
-            timeZone: 'America/New_York'
-        }).formatToParts(now);
-        const getPart = (type: string) => Number(nyParts.find(part => part.type === type)?.value || 0);
-        const hours24 = getPart('hour');
-        const minutes = getPart('minute');
-        const seconds = getPart('second');
-        const hours12 = hours24 % 12;
-
-        this.currentDate = nyDate.replace(/ /g, '-');
-        this.currentTime = nyTime;
-        this.hourHandRotation = (hours12 + minutes / 60 + seconds / 3600) * 30;
-        this.minuteHandRotation = (minutes + seconds / 60) * 6;
-        this.secondHandRotation = seconds * 6;
     }
 
     loadMyStore() {

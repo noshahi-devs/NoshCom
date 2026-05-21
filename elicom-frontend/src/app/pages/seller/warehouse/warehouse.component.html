@@ -20,30 +20,7 @@
         </div>
 
         <div class="wh-right-stack">
-            <div class="wh-time-card">
-                <div class="wh-analog-clock">
-                    <div class="wh-clock-ring wh-clock-ring-one"></div>
-                    <div class="wh-clock-ring wh-clock-ring-two"></div>
-                    <div class="wh-clock-mark wh-mark-12"></div>
-                    <div class="wh-clock-mark wh-mark-3"></div>
-                    <div class="wh-clock-mark wh-mark-6"></div>
-                    <div class="wh-clock-mark wh-mark-9"></div>
-                    <div class="wh-clock-hand wh-hour-hand" [style.transform]="'translateX(-50%) rotate(' + hourHandRotation + 'deg)'"></div>
-                    <div class="wh-clock-hand wh-minute-hand" [style.transform]="'translateX(-50%) rotate(' + minuteHandRotation + 'deg)'"></div>
-                    <div class="wh-clock-hand wh-second-hand" [style.transform]="'translateX(-50%) rotate(' + secondHandRotation + 'deg)'"></div>
-                    <div class="wh-clock-center"></div>
-                </div>
-                <div class="wh-time-copy">
-                    <div class="wh-time-main">{{ currentTimeDisplay }}</div>
-                    <div class="wh-time-date">{{ currentDateDisplay }}</div>
-                    <div class="wh-time-location-pill">
-                        <div class="wh-flag-wrap">
-                            <img src="https://flagcdn.com/w80/us.png" alt="US flag">
-                        </div>
-                        <div class="wh-time-location">US | GMT-5</div>
-                    </div>
-                </div>
-            </div>
+            <app-analog-clock></app-analog-clock>
         </div>
 
         <div class="wh-filter-center">
