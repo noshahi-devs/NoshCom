@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
+import { finalize } from 'rxjs';
 import { CategoryService, CategoryDto, CreateCategoryDto, UpdateCategoryDto } from '../../../core/services/category.service';
 import { StorageService } from '../../../core/services/storage.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -54,6 +55,7 @@ export class CategoriesComponent implements OnInit {
 
   // Loading state
   isLoading = false;
+  isSavingCategory = false;
 
   constructor(
     private fb: FormBuilder,
@@ -222,6 +224,9 @@ export class CategoriesComponent implements OnInit {
   }
 
   closeAddCategoryModal(): void {
+    if (this.isSavingCategory) {
+      return;
+    }
     this.addCategoryModalVisible = false;
     this.imagePreviewUrl = null;
     this.cdr.detectChanges();
@@ -321,19 +326,25 @@ export class CategoriesComponent implements OnInit {
       status: !!formValue.status
     };
 
-    console.log('💾 Creating category:', input);
+    this.isSavingCategory = true;
+    this.cdr.detectChanges();
 
-    this.categoryService.create(input).subscribe({
+    this.categoryService.create(input).pipe(
+      finalize(() => {
+        this.isSavingCategory = false;
+        this.cdr.detectChanges();
+      })
+    ).subscribe({
       next: (result) => {
-        console.log('✅ Category created:', result);
         this.toastService.showSuccess('Category added successfully');
-        this.closeAddCategoryModal();
+        this.addCategoryModalVisible = false;
+        this.imagePreviewUrl = null;
         this.currentPage = 1;
         this.latestCreatedCategoryId = result?.id ? String(result.id) : null;
         this.loadCategories();
       },
       error: (error) => {
-        console.error('❌ Error creating category:', error);
+        console.error('Error creating category:', error);
         const errorMessage = this.extractHttpErrorMessage(error, 'Failed to create category. Please try again.');
         this.toastService.showError(errorMessage);
       }

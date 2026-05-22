@@ -495,13 +495,11 @@ namespace Elicom.SupplierOrders
             }
 
             return query.Where(x =>
-                x.SourcePlatform != null &&
-                (
-                    x.SourcePlatform.ToLower() == "primeship" ||
-                    x.SourcePlatform.ToLower() == "prime ship" ||
-                    x.SourcePlatform.ToLower() == "prime ship uk" ||
-                    x.SourcePlatform.ToLower() == "primeshipuk"
-                ));
+                string.IsNullOrWhiteSpace(x.SourcePlatform) ||
+                x.SourcePlatform.ToLower() == "primeship" ||
+                x.SourcePlatform.ToLower() == "prime ship" ||
+                x.SourcePlatform.ToLower() == "prime ship uk" ||
+                x.SourcePlatform.ToLower() == "primeshipuk");
         }
 
         private void EnsureCurrentPlatformAccess(SupplierOrder order)

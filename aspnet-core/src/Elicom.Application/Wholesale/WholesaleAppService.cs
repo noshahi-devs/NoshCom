@@ -91,12 +91,6 @@ namespace Elicom.Wholesale
                 });
             }
 
-            // Fallback: If PrimeShip and warehouse charge is missing, default to 1.00
-            if (input.WarehouseCharge == 0)
-            {
-                input.WarehouseCharge = 1.00m;
-            }
-
             totalAmount += input.ShippingCost + input.WarehouseCharge + input.ServiceCharge;
 
             var paymentMethod = (input.PaymentMethod ?? string.Empty).Trim().ToLowerInvariant();
@@ -112,8 +106,12 @@ namespace Elicom.Wholesale
                 primaryProductName
             );
 
-            // 2. Pay Upfront (Deduct from EasyFinora Card if method is finora)
-            if (paymentMethod == "finora")
+            // 2. Pay Upfront
+            if (IsGlobalMartWalletPayment(paymentMethod))
+            {
+                await ProcessGlobalMartWalletPaymentAsync(user, input, totalAmount, refCode);
+            }
+            else if (paymentMethod == "finora")
             {
                 if (string.IsNullOrEmpty(input.CardNumber))
                 {
@@ -304,6 +302,42 @@ namespace Elicom.Wholesale
             }
 
             return $"UK-{initials}{digits}";
+        }
+
+        private static bool IsGlobalMartWalletPayment(string paymentMethod)
+        {
+            return paymentMethod is "easy_finora" or "easyfinora" or "globalmart" or "global_mart_uk" or "wallet";
+        }
+
+        private async Task ProcessGlobalMartWalletPaymentAsync(User user, CreateWholesaleOrderInput input, decimal totalAmount, string refCode)
+        {
+            var walletUserId = await ResolveGlobalMartUnifiedUserIdAsync(user);
+            var balance = await _walletManager.GetBalanceAsync(walletUserId);
+
+            if (balance < totalAmount)
+            {
+                throw new UserFriendlyException("Insufficient Balance");
+            }
+
+            if (!string.IsNullOrWhiteSpace(input.WalletId))
+            {
+                var expectedWalletId = (user.WalletId ?? string.Empty).Trim();
+                if (!string.Equals(expectedWalletId, input.WalletId.Trim(), StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new UserFriendlyException("Wallet ID does not match your account.");
+                }
+            }
+
+            var debited = await _walletManager.TryDebitAsync(
+                walletUserId,
+                totalAmount,
+                refCode,
+                $"Wholesale order {refCode} ({input.CustomerName})");
+
+            if (!debited)
+            {
+                throw new UserFriendlyException("Insufficient Balance");
+            }
         }
 
         private static bool IsTrackingCodeInNewFormat(string trackingCode)

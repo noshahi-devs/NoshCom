@@ -7,7 +7,7 @@ import { CartService, CartItem } from '../../core/services/cart.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { WholesaleService, CreateWholesaleOrderInput } from '../../core/services/wholesale.service';
-import { CardService } from '../../core/services/card.service';
+import { WalletService } from '../../core/services/wallet.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -51,11 +51,9 @@ export class CheckoutComponent implements OnInit {
     return 1;
   }
 
-  // Easy Finora Integration
-  isVerifyingBalance = false;
-  isBalanceVerified = false;
-  verifiedBalance: number | null = null;
-  verificationError: string | null = null;
+  walletId = '';
+  walletBalance: number | null = null;
+  isLoadingWallet = false;
   profileCardHolderName = '';
 
   // Confetti
@@ -75,7 +73,7 @@ export class CheckoutComponent implements OnInit {
     private toastService: ToastService,
     private profileService: ProfileService,
     private wholesaleService: WholesaleService,
-    private cardService: CardService,
+    private walletService: WalletService,
     private cdr: ChangeDetectorRef
   ) {
     this.checkoutForm = this.fb.group({
@@ -88,7 +86,8 @@ export class CheckoutComponent implements OnInit {
       address2: [''],
       zipCode: ['', Validators.required],
       city: ['', Validators.required],
-      paymentMethod: ['mastercard', Validators.required],
+      paymentMethod: ['easy_finora', Validators.required],
+      walletId: [''],
       cardHolderName: [''],
       cardNumber: [''],
       expiryDate: [''],
@@ -150,11 +149,13 @@ export class CheckoutComponent implements OnInit {
       this.checkoutForm.get(ctrl)?.updateValueAndValidity();
     });
 
-    if (['mastercard', 'discover', 'amex', 'easy_finora'].includes(method)) {
+    if (['mastercard', 'discover', 'amex'].includes(method)) {
       this.checkoutForm.get('cardHolderName')?.setValidators([Validators.required, Validators.pattern(/^[A-Za-z][A-Za-z\s.'-]*$/)]);
       this.checkoutForm.get('cardNumber')?.setValidators([Validators.required, Validators.pattern(/^\d{4} \d{4} \d{4} \d{4}$/)]);
       this.checkoutForm.get('expiryDate')?.setValidators([Validators.required, Validators.pattern(/^(0[1-9]|1[0-2])\/\d{2}$/)]);
       this.checkoutForm.get('cvv')?.setValidators([Validators.required, Validators.pattern(/^\d{3,4}$/)]);
+    } else if (method === 'easy_finora') {
+      this.checkoutForm.get('walletId')?.setValidators([Validators.required]);
     } else if (method === 'bank_transfer') {
       bankControls.forEach(ctrl => this.checkoutForm.get(ctrl)?.setValidators([Validators.required]));
     } else if (method === 'crypto') {
@@ -169,6 +170,7 @@ export class CheckoutComponent implements OnInit {
   ngOnInit(): void {
     this.loadProfile();
     this.loadCartData();
+    this.loadSellerWallet();
   }
 
   private resetPaymentFields(): void {
@@ -181,9 +183,26 @@ export class CheckoutComponent implements OnInit {
       bankAccountNumber: '',
       cryptoWalletAddress: ''
     }, { emitEvent: false });
-    this.isBalanceVerified = false;
-    this.verifiedBalance = null;
-    this.verificationError = null;
+  }
+
+  private loadSellerWallet(): void {
+    this.isLoadingWallet = true;
+    this.walletService.getMyWallet().subscribe({
+      next: (res) => {
+        const wallet = res?.result ?? res;
+        const id = (wallet?.displayWalletId || wallet?.walletId || '').toString().trim();
+        this.walletId = id;
+        this.walletBalance = this.normalizeBalance(wallet?.balance ?? 0);
+        if (id) {
+          this.checkoutForm.get('walletId')?.setValue(id);
+        }
+        this.isLoadingWallet = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isLoadingWallet = false;
+      }
+    });
   }
 
   get displayCardHolderName(): string {
@@ -205,7 +224,7 @@ export class CheckoutComponent implements OnInit {
     return digits.length >= 4 ? digits.slice(-4) : '';
   }
 
-  private isGlobalMartUkSelected(): boolean {
+  isGlobalMartUkSelected(): boolean {
     return this.checkoutForm.get('paymentMethod')?.value === 'easy_finora';
   }
 
@@ -323,77 +342,53 @@ export class CheckoutComponent implements OnInit {
     return this.selectedShippingMethod === 'warehouse' ? 'Nearest Warehouse' : 'In-Store Pickup';
   }
 
-  verifyEasyFinoraBalance(): void {
-    const cardNumber = (this.checkoutForm.get('cardNumber')?.value || '').toString().replace(/\D/g, '');
-    const expiryDate = (this.checkoutForm.get('expiryDate')?.value || '').toString().trim();
-    const cvv = (this.checkoutForm.get('cvv')?.value || '').toString().replace(/\D/g, '');
-    const amount = Number(this.total);
-
-    if (!cardNumber || !expiryDate || !cvv) {
-      this.toastService.showError('Please enter full card details to verify balance');
-      return;
-    }
-
-    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiryDate)) {
-      this.toastService.showError('Please enter expiry in MM/YY format.');
-      return;
-    }
-
-    if (!/^\d{3,4}$/.test(cvv)) {
-      this.toastService.showError('Please enter a valid CVV.');
-      return;
-    }
-
-    if (!Number.isFinite(amount) || amount < 0) {
-      this.toastService.showError('Order total is invalid. Please refresh and try again.');
-      return;
-    }
-
-    this.isVerifyingBalance = true;
-    this.verificationError = null;
-    this.isBalanceVerified = false;
-    this.cdr.detectChanges();
-
-    this.cardService.validateCard({
-      cardNumber,
-      expiryDate,
-      cvv,
-      amount
-    }).subscribe({
-      next: (result) => {
-        this.isVerifyingBalance = false;
-        if (result.isValid) {
-          this.isBalanceVerified = true;
-          this.verifiedBalance = this.normalizeBalance(result.availableBalance);
-          this.toastService.showSuccess('Card balance verified! You can now place the order.');
-        } else {
-          this.verificationError = result.message;
-          this.toastService.showError(result.message);
-        }
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.isVerifyingBalance = false;
-        if (this.handleAuthError(err)) return;
-        console.error('[Checkout] ValidateCard failed', {
-          status: err?.status,
-          message: err?.message,
-          error: err?.error
-        });
-        const validationMessages = (err?.error?.error?.validationErrors || [])
-          .map((v: any) => v?.message)
-          .filter((m: any) => !!m)
-          .join(' ');
-        const apiMessage =
-          err?.error?.error?.message ||
-          validationMessages ||
-          err?.error?.message ||
-          err?.message;
-        this.verificationError = apiMessage || 'Verification failed. Please check card info.';
-        this.toastService.showError(apiMessage || 'Could not verify card balance');
-        this.cdr.detectChanges();
-      }
+  private showInsufficientBalance(): void {
+    const available = this.walletBalance ?? 0;
+    void Swal.fire({
+      icon: 'error',
+      title: 'Insufficient Balance',
+      text: `Your wallet balance is ${this.formatMoney(available)}. Order total is ${this.formatMoney(this.total)}.`,
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#10B981'
     });
+  }
+
+  private formatMoney(amount: number): string {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+  }
+
+  private ensureWalletBalanceLoaded(): Promise<number | null> {
+    if (this.walletBalance !== null) {
+      return Promise.resolve(this.walletBalance);
+    }
+    return new Promise((resolve) => {
+      this.walletService.getMyWallet().subscribe({
+        next: (res) => {
+          const wallet = res?.result ?? res;
+          const id = (wallet?.displayWalletId || wallet?.walletId || '').toString().trim();
+          this.walletId = id;
+          this.walletBalance = this.normalizeBalance(wallet?.balance ?? 0);
+          if (id) {
+            this.checkoutForm.get('walletId')?.setValue(id);
+          }
+          resolve(this.walletBalance);
+        },
+        error: () => resolve(null)
+      });
+    });
+  }
+
+  private async hasSufficientWalletBalance(): Promise<boolean> {
+    const balance = await this.ensureWalletBalanceLoaded();
+    if (balance === null) {
+      this.toastService.showError('Could not load wallet balance. Please try again.');
+      return false;
+    }
+    if (this.total > balance) {
+      this.showInsufficientBalance();
+      return false;
+    }
+    return true;
   }
 
   private normalizeBalance(balance: number): number {
@@ -443,16 +438,23 @@ export class CheckoutComponent implements OnInit {
       this.router.navigate(['/cart']);
       return;
     }
-    if (this.checkoutForm.valid && this.isAddressSubmitted && this.selectedShippingMethod) {
-      if (!this.isGlobalMartUkSelected()) {
-        this.showGlobalMartUkOnlyPopup();
-        return;
-      }
+    if (!this.isAddressSubmitted || !this.selectedShippingMethod) {
+      this.toastService.showError('Please complete shipping details first.');
+      return;
+    }
+    if (!this.isGlobalMartUkSelected()) {
+      this.showGlobalMartUkOnlyPopup();
+      return;
+    }
+    if (!this.walletId) {
+      this.toastService.showError('Wallet ID is not available. Please refresh or contact support.');
+      return;
+    }
+    void this.hasSufficientWalletBalance().then((ok) => {
+      if (!ok) return;
       this.isPaymentSubmitted = true;
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      this.toastService.showError('Please ensure all details are filled correctly before proceeding to review.');
-    }
+    });
   }
 
   goBackToPayment(): void {
@@ -477,7 +479,13 @@ export class CheckoutComponent implements OnInit {
       this.goBackToPayment();
       return;
     }
-    if (this.checkoutForm.valid && this.isAddressSubmitted && this.selectedShippingMethod) {
+    void this.hasSufficientWalletBalance().then(async (ok) => {
+      if (!ok) return;
+      if (!this.isAddressSubmitted || !this.selectedShippingMethod) {
+        this.toastService.showError('Please fill in all required fields correctly');
+        return;
+      }
+
       this.isProcessing = true;
       this.isSuccess = false;
       this.showCelebration = true;
@@ -498,9 +506,10 @@ export class CheckoutComponent implements OnInit {
         shippingAddress: fullAddress,
         customerName: `${val.firstName} ${val.lastName}`,
         paymentMethod: val.paymentMethod,
-        cardNumber: val.cardNumber,
-        expiryDate: val.expiryDate,
-        cvv: val.cvv
+        walletId: this.walletId || val.walletId,
+        warehouseCharge: this.shippingMethodFee,
+        shippingCost: this.shipping,
+        serviceCharge: this.platformCharges
       };
 
       this.wholesaleService.placeWholesaleOrder(orderInput).subscribe({
@@ -520,16 +529,14 @@ export class CheckoutComponent implements OnInit {
           console.error('Wholesale checkout failed:', err);
           if (this.handleAuthError(err)) return;
           const errorMsg = err.error?.error?.message || 'Failed to place wholesale order.';
-          this.toastService.showError(errorMsg);
+          if ((errorMsg || '').toLowerCase().includes('insufficient')) {
+            this.showInsufficientBalance();
+          } else {
+            this.toastService.showError(errorMsg);
+          }
         }
       });
-    } else {
-      this.toastService.showError('Please fill in all required fields correctly');
-      Object.keys(this.checkoutForm.controls).forEach(key => {
-        const control = this.checkoutForm.get(key);
-        if (control?.invalid) control.markAsTouched();
-      });
-    }
+    });
   }
 
   private handleAuthError(err: any): boolean {

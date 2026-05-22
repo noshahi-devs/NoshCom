@@ -14,6 +14,7 @@ namespace Elicom.Wholesale.Dto
         
         // Payment Details
         public string PaymentMethod { get; set; }
+        public string WalletId { get; set; }
         public string CardNumber { get; set; }
         public string ExpiryDate { get; set; }
         public string Cvv { get; set; }

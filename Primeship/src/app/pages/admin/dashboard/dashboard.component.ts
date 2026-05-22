@@ -36,6 +36,9 @@ export class DashboardComponent implements OnInit {
   inactiveUsersCount = 0;
   activeUsersPercentage = 88;
   inactiveUsersPercentage = 12;
+  deliveredOrdersPercentage = 0;
+  pendingOrdersPercentage = 0;
+  pendingOrdersCount = 0;
 
   statsCards = [
     {
@@ -126,8 +129,8 @@ export class DashboardComponent implements OnInit {
   }
 
   loadAdminStats(): void {
-    this.orderService.getAllOrders().pipe(
-      timeout(8000),
+    this.orderService.getAdminDashboardOrders().pipe(
+      timeout(15000),
       catchError(err => {
         console.error('Failed to load admin stats', err);
         return of([] as any[]);
@@ -139,9 +142,10 @@ export class DashboardComponent implements OnInit {
         this.cdr.detectChanges();
       })
     ).subscribe(res => {
-      this.processAdminStats(res || []);
-      this.recentOrders = (res || []).slice(0, 5);
-      this.persistCache(res || []);
+      const orders = res || [];
+      this.processAdminStats(orders);
+      this.recentOrders = orders.slice(0, 5);
+      this.persistCache(orders);
     });
   }
 
@@ -184,11 +188,15 @@ export class DashboardComponent implements OnInit {
       });
 
       const s = (o.status || '').toLowerCase();
-      if (['delivered', 'settled', 'verified'].includes(s)) deliveredCount++;
-      else if (['pending', 'purchased'].includes(s)) pendingCount++;
-      else if (['processing'].includes(s)) processingCount++;
-      else if (['shipped'].includes(s)) shippedCount++;
-      else if (['cancelled'].includes(s)) cancelledCount++;
+      if (this.isDeliveredOrderStatus(s)) {
+        deliveredCount++;
+      } else if (['cancelled', 'cancel'].includes(s)) {
+        cancelledCount++;
+      } else {
+        pendingCount++;
+        if (s === 'processing') processingCount++;
+        else if (s === 'shipped') shippedCount++;
+      }
 
       // Time-series monthly aggregation
       const dateStr = o.creationTime || o.orderDate || o.createdAt;
@@ -205,6 +213,7 @@ export class DashboardComponent implements OnInit {
 
     this.activeSellersCount = uniqueSellers.size;
     this.deliveredOrdersCount = deliveredCount;
+    this.pendingOrdersCount = pendingCount;
 
     this.statusOverview = {
       pending: pendingCount,
@@ -214,6 +223,15 @@ export class DashboardComponent implements OnInit {
       cancelled: cancelledCount,
       total: this.totalOrdersCount,
     };
+
+    const activeOrderTotal = this.totalOrdersCount - cancelledCount;
+    if (activeOrderTotal > 0) {
+      this.deliveredOrdersPercentage = Math.round((deliveredCount / activeOrderTotal) * 100);
+      this.pendingOrdersPercentage = 100 - this.deliveredOrdersPercentage;
+    } else {
+      this.deliveredOrdersPercentage = 0;
+      this.pendingOrdersPercentage = 0;
+    }
     this.averageOrderValue = this.totalOrdersCount ? this.totalRevenue / this.totalOrdersCount : 0;
     this.itemsPurchased = totalItems;
 
@@ -276,7 +294,7 @@ export class DashboardComponent implements OnInit {
         console.error('Failed to load products count', err);
         return of(null as any[] | null);
       }),
-      switchMap(products => {
+      switchMap((products: any[] | null) => {
         const count = products?.length ?? 0;
         if (count > 0) {
           return of(count);
@@ -294,7 +312,7 @@ export class DashboardComponent implements OnInit {
         this.updateStatsLoading();
         this.cdr.detectChanges();
       })
-    ).subscribe(count => {
+    ).subscribe((count: number) => {
       this.totalProductsCount = count || 0;
     });
   }
@@ -335,7 +353,7 @@ export class DashboardComponent implements OnInit {
       const raw = localStorage.getItem(this.cacheKey);
       if (!raw) return false;
       const orders = JSON.parse(raw);
-      if (!Array.isArray(orders)) return false;
+      if (!Array.isArray(orders) || orders.length === 0) return false;
       this.processAdminStats(orders);
       this.recentOrders = orders.slice(0, 5);
       this.isLoadingOrders = false;
@@ -346,11 +364,23 @@ export class DashboardComponent implements OnInit {
   }
 
   private persistCache(orders: any[]): void {
+    if (!orders?.length) {
+      try {
+        localStorage.removeItem(this.cacheKey);
+      } catch {
+        // ignore
+      }
+      return;
+    }
     try {
       localStorage.setItem(this.cacheKey, JSON.stringify(orders));
     } catch {
       // ignore
     }
+  }
+
+  private isDeliveredOrderStatus(status: string): boolean {
+    return ['delivered', 'settled', 'received'].includes(status);
   }
 
   private updateStatsLoading(): void {

@@ -237,23 +237,36 @@ export class ProductsComponent implements OnInit {
 
   // Load Categories from API
   loadCategories(): void {
-    console.log('📥 Loading categories...');
     this.isCategoriesLoading = true;
+    this.setCategoryControlsLoadingState(true);
 
     this.categoryService.getAll().subscribe({
       next: (categories) => {
-        console.log('✅ Categories loaded:', categories.length);
         this.categories = categories;
         this.isCategoriesLoading = false;
+        this.setCategoryControlsLoadingState(false);
         this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('❌ Error loading categories:', error);
+        console.error('Error loading categories:', error);
         this.toastService.showError('Failed to load categories');
         this.isCategoriesLoading = false;
+        this.setCategoryControlsLoadingState(false);
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private setCategoryControlsLoadingState(loading: boolean): void {
+    const addCategory = this.addProductForm?.get('categoryId');
+    const editCategory = this.editProductForm?.get('categoryId');
+    if (loading) {
+      addCategory?.disable({ emitEvent: false });
+      editCategory?.disable({ emitEvent: false });
+      return;
+    }
+    addCategory?.enable({ emitEvent: false });
+    editCategory?.enable({ emitEvent: false });
   }
 
   // Load Products from API

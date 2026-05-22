@@ -14,6 +14,10 @@ export interface CreateWholesaleOrderInput {
     shippingAddress: string;
     customerName: string;
     paymentMethod: string;
+    walletId?: string;
+    warehouseCharge?: number;
+    shippingCost?: number;
+    serviceCharge?: number;
     cardNumber?: string;
     expiryDate?: string;
     cvv?: string;
@@ -50,7 +54,13 @@ export class WholesaleService {
             shippingAddress: (input.shippingAddress || '').toString().trim(),
             customerName: (input.customerName || '').toString().trim(),
             paymentMethod: (input.paymentMethod || '').trim().toLowerCase(),
-            cardNumber: input.cardNumber?.replace(/\s/g, '')
+            walletId: (input.walletId || '').toString().trim() || undefined,
+            warehouseCharge: Number(input.warehouseCharge) || 0,
+            shippingCost: Number(input.shippingCost) || 0,
+            serviceCharge: Number(input.serviceCharge) || 0,
+            cardNumber: input.cardNumber?.replace(/\s/g, ''),
+            expiryDate: input.expiryDate,
+            cvv: input.cvv
         };
 
         if (wholesalePayload.items.length === 0) {

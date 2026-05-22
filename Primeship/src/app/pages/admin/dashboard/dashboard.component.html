@@ -16,7 +16,7 @@
         </div>
         <div class="card-middle">
           <h2 class="stat-value-huge">
-            {{ totalOrdersCount > 0 ? totalOrdersCount : '201' }}
+            {{ totalOrdersCount }}
           </h2>
         </div>
         <div class="card-bottom">
@@ -131,38 +131,39 @@
         </div>
       </div>
 
-      <!-- Subscriptions Donut Panel -->
-      <div class="donut-card-3d">
+      <!-- All Orders Donut Panel -->
+      <div class="donut-card-3d" (click)="onQuickAction('/admin/orders')">
         <div class="donut-card-header">
-          <span class="label">Subscriptions</span>
-          <h3 class="value">1.201</h3>
-          <span class="sub">since last month</span>
+          <span class="label">All Orders</span>
+          <h3 class="value">{{ totalOrdersCount }}</h3>
+          <span class="sub" *ngIf="totalOrdersCount > 0">{{ deliveredOrdersCount }} delivered · {{ pendingOrdersCount }} pending</span>
+          <span class="sub" *ngIf="totalOrdersCount === 0">No orders yet</span>
         </div>
         
         <div class="donut-graphic-wrapper">
           <svg viewBox="0 0 36 36" class="circular-chart">
             <path class="circle-bg" stroke-width="3.5" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-            <!-- Paid Subscriptions: 70% (Deep Slate) -->
-            <path class="circle" stroke="#1f2937" stroke-width="3.5" stroke-dasharray="70, 100" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-            <!-- Trial Subscriptions: 30% (Emerald Green) -->
-            <path class="circle" stroke="#10b981" stroke-width="3.5" stroke-dasharray="30, 100" stroke-dashoffset="-70" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <!-- Delivered orders -->
+            <path class="circle" stroke="#10b981" stroke-width="3.5" [attr.stroke-dasharray]="deliveredOrdersPercentage + ', 100'" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <!-- Pending orders -->
+            <path class="circle" stroke="#f59e0b" stroke-width="3.5" [attr.stroke-dasharray]="pendingOrdersPercentage + ', 100'" [attr.stroke-dashoffset]="-deliveredOrdersPercentage" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
           </svg>
         </div>
 
         <div class="donut-legend">
           <div class="legend-row">
             <div class="legend-label-group">
-              <span class="dot" style="background-color: #1f2937;"></span>
-              <span>Paid</span>
+              <span class="dot" style="background-color: #10b981;"></span>
+              <span>Delivered</span>
             </div>
-            <span class="legend-value">70%</span>
+            <span class="legend-value">{{ deliveredOrdersPercentage }}%</span>
           </div>
           <div class="legend-row">
             <div class="legend-label-group">
-              <span class="dot" style="background-color: #10b981;"></span>
-              <span>Trial</span>
+              <span class="dot" style="background-color: #f59e0b;"></span>
+              <span>Pending</span>
             </div>
-            <span class="legend-value">30%</span>
+            <span class="legend-value">{{ pendingOrdersPercentage }}%</span>
           </div>
         </div>
       </div>

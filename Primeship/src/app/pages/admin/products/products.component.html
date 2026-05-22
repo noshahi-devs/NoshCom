@@ -211,14 +211,22 @@
               </div>
             </div>
 
-            <div class="form-group">
-              <label for="addCategory">Category *</label>
-              <select id="addCategory" formControlName="categoryId">
-                <option value="">Select Category</option>
-                <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
-              </select>
+            <div class="form-group category-group">
+              <label for="addCategory">
+                Category *
+                <span class="category-loader" *ngIf="isCategoriesLoading">
+                  <i class="pi pi-spin pi-spinner"></i>
+                  Loading categories...
+                </span>
+              </label>
+              <div class="select-field-wrap" [class.is-loading]="isCategoriesLoading">
+                <select id="addCategory" formControlName="categoryId">
+                  <option value="">{{ isCategoriesLoading ? 'Loading categories...' : 'Select Category' }}</option>
+                  <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+                </select>
+              </div>
               <div class="error"
-                *ngIf="addProductForm.get('categoryId')?.invalid && addProductForm.get('categoryId')?.touched">
+                *ngIf="!isCategoriesLoading && addProductForm.get('categoryId')?.invalid && addProductForm.get('categoryId')?.touched">
                 Category is required
               </div>
             </div>
@@ -384,12 +392,20 @@
               </div>
             </div>
 
-            <div class="form-group">
-              <label for="editCategory">Category *</label>
-              <select id="editCategory" formControlName="categoryId">
-                <option value="">Select Category</option>
-                <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
-              </select>
+            <div class="form-group category-group">
+              <label for="editCategory">
+                Category *
+                <span class="category-loader" *ngIf="isCategoriesLoading">
+                  <i class="pi pi-spin pi-spinner"></i>
+                  Loading categories...
+                </span>
+              </label>
+              <div class="select-field-wrap" [class.is-loading]="isCategoriesLoading">
+                <select id="editCategory" formControlName="categoryId">
+                  <option value="">{{ isCategoriesLoading ? 'Loading categories...' : 'Select Category' }}</option>
+                  <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+                </select>
+              </div>
             </div>
 
             <div class="form-group">

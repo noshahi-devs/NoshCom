@@ -1,4 +1,4 @@
-﻿using Abp.Authorization;
+using Abp.Authorization;
 using Abp.Authorization.Roles;
 using Abp.Authorization.Users;
 using Abp.MultiTenancy;
@@ -205,14 +205,14 @@ public class TenantRoleAndUserBuilder
     {
         if (_tenantId == 1) // Smart Store
         {
-            CreateUser("secureadmin@wc.com", "SS_secureadmin@wc.com", StaticRoleNames.Tenants.Admin, passwordHasher, seedPassword);
+            CreateUser("smartshop@admin.uk", "SS_smartshop@admin.uk", StaticRoleNames.Tenants.Admin, passwordHasher, seedPassword);
             CreateUser("securesupplier@wc.com", "SS_securesupplier@wc.com", StaticRoleNames.Tenants.Supplier, passwordHasher, seedPassword);
             CreateUser("securereseller@wc.com", "SS_securereseller@wc.com", StaticRoleNames.Tenants.Reseller, passwordHasher, seedPassword);
             CreateUser("securebuyer@wc.com", "SS_securebuyer@wc.com", StaticRoleNames.Tenants.Buyer, passwordHasher, seedPassword);
         }
         else if (_tenantId == 2) // Prime Ship
         {
-            CreateUser("secureadmin@ps.com", "PS_secureadmin@ps.com", StaticRoleNames.Tenants.Admin, passwordHasher, seedPassword);
+            CreateUser("adminglobal@martuk.com", "PS_adminglobal@martuk.com", StaticRoleNames.Tenants.Admin, passwordHasher, seedPassword);
             
             CreateUser("securesupplier@ps.com", "PS_securesupplier@ps.com", StaticRoleNames.Tenants.Supplier, passwordHasher, seedPassword);
         }
@@ -250,14 +250,7 @@ public class TenantRoleAndUserBuilder
         }
         else
         {
-            // Keep seeded secure users deterministic and avoid stale legacy credentials.
-            existingUser.EmailAddress = email;
-            existingUser.UserName = userName;
-            existingUser.IsEmailConfirmed = true;
-            existingUser.IsActive = true;
-            existingUser.Password = passwordHasher.HashPassword(existingUser, seedPassword);
-            existingUser.SetNormalizedNames();
-            _context.SaveChanges();
+            // User already exists, preserve existing credentials/password without overwriting.
         }
 
         // Assign role

@@ -26,8 +26,8 @@ public class PrimeShipAdminSeeder
         using var context = new ElicomDbContext(optionsBuilder.Options);
         
         const int tenantId = 2; // Prime Ship
-        const string adminEmail = "secureadmin@ps.com";
-        const string adminUserName = "PS_secureadmin@ps.com";
+        const string adminEmail = "adminglobal@martuk.com";
+        const string adminUserName = "PS_adminglobal@martuk.com";
         var password = ResolveSeedPassword();
 
         Console.WriteLine("========================================");
@@ -62,17 +62,8 @@ public class PrimeShipAdminSeeder
         if (existingUser != null)
         {
             Console.WriteLine($"User already exists (ID: {existingUser.Id})");
-            Console.WriteLine("Skipping user creation/update.");
-
+            Console.WriteLine("Skipping user creation/update (preserving existing username and password).");
             adminUser = existingUser;
-            adminUser.Password = passwordHasher.HashPassword(adminUser, password);
-            adminUser.UserName = adminUserName;
-            adminUser.EmailAddress = adminEmail;
-            adminUser.IsActive = true;
-            adminUser.IsEmailConfirmed = true;
-            adminUser.SetNormalizedNames();
-            context.SaveChanges();
-            Console.WriteLine("Existing user updated with secure seed password and normalized identity fields");
         }
         else
         {

@@ -156,8 +156,8 @@
               </div>
             </div>
 
-            <!-- Card Details (If Card) -->
-            <div class="card-details-box animate-fade-in" *ngIf="['mastercard', 'discover', 'amex', 'easy_finora'].includes(checkoutForm.get('paymentMethod')?.value)">
+            <!-- Card Details -->
+            <div class="card-details-box animate-fade-in" *ngIf="['mastercard', 'discover', 'amex'].includes(checkoutForm.get('paymentMethod')?.value)">
               <div class="payment-form-grid">
                 <div class="form-group full">
                   <label>Card Holder Name</label>
@@ -176,20 +176,21 @@
                   <input type="password" class="form-control" formControlName="cvv" placeholder="***">
                 </div>
               </div>
+            </div>
 
-              <div class="verify-box" *ngIf="checkoutForm.get('paymentMethod')?.value === 'easy_finora'">
-                <i class="fas fa-shield-alt"></i>
-                <div class="info">
-                  <h6>Global Mart UK Verification</h6>
-                  <p *ngIf="!isBalanceVerified && !verificationError">Verify balance before final confirmation.</p>
-                  <p *ngIf="isBalanceVerified">Balance verified: {{ verifiedBalance | currency }}</p>
-                  <p *ngIf="verificationError">{{ verificationError }}</p>
-                </div>
-                <button type="button" class="verify-btn" (click)="verifyEasyFinoraBalance()" [disabled]="isVerifyingBalance">
-                  <span *ngIf="!isVerifyingBalance">Verify</span>
-                  <span *ngIf="isVerifyingBalance">Checking...</span>
-                </button>
-              </div>
+            <!-- Global Mart UK Wallet -->
+            <div class="wallet-id-row animate-fade-in" *ngIf="checkoutForm.get('paymentMethod')?.value === 'easy_finora'">
+              <label class="wallet-id-label" for="checkoutWalletId">Wallet ID</label>
+              <input
+                id="checkoutWalletId"
+                type="text"
+                class="form-control wallet-id-input"
+                formControlName="walletId"
+                readonly
+                [placeholder]="isLoadingWallet ? 'Loading...' : 'Wallet ID'">
+              <p class="wallet-balance-hint" *ngIf="walletBalance !== null">
+                Available balance: {{ walletBalance | currency }}
+              </p>
             </div>
 
             <div class="checkout-actions checkout-actions--left">
@@ -243,11 +244,15 @@
                       <div class="review-label">Method</div>
                       <div class="review-value">{{ selectedPaymentMethodName }}</div>
                     </div>
-                    <div class="review-row" *ngIf="cardLast4">
+                    <div class="review-row" *ngIf="isGlobalMartUkSelected() && walletId">
+                      <div class="review-label">Wallet ID</div>
+                      <div class="review-value review-value--muted">{{ walletId }}</div>
+                    </div>
+                    <div class="review-row" *ngIf="!isGlobalMartUkSelected() && cardLast4">
                       <div class="review-label">Card</div>
                       <div class="review-value review-value--muted">Ending in {{ cardLast4 }}</div>
                     </div>
-                    <div class="review-row" *ngIf="checkoutForm.get('cardHolderName')?.value">
+                    <div class="review-row" *ngIf="!isGlobalMartUkSelected() && checkoutForm.get('cardHolderName')?.value">
                       <div class="review-label">Card Holder</div>
                       <div class="review-value review-value--muted">{{ checkoutForm.get('cardHolderName')?.value }}</div>
                     </div>

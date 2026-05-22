@@ -98,7 +98,7 @@ export class OrdersComponent implements OnInit {
 
   loadOrders(): void {
     this.isLoading = true;
-    this.orderService.getAllOrders().subscribe({
+    this.orderService.getAdminDashboardOrders().subscribe({
       next: (orders) => {
         const rawOrders = orders || [];
         this.orders = this.sortOrdersDesc(rawOrders.map((o: any) => ({
@@ -278,10 +278,22 @@ export class OrdersComponent implements OnInit {
         const total = this.getOrderTotal(order);
         return sum + (isNaN(total) ? 0 : total);
       }, 0),
-      pendingOrders: this.orders.filter(o => (o.status || '').toLowerCase() === 'pending').length,
-      deliveredOrders: this.orders.filter(o => (o.status || '').toLowerCase() === 'delivered').length
+      pendingOrders: this.orders.filter(o => this.isPendingOrder(o)).length,
+      deliveredOrders: this.orders.filter(o => this.isDeliveredOrder(o)).length
     };
     this.cdr.detectChanges();
+  }
+
+  private isDeliveredOrder(order: any): boolean {
+    const status = (order?.status || '').toLowerCase();
+    return ['delivered', 'settled', 'received'].includes(status);
+  }
+
+  private isPendingOrder(order: any): boolean {
+    const status = (order?.status || '').toLowerCase();
+    if (this.isDeliveredOrder(order)) return false;
+    if (['cancelled', 'cancel'].includes(status)) return false;
+    return true;
   }
 
   // Admin-specific methods

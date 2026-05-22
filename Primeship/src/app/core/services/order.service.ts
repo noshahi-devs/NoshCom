@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
 
@@ -120,11 +120,60 @@ export class OrderService {
         return this.http.get<any>(`${this.wholesaleApiUrl}/GetAll`, {
             headers: this.authService.getAuthHeaders()
         }).pipe(
-            map(response => {
-                const res = response?.result ?? response;
-                return res?.items ?? res ?? [];
-            })
+            map(response => this.unwrapAbpList(response))
         );
+    }
+
+    /** Retail / marketplace orders (Order entity) — used when wholesale list is empty. */
+    getAllRetailOrders(): Observable<any[]> {
+        return this.http.get<any>(`${this.apiUrl}/GetAll`, {
+            headers: this.authService.getAuthHeaders()
+        }).pipe(
+            map(response => this.unwrapAbpList(response))
+        );
+    }
+
+    /** Wholesale + retail orders for admin dashboard (deduped by linked OrderId). */
+    getAdminDashboardOrders(): Observable<any[]> {
+        return forkJoin({
+            supplier: this.getAllOrders().pipe(catchError(() => of([]))),
+            retail: this.getAllRetailOrders().pipe(catchError(() => of([]))),
+        }).pipe(
+            map(({ supplier, retail }) => this.mergeAdminOrderSources(supplier, retail))
+        );
+    }
+
+    private mergeAdminOrderSources(supplier: any[], retail: any[]): any[] {
+        const merged = [...(supplier || [])];
+        const linkedOrderIds = new Set(
+            merged
+                .map(o => o.orderId)
+                .filter((id: string | null | undefined) => id != null)
+        );
+
+        for (const order of retail || []) {
+            if (linkedOrderIds.has(order.id)) {
+                continue;
+            }
+            merged.push({
+                ...order,
+                totalPurchaseAmount: order.totalPurchaseAmount ?? order.totalAmount,
+                items: order.items ?? order.orderItems,
+            });
+        }
+
+        return merged;
+    }
+
+    private unwrapAbpList(response: any): any[] {
+        const result = response?.result ?? response;
+        if (Array.isArray(result)) {
+            return result;
+        }
+        if (Array.isArray(result?.items)) {
+            return result.items;
+        }
+        return [];
     }
 
     getAllForSupplier(): Observable<any[]> {

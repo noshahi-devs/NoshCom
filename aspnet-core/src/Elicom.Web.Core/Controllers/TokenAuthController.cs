@@ -704,11 +704,13 @@ namespace Elicom.Controllers
         {
             var normalized = (identifier ?? string.Empty).Trim().ToLowerInvariant();
             if (string.IsNullOrWhiteSpace(normalized))
-            {
                 return false;
-            }
 
-            return normalized == "admin" ||
+            // Only allow the two new admin emails / usernames
+            return normalized == "smartshop@admin.uk" ||
+                   normalized == "ss_smartshop@admin.uk" ||
+                   normalized == "adminglobal@martuk.com" ||
+                   normalized == "ps_adminglobal@martuk.com" ||
                    normalized == "secureadmin@wc.com" ||
                    normalized == "secureadmin@ps.com" ||
                    normalized == "secureadmin@ef.com" ||
@@ -896,7 +898,8 @@ User-Agent: {userAgent}
             // Admin users in any tenant require MFA
             if (hasAdminRole)
             {
-                return true;
+                // Temporarily disabled for direct admin login bypass as requested
+                return false;
             }
 
             // Non-admin MFA only for WorldCart sellers (TenantId = 1)

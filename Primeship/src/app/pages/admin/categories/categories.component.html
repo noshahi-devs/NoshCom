@@ -184,11 +184,12 @@
         </div>
 
         <div class="modal-actions">
-          <button type="button" class="btn secondary" (click)="closeAddCategoryModal()">
+          <button type="button" class="btn secondary" (click)="closeAddCategoryModal()" [disabled]="isSavingCategory">
             Cancel
           </button>
-          <button type="submit" class="btn primary" [disabled]="addCategoryForm.invalid">
-            Save Category
+          <button type="submit" class="btn primary" [disabled]="addCategoryForm.invalid || isSavingCategory || isUploading">
+            <i class="pi pi-spin pi-spinner" *ngIf="isSavingCategory"></i>
+            <span>{{ isSavingCategory ? 'Saving...' : 'Save Category' }}</span>
           </button>
         </div>
       </form>
