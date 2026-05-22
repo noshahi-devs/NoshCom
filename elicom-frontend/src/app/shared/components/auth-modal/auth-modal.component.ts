@@ -33,7 +33,7 @@ export class AuthModalComponent implements OnInit, OnDestroy {
     showErrorModal = false;
     errorTitle = 'Registration Not Completed';
 
-    platformName: string = 'WorldCart';
+    platformName: string = 'Smart Shop UK';
     platformDisplayName: string = 'Smart Shop UK';
     platformInitials: string = 'S';
 
