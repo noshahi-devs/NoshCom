@@ -15,7 +15,7 @@
     inset 0 -10px 20px rgba(255, 193, 7, 0.03);
   border: 1px solid rgba(0, 0, 0, 0.08);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   transition: all 0.4s ease;
 }
 
@@ -170,15 +170,82 @@
 
 /* ---- Custom Select Arrow ---- */
 .select-wrapper {
-  select { cursor: pointer; appearance: none; }
+  position: relative;
+
   .select-arrow {
     position: absolute;
     right: 18px;
     top: 50%;
     transform: translateY(-50%);
     color: #111;
+    pointer-events: none;
     transition: transform 0.3s;
   }
+}
+
+.select-wrapper:focus-within .select-arrow {
+  transform: translateY(-50%) rotate(180deg);
+  color: #ffc107;
+}
+
+.country-trigger {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  text-align: left;
+  padding: 0 34px 0 0;
+  min-height: 30px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #111;
+  cursor: pointer;
+}
+
+.country-trigger .placeholder {
+  color: #8a8a8a;
+  font-weight: 600;
+}
+
+.custom-select.open {
+  z-index: 40;
+}
+
+.custom-select.open .select-arrow {
+  transform: translateY(-50%) rotate(180deg);
+  color: #ffc107;
+}
+
+.country-options {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 10px;
+  background: #fffef8;
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.14);
+  padding: 6px;
+}
+
+.country-option {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #1a1a1a;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.country-option:hover,
+.country-option.active {
+  background: #fff3c4;
 }
 
 /* ---- Phone Group Premium ---- */
@@ -186,23 +253,122 @@
   display: flex;
   align-items: stretch;
   padding: 0;
+  overflow: visible;
 
   .country-flag-select {
-    padding: 0 15px;
+    flex-shrink: 0;
+    min-width: 108px;
+    padding: 0 10px 0 12px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     border-right: 1px solid rgba(0, 0, 0, 0.08);
     background: #fdfdfd;
-    cursor: pointer;
     position: relative;
+    z-index: 1;
 
-    .flag-img { width: 22px; border-radius: 2px; }
-    .dial-code { font-size: 13px; font-weight: 900; color: #111; }
-    .flag-select-overlay { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    &.open {
+      z-index: 45;
+    }
+
+    .flag-img {
+      width: 22px;
+      height: 16px;
+      object-fit: cover;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .dial-code {
+      font-size: 13px;
+      font-weight: 900;
+      color: #111;
+      white-space: nowrap;
+    }
+
+    .flag-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      margin-left: auto;
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: #111;
+      cursor: pointer;
+      flex-shrink: 0;
+
+      i {
+        font-size: 12px;
+        transition: transform 0.25s ease, color 0.2s ease;
+      }
+    }
+
+    &.open .flag-trigger i {
+      transform: rotate(180deg);
+      color: #ffc107;
+    }
   }
 
-  input { padding: 14px 18px; }
+  input {
+    flex: 1;
+    min-width: 0;
+    padding: 14px 18px;
+  }
+}
+
+.phone-country-options {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  width: min(280px, calc(100vw - 48px));
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 10px;
+  background: #fffef8;
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.14);
+  padding: 6px;
+  z-index: 50;
+}
+
+.phone-country-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+
+  span {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a1a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  strong {
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 900;
+    color: #946900;
+  }
+
+  &:hover,
+  &.active {
+    background: #fff3c4;
+  }
 }
 
 /* ---- Form Footer & 3D Button ---- */
@@ -291,6 +457,28 @@
 }
 
 @media (max-width: 768px) {
-  .row-3col, .row-mixed { grid-template-columns: 1fr; }
+  .row-2col,
+  .row-3col,
+  .row-mixed {
+    grid-template-columns: 1fr;
+  }
+
   .form-footer { flex-direction: column; text-align: center; }
+
+  .country-trigger {
+    font-size: 16px; /* prevent iOS zoom, improve readability */
+  }
+
+  .country-options {
+    max-height: min(46vh, 260px);
+  }
+
+  .phone-country-options {
+    width: min(280px, calc(100vw - 32px));
+    max-height: min(40vh, 240px);
+  }
+
+  .phone-group .country-flag-select {
+    min-width: 96px;
+  }
 }

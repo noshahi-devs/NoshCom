@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
 
@@ -25,6 +25,8 @@ export class ShippingAddress {
   @Output() addressSaved = new EventEmitter<void>();
 
   showSummary = false;
+  isCountryDropdownOpen = false;
+  isPhoneCountryDropdownOpen = false;
 
   emptyFields = {
     location: '',
@@ -115,29 +117,7 @@ export class ShippingAddress {
     this.fields[field] = value;
 
     if (field === 'location') {
-      const prevDial = this.selectedCountry?.dial_code || '';
-      // Reset state/city when country changes
-      this.fields.state = '';
-      this.fields.city = '';
-      this.cities = [];
-      this.states = [];
-      this.touch('state');
-      this.touch('city');
-
-      const byLocation = this.countries.find(c => c.name === value);
-      if (byLocation) {
-        this.selectedCountry = byLocation;
-        if (!this.fields.phone || (prevDial && this.fields.phone.startsWith(prevDial))) {
-          this.fields.phone = this.selectedCountry.dial_code;
-        }
-      }
-
-      // Update states dropdown if available for this country
-      if (value === 'United States') {
-        this.states = US_STATES.sort();
-      } else {
-        this.states = []; // Empty means show text input
-      }
+      this.applyLocationChange(value);
     } else if (field === 'state') {
       if (this.fields.location === 'United States') {
         // Populate cities based on state ONLY for US currently
@@ -150,6 +130,76 @@ export class ShippingAddress {
       } else {
         this.cities = []; // Empty means show text input
       }
+    }
+  }
+
+  private applyLocationChange(value: string) {
+    const prevDial = this.selectedCountry?.dial_code || '';
+    // Reset state/city when country changes
+    this.fields.state = '';
+    this.fields.city = '';
+    this.cities = [];
+    this.states = [];
+    this.touch('state');
+    this.touch('city');
+
+    const byLocation = this.countries.find(c => c.name === value);
+    if (byLocation) {
+      this.selectedCountry = byLocation;
+      if (!this.fields.phone || (prevDial && this.fields.phone.startsWith(prevDial))) {
+        this.fields.phone = this.selectedCountry.dial_code;
+      }
+    }
+
+    // Update states dropdown if available for this country
+    if (value === 'United States') {
+      this.states = US_STATES.sort();
+    } else {
+      this.states = []; // Empty means show text input
+    }
+  }
+
+  toggleCountryDropdown(event: Event): void {
+    event.stopPropagation();
+    this.touch('location');
+    this.isPhoneCountryDropdownOpen = false;
+    this.isCountryDropdownOpen = !this.isCountryDropdownOpen;
+  }
+
+  selectLocation(countryName: string, event?: Event): void {
+    event?.stopPropagation();
+    this.fields.location = countryName;
+    this.applyLocationChange(countryName);
+    this.touch('location');
+    this.isCountryDropdownOpen = false;
+  }
+
+  togglePhoneCountryDropdown(event: Event): void {
+    event.stopPropagation();
+    this.isCountryDropdownOpen = false;
+    this.isPhoneCountryDropdownOpen = !this.isPhoneCountryDropdownOpen;
+  }
+
+  selectPhoneCountry(countryCode: string, event?: Event): void {
+    event?.stopPropagation();
+    const country = this.countries.find(c => c.code === countryCode);
+    if (!country) return;
+
+    const prevDial = this.selectedCountry?.dial_code || '';
+    this.selectedCountry = country;
+    if (!this.fields.phone || (prevDial && this.fields.phone.startsWith(prevDial))) {
+      this.fields.phone = this.selectedCountry.dial_code;
+    }
+    this.isPhoneCountryDropdownOpen = false;
+  }
+
+  @HostListener('document:click')
+  closeDropdowns(): void {
+    if (this.isCountryDropdownOpen) {
+      this.isCountryDropdownOpen = false;
+    }
+    if (this.isPhoneCountryDropdownOpen) {
+      this.isPhoneCountryDropdownOpen = false;
     }
   }
 

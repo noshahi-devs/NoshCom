@@ -1427,6 +1427,33 @@
         width: 100%;
         padding: 0 10px;
     }
+
+    .title-row {
+        .share-container:hover .share-popup {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .share-container {
+            min-width: 30px;
+            min-height: 30px;
+            flex-shrink: 0;
+        }
+
+        .share-container.is-open {
+            .share-popup {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+
+        .share-icon {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+    }
 }
 
 /* Add to Cart Loading State */

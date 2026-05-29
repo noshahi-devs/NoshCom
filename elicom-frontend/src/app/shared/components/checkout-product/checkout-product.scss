@@ -80,6 +80,12 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
+  min-width: 0;
+}
+
+.product-name-wrap {
+  flex: 1;
+  min-width: 0;
 }
 
 .product-name {
@@ -100,7 +106,23 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 4px;
-  min-width: 100px;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+
+  .shop-name,
+  .variant-info {
+    font-size: 12px;
+    font-weight: 700;
+    color: #666;
+  }
 }
 
 .current-price {
@@ -187,6 +209,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
   border-top: 1px dashed rgba(0, 0, 0, 0.08);
   padding-top: 10px;
 }
@@ -254,6 +279,65 @@
 }
 
 @media (max-width: 768px) {
-  .product-image { width: 90px; height: 90px; }
-  .current-price { font-size: 24px; }
+  .checkout-wrapper,
+  .product-section {
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  .product-card {
+    padding: 12px 14px;
+    gap: 12px;
+    border-left-width: 4px;
+    border-right-width: 4px;
+  }
+
+  .product-image {
+    width: 84px;
+    height: 84px;
+    padding: 6px;
+  }
+
+  .name-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .price-box {
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .current-price {
+    font-size: 22px;
+    line-height: 1.1;
+  }
+
+  .quantity-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .quantity-selector {
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .qty-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  .qty-input {
+    width: 40px;
+    flex-shrink: 0;
+  }
 }

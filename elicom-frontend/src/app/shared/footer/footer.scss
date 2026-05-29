@@ -171,6 +171,15 @@ footer::after {
     gap: 34px;
   }
 
+  .footer-top .footer-col:nth-child(n + 2) {
+    text-align: center;
+    justify-self: center;
+  }
+
+  .footer-top .footer-col:nth-child(n + 2) ul {
+    padding-left: 0;
+  }
+
   .footer-bottom {
     flex-direction: column;
     gap: 20px;

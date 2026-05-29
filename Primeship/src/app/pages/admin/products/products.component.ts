@@ -509,9 +509,9 @@ export class ProductsComponent implements OnInit {
   private sanitizeImportedName(name: string): string {
     const trimmed = name.trim();
     return trimmed
-      .replace(/^Amazon\.?com\s*[:\-–|]\s*/i, '')
+      .replace(/^Amazon\.?com\s*[:\-ï¿½|]\s*/i, '')
       .replace(/^Amazon\.?com\s*/i, '')
-      .replace(/^Amazon\s*[:\-–|]\s*/i, '')
+      .replace(/^Amazon\s*[:\-ï¿½|]\s*/i, '')
       .trim();
   }
   closeAddProductModal(): void {

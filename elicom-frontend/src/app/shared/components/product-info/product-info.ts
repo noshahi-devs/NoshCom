@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, Output, EventEmitter, inject } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, Output, EventEmitter, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -93,6 +93,7 @@ export class ProductInfo implements OnInit, OnDestroy {
   quantity = 1;
   fav = false;
   showMobileCartCta = false;
+  isShareOpen = false;
   isAddingToCart = false;
   isResumingAfterLogin = false;
   activeAction: 'add_to_cart' | 'buy_now' | null = null;
@@ -217,6 +218,20 @@ export class ProductInfo implements OnInit, OnDestroy {
 
   toggleFav() {
     this.fav = !this.fav;
+  }
+
+  toggleSharePopup(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isShareOpen = !this.isShareOpen;
+  }
+
+  @HostListener('document:click', ['$event'])
+  closeSharePopup(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (!target?.closest('.share-container')) {
+      this.isShareOpen = false;
+    }
   }
 
   incrementQty() {

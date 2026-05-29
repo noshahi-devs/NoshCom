@@ -4,12 +4,12 @@
         <!-- Title & Share -->
         <div class="title-row">
             <div class="title">{{ product.title }}</div>
-            <div class="share-container">
+            <div class="share-container" [class.is-open]="isShareOpen" (click)="toggleSharePopup($event)">
                 <span class="share-icon">
                     <a href="#" class="share-btn"><i class="fa-solid fa-arrow-up-right-from-square"
                             style="color: #74C0FC;"></i></a>
                 </span>
-                <div class="share-popup">
+                <div class="share-popup" (click)="$event.stopPropagation()">
                     <a href="https://twitter.com/intent/tweet?url=YOUR_PRODUCT_URL&text=Check%20out%20this%20product%21"
                         target="_blank" class="social-link">
                         <i class="fab fa-twitter social-icon-fa twitter"></i>

@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HeroCarouselComponent } from '../../shared/components/hero-carousel/hero-carousel';
@@ -170,6 +170,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     private productService: ProductService,
     private categoryService: CategoryService,
     private cdr: ChangeDetectorRef,
+    private ngZone: NgZone,
     private authService: AuthService,
     private router: Router
   ) { }
@@ -423,9 +424,11 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   private startPremiumSpotlightAutoSlide(): void {
     this.clearPremiumSpotlightAutoSlide();
     this.premiumSpotlightTimer = setInterval(() => {
-      this.premiumSpotlightCurrentSlide =
-        (this.premiumSpotlightCurrentSlide + 1) % this.premiumSpotlightSlides.length;
-      this.cdr.detectChanges();
+      this.ngZone.run(() => {
+        this.premiumSpotlightCurrentSlide =
+          (this.premiumSpotlightCurrentSlide + 1) % this.premiumSpotlightSlides.length;
+        this.cdr.detectChanges();
+      });
     }, 4500);
   }
 
@@ -830,7 +833,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const width = window.innerWidth;
     if (width <= 768) {
-      return 2;
+      return 1;
     }
 
     if (width <= 1200) {

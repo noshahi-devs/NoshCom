@@ -1111,6 +1111,14 @@ body.no-scroll {
 }
 
 @media (max-width: 768px) {
+  .top-bar {
+    display: none;
+  }
+
+  :host-context(.search-result-layout) #mainHeader {
+    top: 0;
+  }
+
   .top-bar-right ul {
     gap: 12px;
     font-size: 12px;

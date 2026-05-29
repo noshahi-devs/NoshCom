@@ -21,12 +21,30 @@
         <label class="field-label" for="location">
           <i class="fas fa-globe label-icon"></i> Country / Location <span class="required-star">*</span>
         </label>
-        <div class="input-3d select-wrapper" [class.error-state]="invalid('location')">
-          <select id="location" [value]="fields.location" (change)="set('location',$event)" (blur)="touch('location')">
-            <option value="" disabled [selected]="!fields.location">🌍 Select your country...</option>
-            <option *ngFor="let c of countries" [value]="c.name" [selected]="c.name === fields.location">{{ c.name }}</option>
-          </select>
+        <div class="input-3d select-wrapper custom-select" [class.error-state]="invalid('location')" [class.open]="isCountryDropdownOpen">
+          <button
+            id="location"
+            type="button"
+            class="country-trigger"
+            (click)="toggleCountryDropdown($event)"
+            [attr.aria-expanded]="isCountryDropdownOpen"
+            aria-haspopup="listbox"
+          >
+            <span [class.placeholder]="!fields.location">{{ fields.location || 'Select your country...' }}</span>
+          </button>
           <span class="select-arrow"><i class="pi pi-chevron-down"></i></span>
+
+          <div class="country-options" *ngIf="isCountryDropdownOpen" role="listbox" aria-label="Country / Location options">
+            <button
+              type="button"
+              class="country-option"
+              *ngFor="let c of countries"
+              [class.active]="c.name === fields.location"
+              (click)="selectLocation(c.name, $event)"
+            >
+              {{ c.name }}
+            </button>
+          </div>
         </div>
         <div class="error-msg" *ngIf="invalid('location')">
           <i class="pi pi-exclamation-circle"></i> Please select a country
@@ -70,15 +88,26 @@
           <i class="fas fa-phone label-icon"></i> Phone Number <span class="required-star">*</span>
         </label>
         <div class="input-3d phone-group" [class.error-state]="invalid('phone')">
-          <div class="country-flag-select">
+          <div class="country-flag-select" [class.open]="isPhoneCountryDropdownOpen">
             <img [src]="selectedCountry.flag" alt="flag" class="flag-img">
             <span class="dial-code">{{ selectedCountry.dial_code }}</span>
-            <i class="pi pi-chevron-down"></i>
-            <select (change)="onCountryChange($event)" class="flag-select-overlay">
-              <option *ngFor="let c of countries" [value]="c.dial_code" [selected]="c.code === selectedCountry.code">
-                {{ c.name }} ({{ c.dial_code }})
-              </option>
-            </select>
+            <button type="button" class="flag-trigger" (click)="togglePhoneCountryDropdown($event)" aria-haspopup="listbox"
+              [attr.aria-expanded]="isPhoneCountryDropdownOpen">
+              <i class="pi pi-chevron-down"></i>
+            </button>
+
+            <div class="phone-country-options" *ngIf="isPhoneCountryDropdownOpen" role="listbox" aria-label="Phone country code options">
+              <button
+                type="button"
+                class="phone-country-option"
+                *ngFor="let c of countries"
+                [class.active]="c.code === selectedCountry.code"
+                (click)="selectPhoneCountry(c.code, $event)"
+              >
+                <span>{{ c.name }}</span>
+                <strong>{{ c.dial_code }}</strong>
+              </button>
+            </div>
           </div>
           <input type="tel" placeholder="300 000 0000" [value]="fields.phone" (input)="set('phone',$event)"
             (blur)="touch('phone')" />

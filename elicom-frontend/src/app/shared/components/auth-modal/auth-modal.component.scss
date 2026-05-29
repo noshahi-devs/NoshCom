@@ -1243,15 +1243,18 @@ h2 {
 
 @media (max-width: 640px) {
     .auth-modal-overlay {
-        align-items: flex-start;
+        align-items: center;
+        justify-content: center;
         padding: 10px;
+        overflow-y: auto;
     }
 
     .auth-modal-container {
         width: 100%;
         padding: 22px 16px;
-        max-height: 95vh;
+        max-height: calc(100dvh - 20px);
         border-radius: 20px;
+        margin: auto 0;
     }
 
     .auth-modal-container.page-mode {
