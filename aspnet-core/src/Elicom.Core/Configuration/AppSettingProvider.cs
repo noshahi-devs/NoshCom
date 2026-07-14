@@ -40,10 +40,10 @@ public class AppSettingProvider : SettingProvider
             ),
 
             // App Settings
-            new SettingDefinition("App.ServerRootAddress", "https://api.globalmart.uk.com/"),
+            new SettingDefinition("App.ServerRootAddress", "https://api.thesmartshop.uk"),
             new SettingDefinition("App.SmartStore.ClientRootAddress", "https://worldcartus.com/"),
             new SettingDefinition("App.PrimeShip.ClientRootAddress", "https://primeshipuk.com/"),
-            new SettingDefinition("App.EasyFinora.ClientRootAddress", "https://globalmart.uk.com/")
+            new SettingDefinition("App.EasyFinora.ClientRootAddress", "https://globalmart.thesmartshop.uk")
         };
     }
 }

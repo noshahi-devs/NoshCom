@@ -104,7 +104,7 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                 }
             if (platform == "Prime Ship" || platform == "Prime Ship UK" || platform == "Global Mart UK") 
             {
-                redirectPath = clientRootAddress.Contains("localhost") ? $"{clientRootAddress}/auth/login" : "https://globalmart.uk.com/auth/login";
+                redirectPath = clientRootAddress.Contains("localhost") ? $"{clientRootAddress}/auth/login" : "https://globalmart.thesmartshop.ukauth/login";
             }
             if (platform == "Easy Finora") redirectPath = $"{clientRootAddress}/auth";
 
