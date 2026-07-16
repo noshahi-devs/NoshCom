@@ -35,7 +35,7 @@ declare var lucide: any;
               <a routerLink="/rewards" class="marketing-action">Rewards</a>
               <a routerLink="/financing" class="marketing-action">Financing</a>
               <a href="#" class="marketing-action" (click)="openMerchantPortal($event)">Professional</a>
-              <button type="button" class="free-ship-btn" (click)="showFreeShipping()">Fast & Free Shipping Over $35*</button>
+              <button type="button" class="free-ship-btn" (click)="showFreeShipping()">Shipping</button>
             </div>
           </div>
         </div>
@@ -439,7 +439,7 @@ declare var lucide: any;
     }
 
     .nosh-shell { font-family: 'Poppins', sans-serif; background: #FFF; min-height: 100vh; display: flex; flex-direction: column; }
-    .container-header { max-width: 1400px; margin: 0 auto; padding: 0 20px; width: 100%; }
+    .container-header { box-sizing: border-box; max-width: 1400px; margin: 0 auto; padding: 0 20px; width: 100%; }
     .container-footer { max-width: 1300px; margin: 0 auto; padding: 0 20px; width: 100%; }
 
     .marketing-banner { background: #10B981; color: #FFF; }
@@ -516,7 +516,8 @@ declare var lucide: any;
 
     .eliship-header { background: #FFF; }
     .header-brand-bar { background: #10B981; color: #FFF; }
-    .brand-bar-inner { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 10px 0; flex-wrap: nowrap; }
+    .brand-bar-inner { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 10px 14px; overflow-x: auto; scrollbar-width: none; }
+    .brand-bar-inner::-webkit-scrollbar { display: none; }
     .brand-links, .utility-links { display: flex; flex-wrap: nowrap; gap: 24px; align-items: center; }
     .brand-link, .utility-link { color: #FFF; font-size: 12px; font-weight: 800; text-decoration: none; text-transform: uppercase; letter-spacing: 0.12em; white-space: nowrap; }
     .brand-link.active { opacity: 1; }
@@ -618,7 +619,7 @@ declare var lucide: any;
     .cart-empty-icon i { font-size: 18px; }
     .cart-empty-link { color: #10B981; text-decoration: underline; }
 
-    .category-links { display: flex; gap: 22px; flex-wrap: nowrap; overflow-x: auto; padding: 10px 0; align-items: center; justify-content: center; width: 100%; }
+    .category-links { box-sizing: border-box; display: flex; gap: 22px; flex-wrap: nowrap; overflow-x: auto; padding: 10px 0; align-items: center; justify-content: center; width: 100%; }
     .category-link { color: #14532D; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; opacity: 0.92; transition: opacity 0.2s ease, color 0.2s ease; }
     .category-link:hover { color: #10B981; opacity: 1; text-decoration: none; }
 
@@ -753,9 +754,15 @@ declare var lucide: any;
       .nav-bar-inner { overflow: visible; }
       .feature-links { overflow: visible; flex-wrap: wrap; }
     }
-    .header-nav-bar { border-top: 1px solid #34D399; border-bottom: 1px solid #34D399; position: relative; z-index: 2100; overflow: visible; }
-    .nav-bar-inner { overflow: visible; }
-    .category-links { overflow: visible; position: relative; }
+    .header-nav-bar { border-top: 1px solid #34D399; border-bottom: 1px solid #34D399; position: relative; z-index: 2100; }
+    @media (min-width: 821px) {
+      .category-links { overflow: visible; position: relative; }
+      .nav-bar-inner { overflow: visible; }
+      .header-nav-bar { overflow: visible; }
+    }
+    @media (max-width: 820px) {
+      .category-links { justify-content: flex-start; padding: 10px 14px; scroll-padding: 14px; }
+    }
 
     .mega-pop-wrap { position: static; display: inline-flex; align-items: center; }
     .mega-pop-wrap::after {
@@ -909,37 +916,40 @@ declare var lucide: any;
       .action-section { justify-content: flex-start; width: 100%; }
       .search-box { max-width: 100%; }
       .header-main-logo-text { font-size: 20px; }
-      .marketing-inner { flex-wrap: wrap; justify-content: center; }
-      .marketing-right { flex-wrap: wrap; justify-content: center; }
+      .marketing-inner { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; }
+      .marketing-inner::-webkit-scrollbar { display: none; }
+      .marketing-right { flex-wrap: nowrap; justify-content: flex-start; }
     }
 
     @media (max-width: 768px) {
-      .brand-bar-inner, .header-main-flex, .nav-bar-inner, .promo-inner { flex-wrap: wrap; justify-content: center; }
-      .brand-links, .utility-links, .category-links { justify-content: center; gap: 12px; }
+      .header-main-flex, .nav-bar-inner, .promo-inner { flex-wrap: wrap; justify-content: center; }
+      .brand-bar-inner { flex-wrap: nowrap; justify-content: flex-start; }
+      .brand-links, .utility-links, .category-links { justify-content: flex-start; gap: 12px; }
       .header-main-flex { grid-template-columns: 1fr; }
       .search-section { gap: 10px; }
       .header-main-logo-mark { width: 34px; height: 34px; font-size: 16px; border-radius: 9px; }
       .header-main-logo-text { display: none; }
-      .action-link { width: 100%; justify-content: center; }
+      .action-link { justify-content: center; }
       .marketing-inner { padding: 10px 16px; min-height: 52px; }
       .promo-carousel-slide { height: 240px; }
       .promo-carousel-title { font-size: 22px; }
     }
 
     @media (max-width: 1024px) {
-      .brand-bar-inner,
+      .brand-bar-inner { flex-wrap: nowrap; justify-content: flex-start; }
       .header-main-flex,
       .nav-bar-inner,
       .promo-inner { flex-wrap: wrap; justify-content: center; }
-      .search-box { min-width: 100%; }
-      .category-links { justify-content: center; }
+      .search-box { min-width: 0; }
+      .category-links { justify-content: flex-start; }
     }
 
     @media (max-width: 768px) {
       .brand-links, .utility-links, .category-links { gap: 12px; }
-      .header-main-flex { flex-direction: column; align-items: stretch; }
-      .action-section { justify-content: space-between; }
-      .action-link { width: 100%; justify-content: center; }
+      .header-main-flex { display: flex; flex-direction: column; align-items: stretch; }
+      .action-section { justify-content: space-between; width: 100%; gap: 6px; }
+      .action-link { flex: 1; justify-content: center; padding: 10px 4px; font-size: 12px; }
+      .action-icon { width: 22px; height: 22px; }
     }
 
     /* Content Area */
@@ -1215,6 +1225,10 @@ declare var lucide: any;
     @media (max-width: 1024px) {
       .wf-footer-grid { grid-template-columns: 1fr; }
       .wf-footer-bottom { justify-content: center; text-align: center; }
+      .wf-footer-col { text-align: center; }
+      .wf-footer-list { justify-items: center; }
+      .wf-footer-list a { justify-content: center; }
+      .wf-contact-actions { justify-content: center; align-items: center; }
     }
 
     @media (max-width: 768px) {

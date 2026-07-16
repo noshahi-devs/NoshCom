@@ -5,6 +5,8 @@
     background: #f4f7f6;
     min-height: 100vh;
     font-family: 'Inter', sans-serif;
+    box-sizing: border-box;
+    width: 100%;
 }
 
 /* Top Metrics */
@@ -94,6 +96,8 @@
         display: flex;
         flex-direction: column;
         height: auto;
+        min-width: 0;
+        overflow: hidden;
 
         .card-header {
             display: flex;
@@ -252,7 +256,8 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            strong { font-size: 14px; font-weight: 700; color: #1a1d1f; white-space: nowrap; }
+            min-width: 0;
+            strong { font-size: 14px; font-weight: 700; color: #1a1d1f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
             .tag {
                 display: inline-block;
                 font-size: 9px;
@@ -416,6 +421,84 @@
                 transform: translateY(-2px);
                 box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.05);
                 border-color: #d1d9d5;
+            }
+        }
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+    .dashboard-middle-row { grid-template-columns: 1fr 1fr; }
+    .dashboard-bottom-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 900px) {
+    .top-metrics-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
+    .dashboard-middle-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+    .studio-dashboard-wrapper { padding: 12px; }
+    
+    .top-metrics-grid { 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 12px; 
+        margin-bottom: 20px;
+        
+        .metric-card {
+            padding: 12px 14px;
+            min-height: 80px;
+            border-radius: 12px;
+            
+            .label { font-size: 11px; margin-bottom: 2px; }
+            .value { font-size: 18px; }
+            .card-icon { font-size: 28px; right: 10px; }
+        }
+    }
+    
+    .dashboard-middle-row {
+        gap: 16px;
+        margin-bottom: 16px;
+        .card-panel { padding: 16px; border-radius: 16px; }
+        .card-header h3 { font-size: 14px; }
+    }
+    
+    .dashboard-bottom-row {
+        gap: 16px;
+        .card-panel { padding: 16px; border-radius: 16px; }
+        .card-header h3 { font-size: 14px; }
+    }
+    
+    .tickets-list .ticket-item {
+        .user-email { width: 80px; font-size: 12px; }
+        .ticket-subject { font-size: 11px; }
+    }
+    
+    .quick-links-panel .quick-links-grid { 
+        gap: 12px; 
+        .quick-link-item { 
+            padding: 16px 8px; 
+            border-radius: 12px; 
+            
+            .link-icon { font-size: 24px; margin-bottom: 8px; }
+            span { font-size: 11px; }
+        }
+    }
+    
+    .trend-chart {
+        .chart-legend { 
+            flex-wrap: wrap; 
+            gap: 10px; 
+            font-size: 9px;
+        }
+        .bars-container {
+            .month-group {
+                gap: 6px;
+                .bars-stack {
+                    gap: 3px;
+                    .bar { width: 7px; border-radius: 2px; }
+                }
+                .month-label { font-size: 10px; }
             }
         }
     }

@@ -179,7 +179,8 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
   border: 1px solid #f1f5f9;
   position: relative;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .loading-overlay {
@@ -205,6 +206,7 @@
   width: 100%;
   border-collapse: collapse;
   text-align: left;
+  min-width: 800px;
 
   thead {
     background: #f8fafc;

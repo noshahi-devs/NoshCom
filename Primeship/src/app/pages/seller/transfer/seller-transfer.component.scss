@@ -425,7 +425,7 @@
 .transactions-table-3d {
     background: var(--bg-surface);
     border-radius: 16px;
-    overflow: hidden;
+    overflow-x: auto;
     box-shadow: var(--shadow-3d-soft);
 
     .table-header {
@@ -439,6 +439,7 @@
         color: var(--text-muted);
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        min-width: 800px;
     }
 
     .table-row {
@@ -448,6 +449,7 @@
         padding: 20px 24px;
         border-bottom: 1px solid #f0f0f0;
         transition: all 0.2s ease;
+        min-width: 800px;
 
         &:last-child {
             border-bottom: none;

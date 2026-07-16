@@ -180,7 +180,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     { label: 'Rewards', href: '/rewards' },
     { label: 'Financing', href: '/financing' },
     { label: 'Professional', href: '/professional' },
-    { label: 'Fast & Free Shipping Over $35*', href: '/shipping' }
+    { label: 'Free Shipping Over $35*', href: '/shipping' }
   ];
 
   bannerThumbs = [

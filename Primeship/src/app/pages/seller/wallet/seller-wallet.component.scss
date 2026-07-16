@@ -6,6 +6,10 @@
     padding: 24px;
     max-width: 1400px;
     margin: 0 auto;
+
+    *, *::before, *::after {
+        box-sizing: border-box;
+    }
 }
 
 .wallet-dark-dashboard {
@@ -20,8 +24,11 @@
     @media (max-width: 1200px) {
         grid-template-columns: repeat(2, 1fr);
     }
-    @media (max-width: 640px) {
+    @media (max-width: 768px) {
         grid-template-columns: 1fr;
+        padding: 12px;
+        border-radius: 16px;
+        gap: 12px;
     }
 }
 
@@ -161,6 +168,10 @@
         grid-column: 1 / span 2;
         grid-row: auto;
         min-height: 280px;
+    }
+    @media (max-width: 1024px) {
+        grid-column: 1 / -1 !important;
+        grid-row: auto;
     }
 
     .chart-title {
@@ -822,6 +833,77 @@
             font-size: 14px;
             margin: 0;
             font-weight: 600;
+        }
+    }
+}
+
+/* --- MOBILE RESPONSIVENESS --- */
+@media (max-width: 1024px) {
+    .wallet-dashboard { 
+        padding: 12px; 
+    }
+    
+    .wallet-dark-dashboard {
+        padding: 12px;
+        border-radius: 16px;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px;
+    }
+    
+    .dash-card {
+        padding: 16px;
+        min-height: auto;
+        
+        .card-body h2 {
+            font-size: 24px !important;
+        }
+    }
+    
+    .revenue-chart {
+        grid-column: 1 / -1;
+        min-height: auto;
+        padding-bottom: 30px;
+    }
+    
+    .wallet-benefit-card .card-body h2 {
+        font-size: 22px;
+    }
+    
+    .recent-activity-panel {
+        padding: 16px;
+        border-radius: 20px;
+    }
+    
+    .panel-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 12px;
+        margin-bottom: 20px;
+        
+        .filter-tabs {
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            
+            .filter-btn {
+                flex: 1;
+                min-width: fit-content;
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+        }
+    }
+    
+    .activity-list {
+        overflow-x: auto;
+        padding-bottom: 12px;
+        
+        &::-webkit-scrollbar { height: 4px; }
+        &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        .activity-item {
+            min-width: 600px;
         }
     }
 }

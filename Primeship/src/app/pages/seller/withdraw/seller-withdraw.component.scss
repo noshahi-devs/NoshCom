@@ -411,6 +411,8 @@
     padding: 32px;
     color: #ffffff;
     display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 40px;
@@ -445,11 +447,12 @@
 
         h2.amount {
             margin: 0;
-            font-size: 42px;
+            font-size: clamp(28px, 8vw, 42px);
             font-weight: 800;
             letter-spacing: -1px;
             color: #ffffff !important;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+            word-break: break-word;
         }
     }
 
@@ -488,6 +491,13 @@
         margin-bottom: 32px;
 
         .full-width { grid-column: span 2; }
+        
+        @media (max-width: 1024px) {
+            display: flex !important;
+            flex-direction: column !important;
+            
+            .full-width { grid-column: span 1; }
+        }
     }
 
     .form-group-studio {

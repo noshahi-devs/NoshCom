@@ -108,7 +108,8 @@ export class SellerWalletComponent implements OnInit {
 
         this.recentTransactions = this.mergeActivity(
           historyItems.map((t: any) => this.mapHistoryItem(t)),
-          withdrawItems.map((w: any) => this.mapWithdrawRequest(w))
+          withdrawItems.map((w: any) => this.mapWithdrawRequest(w)),
+          depositItems.map((d: any) => this.mapDepositRequest(d))
         );
 
         this.computeTotals(this.recentTransactions, depositItems, withdrawItems);
@@ -142,9 +143,22 @@ export class SellerWalletComponent implements OnInit {
     };
   }
 
-  private mergeActivity(history: WalletTxn[], withdrawals: WalletTxn[]): WalletTxn[] {
+  private mapDepositRequest(d: any): WalletTxn {
+    const status = (d.status || 'Pending').toString();
+    const method = (d.method || 'Deposit').toString();
+    return {
+      id: `dr-${d.id}`,
+      type: 'Deposit',
+      amount: Math.abs(Number(d.amount) || 0),
+      status,
+      date: d.creationTime,
+      description: `${method} deposit · ${status}`
+    };
+  }
+
+  private mergeActivity(history: WalletTxn[], withdrawals: WalletTxn[], deposits: WalletTxn[]): WalletTxn[] {
     const seen = new Set<string>();
-    return [...history, ...withdrawals]
+    return [...history, ...withdrawals, ...deposits]
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .filter((t) => {
         const key = `${t.type}|${Math.abs(t.amount)}|${new Date(t.date).toISOString().slice(0, 16)}`;

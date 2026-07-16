@@ -73,10 +73,12 @@ $bg-input: #F1F5F9;
 .form-panel-inner {
   width: 100%;
   max-width: 380px;
+  margin: 0 auto;
 }
 
 .auth-form-header {
   margin-bottom: 22px;
+  text-align: center;
 
   .welcome-icon {
     width: 46px; height: 46px;

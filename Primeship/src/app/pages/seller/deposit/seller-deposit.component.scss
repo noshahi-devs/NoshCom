@@ -1945,7 +1945,8 @@
 .deposit-history-card {
     background: #fff;
     border-radius: 20px;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
     box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);
     border: 1px solid rgba(148, 163, 184, 0.15);
 }
@@ -1957,11 +1958,7 @@
     gap: 12px 16px;
     align-items: center;
     padding: 14px 20px;
-
-    @media (max-width: 900px) {
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
+    min-width: 800px;
 }
 
 .deposit-table-head {
@@ -1973,9 +1970,6 @@
     letter-spacing: 0.06em;
     border-bottom: 1px solid #e2e8f0;
 
-    @media (max-width: 900px) {
-        display: none;
-    }
 }
 
 .deposit-table-row {
@@ -2007,12 +2001,6 @@
     .sk-amt { width: 72px; }
     .sk-muted { background: rgba(148, 163, 184, 0.25); }
 
-    @media (max-width: 900px) {
-        padding: 16px;
-        border-radius: 12px;
-        margin: 8px 12px;
-        border: 1px solid #e2e8f0;
-    }
 }
 
 .cell {
