@@ -1,7 +1,7 @@
 #Requires -RunAsAdministrator
 <#
 .SYNOPSIS
-    Deploy NoshCom, Eliship (Primeship) frontends + NoshCom API to the VPS.
+    Deploy NoshCom, Globalmart (Primeship) frontends + NoshCom API to the VPS.
     Does NOT touch easy-finora or any other existing project on this server.
 
 .EXAMPLE
@@ -17,6 +17,9 @@
     # Deploy only NoshCom frontend
     .\deploy-noshcom.ps1 -Frontends noshcom -BuildFrontends
 
+    # Deploy only Globalmart (Primeship) frontend
+    .\deploy-noshcom.ps1 -Frontends globalmart -BuildFrontends
+
     # Quick redeploy after manual git pull (no rebuild)
     .\deploy-noshcom.ps1 -SkipGitPull -SkipApi
 #>
@@ -27,13 +30,13 @@ param(
     [string]$RepoRoot = "C:\GitHub Projects\NoshCom",
     [string]$Branch   = "main",
 
-    # Which frontends to deploy (noshcom | eliship | both)
-    [string[]]$Frontends = @("noshcom","eliship"),
+    # Which frontends to deploy (noshcom | globalmart | both). "eliship" is accepted as an alias for "globalmart".
+    [string[]]$Frontends = @("noshcom","globalmart"),
 
     # IIS site paths (must match what setup-noshcom-vps.ps1 created)
-    [string]$NoshComSitePath = "C:\sites\noshcom",
-    [string]$ElishipSitePath = "C:\sites\eliship",
-    [string]$ApiSitePath     = "C:\sites\noshcom-api",
+    [string]$NoshComSitePath    = "C:\sites\noshcom",
+    [string]$GlobalmartSitePath = "C:\sites\eliship",
+    [string]$ApiSitePath        = "C:\sites\noshcom-api",
 
     # Switches
     [switch]$SkipGitPull,
@@ -342,14 +345,19 @@ if (-not $SkipFrontends) {
     )
 
     # Map: key -> (FrontendRoot, SitePath)
+    # "eliship" is a legacy alias for "globalmart" - same target, kept so old invocations don't break.
     $frontendMap = @{
         "noshcom" = @{
             FrontendRoot = Join-Path $RepoRoot "elicom-frontend"
             SitePath     = $NoshComSitePath
         }
+        "globalmart" = @{
+            FrontendRoot = Join-Path $RepoRoot "Primeship"
+            SitePath     = $GlobalmartSitePath
+        }
         "eliship" = @{
             FrontendRoot = Join-Path $RepoRoot "Primeship"
-            SitePath     = $ElishipSitePath
+            SitePath     = $GlobalmartSitePath
         }
     }
 
@@ -380,7 +388,7 @@ Write-Host ""
 Write-Host "==========================================================" -ForegroundColor Green
 Write-Host "   DEPLOY COMPLETE                                        " -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Green
-Write-Host "   NoshCom  -> https://thesmartshop.uk                   " -ForegroundColor Green
-Write-Host "   Eliship  -> https://eliship.thesmartshop.uk           " -ForegroundColor Green
-Write-Host "   API      -> https://api.thesmartshop.uk               " -ForegroundColor Green
+Write-Host "   NoshCom    -> https://thesmartshop.uk                 " -ForegroundColor Green
+Write-Host "   Globalmart -> https://globalmart.thesmartshop.uk      " -ForegroundColor Green
+Write-Host "   API        -> https://api.thesmartshop.uk             " -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Green
