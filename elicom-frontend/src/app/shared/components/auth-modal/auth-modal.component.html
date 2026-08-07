@@ -44,7 +44,10 @@
                         <div class="auth-brand-mark">
                             <img src="assets/images/logo1.png" alt="Smart Shop UK logo">
                         </div>
-                        <h2>Sign In to {{ platformDisplayName }}</h2>
+                        <h2 class="auth-heading-title">
+                            <span class="auth-heading-line">Log In</span>
+                            <span class="auth-heading-brand">{{ platformDisplayName }}</span>
+                        </h2>
                         <p class="auth-subtitle">Access your {{ platformDisplayName }} account to continue shopping, manage orders, and explore your personalized experience.</p>
                     </div>
 
@@ -97,7 +100,10 @@
                 <div *ngIf="view === 'signup'" class="auth-view signup-view">
                     <div class="auth-heading">
                         <span class="auth-kicker">Get Started</span>
-                        <h2>Create Your {{ platformDisplayName }} Account</h2>
+                        <h2 class="auth-heading-title">
+                            <span class="auth-heading-line">Create Account</span>
+                            <span class="auth-heading-brand">{{ platformDisplayName }}</span>
+                        </h2>
                         <p class="auth-subtitle">Set up your {{ platformDisplayName }} account through a cleaner, more elegant signup experience.</p>
                     </div>
 
@@ -227,6 +233,25 @@
                 </div>
 
                 <div *ngIf="view === 'verification'" class="auth-view verification-view">
+                    <div class="confetti-layer" aria-hidden="true">
+                        <span class="confetti-piece"></span>
+                        <span class="confetti-piece"></span>
+                        <span class="confetti-piece"></span>
+                        <span class="confetti-piece"></span>
+                        <span class="confetti-piece"></span>
+                        <span class="confetti-piece"></span>
+                        <span class="confetti-piece"></span>
+                        <span class="confetti-piece"></span>
+                        <span class="confetti-piece"></span>
+                        <span class="confetti-piece"></span>
+                        <span class="confetti-piece"></span>
+                        <span class="confetti-piece"></span>
+                        <span class="confetti-piece"></span>
+                        <span class="confetti-piece"></span>
+                        <span class="confetti-piece"></span>
+                        <span class="confetti-piece"></span>
+                    </div>
+
                     <div class="verification-header">
                         <div class="icon-circle">
                             <i class="fas fa-envelope-open-text"></i>

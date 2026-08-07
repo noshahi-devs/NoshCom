@@ -289,6 +289,44 @@
     row-gap: 32px;
 }
 
+@media (min-width: 1441px) {
+    .sd-kpi-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        column-gap: 28px;
+    }
+
+    .sd-kpi-card {
+        padding: 26px 26px 26px;
+        min-height: 168px;
+    }
+
+    .sd-kpi-value {
+        font-size: clamp(2.2rem, 1.6rem + 0.9vw, 2.7rem);
+    }
+
+    .sd-kpi-expense .sd-kpi-value,
+    .sd-kpi-users .sd-kpi-value {
+        font-size: clamp(2.2rem, 1.6rem + 0.9vw, 2.7rem);
+    }
+
+    .sd-kpi-icon {
+        top: 22px;
+        right: 22px;
+        transform: none;
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+
+        i {
+            font-size: 1.05rem;
+        }
+    }
+
+    .sd-kpi-head {
+        padding-right: 64px;
+    }
+}
+
 .sd-kpi-card {
     position: relative;
     border-radius: 34px;
@@ -1035,7 +1073,6 @@
 
 @media (max-width: 1440px) {
     .sd-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .sd-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .sd-insights-grid { grid-template-columns: 1fr; }
 }
 

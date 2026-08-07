@@ -291,7 +291,8 @@ export class AuthModalComponent implements OnInit, OnDestroy {
                 next: () => {
                     this.stopLoadingRotation();
                     this.view = 'verification';
-                    this.isLoading = false; // Add this to ensure UI updates immediately
+                    this.isLoading = false;
+                    this.cdr.detectChanges();
 
                     this.signInForm.patchValue({
                         email: this.signUpForm.value.email
