@@ -5,6 +5,14 @@
     Does NOT touch easy-finora or any other existing project on this server.
 
 .EXAMPLE
+    # Run with no arguments to get an interactive menu:
+    #   1) Backend (NoshCom API)
+    #   2) NoshCom (SmartShop) frontend
+    #   3) Eliship (Globalmart) frontend
+    #   4) Everything
+    .\deploy-noshcom.ps1
+
+.EXAMPLE
     # Full deploy (git pull + build frontends + publish API + iisreset)
     .\deploy-noshcom.ps1 -BuildFrontends
 
@@ -22,6 +30,9 @@
 
     # Quick redeploy after manual git pull (no rebuild)
     .\deploy-noshcom.ps1 -SkipGitPull -SkipApi
+
+    # Passing -Frontends, -SkipApi, or -SkipFrontends explicitly skips the
+    # interactive menu (for use in scheduled tasks / automation).
 #>
 
 [CmdletBinding(PositionalBinding = $false)]
@@ -304,6 +315,61 @@ Write-Host "   Branch : $Branch" -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 
 # ---------------------------------------------------------------------------
+# 0. Interactive target selection
+#    Skipped if the caller already passed -Frontends / -SkipApi /
+#    -SkipFrontends explicitly (e.g. from a scheduled task).
+# ---------------------------------------------------------------------------
+$explicitTargeting = $PSBoundParameters.ContainsKey('Frontends') -or
+                     $PSBoundParameters.ContainsKey('SkipApi') -or
+                     $PSBoundParameters.ContainsKey('SkipFrontends')
+
+if (-not $explicitTargeting) {
+    Write-Host ""
+    Write-Host "What do you want to deploy?" -ForegroundColor Yellow
+    Write-Host "  1) Backend (NoshCom API)"
+    Write-Host "  2) NoshCom (SmartShop)"
+    Write-Host "  3) Eliship (Globalmart)"
+    Write-Host "  4) Everything (API + both frontends)"
+    $choice = Read-Host "Enter choice(s), comma-separated (e.g. 1,2)"
+
+    $selected = @(
+        $choice -split "," |
+        ForEach-Object { $_.Trim() } |
+        Where-Object   { $_ -ne "" }
+    )
+
+    if ($selected -contains "4") { $selected = @("1", "2", "3") }
+
+    if ($selected.Count -eq 0) {
+        throw "No option selected. Re-run and choose 1, 2, 3, or 4."
+    }
+    foreach ($s in $selected) {
+        if ($s -notin @("1", "2", "3")) {
+            throw "Invalid choice '$s'. Valid options: 1, 2, 3, 4."
+        }
+    }
+
+    $deployApi        = $selected -contains "1"
+    $deployNoshcom    = $selected -contains "2"
+    $deployGlobalmart = $selected -contains "3"
+
+    $SkipApi       = -not $deployApi
+    $SkipFrontends = -not ($deployNoshcom -or $deployGlobalmart)
+
+    $Frontends = @()
+    if ($deployNoshcom)    { $Frontends += "noshcom" }
+    if ($deployGlobalmart) { $Frontends += "globalmart" }
+
+    # Always rebuild selected frontends from source so the deployed site
+    # reflects the code just pulled (skipping the build silently redeploys
+    # whatever was already sitting in dist/ from a prior run).
+    if (-not $SkipFrontends) { $BuildFrontends = $true }
+
+    Write-Host ""
+    Write-Host "    Selected -> API: $deployApi | NoshCom: $deployNoshcom | Eliship (Globalmart): $deployGlobalmart" -ForegroundColor DarkGray
+}
+
+# ---------------------------------------------------------------------------
 # 1. Git pull
 # ---------------------------------------------------------------------------
 if (-not $SkipGitPull) {
@@ -388,7 +454,13 @@ Write-Host ""
 Write-Host "==========================================================" -ForegroundColor Green
 Write-Host "   DEPLOY COMPLETE                                        " -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Green
-Write-Host "   NoshCom    -> https://thesmartshop.uk                 " -ForegroundColor Green
-Write-Host "   Globalmart -> https://globalmart.thesmartshop.uk      " -ForegroundColor Green
-Write-Host "   API        -> https://api.thesmartshop.uk             " -ForegroundColor Green
+if (-not $SkipFrontends -and $Frontends -contains "noshcom") {
+    Write-Host "   NoshCom    -> https://thesmartshop.uk                 " -ForegroundColor Green
+}
+if (-not $SkipFrontends -and ($Frontends -contains "globalmart" -or $Frontends -contains "eliship")) {
+    Write-Host "   Eliship    -> https://globalmart.thesmartshop.uk      " -ForegroundColor Green
+}
+if (-not $SkipApi) {
+    Write-Host "   API        -> https://api.thesmartshop.uk             " -ForegroundColor Green
+}
 Write-Host "==========================================================" -ForegroundColor Green
