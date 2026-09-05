@@ -84,6 +84,10 @@
                             <label>Store Name <span class="required">*</span></label>
                             <input type="text" formControlName="name" class="field-control" placeholder="Your store name" [attr.disabled]="!isStepUnlocked(1) ? true : null"
                                 [class.is-invalid]="storeForm.get('name')?.invalid && storeForm.get('name')?.touched">
+                            <div class="helper-text" *ngIf="isCheckingName">Checking availability...</div>
+                            <div class="success-text" *ngIf="!isCheckingName && isNameAvailable === true">
+                                <i class="fas fa-check-circle"></i> Available
+                            </div>
                             <div class="error-text" *ngIf="storeForm.get('name')?.invalid && storeForm.get('name')?.touched">
                                 <span *ngIf="storeForm.get('name')?.hasError('required') || storeForm.get('name')?.hasError('minlength')">Store name is required (min 3 characters).</span>
                                 <span *ngIf="storeForm.get('name')?.hasError('exists')">Store name already exists. Please choose a different store name.</span>

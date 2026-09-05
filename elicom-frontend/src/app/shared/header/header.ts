@@ -696,6 +696,7 @@ export class Header implements OnInit, AfterViewChecked {
   onAuthAuthenticated() {
     this.authModalOpen.set(false);
     this.authService.closeAuthModal();
+    this.authService.navigateToDashboard();
   }
 
   getUserDisplayName(user: User | null): string {

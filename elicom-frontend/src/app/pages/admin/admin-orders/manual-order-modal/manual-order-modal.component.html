@@ -14,25 +14,37 @@
             </button>
         </div>
 
-        <div class="modal-body custom-scrollbar">
+        <div class="modal-body custom-scrollbar" (click)="closeStoreDropdown()">
             <form [formGroup]="orderForm" (ngSubmit)="onSubmit()">
                 <!-- Store & Product Selection -->
                 <div class="form-section">
                     <div class="section-title">
-                        <i class="fas fa-store"></i>
-                        <span>Store & Product</span>
+                        <span class="section-icon-badge"><i class="fas fa-store"></i></span>
+                        <span class="section-title-text">Store & Product</span>
                         <div class="loader-inline" *ngIf="loading">
                              <div class="spinner-3d"></div>
                              <span>Loading Data...</span>
                         </div>
                     </div>
+                    <div class="section-divider"></div>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label-3d">Select Store</label>
-                            <select formControlName="storeId" class="form-select-3d" (change)="onStoreChange()">
-                                <option value="" disabled>Choose a Store...</option>
-                                <option *ngFor="let store of stores" [value]="store.id">{{ store.name }}</option>
-                            </select>
+                            <div class="searchable-select-wrapper" (click)="$event.stopPropagation()">
+                                <input type="text" class="form-control-3d" autocomplete="off"
+                                    placeholder="Search a store..."
+                                    [value]="storeSearchTerm"
+                                    (input)="onStoreSearchInput($event)"
+                                    (focus)="$any($event.target).select(); openStoreDropdown()"
+                                    (blur)="onStoreInputBlur()">
+                                <i class="fas fa-chevron-down searchable-select-caret"></i>
+                                <div class="searchable-select-panel" *ngIf="isStoreDropdownOpen">
+                                    <div class="searchable-select-item" *ngFor="let store of filteredStores" (click)="selectStore(store)">
+                                        {{ store.name }}
+                                    </div>
+                                    <div class="searchable-select-empty" *ngIf="!filteredStores.length">No stores found</div>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label-3d">Select Product</label>
@@ -44,40 +56,21 @@
                     </div>
                 </div>
 
-                <!-- Recipient Info -->
+                <!-- Recipient & Shipping -->
                 <div class="form-section">
-                    <div class="section-title d-flex justify-content-between align-items-center">
-                        <div>
-                            <i class="fas fa-user-tag"></i>
-                            <span>Recipient Information</span>
-                        </div>
+                    <div class="section-title">
+                        <span class="section-icon-badge"><i class="fas fa-user-tag"></i></span>
+                        <span class="section-title-text">Recipient & Shipping</span>
                         <button type="button" class="btn-randomize" (click)="randomizeBuyer()">
-                            <i class="fas fa-dice"></i> Randomize
+                            <i class="fas fa-dice"></i> AutoFill
                         </button>
                     </div>
+                    <div class="section-divider"></div>
                     <div class="row g-3">
                         <div class="col-md-12">
                             <label class="form-label-3d">Full Name</label>
                             <input type="text" formControlName="recipientName" class="form-control-3d" placeholder="e.g. John Doe">
                         </div>
-                        <!-- <div class="col-md-4">
-                            <label class="form-label-3d">Email Address</label>
-                            <input type="email" formControlName="recipientEmail" class="form-control-3d" placeholder="john@example.com">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label-3d">Phone Number</label>
-                            <input type="text" formControlName="recipientPhone" class="form-control-3d" placeholder="+1 ...">
-                        </div> -->
-                    </div>
-                </div>
-
-                <!-- Shipping Address -->
-                <div class="form-section">
-                    <div class="section-title">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>Shipping Address</span>
-                    </div>
-                    <div class="row g-3">
                         <div class="col-12">
                             <label class="form-label-3d">Street Address</label>
                             <input type="text" formControlName="shippingAddress" class="form-control-3d" placeholder="123 Street Name">
@@ -100,9 +93,10 @@
                 <!-- Extras -->
                 <div class="form-section last">
                     <div class="section-title">
-                        <i class="fas fa-cog"></i>
-                        <span>Order Options</span>
+                        <span class="section-icon-badge"><i class="fas fa-cog"></i></span>
+                        <span class="section-title-text">Order Options</span>
                     </div>
+                    <div class="section-divider"></div>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label-3d">Override Price (Optional)</label>

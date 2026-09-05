@@ -404,7 +404,7 @@ namespace Elicom.Stores
             
             // Force resolved owner for security and FK consistency
             store.OwnerId = owner.Id;
-            store.Status = true; // Auto-approve store so listings immediately go to buyer side!
+            store.Status = false; // Pending admin approval until reviewed via Approve()/Reject()
 
             // Ensure relationship is linked correctly for EF
             if (store.Kyc != null)

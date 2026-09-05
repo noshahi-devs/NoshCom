@@ -6,9 +6,15 @@
                 <div class="orders-card-kicker">Order Workspace</div>
                 <h4>Manage Shipped Orders</h4>
             </div>
-            <div class="orders-live-chip">
-                <i class="fa-solid fa-wave-square"></i>
-                <span>Live View</span>
+            <div class="orders-card-actions">
+                <button type="button" class="btn-manual-order" (click)="openManualOrderModal()">
+                    <i class="fas fa-magic"></i>
+                    <span>Create Manual Order</span>
+                </button>
+                <div class="orders-live-chip">
+                    <i class="fa-solid fa-wave-square"></i>
+                    <span>Live View</span>
+                </div>
             </div>
         </div>
         
@@ -183,6 +189,8 @@
         </div>
     </section>
 </div>
+
+<app-manual-order-modal *ngIf="showManualOrderModal" (close)="closeManualOrderModal()" (orderCreated)="onManualOrderCreated()"></app-manual-order-modal>
 
 <!-- Tracking Modal (Refined to match Elite Look if needed, using existing for now) -->
 <!-- ... -->

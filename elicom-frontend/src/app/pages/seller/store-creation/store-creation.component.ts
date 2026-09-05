@@ -1,9 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { StoreService } from '../../../services/store.service';
 import { AuthService } from '../../../services/auth.service';
+import { debounceTime, distinctUntilChanged, switchMap, of, catchError, timeout } from 'rxjs';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -18,12 +19,15 @@ export class StoreCreationComponent {
     private storeService = inject(StoreService);
     private authService = inject(AuthService);
     private router = inject(Router);
+    private cdr = inject(ChangeDetectorRef);
 
     currentStep = 1;
     visibleGroup: 1 | 2 | 3 = 1;
     totalSteps = 7;
     storeForm: FormGroup;
     isLoading = false;
+    isCheckingName = false;
+    isNameAvailable: boolean | null = null;
     // fallback previews so users see images without clicking
     defaultFront = 'data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"380\" viewBox=\"0 0 600 380\"><defs><linearGradient id=\"g\" x1=\"0\" x2=\"1\" y1=\"0\" y2=\"1\"><stop offset=\"0%\" stop-color=\"%23f5f7fa\"/><stop offset=\"100%\" stop-color=\"%23e2e8f0\"/></linearGradient></defs><rect width=\"600\" height=\"380\" fill=\"url(%23g)\"/><text x=\"50%\" y=\"50%\" font-family=\"Arial\" font-size=\"28\" font-weight=\"700\" fill=\"%2394a3b8\" text-anchor=\"middle\" dy=\"10\">Front Preview</text></svg>';
     defaultBack = 'data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"380\" viewBox=\"0 0 600 380\"><defs><linearGradient id=\"g2\" x1=\"1\" x2=\"0\" y1=\"0\" y2=\"1\"><stop offset=\"0%\" stop-color=\"%23f8fafc\"/><stop offset=\"100%\" stop-color=\"%23e2e8f0\"/></linearGradient></defs><rect width=\"600\" height=\"380\" fill=\"url(%23g2)\"/><text x=\"50%\" y=\"50%\" font-family=\"Arial\" font-size=\"28\" font-weight=\"700\" fill=\"%2394a3b8\" text-anchor=\"middle\" dy=\"10\">Back Preview</text></svg>';
@@ -90,9 +94,11 @@ export class StoreCreationComponent {
             this.storeForm.get('description')?.setValue(val, { emitEvent: false });
         });
 
-        // Clear name exists error on change
-        this.storeForm.get('name')?.valueChanges.subscribe(() => {
-            const nameControl = this.storeForm.get('name');
+        const nameControl = this.storeForm.get('name');
+
+        // Clear stale 'exists' error and stale availability badge the moment the user edits the name again
+        nameControl?.valueChanges.subscribe(() => {
+            this.isNameAvailable = null;
             if (nameControl?.hasError('exists')) {
                 const errors = nameControl.errors;
                 if (errors) {
@@ -100,6 +106,34 @@ export class StoreCreationComponent {
                     nameControl.setErrors(Object.keys(errors).length ? errors : null);
                 }
             }
+        });
+
+        // Live duplicate-name check as the user types, no need to press Next Step
+        nameControl?.valueChanges.pipe(
+            debounceTime(500),
+            distinctUntilChanged(),
+            switchMap(value => {
+                const trimmed = (value || '').trim();
+                if (trimmed.length < 3) {
+                    this.isCheckingName = false;
+                    this.cdr.detectChanges();
+                    return of(null);
+                }
+                this.isCheckingName = true;
+                this.cdr.detectChanges();
+                return this.storeService.isStoreNameAvailable(trimmed).pipe(
+                    timeout(8000),
+                    catchError(() => of(null))
+                );
+            })
+        ).subscribe(available => {
+            this.isCheckingName = false;
+            this.isNameAvailable = available;
+            if (available === false) {
+                nameControl?.markAsTouched();
+                nameControl?.setErrors({ ...(nameControl.errors || {}), exists: true });
+            }
+            this.cdr.detectChanges();
         });
     }
 

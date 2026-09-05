@@ -44,6 +44,33 @@
         }
     }
 
+    .orders-card-actions {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .btn-manual-order {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 999px;
+        border: none;
+        background: #F2BB13;
+        color: #111;
+        font-size: 0.8rem;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(242, 187, 19, 0.35);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(242, 187, 19, 0.45);
+        }
+    }
+
     .orders-live-chip {
         background: #111;
         color: #F2BB13;

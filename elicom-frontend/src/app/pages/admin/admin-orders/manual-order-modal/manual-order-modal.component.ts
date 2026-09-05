@@ -29,6 +29,9 @@ export class ManualOrderModalComponent implements OnInit {
     loading = false;
     submitting = false;
 
+    storeSearchTerm = '';
+    isStoreDropdownOpen = false;
+
     constructor() {
         this.orderForm = this.fb.group({
             storeId: ['', Validators.required],
@@ -64,6 +67,48 @@ export class ManualOrderModalComponent implements OnInit {
                 this.loading = false;
             }
         });
+    }
+
+    get filteredStores() {
+        const term = this.storeSearchTerm.trim().toLowerCase();
+        if (!term) return this.stores;
+        return this.stores.filter(s => (s.name || '').toLowerCase().includes(term));
+    }
+
+    openStoreDropdown() {
+        this.isStoreDropdownOpen = true;
+    }
+
+    closeStoreDropdown() {
+        this.isStoreDropdownOpen = false;
+    }
+
+    onStoreSearchInput(event: Event) {
+        this.storeSearchTerm = (event.target as HTMLInputElement).value;
+        this.isStoreDropdownOpen = true;
+    }
+
+    selectStore(store: any) {
+        this.orderForm.patchValue({ storeId: store.id });
+        this.storeSearchTerm = store.name;
+        this.isStoreDropdownOpen = false;
+        this.onStoreChange();
+    }
+
+    onStoreInputBlur() {
+        // Delay so a click on a dropdown item registers before we validate/close
+        setTimeout(() => {
+            this.isStoreDropdownOpen = false;
+            const selected = this.stores.find(s => s.id === this.orderForm.get('storeId')?.value);
+            const committedName = selected ? selected.name : '';
+            if (this.storeSearchTerm !== committedName) {
+                this.storeSearchTerm = committedName;
+                if (!committedName) {
+                    this.orderForm.patchValue({ storeId: '' });
+                    this.onStoreChange();
+                }
+            }
+        }, 150);
     }
 
     onStoreChange() {
@@ -115,6 +160,7 @@ export class ManualOrderModalComponent implements OnInit {
         const address = `${addressNum} ${streets[Math.floor(Math.random() * streets.length)]}`;
         
         const cityIndex = Math.floor(Math.random() * cities.length);
+        const quantity = Math.floor(Math.random() * 3) + 1;
 
         this.orderForm.patchValue({
             recipientName: name,
@@ -123,7 +169,8 @@ export class ManualOrderModalComponent implements OnInit {
             shippingAddress: address,
             city: cities[cityIndex],
             state: states[cityIndex],
-            postalCode: Math.floor(Math.random() * 90000 + 10000).toString()
+            postalCode: Math.floor(Math.random() * 90000 + 10000).toString(),
+            quantity
         });
     }
 

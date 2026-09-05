@@ -180,6 +180,21 @@ export class AdminOrdersComponent implements OnInit {
         this.cdr.detectChanges();
     }
 
+    openManualOrderModal() {
+        this.showManualOrderModal = true;
+        this.cdr.detectChanges();
+    }
+
+    closeManualOrderModal() {
+        this.showManualOrderModal = false;
+        this.cdr.detectChanges();
+    }
+
+    onManualOrderCreated() {
+        this.showManualOrderModal = false;
+        this.loadOrders();
+    }
+
     resolveOrderId(order: any): string | null {
         const candidates = [
             order?.id,
