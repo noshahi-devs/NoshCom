@@ -145,7 +145,7 @@
                         <div class="col col-carrier">
                             <p class="mini-label">Carrier & Tracking</p>
                             <div class="carrier-group">
-                                <span class="carrier-name">{{ order.carrierId || 'Awaiting Assignment' }}</span>
+                                <span class="carrier-name">{{ getCarrierName(order.carrierId) }}</span>
                                 <span class="method-chip">Standard</span>
                             </div>
                             <p class="tracking-val">{{ order.trackingCode || 'NO-TRACKING-ID' }}</p>

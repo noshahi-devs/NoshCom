@@ -313,8 +313,8 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                     
                     <!-- Compact Header -->
                     <tr>
-                        <td style='background: linear-gradient(135deg, #5ABA81 0%, #3D9468 100%); padding:25px 30px; text-align:center;'>
-                            <div style='display:inline-block; background:rgba(255,255,255,0.15); width:60px; height:60px; border-radius:50%; line-height:60px; margin-bottom:10px; border:2px solid rgba(255,255,255,0.3);'>
+                        <td bgcolor='#3D9468' style='background-color:#3D9468; padding:25px 30px; text-align:center;'>
+                            <div style='display:inline-block; background-color:#4FA878; width:60px; height:60px; border-radius:50%; line-height:60px; margin-bottom:10px; border:2px solid rgba(255,255,255,0.3);'>
                                 <span style='font-size:30px;'>&#x1F6A2;</span>
                             </div>
                             <h1 style='margin:0; color:#ffffff; font-size:26px; font-weight:700; letter-spacing:2px;'>
@@ -339,17 +339,16 @@ public class AccountAppService : ElicomAppServiceBase, IAccountAppService
                             <!-- CTA Button -->
                             <table width='100%' cellpadding='0' cellspacing='0' style='margin:25px 0;'>
                                 <tr>
-                                    <td align='center'>
-                                        <a href='{verificationLink}' 
-                                           style='background: linear-gradient(135deg, #5ABA81 0%, #3D9468 100%);
-                                                  color:#ffffff; 
-                                                  padding:14px 40px; 
-                                                  text-decoration:none; 
-                                                  border-radius:6px; 
-                                                  font-weight:700; 
+                                    <td align='center' bgcolor='#3D9468' style='background-color:#3D9468; border-radius:6px;'>
+                                        <a href='{verificationLink}'
+                                           style='background-color:#3D9468;
+                                                  color:#ffffff;
+                                                  padding:14px 40px;
+                                                  text-decoration:none;
+                                                  border-radius:6px;
+                                                  font-weight:700;
                                                   font-size:15px;
                                                   display:inline-block;
-                                                  box-shadow: 0 4px 12px rgba(90,186,129,0.35);
                                                   text-transform:uppercase;
                                                   letter-spacing:0.5px;'>
                                             Verify Email

@@ -120,7 +120,7 @@ export class OrderDetailsComponent implements OnInit {
                 trackingNumber: data.primeShipTrackingNumber || data.trackingCode || data.deliveryTrackingNumber || 'N/A',
                 purchaseDateTime: creationDate,
                 shipmentDate: data.shipmentDate ? new Date(data.shipmentDate) : null,
-                carrier: data.carrierId === 'PrimeshipUK' ? 'Eliship' : (data.carrierId || 'N/A')
+                carrier: (data.carrierId === 'PrimeshipUK' || data.carrierId === 'Eliship') ? 'Global Mart UK' : (data.carrierId || 'N/A')
             },
             orderItems: (data.orderItems || []).map((item: any) => {
                 const itemSubtotal = item.priceAtPurchase * item.quantity;

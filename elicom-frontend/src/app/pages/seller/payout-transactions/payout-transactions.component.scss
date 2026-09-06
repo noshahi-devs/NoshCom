@@ -14,7 +14,7 @@
     border-radius: 34px;
     background:
         radial-gradient(circle at top right, rgba(255, 219, 112, 0.2), transparent 34%),
-        linear-gradient(180deg, #ffffff 0%, #fffdfa 100%);
+        #ffffff;
     box-shadow: 0 18px 50px rgba(185, 139, 0, 0.12);
     border: 1px solid rgba(255, 198, 79, 0.22);
 }
@@ -86,7 +86,7 @@
 }
 
 .orders-table-card {
-    background: linear-gradient(180deg, #ffffff 0%, #fffdf9 100%);
+    background: #ffffff;
     border-radius: 30px;
     overflow: hidden;
     border: 1px solid rgba(255, 196, 67, 0.18);

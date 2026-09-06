@@ -500,7 +500,7 @@
     border-radius: 30px;
     background:
         radial-gradient(circle at top right, rgba(255, 214, 120, 0.12), transparent 28%),
-        linear-gradient(180deg, #ffffff 0%, #fffdf8 100%);
+        #ffffff;
     border: 1px solid rgba(255, 202, 93, 0.18);
     box-shadow: 0 18px 42px rgba(209, 183, 121, 0.12);
 
@@ -602,7 +602,7 @@
     }
 
     &.variant-blue {
-        background: linear-gradient(180deg, #ffffff 0%, #fff9eb 100%);
+        background: #ffffff;
 
         .card-icon {
             color: #b67800;
@@ -616,7 +616,7 @@
     }
 
     &.variant-indigo {
-        background: linear-gradient(180deg, #ffffff 0%, #fff9e6 100%);
+        background: #ffffff;
 
         .card-icon {
             color: #F2BB13;
@@ -630,7 +630,7 @@
     }
 
     &.variant-violet {
-        background: linear-gradient(180deg, #ffffff 0%, #fff9e6 100%);
+        background: #ffffff;
 
         .card-icon {
             color: #F2BB13;
@@ -644,7 +644,7 @@
     }
 
     &.variant-purple {
-        background: linear-gradient(180deg, #ffffff 0%, #fff9e6 100%);
+        background: #ffffff;
 
         .card-icon {
             color: #F2BB13;
@@ -696,7 +696,7 @@
 }
 
 .mini-card {
-    background: linear-gradient(180deg, #ffffff 0%, #fffdf8 100%);
+    background: #ffffff;
     padding: 26px 28px;
     border-radius: 26px;
     display: flex;
@@ -843,7 +843,7 @@
     padding: 14px 16px;
     border-radius: 20px;
     border: 1px solid rgba(242, 187, 19, 0.14);
-    background: linear-gradient(180deg, #ffffff 0%, #fffaf1 100%);
+    background: #ffffff;
     box-shadow: 0 12px 24px rgba(230, 235, 243, 0.45);
 }
 

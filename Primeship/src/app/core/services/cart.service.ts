@@ -107,7 +107,7 @@ export class CartService {
 
     getCartTotal(): number {
         return this.cartItemsSubject.value.reduce((total, item) => {
-            const rawPrice = item.product?.supplierPrice ?? item.product?.purchasePrice ?? item.product?.price ?? 0;
+            const rawPrice = item.product?.price ?? item.product?.supplierPrice ?? item.product?.purchasePrice ?? 0;
             const normalizedPrice = this.toNumber(rawPrice);
             const normalizedQty = this.toNumber(item.quantity);
             return total + (normalizedPrice * normalizedQty);

@@ -437,7 +437,7 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
             shipBy,
             deliverBy,
             salesChannel: this.resolveSalesChannel(order?.sourcePlatform),
-            shipVia: order?.carrierId || '-',
+            shipVia: (order?.carrierId === 'PrimeshipUK' || order?.carrierId === 'Eliship') ? 'Global Mart UK' : (order?.carrierId || '-'),
             trackingId: order?.trackingCode || order?.deliveryTrackingNumber || '-',
             total: this.toNumber(order?.totalAmount),
             initialAgeMs: 0,

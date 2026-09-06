@@ -161,6 +161,11 @@ export class AdminOrdersComponent implements OnInit {
         return 'badge-default';
     }
 
+    getCarrierName(carrierId: any): string {
+        if (carrierId === 'PrimeshipUK' || carrierId === 'Eliship') return 'Global Mart UK';
+        return carrierId || 'Awaiting Assignment';
+    }
+
     getStatusLabel(status: any): string {
         if (this.isPendingVerificationStatus(status)) return 'Pending Verification';
         if (this.isVerifiedStatus(status)) return 'Verified';

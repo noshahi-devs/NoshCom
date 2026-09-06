@@ -205,6 +205,15 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
+  copyWalletId(): void {
+    if (!this.walletId) return;
+    navigator.clipboard.writeText(this.walletId).then(() => {
+      this.toastService.showSuccess('Wallet ID copied to clipboard.');
+    }).catch(() => {
+      this.toastService.showError('Could not copy Wallet ID.');
+    });
+  }
+
   get displayCardHolderName(): string {
     const first = (this.checkoutForm.get('firstName')?.value || '').toString().trim();
     const last = (this.checkoutForm.get('lastName')?.value || '').toString().trim();
